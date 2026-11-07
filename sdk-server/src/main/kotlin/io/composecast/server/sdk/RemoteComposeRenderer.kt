@@ -46,8 +46,8 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
     private val primary = parseColor(brand?.primaryColor ?: DEFAULT_PRIMARY)
     private val background = parseColor(brand?.backgroundColor ?: DEFAULT_BACKGROUND)
 
-    /** Images fetched so far, shared by all screens of one registry. `null` = failed to load. */
-    private val images = mutableMapOf<String, EncodedImage?>()
+    /** Images fetched so far, shared by all (concurrent) renders of one registry. */
+    private val images = ImageCache<EncodedImage>()
 
     fun render(screen: ScreenDefinition): ByteArray = createRcBuffer(PROFILE, *HEADER_TAGS) {
         Column(Modifier.fillMaxSize().background(background).verticalScroll().padding(SCREEN_PADDING)) {
@@ -75,7 +75,7 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
             }
 
             is Component.Image -> {
-                val image = images.getOrPut(node.url) { fetch(node.url) }
+                val image = images.get(node.url, ::fetch)
                 if (image != null) {
                     // Full width, keeping aspect ratio, but never upscaled past the natural size
                     // (pixels treated as dp). Height is a device-side expression in dp

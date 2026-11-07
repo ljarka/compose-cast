@@ -13,14 +13,14 @@ Do NOT modify this app to prove SDK behavior — use `compat-tests` for that.
 ```
 MainActivity
  └── ComposeCastApp (Composable)
-      ├── backStack (rememberSaveable) + BackHandler; screenId = backStack.last()
-      ├── produceState(screenId, reloadKey) → ComposeCastClient.getScreen(screenId) → ScreenDocument
+      ├── backStack: List<Action.Navigate> (rememberSaveable, BackStackSaver) + BackHandler; entry = last
+      ├── produceState(entry, reloadKey) → ComposeCastClient.getScreen(entry.screen, entry.params)
       ├── loading  → CircularProgressIndicator
       ├── error    → ComposeCastHttpException: "Server error <status>"; else server URL hint; Retry (reloadKey++)
       └── success  → ComposeCastScreen(screen, onAction: (Action) -> Unit)   (Remote Compose player)
-                          └── Navigate: pushes action.screen onto backStack (params: T-003)
+                          └── Navigate: pushes the action (screen + params) onto backStack
                               OpenUrl:  Intent.ACTION_VIEW
-                              Reload:   reloadKey++ → re-fetch current screen
+                              Reload:   reloadKey++ → re-fetch (If-None-Match → usually 304)
                               Track:    analytics hook (no-op in demo)
                               Custom:   Snackbar
 ```
@@ -40,9 +40,11 @@ For a real device or remote server, change `SERVER_URL` in `MainActivity`.
 ## Back stack
 
 Navigation is manual:
-- `Action.Navigate(screen)` → push `screen` onto `backStack` (params ignored until T-003)
+- `Action.Navigate(screen, params)` → push the action itself onto `backStack` (entries are
+  `Action.Navigate`; params become the query of `GET /screens/{screen}`)
 - System back → pop `backStack`
-- `backStack` is `rememberSaveable` → survives rotation
+- `backStack` is `rememberSaveable` with `BackStackSaver`: entries saved as their `ActionCodec`
+  wire strings → survives rotation (verified on the emulator, params included)
 
 ## Action routing (in `ComposeCastApp`)
 
@@ -50,7 +52,7 @@ Exhaustive `when (action)` over `io.composecast.protocol.Action` (a new subtype 
 
 | Action | Handler |
 |---|---|
-| `Navigate` | Push screen id onto back stack |
+| `Navigate` | Push the entry (screen + params) onto the back stack |
 | `OpenUrl` | `startActivity(Intent.ACTION_VIEW)`; no app for the URL → snackbar (not a crash) |
 | `Reload` | `reloadKey++` → `produceState` re-fetches the current screen |
 | `Track` | No-op (analytics hook placeholder) |

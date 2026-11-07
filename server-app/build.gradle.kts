@@ -21,6 +21,7 @@ dependencies {
     // SLF4J provider: without it Ktor and CallLogging print nothing (not even 500 stack traces).
     runtimeOnly(libs.logback.classic)
     testImplementation(libs.kotlin.test)
+    testImplementation(libs.ktor.server.test.host)
 }
 
 // Relative COMPOSECAST_DATA_DIR paths (e.g. examples/demo) resolve against the repository root.

@@ -1,6 +1,6 @@
 # T-009 — Backend in one command (Docker)
 
-Status: queued (after T-003) · Roadmap: Etap 6 · Depends on: T-003 (per-request rendering changes the runtime; package it once)
+Status: ready · Roadmap: Etap 6 · Depends on: T-003 (per-request rendering changes the runtime; package it once)
 
 ## Goal
 `docker compose up` starts the server with screens from a mounted directory — no JDK, no Gradle,

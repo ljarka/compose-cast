@@ -28,6 +28,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,6 +41,7 @@ import io.composecast.android.ComposeCastHttpException
 import io.composecast.android.ComposeCastScreen
 import io.composecast.android.ScreenDocument
 import io.composecast.protocol.Action
+import io.composecast.protocol.ActionCodec
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -86,17 +88,20 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ComposeCastApp(client: ComposeCastClient, onOpenUrl: (String) -> Boolean) {
-    // Back stack of screen ids; survives rotation. System back pops it.
-    var backStack by rememberSaveable { mutableStateOf(listOf("main")) }
-    val screenId = backStack.last()
+    // Back stack of (screen, params) entries; survives rotation. System back pops it.
+    var backStack by rememberSaveable(stateSaver = BackStackSaver) {
+        mutableStateOf(listOf(Action.Navigate("main")))
+    }
+    val entry = backStack.last()
+    val screenId = entry.screen
     BackHandler(enabled = backStack.size > 1) { backStack = backStack.dropLast(1) }
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
     var reloadKey by remember { mutableIntStateOf(0) }
-    val screenState by produceState<Result<ScreenDocument>?>(initialValue = null, key1 = screenId, key2 = reloadKey) {
+    val screenState by produceState<Result<ScreenDocument>?>(initialValue = null, key1 = entry, key2 = reloadKey) {
         value = null
-        value = runCatching { client.getScreen(screenId) }
+        value = runCatching { client.getScreen(entry.screen, entry.params) }
     }
 
     Scaffold(
@@ -142,7 +147,7 @@ private fun ComposeCastApp(client: ComposeCastClient, onOpenUrl: (String) -> Boo
                     modifier = Modifier.fillMaxSize(),
                     onAction = { action ->
                         when (action) {
-                            is Action.Navigate -> backStack = backStack + action.screen // T-003: pass params
+                            is Action.Navigate -> backStack = backStack + action
                             is Action.OpenUrl -> if (!onOpenUrl(action.url)) {
                                 scope.launch { snackbar.showSnackbar("No app can open ${action.url}") }
                             }
@@ -156,3 +161,9 @@ private fun ComposeCastApp(client: ComposeCastClient, onOpenUrl: (String) -> Boo
         }
     }
 }
+
+/** Saves back stack entries as their action wire form ([ActionCodec]): Bundle-friendly strings. */
+private val BackStackSaver = listSaver<List<Action.Navigate>, String>(
+    save = { stack -> stack.map(ActionCodec::encode) },
+    restore = { saved -> saved.mapNotNull { ActionCodec.decode(it) as? Action.Navigate } },
+)

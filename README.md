@@ -76,6 +76,7 @@ rendered to Remote Compose documents by the server SDK and played by the Android
     <td align="center"><img src="compat-tests/src/test/screenshots/main.png" width="270" alt="Home screen"><br><code>main</code></td>
     <td align="center"><img src="compat-tests/src/test/screenshots/onboarding.png" width="270" alt="Get Started screen"><br><code>onboarding</code></td>
     <td align="center"><img src="compat-tests/src/test/screenshots/actions.png" width="270" alt="Actions screen"><br><code>actions</code></td>
+    <td align="center"><img src="compat-tests/src/test/screenshots/echo.png" width="270" alt="Echo screen rendered from a query parameter"><br><code>echo?word=…</code></td>
   </tr>
 </table>
 
@@ -124,6 +125,17 @@ Actions are typed (`io.composecast.protocol.Action`): `Action.Navigate("movie", 
 `OpenUrl`, `Reload`, `Track`, `Custom`. The wire form also works as a string:
 `navigate:<screen>`, `open_url:<url>`, `reload:`, `track:<event>`, `custom:<payload>`.
 Invalid definitions (unknown style or action, duplicate id, bad color) fail at server start.
+
+Screens can depend on the request: `dynamicScreen` is rendered per request from the query
+parameters that `Action.Navigate` params become (`GET /screens/echo?word=hi`):
+
+```kotlin
+dynamicScreen("echo") { ctx ->
+    text(ctx.param("word"), style = "h2")   // missing ?word= → HTTP 400
+    button("Again, louder", Action.Navigate("echo", mapOf("word" to ctx.param("word") + "!")))
+}
+```
+
 Demo screens live in `server-app/src/main/kotlin/io/composecast/server/Screens.kt`.
 
 The DSL builds a serializable `ScreenDefinition`; the same screens can be JSON files, one
@@ -179,7 +191,7 @@ COMPOSECAST_DATA_DIR=examples/demo ./gradlew :server-app:run    # PORT=8080 by d
 | `GET /health` | `ok` |
 | `GET /brand` | Brand JSON |
 | `GET /screens` | JSON list of screen ids |
-| `GET /screens/{id}` | Remote Compose document; title in `X-Composecast-Screen-Title` |
+| `GET /screens/{id}?k=v` | Remote Compose document; query = screen params; title in `X-Composecast-Screen-Title`; `ETag` (`If-None-Match` → `304`) |
 | `GET /screens/{id}/debug` | Decoded document as text |
 
 Android (emulator; it reaches the server at `http://10.0.2.2:8080`):
@@ -214,13 +226,13 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 - [x] Agent documentation: index `AGENTS.md`, ADRs, Remote Compose knowledge base, history
 - [x] ktlint (Spotless, rules in `.editorconfig`, checked by `verify.sh`) + CI badge
 
-### Etap 2 — Foundations ⏳
+### Etap 2 — Foundations ✅
 - [x] Remote Compose alpha20 → alpha23 (units revised, [ADR 0004](docs/decisions/0004-units-dp-and-sp.md))
 - [x] Typed actions with parameters (`navigate` with params, `open_url`, `reload`, `track`) — T-001
 - [x] **Serializable screen model** (JSON) — one model for the DSL, JSON files, scripts and the admin panel — T-002 ([ADR 0015](docs/decisions/0015-screen-model-is-the-product.md))
-- [ ] **Per-request rendering** (T-003): routes with parameters (`movie/{id}`), locale; today screens are
-  pre-rendered once at start
-- [ ] `ETag` / `If-None-Match` (T-003)
+- [x] **Per-request rendering** with parameters (`dynamicScreen`, `/screens/movie?id=42`); static
+  screens pre-rendered and validated at start — T-003
+- [x] `ETag` / `If-None-Match` (`304`), in-memory revalidation cache in the Android SDK — T-003
 
 ### Etap 3 — iOS spike (parallel to 2–5; needs Xcode)
 - [ ] (a) Community Remote Compose engine / SwiftUI viewer plays our documents
@@ -251,7 +263,8 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 ### Etap 7 — App shells & SDKs
 - [x] Android SDK: `RemoteComposePlayer` in `AndroidView`, Ktor fetch, loading/error, action router
 - [ ] Android white-label shell: server URL + brand only, navigation/tabs from the server, deep links
-- [ ] HTTP cache, offline last-known screen, prefetch; analytics hooks (actions, visibility)
+- [ ] Disk HTTP cache, offline last-known screen, prefetch; analytics hooks (actions, visibility)
+- [ ] Locale: `Accept-Language` → `RenderContext`, localized screen texts
 - [ ] Brand tokens → document colors; light/dark via RC themed colors; native frame theming
 - [ ] iOS shell and SDK (renderer from Etap 3)
 - [ ] **Version negotiation** (T-004): client reports the RC document API level it plays (6–8

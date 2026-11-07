@@ -33,7 +33,8 @@ class JsonScreensTest {
 
     @Test
     fun `JSON files define the same screens as the DSL`() {
-        assertEquals(fromDsl.ids().sorted(), fromJson.ids().sorted())
+        // Dynamic DSL screens (echo) have no JSON form; compare the static ones.
+        assertEquals(fromDsl.all().keys.sorted(), fromJson.ids().sorted())
         fromDsl.all().values.forEach { assertEquals(it.definition, fromJson.get(it.id)!!.definition) }
     }
 

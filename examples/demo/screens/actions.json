@@ -55,6 +55,20 @@
     },
     {
       "type": "button",
+      "label": "Navigate with params",
+      "action": {
+        "type": "navigate",
+        "screen": "echo",
+        "params": {
+          "word": "zażółć gęślą jaźń"
+        }
+      }
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "button",
       "label": "Back to home",
       "action": {
         "type": "navigate",

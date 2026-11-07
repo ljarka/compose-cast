@@ -27,6 +27,7 @@ This file is the index. Keep it short (< 150 lines); details live where the tabl
 | Vision, principles, roadmap | [README → Vision, Roadmap](README.md#vision) |
 | Why something is the way it is | [docs/decisions/](docs/decisions/README.md) (ADRs) |
 | How Remote Compose actually behaves (per version) | [docs/remote-compose.md](docs/remote-compose.md) |
+| New RC release? (watch it: alpha, semantics change) | `./scripts/check-rc-release.sh`, [release notes](https://developer.android.com/jetpack/androidx/releases/compose-remote), [upgrade playbook](docs/playbooks/upgrade-remote-compose.md) |
 | What was done when | [docs/history.md](docs/history.md) |
 | A module's scope, files, decisions | `<module>/AGENTS.md` |
 
@@ -100,7 +101,6 @@ curl localhost:8080/screens/main/debug            # decoded RC document tree
 
 ## Current focus
 
-[Task queue](docs/tasks/README.md) (priority order): T-001, T-002 done → **T-003 per-request
-rendering** → T-009 Docker → T-006 data sources (design first) → T-008 local state PoC → weather
+[Task queue](docs/tasks/README.md) (priority order): T-001…T-003 done → **T-009 Docker** → T-006 data sources (design first) → T-008 local state PoC → weather
 app (Milestone 1) → T-004 version negotiation. T-005 iOS spike is
 blocked until Xcode is installed.

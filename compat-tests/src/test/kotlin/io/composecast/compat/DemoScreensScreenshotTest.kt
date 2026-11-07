@@ -18,6 +18,7 @@ import io.composecast.android.ComposeCastScreen
 import io.composecast.android.ScreenDocument
 import io.composecast.server.demoScreens
 import io.composecast.server.sdk.ImageLoader
+import io.composecast.server.sdk.RenderContext
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -54,9 +55,13 @@ class DemoScreensScreenshotTest {
     @Test
     fun actions() = capture("actions")
 
+    /** A dynamic screen, rendered from query parameters (T-003). */
+    @Test
+    fun echo() = capture("echo", mapOf("word" to "zażółć gęślą jaźń"))
+
     @OptIn(ExperimentalMaterial3Api::class)
-    private fun capture(id: String) {
-        val screen = requireNotNull(registry.get(id)) { "no demo screen '$id'" }
+    private fun capture(id: String, params: Map<String, String> = emptyMap()) {
+        val screen = requireNotNull(registry.render(id, RenderContext(params))) { "no demo screen '$id'" }
         val document = ScreenDocument.fromBytes(screen.id, screen.title, screen.document)
         compose.setContent {
             // Same frame as app-template: top app bar with the screen title + the player.

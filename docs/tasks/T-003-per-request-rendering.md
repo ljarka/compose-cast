@@ -1,6 +1,33 @@
 # T-003 — Per-request rendering, route params, ETag
 
-Status: ready · Roadmap: Etap 2 · Depends on: T-002
+Status: done · Roadmap: Etap 2 · Depends on: T-002
+
+## Outcome (2026-11-07)
+Implemented per the "Design change" section below; `./scripts/verify.sh` green.
+- Server: `dynamicScreen`, `RenderContext`, `ScreenParameterException` (→ 400), `LiveScreens`
+  (swappable registry), ETag = SHA-256 of bytes + `Cache-Control: no-cache`, 304; thread-safe
+  bounded `ImageCache` (failures cached 60 s); `HttpImageLoader` http/https only, ≤ 5 MB.
+- SDK: `getScreen(id, params)` (URL-encoded), in-memory ETag cache (LRU 32, fresh decode on 304).
+- App: back stack of `Action.Navigate` saved via `ActionCodec` strings.
+- Demo: dynamic `echo` screen + "Navigate with params" button on `actions` (golden re-recorded,
+  `echo` golden added; both looked at).
+- Tests: `DynamicScreensTest` (incl. 50 threads), `ImageCacheTest`, `RoutingTest`
+  (`testApplication`: 304, non-ASCII params, 400/404, 50 concurrent requests, registry swap).
+- Emulator: main → onboarding → actions → echo (Polish text) → "Again, louder" (`!` appended);
+  Back restores the previous echo; reload/back revalidate with `304 Not Modified`; rotation keeps
+  the back stack with params; no `FATAL EXCEPTION`.
+- Not done (moved to README Etap 7): locale in `RenderContext`.
+
+## Design change (2026-11-07, before implementation) — params are query parameters, not path patterns
+Path patterns (`movie/{id}`) would put `/` into screen ids, but ids name files (`<id>.json`,
+ADR 0011), and `ActionCodec` already carries params as a query (`navigate:movie?id=42`). So:
+- `GET /screens/{id}?k=v` — ids stay single segments; query params = `RenderContext.params`.
+- DSL: `dynamicScreen("movie") { ctx -> text(ctx.param("id")) }` (a separate function: an
+  overload of `screen` taking `(RenderContext)` would be ambiguous for `{ }` lambdas). Static
+  `screen(id) { }` and JSON screens ignore params and are pre-rendered.
+- Missing required param (`ctx.param(name)`) → `ScreenParameterException` → HTTP 400.
+- `ETag` = hash of the rendered bytes, so it covers everything rendering reads, automatically.
+Items below that mention patterns/`{path...}` are superseded by this section.
 
 ## Goal
 Render documents per request instead of once at startup, with route parameters

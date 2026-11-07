@@ -8,9 +8,9 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 |---|---|---|
 | [T-001 Typed actions](T-001-typed-actions.md) | Etap 2 | done (`4bce343`) |
 | [T-002 Serializable screen model + JSON screens](T-002-screen-model-json.md) | Etap 2 | done (`2918209`) |
-| [T-003 Per-request rendering, route params, ETag](T-003-per-request-rendering.md) | Etap 2 | ready |
-| [T-009 Backend in one command (Docker)](T-009-docker.md) | Etap 6 | queued (after T-003) |
-| [T-006 Data sources](T-006-data-sources.md) | Etap 4 | needs design detail — design it right after T-003 (critical path to Milestone 1) |
+| [T-003 Per-request rendering, route params, ETag](T-003-per-request-rendering.md) | Etap 2 | done |
+| [T-009 Backend in one command (Docker)](T-009-docker.md) | Etap 6 | ready |
+| [T-006 Data sources](T-006-data-sources.md) | Etap 4 | needs design detail — design it right after T-009 (critical path to Milestone 1) |
 | [T-008 Local state spike](T-008-local-state-spike.md) | Etap 5/10 | queued (after T-003); RC API verified, PoC remains |
 | [T-004 Version negotiation](T-004-version-negotiation.md) | Etap 7 | queued (after Milestone 1, Etap 6) — no installed apps before that; the app already sends its player version |
 | [T-005 iOS spike](T-005-ios-spike.md) | Etap 3 | blocked: needs Xcode on the dev machine |

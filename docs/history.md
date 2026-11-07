@@ -74,3 +74,10 @@ README roadmap's "Etap" numbers.
     `Headers.BRAND_ETAG` (placeholders from the initial structure). `protocol` keeps what server
     and app must share (`Action`/`ActionCodec`, `Headers`, `BrandConfig`) plus the screen model.
     Theming (README Etap 7) will design its tokens when it is implemented.
+23. **T-003 per-request rendering** ([task](tasks/T-003-per-request-rendering.md)): params as query
+    parameters (not path patterns: ids name `<id>.json`), `dynamicScreen` + `RenderContext`,
+    ETag/304 end to end (server hash of bytes, SDK in-memory revalidation), swappable `LiveScreens`,
+    thread-safe image cache with failure TTL, image URL scheme/size limits, app back stack with
+    params; demo `echo` screen. Etap 2 complete.
+24. **RC release watch**: `scripts/check-rc-release.sh` + weekly CI workflow (failed run = new RC
+    release → release notes + upgrade playbook); linked from AGENTS.md and docs/remote-compose.md.

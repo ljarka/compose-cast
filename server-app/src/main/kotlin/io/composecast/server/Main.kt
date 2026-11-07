@@ -1,6 +1,6 @@
 package io.composecast.server
 
-import io.composecast.server.sdk.ScreenRegistry
+import io.composecast.server.sdk.ScreenParameterException
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
@@ -24,19 +24,23 @@ fun main() {
     val port = System.getenv("PORT")?.toInt() ?: 8080
     // Built before the server starts: an invalid screen stops startup with a clear message.
     val registry = loadScreens(System.getenv("COMPOSECAST_DATA_DIR")?.let(Path::of))
-    embeddedServer(Netty, port = port, host = "0.0.0.0") { module(registry) }.start(wait = true)
+    embeddedServer(Netty, port = port, host = "0.0.0.0") { module(LiveScreens(registry)) }.start(wait = true)
 }
 
-fun Application.module(registry: ScreenRegistry) {
+fun Application.module(screens: LiveScreens) {
     install(CallLogging)
     install(ContentNegotiation) {
         json(Json { prettyPrint = true })
     }
     install(StatusPages) {
+        // A dynamic screen without a required query parameter: the client's fault.
+        exception<ScreenParameterException> { call, cause ->
+            call.respond(HttpStatusCode.BadRequest, mapOf("error" to cause.message))
+        }
         exception<Throwable> { call, cause ->
             call.application.environment.log.error("Unhandled error for ${call.request.local.uri}", cause)
             call.respond(HttpStatusCode.InternalServerError, mapOf("error" to (cause.message ?: "internal error")))
         }
     }
-    configureRouting(registry)
+    configureRouting(screens)
 }

@@ -12,12 +12,13 @@ Do NOT load `server-app`, `sdk-android`, or other modules unless cross-cutting.
 | File | Purpose |
 |---|---|
 | `ScreenDsl.kt` | `ScreenBuilder` (`text`, `image`, `button`, `spacer`) → `ScreenDefinition` |
-| `ScreenRegistry.kt` | `composeCast {}` builder (`screen {}`, `screen(definition)`, `screensFrom(dir)`, `brand`), `ScreenRegistry`, `RemoteScreen` (definition, document bytes) |
+| `ScreenRegistry.kt` | `composeCast {}` builder (`screen {}`, `dynamicScreen {}`, `screen(definition)`, `screensFrom(dir)`, `brand`), `ScreenRegistry` (`render(id, RenderContext)`), `RenderContext`, `ScreenParameterException`, `RemoteScreen` (definition, bytes, `etag`) |
+| `ImageCache.kt` | Thread-safe LRU (256) of fetched images; failures cached 60 s only |
 | `RemoteComposeRenderer.kt` | **Only** file using the Remote Compose creation API; `ScreenDefinition` → RC bytes |
 
 The screen model itself (`ScreenDefinition`, `Component`, `TextStyle`, `ScreenJson`, validation)
 is in `protocol/.../Screen.kt` ([ADR 0015](../docs/decisions/0015-screen-model-is-the-product.md)).
-| `ImageLoader.kt` | `ImageLoader` fun interface + `HttpImageLoader`; inject a fake one in tests |
+| `ImageLoader.kt` | `ImageLoader` fun interface + `HttpImageLoader` (http/https only, max 5 MB); inject a fake one in tests |
 
 ## Usage
 
@@ -36,7 +37,11 @@ val registry = composeCast {
 // Same model from JSON files, one <id>.json per screen (format: protocol/AGENTS.md):
 composeCast { brand(myBrand); screensFrom(Path.of("data/screens")) }
 
-registry.get("home")?.document  // ByteArray, Remote Compose document
+// Rendered per request from query params (/screens/movie?id=42); ctx.param() missing → 400:
+composeCast { dynamicScreen("movie") { ctx -> text("Movie ${ctx.param("id")}") } }
+
+registry.render("movie", RenderContext(mapOf("id" to "42"))) // static: cached doc; dynamic: fresh render
+registry.get("home")?.document  // ByteArray, pre-rendered static screens only
 registry.get("home")?.definition // ScreenDefinition; ScreenJson.encode(it) exports DSL screens to JSON
 registry.get("home")?.describe() // decoded operation tree, for debugging
 ```
@@ -56,7 +61,13 @@ file and the JSON path; a file must be named `<id>.json`.
 - Units: DP density header; sizes in dp; fonts via `sp()` expression; image height expression in
   dp wrapped in `written(...)` ([ADR 0004](../docs/decisions/0004-units-dp-and-sp.md) — re-check its
   table on every RC upgrade).
-- Screens are rendered once in `composeCast {}` (per-request rendering is planned, roadmap Etap 2).
+- Static screens (DSL `screen`, JSON) are rendered once in `composeCast {}` (validation = fail
+  fast) and ignore params; `dynamicScreen` is built, validated and rendered on every `render`.
+  Params are query parameters, ids stay single path segments (they name `<id>.json` files) — T-003.
+- `RemoteScreen.etag` = SHA-256 of the bytes (first 16 bytes, hex): covers everything rendering
+  read, so no cache key needs maintaining when `RenderContext` grows (Etap 12 targeting).
+- Rendering is thread-safe: one `RemoteComposeRenderer` per registry; `createRcBuffer` per call;
+  shared state only in `ImageCache` (verified by a 50-thread test).
 
 ## Dependencies
 

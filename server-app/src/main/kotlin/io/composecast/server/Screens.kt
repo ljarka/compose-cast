@@ -79,6 +79,19 @@ fun demoScreens(imageLoader: ImageLoader = HttpImageLoader): ScreenRegistry = co
         spacer(8)
         button("Custom", Action.Custom("hello"))
         spacer(8)
+        button("Navigate with params", Action.Navigate("echo", mapOf("word" to "zażółć gęślą jaźń")))
+        spacer(8)
         button("Back to home", Action.Navigate("main"))
+    }
+
+    // Rendered per request from its query parameters (`/screens/echo?word=…`); DSL only, so it has
+    // no JSON copy in examples/demo (JSON screens are static until data bindings, T-006).
+    dynamicScreen("echo") { ctx ->
+        val word = ctx.param("word")
+        title = "Echo"
+        text("You sent", style = "caption")
+        text(word, style = "h2")
+        spacer(8)
+        button("Again, louder", Action.Navigate("echo", mapOf("word" to "$word!")))
     }
 }
