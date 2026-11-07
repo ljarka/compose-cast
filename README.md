@@ -246,11 +246,15 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 
 ### Etap 5 — Components for real apps
 - [x] Text, Image, Button, Spacer
-- [ ] Row, Column, Box, Card, Divider; size, weight, alignment, padding; text color/lines
-- [ ] Lists and grids from data; horizontal gallery
-- [ ] Image sizing (aspect, crop, rounded); large/many images loaded by the SDK as named bitmaps
+- [ ] Row, Column, Box; size, weight, alignment, padding, background, border, rounded clip, click on anything — T-012
+- [ ] Text color/weight/align/lines/ellipsis/marquee; Icon, Divider, Card, button variants — T-013
+- [ ] Image sizing (aspect, crop, rounded) — T-013; large/many images loaded by the SDK as named bitmaps
+- [ ] Horizontal gallery, Flow (chips), grids, scroll on any container — T-014; lists from data — T-006
+- [ ] Adaptive layouts: FitBox, collapsible rows/columns, min/max sizes — T-015
+- [ ] Accessibility: content descriptions, roles — T-016
+- [ ] Canvas: progress bar/ring, line/bar charts, rating, gradients — T-018
+- [ ] Long-press, double-tap, ripple, haptics; alpha/scale/rotation/offset/z-order — T-019
 - [ ] Tabs / bottom navigation defined by the server (app structure, not only screens)
-- [ ] Accessibility: content descriptions, roles
 
 ### Etap 6 — Milestone 1: Weather app on Android
 - [ ] Weather app on [Open-Meteo](https://open-meteo.com) (no API key): current conditions,
@@ -306,9 +310,11 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 - [ ] Same server, both Android and iOS (Etap 3); screenshots of both in this README
 
 ### Etap 10 — Interactivity (DivKit core)
-- [ ] Host → document variables (RC named variables); local state (`StateLayout`): toggles, tabs
-- [ ] Text input / search; expressions (conditional visibility, computed text)
-- [ ] Templates: reusable components; RC macros to shrink documents
+- [ ] Host → document variables (RC named variables); local state (`StateLayout`): toggles, tabs — T-008, T-017
+- [ ] Device-side values: live clock, formatted numbers, light/dark colors, conditions — T-020
+- [ ] Text input / search (native views via RC `Custom`) — T-021; expressions (conditional visibility, computed text) — T-017, T-020
+- [ ] Templates: reusable components; RC macros to shrink documents — T-022
+- [ ] Drag/swipe, sensors, particles, sound — T-022
 
 ### Etap 11 — Release 0.1.0-alpha
 - [ ] Docs: quick start, components reference, data sources, action protocol, compatibility policy

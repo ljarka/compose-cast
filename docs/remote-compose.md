@@ -74,6 +74,37 @@ JSON form of RC operations (resources, expressions, modifiers); not a replacemen
 | `RemoteCanvas` | Custom drawing | Records draw commands; runs on player host |
 | `RemoteText` | Text | Accepts `RemoteString` for dynamic text |
 
+### Procedural catalog — everything `RcScope` offers (verified in alpha23 sources, 2026-11-07)
+
+Source: `remote-creation-core` `dsl/RcScope.kt`, `dsl/Modifier.kt`, `dsl/RcTypes.kt`; layout
+managers in `remote-core/operations/layout/managers`, modifiers in `.../layout/modifiers`.
+compose-cast tasks that expose each group: T-012…T-021 ([queue](tasks/README.md)).
+
+| Group | API | Task |
+|---|---|---|
+| Containers | `Box(h, v)`, `Column(h, vArrangement)`, `Row(hArrangement, v)`, `Spacer` | T-012 |
+| Flow | `Flow(h, v, maxItemsInEachRow, maxLines)` (wrapping row; `weight` in scope) | T-014 |
+| Adaptive | `FitBox`, `CollapsibleRow/Column` + `horizontal/verticalCollapsiblePriority` | T-015 |
+| State | `StateLayout(stateIndex)`, `remoteInteger/Bool/Float/NamedX`, `Modifier.visibility(RcInteger)`, `animationSpec`, `defineVisibilityAnimation` | T-008, T-017 |
+| Text | `Text(text \| RcText, color, fontSize, fontWeight, textAlign, overflow: Clip/Visible/Ellipsis/StartEllipsis/MiddleEllipsis, maxLines)`, `remoteTextStyle`, `Modifier.marquee`, `alignByBaseline` | T-013 |
+| Image | `Image(image, contentDescription, contentScale: Fit/Crop/FillBounds/FillWidth/FillHeight/Inside/None, alpha)`, `Icon` (= Image, Fit) | T-013 |
+| Size / layout modifiers | `padding`, `size`, `width/height` (Float, RcFloat, dp), `fillMaxWidth/Height/Size(fraction)`, `fillParentMax*`, `wrapContent*`, `widthIn/heightIn`, `requiredWidthIn/HeightIn`, `weight` (Row/Column/Flow scopes), `offset`, `zIndex` | T-012, T-015, T-019 |
+| Decoration | `background(color \| RcColor)`, `clip(Shape)` (`RectShape`, `RoundedRectShape`, `CircleShape`), `border(width, corner, color, RcBorderShape: Rectangle/Circle/RoundedRectangle)`, `dynamicBorder` | T-012, T-013 |
+| Scroll | `verticalScroll(position)`, `horizontalScroll()` | T-014 |
+| Input | `onClick`, `onLongClick`, `onDoubleClick`, `onTouchDown/Up/Cancel`, `ripple()`, `performHaptic(RcHaptic)`, `addTouch` | T-019 |
+| Actions in a click | `hostAction(name)`, `setValue(var, value \| expression)`, `runAction` | done / T-017 |
+| Effects | `graphicsLayer { scaleX/Y, alpha, rotationZ, translationX/Y }`, `drawWithContent` | T-019 |
+| Accessibility | `semantics { contentDescription, role, text, stateDescription, enabled, clickable }` | T-016 |
+| Canvas | `Canvas { drawRect/Circle/Line/Arc/Sector/Oval/RoundRect/Path/TweenPath/TextAnchored/TextOnPath/TextOnCircle/Bitmap/ScaledBitmap }`, paint, shaders (gradients), paths (`remotePath`, `remoteXYPath`, `remotePolarPath`), `save/restore/scale/skew` | T-018 |
+| Dynamic values | time (`hour()`, `minutes()`, `dayOfMonth()`, `timeAttribute`), `createTextFromFloat`/`format`, `textMerge`, `textLookup`, `windowWidth/Height`, `apiLevel`, `ifTrue`/`conditionalOperations`, `remoteThemedColor(light, dark)`, named colors/floats/texts (host-settable) | T-020 |
+| Native views | `Custom(config, properties)` layout; Android player hosts it via `RemoteComposePlayer.setCustomSupport(AndroidCustomContext)` (`remote-player-view`) | T-021 |
+| Exotic | sensors (accelerometer, gyroscope, magnetometer, light), particles, sound (`addSound`, `playSound`), meshes, bitmap fonts, `defineMacro` (templates), `wakeIn` | T-022 |
+
+**There is no text-input operation** in alpha23 (no text field in `Rc.java`/`RcTypes.kt`; only
+keyboard haptics) — text input/search needs a native view through `Custom` (T-021) or a
+host-side overlay. No lazy lists: `for` loops run at creation time, which is fine for us because
+documents are rendered per request on the server.
+
 ### State API (symbolic references, not in-memory values)
 
 ```kotlin

@@ -18,7 +18,18 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-006 Data sources](tasks/T-006-data-sources.md) | Etap 4 | needs design detail — design it right after T-009 (critical path to Milestone 1) |
 | [T-008 Local state spike](tasks/T-008-local-state-spike.md) | Etap 5/10 | queued (after T-006); RC API verified, PoC remains |
 | [T-011 `app-template` configurable without code](tasks/T-011-app-template-config.md) | Etap 7 | queued (after T-008, before Milestone 1) |
+| [T-012 Layout containers and common modifiers](tasks/T-012-layout-containers.md) | Etap 5 | queued (after T-011) — the weather app needs rows/columns |
+| [T-013 Text/image options, Icon, Divider, Card, button variants](tasks/T-013-text-image-styling.md) | Etap 5 | queued (after T-012) |
 | [T-004 Version negotiation](tasks/T-004-version-negotiation.md) | Etap 7 | queued (after Milestone 1, Etap 6) — no installed apps before that; the app already sends its player version |
+| [T-014 Scrolling, Flow, galleries, grids](tasks/T-014-scroll-flow-gallery.md) | Etap 5 | queued (after T-004) |
+| [T-015 Adaptive layouts (FitBox, collapsible)](tasks/T-015-adaptive-layouts.md) | Etap 5 | queued (after T-014) |
+| [T-016 Accessibility semantics](tasks/T-016-accessibility.md) | Etap 5 | queued (after T-015) |
+| [T-018 Canvas: progress, charts, gradients](tasks/T-018-canvas-charts.md) | Etap 5 | queued (after T-016) |
+| [T-019 Gestures and visual effects](tasks/T-019-gestures-effects.md) | Etap 5 | queued (after T-018) |
+| [T-017 Stateful components (tabs, toggles, visibility)](tasks/T-017-stateful-components.md) | Etap 10 | queued (after T-019) |
+| [T-020 Dynamic values (clock, light/dark, conditions)](tasks/T-020-dynamic-values.md) | Etap 7/10 | queued (after T-017) |
+| [T-021 Native components via RC `Custom` (text input)](tasks/T-021-native-components.md) | Etap 10 | needs design detail (spike first) |
+| [T-022 Advanced RC features (templates, drag, sensors)](tasks/T-022-advanced-rc-features.md) | Etap 10 | needs design detail (pick by real use case) |
 | [T-005 iOS spike](tasks/T-005-ios-spike.md) | Etap 3 | blocked: needs Xcode on the dev machine |
 | [T-007 Admin panel](tasks/T-007-admin-panel.md) | Etap 8 | needs design detail (storage/auth decided: ADR 0016; open review notes inside) |
 | [T-010 White-label app export](tasks/T-010-app-export.md) | Etap 9 | needs design detail (after T-007, T-011; SDK distribution decision) |
@@ -32,18 +43,20 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | Etap 2 — Foundations ✅ | 5/5 |
 | Etap 3 — iOS spike (parallel to 2–5; needs Xcode) | 0/3 |
 | Etap 4 — Data sources (APIs) — ADR 0008 | 0/3 |
-| Etap 5 — Components for real apps | 1/6 |
+| Etap 5 — Components for real apps | 1/10 |
 | Etap 6 — Milestone 1: Weather app on Android | 1/4 |
 | Etap 7 — App shells & SDKs | 1/8 |
 | Etap 8 — Admin panel MVP | 0/6 |
 | Etap 9 — White-label app export + TV shows milestone | 0/7 |
-| Etap 10 — Interactivity (DivKit core) | 0/3 |
+| Etap 10 — Interactivity (DivKit core) | 0/5 |
 | Etap 11 — Release 0.1.0-alpha | 0/2 |
 | Etap 12 — Experimentation & feature flags | 0/7 |
 
 ## Waiting for a decision or design
 
 - [T-006 Data sources](tasks/T-006-data-sources.md): needs design detail — design it right after T-009 (critical path to Milestone 1)
+- [T-021 Native components via RC `Custom` (text input)](tasks/T-021-native-components.md): needs design detail (spike first)
+- [T-022 Advanced RC features (templates, drag, sensors)](tasks/T-022-advanced-rc-features.md): needs design detail (pick by real use case)
 - [T-005 iOS spike](tasks/T-005-ios-spike.md): blocked: needs Xcode on the dev machine
 - [T-007 Admin panel](tasks/T-007-admin-panel.md): needs design detail (storage/auth decided: ADR 0016; open review notes inside)
 - [T-010 White-label app export](tasks/T-010-app-export.md): needs design detail (after T-007, T-011; SDK distribution decision)
@@ -52,9 +65,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- Component coverage plan
 - Review of STATUS.md / T-010 / Etap 8–9
 - RC release watch
 - T-003 per-request rendering
 - `protocol` cleanup
 - ktlint
-- T-008 answered from sources + queue reprioritized

@@ -102,6 +102,6 @@ curl localhost:8080/screens/main/debug            # decoded RC document tree
 
 ## Current focus
 
-[Task queue](docs/tasks/README.md) (priority order): T-001…T-003 done → **T-009 Docker** → T-006 data sources (design first) → T-008 local state PoC → weather
-app (Milestone 1) → T-004 version negotiation. T-005 iOS spike is
+[Task queue](docs/tasks/README.md) (priority order): T-001…T-003 done → **T-009 Docker** → T-006 data sources (design first) → T-008 local state PoC → T-011 →
+T-012/T-013 layouts and styling → weather app (Milestone 1) → T-004 version negotiation. T-005 iOS spike is
 blocked until Xcode is installed.

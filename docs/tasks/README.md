@@ -13,12 +13,25 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-006 Data sources](T-006-data-sources.md) | Etap 4 | needs design detail — design it right after T-009 (critical path to Milestone 1) |
 | [T-008 Local state spike](T-008-local-state-spike.md) | Etap 5/10 | queued (after T-006); RC API verified, PoC remains |
 | [T-011 `app-template` configurable without code](T-011-app-template-config.md) | Etap 7 | queued (after T-008, before Milestone 1) |
+| [T-012 Layout containers and common modifiers](T-012-layout-containers.md) | Etap 5 | queued (after T-011) — the weather app needs rows/columns |
+| [T-013 Text/image options, Icon, Divider, Card, button variants](T-013-text-image-styling.md) | Etap 5 | queued (after T-012) |
 | [T-004 Version negotiation](T-004-version-negotiation.md) | Etap 7 | queued (after Milestone 1, Etap 6) — no installed apps before that; the app already sends its player version |
+| [T-014 Scrolling, Flow, galleries, grids](T-014-scroll-flow-gallery.md) | Etap 5 | queued (after T-004) |
+| [T-015 Adaptive layouts (FitBox, collapsible)](T-015-adaptive-layouts.md) | Etap 5 | queued (after T-014) |
+| [T-016 Accessibility semantics](T-016-accessibility.md) | Etap 5 | queued (after T-015) |
+| [T-018 Canvas: progress, charts, gradients](T-018-canvas-charts.md) | Etap 5 | queued (after T-016) |
+| [T-019 Gestures and visual effects](T-019-gestures-effects.md) | Etap 5 | queued (after T-018) |
+| [T-017 Stateful components (tabs, toggles, visibility)](T-017-stateful-components.md) | Etap 10 | queued (after T-019) |
+| [T-020 Dynamic values (clock, light/dark, conditions)](T-020-dynamic-values.md) | Etap 7/10 | queued (after T-017) |
+| [T-021 Native components via RC `Custom` (text input)](T-021-native-components.md) | Etap 10 | needs design detail (spike first) |
+| [T-022 Advanced RC features (templates, drag, sensors)](T-022-advanced-rc-features.md) | Etap 10 | needs design detail (pick by real use case) |
 | [T-005 iOS spike](T-005-ios-spike.md) | Etap 3 | blocked: needs Xcode on the dev machine |
 | [T-007 Admin panel](T-007-admin-panel.md) | Etap 8 | needs design detail (storage/auth decided: ADR 0016; open review notes inside) |
 | [T-010 White-label app export](T-010-app-export.md) | Etap 9 | needs design detail (after T-007, T-011; SDK distribution decision) |
 
 Rows are in priority order (owner, 2026-11-07): fastest path to Milestone 1 (weather app).
+T-012…T-022 (owner, 2026-11-07: support every component Remote Compose can express) cover the
+catalog in [docs/remote-compose.md → Procedural catalog](../remote-compose.md).
 
 Statuses: `ready` (start now; only one task at a time) · `queued (after T-xxx)` · `in progress` ·
 `blocked: reason` · `needs design detail` · `done` (+ commit hash once committed).
