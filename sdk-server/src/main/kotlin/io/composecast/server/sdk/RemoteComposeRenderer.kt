@@ -78,13 +78,14 @@ internal class RemoteComposeRenderer(
                 val image = images.getOrPut(node.url) { fetch(node.url) }
                 if (image != null) {
                     // Full width, keeping aspect ratio, but never upscaled past the natural size
-                    // (pixels treated as dp). Height is an expression evaluated on the device.
+                    // (pixels treated as dp). Height is a device-side expression in dp
+                    // (the player multiplies heights by density in DP mode).
                     val ratio = image.height.toFloat() / image.width
-                    val fullWidthHeight = (windowWidth() - dp(2 * SCREEN_PADDING)) * ratio
+                    val contentWidthDp = windowWidth() / density() - 2 * SCREEN_PADDING
                     Image(
                         remoteNamedBitmap("$IMAGE_NAME_PREFIX${node.url}", image),
                         modifier = Modifier.fillMaxWidth()
-                            .height(written(min(fullWidthHeight, dp(image.height.toFloat())))),
+                            .height(written(min(contentWidthDp * ratio, image.height.toFloat()))),
                         contentDescription = node.alt.ifBlank { null },
                         contentScale = RcContentScale.Fit,
                     )
@@ -107,23 +108,23 @@ internal class RemoteComposeRenderer(
                 Text(node.label, color = ON_PRIMARY, fontSize = sp(16), fontWeight = RcFontWeight.W500)
             }
 
-            is ScreenNode.Spacer -> Spacer(Modifier.height(written(dp(node.height.toFloat()))))
+            is ScreenNode.Spacer -> Spacer(Modifier.height(node.height.toFloat()))
         }
     }
 
     /*
-     * Units. DENSITY_BEHAVIOR_DP makes the player scale padding, borders and clip radii, but not
-     * font sizes, width/height or bitmaps (alpha20). Those are emitted as device-side expressions.
+     * Units (alpha23). With DENSITY_BEHAVIOR_DP the player multiplies padding, borders, clip radii
+     * and width/height (constants *and* expressions) by density, so sizes are written in dp.
+     * Font sizes: constants are multiplied by density only (no font scale), expressions not at all
+     * -> fonts use the sp() expression below to honor the user's font scale.
      */
 
     /**
-     * Writes [value]'s expression to the document now. Workaround for alpha20: the height(RcFloat)
-     * modifier reads the expression id without writing it first, producing `Height(EXACT, 0.0)`.
+     * Writes [value]'s expression to the document now. Workaround (still needed in alpha23): the
+     * height(RcFloat) modifier reads the expression id without writing it, giving
+     * `Height(EXACT, 0.0)`.
      */
     private fun written(value: RcFloat): RcFloat = value.also { it.toFloat() }
-
-    /** [value] dp in pixels: `density * value`. */
-    private fun RcScope.dp(value: Float): RcFloat = density() * value
 
     /**
      * [value] sp as a font size. The player sets FONT_SIZE to 14sp in pixels (density and the
