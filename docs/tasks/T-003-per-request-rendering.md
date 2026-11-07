@@ -1,6 +1,6 @@
 # T-003 — Per-request rendering, route params, ETag
 
-Status: done · Roadmap: Etap 2 · Depends on: T-002
+Status: done (`311cd75`) · Roadmap: Etap 2 · Depends on: T-002
 
 ## Outcome (2026-11-07)
 Implemented per the "Design change" section below; `./scripts/verify.sh` green.

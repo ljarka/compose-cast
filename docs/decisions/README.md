@@ -16,11 +16,12 @@ one (never silently contradict an accepted ADR).
 | [0008](0008-server-side-data-sources.md) | External APIs are bound on the server (data sources) | Proposed |
 | [0009](0009-documentation-for-agents.md) | Documentation structure for AI agents | Accepted |
 | [0010](0010-executable-rules-verify-tasks.md) | Executable rules, one verify command, playbooks, task queue | Accepted |
-| [0011](0011-admin-storage-format.md) | Admin panel: JSON files on disk as storage format | Accepted |
+| [0011](0011-admin-storage-format.md) | Admin panel: JSON files on disk as storage format | Superseded by 0016 |
 | [0012](0012-admin-ui-technology.md) | Admin panel: Freemarker + HTMX web UI | Accepted |
 | [0013](0013-admin-preview.md) | Admin panel: draft preview via in-memory screen + QR code | Accepted |
-| [0014](0014-admin-change-history.md) | Admin panel: append-only JSON snapshot log for change history | Accepted |
+| [0014](0014-admin-change-history.md) | Admin panel: append-only JSON snapshot log for change history | Superseded by 0016 (rollback semantics kept) |
 | [0015](0015-screen-model-is-the-product.md) | The serializable screen model (`ScreenDefinition`) is the product | Accepted |
+| [0016](0016-admin-storage-sqlite.md) | Admin panel storage: SQLite, accounts, two deployment modes | Accepted |
 
 ## Template
 

@@ -23,6 +23,7 @@ This file is the index. Keep it short (< 150 lines); details live where the tabl
 | Need | Read |
 |---|---|
 | **What to do next, exactly** | [docs/tasks/](docs/tasks/README.md) (task queue) |
+| One-page overview (generated, never edit) | [docs/STATUS.md](docs/STATUS.md) — `./scripts/gen-status.sh` |
 | How to do recurring things (add component, upgrades, emulator) | [docs/playbooks/](docs/playbooks/README.md) |
 | Vision, principles, roadmap | [README → Vision, Roadmap](README.md#vision) |
 | Why something is the way it is | [docs/decisions/](docs/decisions/README.md) (ADRs) |
@@ -68,7 +69,7 @@ Do not load the whole project.
 - [ ] Module `AGENTS.md` updated (files, decisions) for every module touched.
 - [ ] New decision → ADR; new RC fact → `docs/remote-compose.md`; entry in `docs/history.md`.
 - [ ] README roadmap boxes ticked / adjusted; README screenshots current.
-- [ ] Task queue updated: task `done` (add the commit hash once the owner had it committed), next
+- [ ] Task queue updated (then `./scripts/gen-status.sh`): task `done` (add the commit hash once the owner had it committed), next
   task specified enough to start.
 
 ## Environment

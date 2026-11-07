@@ -262,7 +262,9 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 
 ### Etap 7 — App shells & SDKs
 - [x] Android SDK: `RemoteComposePlayer` in `AndroidView`, Ktor fetch, loading/error, action router
-- [ ] Android white-label shell: server URL + brand only, navigation/tabs from the server, deep links
+- [ ] `app-template` configured by one `compose-cast.properties` (name, `applicationId`, server URL,
+  frame colors, icon; release = https only) — T-011
+- [ ] Navigation/tabs from the server, deep links
 - [ ] Disk HTTP cache, offline last-known screen, prefetch; analytics hooks (actions, visibility)
 - [ ] Locale: `Accept-Language` → `RenderContext`, localized screen texts
 - [ ] Brand tokens → document colors; light/dark via RC themed colors; native frame theming
@@ -275,13 +277,13 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 > **Deployment model:** a user buys a VPS, deploys compose-cast, configures their app in the admin
 > panel, and publishes a branded Android app to Google Play. One server = one product.
 
-- [ ] Ktor-served web UI; SQLite storage (Exposed) — one row per screen, with draft/live status and
-  full history
+- [ ] Ktor-served web UI; SQLite storage (Exposed) — one row per screen (canonical screen JSON),
+  draft/live status, full history; `<id>.json` import/export ([ADR 0016](docs/decisions/0016-admin-storage-sqlite.md))
 - [ ] User accounts (email + bcrypt password), roles: `admin` / `editor` / `viewer`; session cookie;
-  no ADMIN_PASSWORD env-var approach
+  first admin from `COMPOSECAST_ADMIN_EMAIL`/`_PASSWORD` env vars (no shared `ADMIN_PASSWORD`)
 - [ ] Component palette + property editor; data-source editor (Etap 4 bindings)
-- [ ] Preview in the browser (community TypeScript RC player or server-rendered PNG) and on a device
-  via WebSocket push
+- [ ] Preview on a device: temporary `__preview` screen + QR code ([ADR 0013](docs/decisions/0013-admin-preview.md));
+  in-browser RC player later, if one matures
 - [ ] Publish (screen goes live); change history per screen (who published, when); one-click rollback
 - [ ] **App Settings page:** app name, `applicationId`, server URL, `BrandConfig` (primary colour,
   background colour, logo upload)
@@ -289,12 +291,13 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 ### Etap 9 — White-label app export + TV shows milestone
 
 > **App export:** user fills in App Settings, clicks “Export Android project”. The server
-> generates a configured ZIP of `app-template` (SERVER\_URL, BrandConfig, app name, applicationId,
-> launcher icon from the uploaded logo). User unzips, builds in Android Studio, submits to
+> generates a configured ZIP of `app-template` (server URL, app name, applicationId, frame colors,
+> launcher icon from the uploaded logo — screen colors come from the server's `BrandConfig`). User unzips, builds in Android Studio, submits to
 > Google Play. **No APK is generated server-side** — only a ready-to-build Gradle project.
 
-- [ ] `app-template` fully configurable via `compose-cast.properties` (SERVER\_URL, app name,
-  applicationId, BrandConfig) — no hardcoded values
+- [ ] Export writes `compose-cast.properties` (T-011) from App Settings — T-010
+- [ ] SDK distribution for exported apps: publish `sdk-android` (Etap 11) or vendor it into the export (T-010 review)
+- [ ] HTTPS for the VPS: reverse proxy with automatic certificates in `docker-compose.yml` (store builds are https-only)
 - [ ] Admin panel “Export project” endpoint: generates a ZIP of the configured template
 - [ ] **AI brand setup (optional):** user describes their brand in a text field (“dark blue,
   minimalist, fintech”); AI generates a `BrandConfig` colour palette suggestion

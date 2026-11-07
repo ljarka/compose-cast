@@ -1,6 +1,6 @@
 # 0014 — Admin panel: change history and rollback
 
-- Status: Accepted
+- Status: Superseded by [0016](0016-admin-storage-sqlite.md) (history moves to a `screen_history` table; publish/rollback semantics and `COMPOSECAST_HISTORY_LIMIT` kept)
 - Date: 2026-11-07
 
 ## Context

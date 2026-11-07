@@ -1,6 +1,6 @@
 # T-008 — Spike: local state in procedural RC API
 
-Status: queued (after T-003) · Roadmap: Etap 5 / Etap 10 · Depends on: none (independent spike)
+Status: queued (after T-006) · Roadmap: Etap 5 / Etap 10 · Depends on: none (independent spike)
 
 ## Research result (2026-11-07) — questions 1–4 answered from sources
 **Yes, accessible.** The procedural `RcScope` DSL in `remote-creation-core` alpha23 has mutable

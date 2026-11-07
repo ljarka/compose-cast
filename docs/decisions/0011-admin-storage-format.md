@@ -1,6 +1,6 @@
 # 0011 — Admin panel: storage format
 
-- Status: Accepted
+- Status: Superseded by [0016](0016-admin-storage-sqlite.md) (the `<id>.json` file format and data-dir layout remain as the *files* deployment mode and import/export)
 - Date: 2026-11-07
 
 > Review 2026-11-07: the "metadata, draft/live status" inside `<id>.json` conflicts with ADRs

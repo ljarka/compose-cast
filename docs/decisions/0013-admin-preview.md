@@ -1,6 +1,6 @@
 # 0013 — Admin panel: preview strategy
 
-- Status: Accepted
+- Status: Accepted (auth in the examples below: `ADMIN_PASSWORD` is replaced by accounts, [0016](0016-admin-storage-sqlite.md))
 - Date: 2026-11-07
 
 ## Context

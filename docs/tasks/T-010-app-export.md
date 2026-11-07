@@ -1,6 +1,22 @@
 # T-010 — White-label app export (setup wizard)
 
-Status: queued (after T-007) · Roadmap: Etap 9 · Depends on: T-007 (admin panel + App Settings)
+Status: needs design detail (after T-007) · Roadmap: Etap 9 · Depends on: T-007 (admin panel + App Settings), T-011 (`compose-cast.properties`), SDK distribution (below)
+
+## Review (2026-11-07) — fix before starting
+1. **The exported ZIP cannot build as described.** `app-template` depends on the project modules
+   `:sdk-android` and `:protocol` (and the root build/version catalog). A ZIP of `app-template`
+   alone has none of them. Decide first: (a) publish the SDKs (Maven Central/JitPack, README Etap 11)
+   and make the exported project depend on `io.composecast:sdk-android:<version>`, or (b) export a
+   standalone Gradle project that vendors `sdk-android` + `protocol` sources, the version catalog
+   and the Gradle wrapper. (b) works without publishing infra but ships SDK sources in every app;
+   (a) is the long-term answer. The server image must contain the template either way (T-009).
+2. **Brand colors are not app config.** Screen content (buttons…) is colored by the server from its
+   `BrandConfig`; the app only needs native frame colors (T-011). Removed the step that made
+   `ScreenRegistry` (server-side) read `BuildConfig`, and `ComposeCastScreen` (SDK, has no server URL).
+3. **HTTPS:** a store build only talks `https://` (T-011 enforces it), so the VPS needs TLS — added
+   to README Etap 9 (reverse proxy with automatic certificates in `docker-compose.yml`).
+4. Step 1 (externalise `app-template` values) moved to **T-011**; this task writes that file.
+5. Auth is accounts + session (ADR 0016), not `ADMIN_PASSWORD`.
 
 ## Goal
 
@@ -53,7 +69,7 @@ POST /admin/api/app/export
 ```
 
 Server-side:
-1. Read App Settings from DB (name, applicationId, serverUrl, BrandConfig).
+1. Read App Settings from DB (name, applicationId, serverUrl, frame colors, logo).
 2. Load `app-template` from the server's classpath resources or a bundled directory.
 3. Substitute values into `compose-cast.properties`.
 4. If logo uploaded: include the PNG in `res/drawable/app_logo.png`; replace `ic_launcher` PNGs
@@ -76,13 +92,12 @@ A text field: "Describe your brand in a few words (e.g. dark blue, minimalist, f
 On submit, calls the configured LLM API (Claude via OpenClaw or similar) to suggest a BrandConfig.
 Result shown as a colour palette preview; user can accept or adjust.
 
-This is optional for the first release of T-009. Add after the basic export works.
+This is optional for the first release of T-010 (needs an LLM API key configured on the server). Add after the basic export works.
 
 ## Steps (files to touch)
 
-1. `app-template`: externalise all hardcoded values into `compose-cast.properties`; update
-   `build.gradle.kts` to read them; update `ComposeCastScreen.kt` / `MainActivity.kt` to use
-   `BuildConfig.SERVER_URL`; `ScreenRegistry` reads `BrandConfig` from `BuildConfig` values.
+1. (Done by T-011: `app-template` reads `compose-cast.properties`.) Decide SDK distribution (review
+   item 1) and package the template into the server image.
 2. `server-app` (or `admin-server` from T-007): `AppSettings` table (Exposed, single-row),
    `AppSettingsRepository`, REST endpoint `GET/PUT /admin/api/app/settings`.
 3. `admin-server` (T-007): "App Settings" page in the admin UI (Freemarker form).
@@ -93,8 +108,8 @@ This is optional for the first release of T-009. Add after the basic export work
 ## Acceptance criteria
 
 - `POST /admin/api/app/export` returns a valid ZIP.
-- Unzipping and running `./gradlew :app-template:assembleDebug` on the ZIP succeeds without
-  editing any file.
+- Unzipping and running `./gradlew assembleRelease` in the unzipped project succeeds without
+  editing any file (signing config aside); the exported server URL is `https://`.
 - The built APK connects to the SERVER_URL from App Settings (verify with Android Studio Network
   Inspector).
 - BrandConfig colors are applied (primary button color matches App Settings).
@@ -104,7 +119,7 @@ This is optional for the first release of T-009. Add after the basic export work
 
 ```bash
 # Export the ZIP
-curl -u admin:$ADMIN_PASSWORD -X POST http://localhost:8080/admin/api/app/export -o app.zip
+curl -b cookies.txt -X POST http://localhost:8080/admin/api/app/export -o app.zip   # logged-in admin
 
 # Unzip and build
 mkdir -p /tmp/app-export && unzip app.zip -d /tmp/app-export
@@ -114,7 +129,6 @@ cd /tmp/app-export && ./gradlew assembleDebug   # must succeed
 ## Docs to update
 
 - `README.md` — tick Etap 9 checkboxes
-- `docs/STATUS.md` — update task statuses
 - `docs/tasks/README.md` — mark done
 - `docs/history.md` — entry for this task
 - `app-template/AGENTS.md` — note that values come from compose-cast.properties

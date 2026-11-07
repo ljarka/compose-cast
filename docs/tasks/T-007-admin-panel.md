@@ -34,8 +34,17 @@ Admin UI (browser)
 Storage (TBD by ADR 0011)
   → RemoteComposeWriter (via sdk-server) → cached .rc bytes → GET /screens/{id}
 
-Auth: HTTP Basic, password from ADMIN_PASSWORD env var
+Auth: user accounts + session cookie (ADR 0016)
 ```
+
+## Storage and auth decided (2026-11-07, owner → [ADR 0016](../decisions/0016-admin-storage-sqlite.md))
+SQLite (Exposed) in `$COMPOSECAST_DATA_DIR/compose-cast.db`; screens stored as canonical
+`ScreenJson` text + draft/live status; `screen_history` table for rollback; user accounts (email +
+bcrypt, roles `admin`/`editor`/`viewer`, session cookie) — **no `ADMIN_PASSWORD`**; first admin from
+`COMPOSECAST_ADMIN_EMAIL`/`COMPOSECAST_ADMIN_PASSWORD`; global App Settings (single row, logo BLOB)
+are part of this task (prerequisite of T-010). Wherever this file or ADRs 0011/0013/0014 say
+JSON files on disk, HTTP Basic or `ADMIN_PASSWORD`, ADR 0016 wins. Review notes 1 and 3 below are
+resolved by it (file content / snapshot names no longer apply); 2, 4, 5, 6 still stand.
 
 ## Review notes (2026-11-07) — reconcile before detailing the steps
 
@@ -77,13 +86,14 @@ ADRs 0011–0014 were written before T-002 existed. Against the implemented mode
 - A new screen created in the admin panel appears on `GET /screens/{id}` as a valid `.rc` document.
 - An existing screen can be edited and published; previous version can be rolled back.
 - Preview shows the screen (browser or device) before publishing.
-- `POST /admin/api/screens` without `ADMIN_PASSWORD` returns 401.
+- `POST /admin/api/screens` without a session returns 401; a `viewer` gets 403.
 - `./scripts/verify.sh` green.
 
 ## Verification
 
 ```bash
-curl -u admin:$ADMIN_PASSWORD -X POST http://localhost:8080/admin/api/screens \
+# log in first (cookie jar), then:
+curl -b cookies.txt -X POST http://localhost:8080/admin/api/screens \
   -H 'Content-Type: application/json' \
   -d '{"id":"test","title":"Test","components":[]}'
 curl http://localhost:8080/screens/test | xxd | head   # should be .rc binary
