@@ -11,9 +11,12 @@ Do NOT load `server-app`, `sdk-android`, or other modules unless cross-cutting.
 
 | File | Purpose |
 |---|---|
-| `ScreenDsl.kt` | `ScreenBuilder` (`text`, `image`, `button`, `spacer`), `TextStyle`, internal `ScreenNode` |
-| `ScreenRegistry.kt` | `composeCast {}` builder, `ScreenRegistry`, `RemoteScreen` (id, title, document bytes) |
-| `RemoteComposeRenderer.kt` | **Only** file using the Remote Compose creation API; `ScreenNode` → RC bytes |
+| `ScreenDsl.kt` | `ScreenBuilder` (`text`, `image`, `button`, `spacer`) → `ScreenDefinition` |
+| `ScreenRegistry.kt` | `composeCast {}` builder (`screen {}`, `screen(definition)`, `screensFrom(dir)`, `brand`), `ScreenRegistry`, `RemoteScreen` (definition, document bytes) |
+| `RemoteComposeRenderer.kt` | **Only** file using the Remote Compose creation API; `ScreenDefinition` → RC bytes |
+
+The screen model itself (`ScreenDefinition`, `Component`, `TextStyle`, `ScreenJson`, validation)
+is in `protocol/.../Screen.kt` ([ADR 0015](../docs/decisions/0015-screen-model-is-the-product.md)).
 | `ImageLoader.kt` | `ImageLoader` fun interface + `HttpImageLoader`; inject a fake one in tests |
 
 ## Usage
@@ -29,12 +32,20 @@ val registry = composeCast {
         button("Docs", action = "open_url:https://example.com")     // wire form, validated at build
     }
 }
+
+// Same model from JSON files, one <id>.json per screen (format: protocol/AGENTS.md):
+composeCast { brand(myBrand); screensFrom(Path.of("data/screens")) }
+
 registry.get("home")?.document  // ByteArray, Remote Compose document
+registry.get("home")?.definition // ScreenDefinition; ScreenJson.encode(it) exports DSL screens to JSON
 registry.get("home")?.describe() // decoded operation tree, for debugging
 ```
 
-Screens are rendered once in `composeCast {}` (after the brand is known). Invalid input
-(unknown text style, unknown action type, duplicate id, bad color) fails at build time.
+Screens are rendered once in `composeCast {}` (after the brand is known). Invalid input fails at
+build time: DSL parsing (unknown text style or wire-form action) in `ScreenBuilder`, content
+(`ScreenDefinition.validate()`: negative spacer, action that cannot reach the app or > 4000 chars,
+blank id) when the screen is added, duplicate id / bad color in the registry. JSON errors name the
+file and the JSON path; a file must be named `<id>.json`.
 
 ## Decisions
 
@@ -49,7 +60,7 @@ Screens are rendered once in `composeCast {}` (after the brand is known). Invali
 
 ## Dependencies
 
-- `:protocol` (api) — BrandConfig, Actions
+- `:protocol` (api) — screen model, `Action`, `BrandConfig`
 - `remote-creation-core`, `remote-creation-jvm`, `remote-core` (implementation)
 
 ## Test

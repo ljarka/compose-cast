@@ -43,3 +43,8 @@ README roadmap's "Etap" numbers.
 16. **T-001 typed actions** ([task](tasks/T-001-typed-actions.md)): `Action` + `ActionCodec` in
     `protocol`, DSL/renderer/SDK/app migrated, demo `actions` screen + golden, Android client
     logging fixed (SLF4J had no binding).
+17. **T-002 screen model** ([task](tasks/T-002-screen-model-json.md),
+    [ADR 0015](decisions/0015-screen-model-is-the-product.md)): `ScreenDefinition`/`Component` +
+    `ScreenJson` + validation in `protocol` (not `sdk-server`, per ADR 0011); DSL builds it,
+    renderer renders it, `screensFrom(dir)` loads `<id>.json`; JSON copy of the demo screens
+    renders byte-identical documents. CLAUDE.md rule table fixed to match `check-architecture.sh`.

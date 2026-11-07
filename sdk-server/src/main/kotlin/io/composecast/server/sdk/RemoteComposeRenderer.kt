@@ -29,6 +29,9 @@ import androidx.compose.remote.creation.modifiers.RoundedRectShape
 import androidx.compose.remote.creation.profile.Profile
 import io.composecast.protocol.ActionCodec
 import io.composecast.protocol.BrandConfig
+import io.composecast.protocol.Component
+import io.composecast.protocol.ScreenDefinition
+import io.composecast.protocol.TextStyle
 import java.io.ByteArrayInputStream
 import java.util.logging.Logger
 import javax.imageio.ImageIO
@@ -49,16 +52,16 @@ internal class RemoteComposeRenderer(
     /** Images fetched so far, shared by all screens of one registry. `null` = failed to load. */
     private val images = mutableMapOf<String, EncodedImage?>()
 
-    fun render(nodes: List<ScreenNode>): ByteArray =
+    fun render(screen: ScreenDefinition): ByteArray =
         createRcBuffer(PROFILE, *HEADER_TAGS) {
             Column(Modifier.fillMaxSize().background(background).verticalScroll().padding(SCREEN_PADDING)) {
-                nodes.forEach { node -> renderNode(node) }
+                screen.components.forEach { node -> renderNode(node) }
             }
         }
 
-    private fun RcScope.renderNode(node: ScreenNode) {
+    private fun RcScope.renderNode(node: Component) {
         when (node) {
-            is ScreenNode.Text -> {
+            is Component.Text -> {
                 val (size, weight) = when (node.style) {
                     TextStyle.H1 -> 32 to RcFontWeight.W700
                     TextStyle.H2 -> 24 to RcFontWeight.W700
@@ -75,7 +78,7 @@ internal class RemoteComposeRenderer(
                 )
             }
 
-            is ScreenNode.Image -> {
+            is Component.Image -> {
                 val image = images.getOrPut(node.url) { fetch(node.url) }
                 if (image != null) {
                     // Full width, keeping aspect ratio, but never upscaled past the natural size
@@ -96,7 +99,7 @@ internal class RemoteComposeRenderer(
                 }
             }
 
-            is ScreenNode.Button -> Box(
+            is Component.Button -> Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedRectShape(BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS))
@@ -109,7 +112,7 @@ internal class RemoteComposeRenderer(
                 Text(node.label, color = ON_PRIMARY, fontSize = sp(16), fontWeight = RcFontWeight.W500)
             }
 
-            is ScreenNode.Spacer -> Spacer(Modifier.height(node.height.toFloat()))
+            is Component.Spacer -> Spacer(Modifier.height(node.height.toFloat()))
         }
     }
 

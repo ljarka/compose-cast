@@ -36,8 +36,8 @@ Do not load the whole project.
 
 | Module | Scope | Status |
 |---|---|---|
-| `protocol` | Shared constants (`Actions`, `Headers`), `BrandConfig`, `BrandTokens` | done |
-| `sdk-server` | DSL → RC documents (`RemoteComposeRenderer`), `ScreenRegistry`, `ImageLoader` | done |
+| `protocol` | Screen model `ScreenDefinition` + `ScreenJson`, `Action` + codec, `Headers`, `BrandConfig` | done |
+| `sdk-server` | DSL/JSON → `ScreenDefinition` → RC documents (`RemoteComposeRenderer`), `ScreenRegistry` | done |
 | `server-scripting` | `.screen.kts` hot reload | empty |
 | `server-app` | Ktor server; demo screens in `Screens.kt` (`demoScreens()`) | done |
 | `sdk-android` | Fetch RC documents, play with `remote-player-view` (`ComposeCastScreen`) | done |
@@ -99,6 +99,6 @@ curl localhost:8080/screens/main/debug            # decoded RC document tree
 
 ## Current focus
 
-[Task queue](docs/tasks/README.md): T-001 done → **T-002 JSON screen model** → T-003
-per-request rendering → T-004 version negotiation (README roadmap Etap 2). T-005 iOS spike is
+[Task queue](docs/tasks/README.md): T-001, T-002 done → **T-003 per-request rendering** →
+T-004 version negotiation (README roadmap Etap 2). T-005 iOS spike is
 blocked until Xcode is installed.

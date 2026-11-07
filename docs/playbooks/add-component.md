@@ -7,9 +7,11 @@ Example: `divider(thickness = 1)`. Read first: [ADR 0002](../decisions/0002-conf
 1. **Find the RC primitive** in the sources jar (`RcScope.kt`, `Modifier.kt` in
    `remote-creation-core`; layout in `remote-core/operations/layout`). Note the version-specific
    behavior you rely on in `docs/remote-compose.md`.
-2. **DSL** — `sdk-server/.../ScreenDsl.kt`: add a `ScreenNode` subtype and a `ScreenBuilder`
-   function. Validate input there (`require(...)` with the screen id in the message) so mistakes
-   fail at server start, not on devices.
+2. **Model** — `protocol/.../Screen.kt`: add a `Component` subtype with `@SerialName("<json
+   name>")`; new fields need defaults where sensible (stored JSON, [ADR 0015](../decisions/0015-screen-model-is-the-product.md)).
+   Validate content in `ScreenDefinition.problems()` (message with the `components[i].field` path)
+   so mistakes fail at server start, not on devices; test it in `ScreenJsonTest`.
+   **DSL** — `sdk-server/.../ScreenDsl.kt`: add the `ScreenBuilder` function that appends it.
 3. **Renderer** — `sdk-server/.../RemoteComposeRenderer.kt` (the only file allowed to use the RC
    creation API): add the `renderNode` branch. Units per ADR 0004: sizes as dp constants, fonts via
    `sp()`, height expressions wrapped in `written(...)`.
@@ -20,8 +22,8 @@ Example: `divider(thickness = 1)`. Read first: [ADR 0002](../decisions/0002-conf
    `./gradlew :compat-tests:recordRoborazziDebug`, **open the PNG and check it**, then
    `verifyRoborazziDebug`.
 6. **Device** — [verify-on-emulator.md](verify-on-emulator.md).
-7. **Screen model** — once the serializable screen model exists (roadmap Etap 2), add the component
-   there too, so the admin panel and scripts can use it.
+7. **JSON** — if the demo screens use it, update the JSON copy in
+   `server-app/src/test/resources/screens/` (`JsonScreensTest` prints the expected content).
 8. **Docs** — `sdk-server/AGENTS.md` (usage), README "Defining screens" and roadmap box,
    `docs/history.md`.
 9. `./scripts/verify.sh`.

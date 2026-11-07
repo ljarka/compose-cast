@@ -1,0 +1,65 @@
+{
+  "id": "actions",
+  "title": "Actions",
+  "components": [
+    {
+      "type": "text",
+      "text": "Every action type",
+      "style": "h2"
+    },
+    {
+      "type": "button",
+      "label": "Open URL",
+      "action": {
+        "type": "open_url",
+        "url": "https://example.com"
+      }
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "button",
+      "label": "Reload",
+      "action": {
+        "type": "reload"
+      }
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "button",
+      "label": "Track event",
+      "action": {
+        "type": "track",
+        "event": "demo_tap",
+        "params": {
+          "source": "actions"
+        }
+      }
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "button",
+      "label": "Custom",
+      "action": {
+        "type": "custom",
+        "payload": "hello"
+      }
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "button",
+      "label": "Back to home",
+      "action": {
+        "type": "navigate",
+        "screen": "main"
+      }
+    }
+  ]
+}

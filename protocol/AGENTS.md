@@ -1,10 +1,9 @@
 # protocol — AGENTS.md
 
-Shared types and constants used by both server and Android client.
-Screens themselves are **not** described here: they travel as Remote Compose binary documents
-built by `sdk-server`. (The old JSON `ScreenModel`/`ComponentModel` were removed during the cleanup,
-commit `ab79b5f`. A new *authoring* model that can be stored as JSON is planned in `sdk-server` —
-docs/tasks/T-002 — it is not a wire format; screens still travel as RC documents.)
+Shared types and constants used by server, admin and Android client, including the **screen
+model** (`ScreenDefinition`), the source format of every screen — DSL, JSON files, admin panel
+([ADR 0015](../docs/decisions/0015-screen-model-is-the-product.md)). The model is **not** a wire
+format: apps receive Remote Compose documents rendered from it by `sdk-server`.
 
 ## Scope
 
@@ -14,6 +13,7 @@ This module only. **Do not** import `sdk-server`, `server-app`, or `sdk-android`
 
 | File | Purpose |
 |---|---|
+| `Screen.kt` | `ScreenDefinition`, `Component` (Text, Image, Button, Spacer), `TextStyle`, validation (`problems()`/`validate()`), `ScreenJson` |
 | `Action.kt` | `Action` (Navigate, OpenUrl, Reload, Track, Custom) + `ActionCodec` (wire form) |
 | `Actions.kt` | `Actions` (wire type names, used only by the codec), `Headers` (HTTP headers), `Variables` (unused placeholders) |
 | `BrandConfig.kt` | Brand colors + font, served as JSON by `GET /brand` |
@@ -27,6 +27,23 @@ Inside a Remote Compose document an action is the host-action name (a string, ma
 insertion order. `ActionCodec.decode` returns `null` for unknown/malformed input (old apps ignore
 newer actions); there is no "unknown" `Action`, so JSON definitions stay strict.
 Details and test cases: `ActionCodecTest`.
+
+## Screen JSON format
+
+One screen per file, named `<id>.json`. Discriminator `"type"`; defaults (`title` = id,
+`style` = `body`, `spacer.height` = 8, empty `params`) may be omitted and are not encoded.
+Strict: unknown keys/types fail with the source and the JSON path.
+
+```json
+{ "id": "main", "title": "Home", "components": [
+    { "type": "text", "text": "Welcome", "style": "h1" },
+    { "type": "image", "url": "https://picsum.photos/400/200", "alt": "Hero" },
+    { "type": "spacer", "height": 16 },
+    { "type": "button", "label": "Open", "action": { "type": "navigate", "screen": "movie", "params": { "id": "42" } } }
+] }
+```
+Actions: `navigate` (screen, params), `open_url` (url), `reload`, `track` (event, params),
+`custom` (payload). Full examples: `server-app/src/test/resources/screens/`; cases: `ScreenJsonTest`.
 
 ## Rules
 
@@ -45,5 +62,5 @@ None (pure Kotlin + kotlinx.serialization).
 ## Test
 
 ```bash
-./gradlew :protocol:test   # ActionCodecTest
+./gradlew :protocol:test   # ActionCodecTest, ScreenJsonTest
 ```

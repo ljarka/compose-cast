@@ -13,7 +13,9 @@ Do NOT load `sdk-android` or `app-template` unless cross-cutting.
 |---|---|
 | `Main.kt` | `embeddedServer(Netty, port=8080)`, installs `ContentNegotiation` (JSON), calls `configureRouting()` |
 | `Routing.kt` | All HTTP endpoints; reads from `registry` |
-| `Screens.kt` | `demoScreens()` — the screen definitions; `registry` lazy val; injectable `ImageLoader` for tests |
+| `Screens.kt` | `demoScreens()` — the screen definitions; `demoBrand`; `registry` lazy val; injectable `ImageLoader` for tests |
+| `src/test/resources/screens/*.json` | JSON copy of `demoScreens()` (canonical `ScreenJson` form) |
+| `src/test/.../JsonScreensTest.kt` | JSON copy == DSL definitions, canonical, byte-identical RC documents |
 
 ## Endpoints
 
@@ -28,7 +30,8 @@ Do NOT load `sdk-android` or `app-template` unless cross-cutting.
 ## Rules
 
 - `Routing.kt` reads from `registry`; it never imports `sdk-server` DSL types directly.
-- `Screens.kt` owns the demo screen definitions and the `registry` lazy val.
+- `Screens.kt` owns the demo screen definitions and the `registry` lazy val. **Changing a demo
+  screen = change the JSON copy too**; `JsonScreensTest` fails and prints the expected file.
 - `ImageLoader` is injected (default: `HttpImageLoader`) so `compat-tests` can use a fake one
   without network access.
 - New endpoints always added in `Routing.kt`; no business logic in `Routing.kt` itself.
@@ -45,4 +48,5 @@ Do NOT load `sdk-android` or `app-template` unless cross-cutting.
 ./gradlew :server-app:run           # starts on :8080
 curl http://localhost:8080/health
 curl http://localhost:8080/screens
+./gradlew :server-app:test          # JsonScreensTest
 ```

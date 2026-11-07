@@ -1,6 +1,7 @@
 package io.composecast.server
 
 import io.composecast.protocol.Action
+import io.composecast.protocol.BrandConfig
 import io.composecast.server.sdk.HttpImageLoader
 import io.composecast.server.sdk.ImageLoader
 import io.composecast.server.sdk.ScreenRegistry
@@ -9,17 +10,20 @@ import io.composecast.server.sdk.composeCast
 /** Screens served by this server. Rendered on first use (fetches images over the network). */
 val registry: ScreenRegistry by lazy { demoScreens() }
 
+val demoBrand = BrandConfig(
+    name = "ComposeCast Demo",
+    primaryColor = "#6200EE",
+    secondaryColor = "#03DAC6",
+    backgroundColor = "#FAFAFA",
+)
+
 /**
- * The demo screens. A function so that screenshot tests (`compat-tests`) render exactly these
+ * The demo screens (a JSON copy in `src/test/resources/screens/` must render identically —
+ * `JsonScreensTest`; update both). A function so that screenshot tests (`compat-tests`) render exactly these
  * screens with a fake [ImageLoader], without network access.
  */
 fun demoScreens(imageLoader: ImageLoader = HttpImageLoader): ScreenRegistry = composeCast(imageLoader) {
-    brand(
-        name = "ComposeCast Demo",
-        primaryColor = "#6200EE",
-        secondaryColor = "#03DAC6",
-        backgroundColor = "#FAFAFA",
-    )
+    brand(demoBrand)
 
     screen("main") {
         title = "Home"

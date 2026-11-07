@@ -20,6 +20,7 @@ one (never silently contradict an accepted ADR).
 | [0012](0012-admin-ui-technology.md) | Admin panel: Freemarker + HTMX web UI | Accepted |
 | [0013](0013-admin-preview.md) | Admin panel: draft preview via in-memory screen + QR code | Accepted |
 | [0014](0014-admin-change-history.md) | Admin panel: append-only JSON snapshot log for change history | Accepted |
+| [0015](0015-screen-model-is-the-product.md) | The serializable screen model (`ScreenDefinition`) is the product | Accepted |
 
 ## Template
 

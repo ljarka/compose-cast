@@ -1,0 +1,34 @@
+{
+  "id": "onboarding",
+  "title": "Get Started",
+  "components": [
+    {
+      "type": "text",
+      "text": "How it works",
+      "style": "h2"
+    },
+    {
+      "type": "text",
+      "text": "The server defines your UI. The app renders it."
+    },
+    {
+      "type": "button",
+      "label": "Continue",
+      "action": {
+        "type": "navigate",
+        "screen": "main"
+      }
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "button",
+      "label": "Actions demo",
+      "action": {
+        "type": "navigate",
+        "screen": "actions"
+      }
+    }
+  ]
+}

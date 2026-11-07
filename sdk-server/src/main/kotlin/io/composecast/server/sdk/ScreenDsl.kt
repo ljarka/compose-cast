@@ -2,60 +2,34 @@ package io.composecast.server.sdk
 
 import io.composecast.protocol.Action
 import io.composecast.protocol.ActionCodec
+import io.composecast.protocol.Component
+import io.composecast.protocol.ScreenDefinition
+import io.composecast.protocol.TextStyle
 
 @DslMarker
 annotation class ScreenDslMarker
 
-/** Text styles supported by [ScreenBuilder.text]. */
-enum class TextStyle(val key: String) {
-    H1("h1"),
-    H2("h2"),
-    H3("h3"),
-    Body("body"),
-    Caption("caption"),
-    ;
-
-    companion object {
-        fun fromKey(key: String): TextStyle =
-            entries.firstOrNull { it.key == key }
-                ?: throw IllegalArgumentException(
-                    "Unknown text style '$key'. Allowed: ${entries.joinToString { it.key }}",
-                )
-    }
-}
-
 /**
- * Authoring model of a screen. It is not sent over the wire: [RemoteComposeRenderer]
- * turns it into a Remote Compose binary document.
+ * Kotlin DSL for one screen; builds a [ScreenDefinition] (the same model JSON files decode to).
+ * Content is validated by [ScreenDefinition.validate] when the screen is added to the registry.
  */
-internal sealed interface ScreenNode {
-    data class Text(val text: String, val style: TextStyle) : ScreenNode
-    data class Image(val url: String, val alt: String) : ScreenNode
-    data class Button(val label: String, val action: Action) : ScreenNode
-    data class Spacer(val height: Int) : ScreenNode
-}
-
 @ScreenDslMarker
 class ScreenBuilder internal constructor(val id: String) {
     var title: String = id
-    private val nodes = mutableListOf<ScreenNode>()
+    private val components = mutableListOf<Component>()
 
+    /** [style]: `h1`, `h2`, `h3`, `body`, `caption` ([TextStyle]). */
     fun text(text: String, style: String = "body") {
-        nodes += ScreenNode.Text(text, TextStyle.fromKey(style))
+        components += Component.Text(text, TextStyle.fromKey(style))
     }
 
     fun image(url: String, alt: String = "") {
-        nodes += ScreenNode.Image(url, alt)
+        components += Component.Image(url, alt)
     }
 
     /** A tappable button; [action] is emitted as a Remote Compose host action ([ActionCodec]). */
     fun button(label: String, action: Action) {
-        val encoded = ActionCodec.encode(action)
-        require(encoded.length <= ActionCodec.MAX_ENCODED_LENGTH) {
-            "Screen '$id', button '$label': encoded action is ${encoded.length} characters, " +
-                "Remote Compose allows ${ActionCodec.MAX_ENCODED_LENGTH}"
-        }
-        nodes += ScreenNode.Button(label, action)
+        components += Component.Button(label, action)
     }
 
     /**
@@ -70,10 +44,10 @@ class ScreenBuilder internal constructor(val id: String) {
         button(label, decoded)
     }
 
+    /** Vertical space in dp. */
     fun spacer(height: Int = 8) {
-        require(height >= 0) { "Screen '$id': spacer height must be >= 0, was $height" }
-        nodes += ScreenNode.Spacer(height)
+        components += Component.Spacer(height)
     }
 
-    internal fun nodes(): List<ScreenNode> = nodes.toList()
+    internal fun build(): ScreenDefinition = ScreenDefinition(id, title, components.toList())
 }

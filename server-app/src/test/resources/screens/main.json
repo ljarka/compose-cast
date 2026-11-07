@@ -1,0 +1,36 @@
+{
+  "id": "main",
+  "title": "Home",
+  "components": [
+    {
+      "type": "text",
+      "text": "Welcome to ComposeCast",
+      "style": "h1"
+    },
+    {
+      "type": "spacer",
+      "height": 16
+    },
+    {
+      "type": "image",
+      "url": "https://picsum.photos/400/200",
+      "alt": "Hero image"
+    },
+    {
+      "type": "spacer",
+      "height": 16
+    },
+    {
+      "type": "text",
+      "text": "Server-driven UI for Compose"
+    },
+    {
+      "type": "button",
+      "label": "Get started",
+      "action": {
+        "type": "navigate",
+        "screen": "onboarding"
+      }
+    }
+  ]
+}

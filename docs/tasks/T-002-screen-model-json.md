@@ -1,6 +1,18 @@
 # T-002 — Serializable screen model + JSON screens
 
-Status: ready · Roadmap: Etap 2 · Depends on: T-001
+Status: done · Roadmap: Etap 2 · Depends on: T-001
+
+## Outcome (2026-11-07)
+Implemented; `./scripts/verify.sh` green, screenshots unchanged, emulator renders as before.
+Deviations from the design below:
+- **The model lives in `protocol/.../Screen.kt`, not `sdk-server`** — ADR 0011 (accepted while
+  T-002 was queued) requires the admin server to use `ScreenDefinition` without `sdk-server`.
+  Recorded in [ADR 0015](../decisions/0015-screen-model-is-the-product.md).
+- Validation = `ScreenDefinition.problems()` / `validate()` with `components[i].field` paths; an
+  action must round-trip through `ActionCodec` (catches empty names/keys/URLs).
+- Loader `screensFrom(dir)` requires `<id>.json` file names (ADR 0011 layout); also added
+  `screen(definition)`, `brand(BrandConfig)`, `RemoteScreen.definition` (export DSL → JSON).
+- `JsonScreensTest` additionally checks the files are canonical (`ScreenJson.encode` output).
 
 ## Goal
 One serializable screen model that the Kotlin DSL builds **and** that can be loaded from JSON files,

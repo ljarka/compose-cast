@@ -25,8 +25,8 @@ official iOS player yet, so the iOS renderer is being decided by a spike
 
 compose-cast is the product layer around the renderers:
 
-- **Authoring** — Kotlin DSL; later `.screen.kts` scripts and an admin panel, all producing one
-  serializable screen model.
+- **Authoring** — Kotlin DSL and JSON files (✅); later `.screen.kts` scripts and an admin panel, all
+  producing one serializable screen model (`ScreenDefinition`).
 - **Data** — screens bind to external HTTP APIs through server-side data sources; the APIs are not
   part of the project and their keys never reach the app
   ([ADR 0008](docs/decisions/0008-server-side-data-sources.md)).
@@ -124,11 +124,30 @@ Actions are typed (`io.composecast.protocol.Action`): `Action.Navigate("movie", 
 Invalid definitions (unknown style or action, duplicate id, bad color) fail at server start.
 Demo screens live in `server-app/src/main/kotlin/io/composecast/server/Screens.kt`.
 
+The DSL builds a serializable `ScreenDefinition`; the same screens can be JSON files, one
+`<id>.json` per screen, loaded with `composeCast { screensFrom(Path.of("screens")) }`:
+
+```json
+{
+  "id": "main",
+  "title": "Home",
+  "components": [
+    { "type": "text", "text": "Welcome to ComposeCast", "style": "h1" },
+    { "type": "image", "url": "https://picsum.photos/400/200", "alt": "Hero image" },
+    { "type": "button", "label": "Get started", "action": { "type": "navigate", "screen": "onboarding" } }
+  ]
+}
+```
+
+Both paths render byte-identical documents (`JsonScreensTest`). JSON errors name the file and the
+JSON path, e.g. `main.json: … subclass 'carousel' is not found … at path: $.components[1]`.
+Format reference: [protocol/AGENTS.md](protocol/AGENTS.md#screen-json-format).
+
 ## Modules
 
 | Module | Description |
 |---|---|
-| `protocol` | Shared constants (actions, headers) and serializable brand types |
+| `protocol` | Screen model (`ScreenDefinition`, JSON format), typed actions, headers, brand types |
 | `sdk-server` | DSL that renders screens to Remote Compose documents |
 | `server-scripting` | `.screen.kts` script host for hot-reloadable screens (planned) |
 | `server-app` | Ktor HTTP server |
@@ -189,7 +208,7 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 ### Etap 2 — Foundations ⏳
 - [x] Remote Compose alpha20 → alpha23 (units revised, [ADR 0004](docs/decisions/0004-units-dp-and-sp.md))
 - [x] Typed actions with parameters (`navigate` with params, `open_url`, `reload`, `track`) — T-001
-- [ ] **Serializable screen model** (JSON) — one model for the DSL, scripts and the admin panel
+- [x] **Serializable screen model** (JSON) — one model for the DSL, JSON files, scripts and the admin panel — T-002 ([ADR 0015](docs/decisions/0015-screen-model-is-the-product.md))
 - [ ] **Per-request rendering**: routes with parameters (`movie/{id}`), locale; today screens are
   pre-rendered once at start
 - [ ] `ETag` / `If-None-Match`
