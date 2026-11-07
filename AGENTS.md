@@ -63,7 +63,7 @@ Do not load the whole project.
 
 ## Definition of Done (every task)
 
-- [ ] `./scripts/verify.sh` green (same as CI: docs, architecture, builds, lint, screenshots).
+- [ ] `./scripts/verify.sh` green (same as CI: docs, architecture, formatting, builds, lint, screenshots).
 - [ ] Module `AGENTS.md` updated (files, decisions) for every module touched.
 - [ ] New decision → ADR; new RC fact → `docs/remote-compose.md`; entry in `docs/history.md`.
 - [ ] README roadmap boxes ticked / adjusted; README screenshots current.
@@ -87,7 +87,8 @@ Do not load the whole project.
 
 ```bash
 ./scripts/verify.sh                               # = CI (.github/workflows/ci.yml)
-./scripts/verify.sh --quick                       # docs + architecture + JVM build/tests
+./scripts/verify.sh --quick                       # docs + architecture + formatting + JVM build/tests
+./gradlew spotlessApply                           # fix formatting (ktlint, rules in .editorconfig)
 ./gradlew :compat-tests:recordRoborazziDebug      # accept intended visual changes (look at PNGs!)
 
 # Server + debugging (endpoints: server-app/AGENTS.md)

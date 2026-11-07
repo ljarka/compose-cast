@@ -33,8 +33,13 @@ compose-cast today — requires Compose runtime at creation time).
 
 ### Why compose-cast uses the lower-level procedural API instead
 
-`remote-creation-compose` likely requires a Compose runtime, which does not run on a plain JVM
-server without Compose Multiplatform. compose-cast uses `remote-creation-core` + `remote-creation-jvm`
+**Verified (alpha23 POM + Gradle module metadata):** `remote-creation-compose` (`RemoteText`,
+`RemoteBox`, `rememberMutableRemoteInt`, …) is published **only as an Android AAR** (single
+`release` variant, no JVM/desktop variant) and depends on Android Compose `ui`, `foundation`,
+`runtime`, `core-ktx`, `lifecycle-viewmodel`. It cannot run in the Ktor JVM server; using it would
+mean rendering documents on an Android runtime (device, emulator, Robolectric/layoutlib in the
+server) — not worth it, because the procedural DSL covers the same document operations, including
+state (section below). compose-cast uses `remote-creation-core` + `remote-creation-jvm`
 for server-side document creation — pure JVM, no Compose runtime dependency.
 
 If Compose Multiplatform support for `remote-creation-compose` is confirmed in a future RC release,

@@ -5,6 +5,8 @@
 #  - every ADR in docs/decisions is listed in docs/decisions/README.md
 #  - every playbook / task is listed in its folder README
 #  - root AGENTS.md stays an index (< 150 lines)
+#  - every open README roadmap item in a finished (✅) or active (⏳) Etap names its task (T-NNN),
+#    so nothing planned is invisible to agents (they take work only from docs/tasks)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 exec python3 - <<'PY'
@@ -42,6 +44,13 @@ for folder, pattern in (("docs/playbooks", "*.md"), ("docs/tasks", "T-[0-9][0-9]
     for f in sorted((root / folder).glob(pattern)):
         if f.name != "README.md" and f.name not in listed:
             errors.append(f"{folder}/{f.name} is not listed in {folder}/README.md")
+
+etap = None
+for line in (root / "README.md").read_text().splitlines():
+    if line.startswith("### "):
+        etap = line if ("✅" in line or "⏳" in line) else None
+    elif etap and line.startswith("- [ ]") and not re.search(r"\bT-\d{3}\b", line):
+        errors.append(f"README roadmap: open item without a task (add T-NNN) in '{etap[4:]}': {line[:70]}")
 
 lines = len((root / "AGENTS.md").read_text().splitlines())
 if lines >= 150:

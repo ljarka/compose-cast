@@ -1,5 +1,7 @@
 # compose-cast
 
+[![CI](https://github.com/ljarka/compose-cast/actions/workflows/ci.yml/badge.svg)](https://github.com/ljarka/compose-cast/actions/workflows/ci.yml)
+
 **compose-cast** is an open-source server-driven UI framework for Android built on top of
 [Remote Compose](https://developer.android.com/jetpack/compose/remote-compose) (AndroidX).
 
@@ -210,15 +212,15 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 - [x] GitHub Actions CI: build, lint, screenshot verification, docs check
 - [x] Screenshot tests server → player (`compat-tests`), images in this README
 - [x] Agent documentation: index `AGENTS.md`, ADRs, Remote Compose knowledge base, history
-- [ ] ktlint config + badge
+- [x] ktlint (Spotless, rules in `.editorconfig`, checked by `verify.sh`) + CI badge
 
 ### Etap 2 — Foundations ⏳
 - [x] Remote Compose alpha20 → alpha23 (units revised, [ADR 0004](docs/decisions/0004-units-dp-and-sp.md))
 - [x] Typed actions with parameters (`navigate` with params, `open_url`, `reload`, `track`) — T-001
 - [x] **Serializable screen model** (JSON) — one model for the DSL, JSON files, scripts and the admin panel — T-002 ([ADR 0015](docs/decisions/0015-screen-model-is-the-product.md))
-- [ ] **Per-request rendering**: routes with parameters (`movie/{id}`), locale; today screens are
+- [ ] **Per-request rendering** (T-003): routes with parameters (`movie/{id}`), locale; today screens are
   pre-rendered once at start
-- [ ] `ETag` / `If-None-Match`
+- [ ] `ETag` / `If-None-Match` (T-003)
 
 ### Etap 3 — iOS spike (parallel to 2–5; needs Xcode)
 - [ ] (a) Community Remote Compose engine / SwiftUI viewer plays our documents

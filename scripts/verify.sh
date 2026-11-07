@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # The single verification entry point. CI runs exactly this, so "green locally" == "green in CI".
 #
-#   ./scripts/verify.sh           full: docs, architecture, JVM build + tests, Android build + lint,
+#   ./scripts/verify.sh           full: docs, architecture, formatting, JVM build + tests, Android build + lint,
 #                                 screenshot verification
-#   ./scripts/verify.sh --quick   docs, architecture, JVM build + tests (no Android SDK needed);
+#   ./scripts/verify.sh --quick   docs, architecture, formatting, JVM build + tests (no Android SDK needed);
 #                                 enough as a baseline only for server-only work
 #
 # Exits non-zero on the first failing step and says what to look at.
@@ -36,6 +36,12 @@ step "Docs consistency (ADR 0009)"
 
 step "Architecture rules"
 ./scripts/check-architecture.sh
+
+step "Formatting (ktlint via Spotless)"
+if ! gradle spotlessCheck; then
+  echo; echo "Formatting violations: run ./gradlew spotlessApply and review the diff."
+  exit 1
+fi
 
 step "JVM modules: build + tests"
 gradle :protocol:build :sdk-server:build :server-scripting:build :server-app:build

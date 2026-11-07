@@ -65,3 +65,8 @@ README roadmap's "Etap" numbers.
     (`remoteInteger`, `setValue` in `onClick`, `StateLayout`, `CollapsibleRow/Column`) is in the
     procedural alpha23 DSL we already use (docs/remote-compose.md); T-008 is now a PoC. Owner
     approved order: T-003 → T-009 Docker (new) → T-006 design → T-008 → Milestone 1 → T-004.
+21. **ktlint** (2026-11-07): Spotless + ktlint 1.7 for all `*.kt`/`*.gradle.kts` from the root
+    build (works with AGP 9 built-in Kotlin), rules in `.editorconfig` (`intellij_idea` style,
+    120 columns, `@Composable` PascalCase); one formatting-only commit; `spotlessCheck` in
+    `verify.sh`; CI badge. Why it was missed: the roadmap item had no task, and agents only take
+    work from the queue → `check-docs.sh` now fails on open items in ✅/⏳ Etaps without `T-NNN`.
