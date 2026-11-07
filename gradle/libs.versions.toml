@@ -1,0 +1,31 @@
+[versions]
+kotlin = "2.0.21"
+agp = "8.7.0"
+compose-bom = "2024.10.00"
+remote-compose = "1.0.0-alpha20"
+ktor = "3.0.0"
+kotlinx-serialization = "1.7.3"
+ktlint = "12.1.1"
+
+[libraries]
+remote-core = { module = "androidx.compose.remote:remote-core", version.ref = "remote-compose" }
+remote-creation-jvm = { module = "androidx.compose.remote:remote-creation-jvm", version.ref = "remote-compose" }
+remote-creation-core = { module = "androidx.compose.remote:remote-creation-core", version.ref = "remote-compose" }
+remote-player-core = { module = "androidx.compose.remote:remote-player-core", version.ref = "remote-compose" }
+remote-player-view = { module = "androidx.compose.remote:remote-player-view", version.ref = "remote-compose" }
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
+ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
+ktor-server-call-logging = { module = "io.ktor:ktor-server-call-logging", version.ref = "ktor" }
+ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", version.ref = "ktor" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
