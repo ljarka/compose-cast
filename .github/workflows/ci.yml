@@ -17,18 +17,10 @@ jobs:
           distribution: 'temurin'
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-      # Agent documentation consistency (docs/decisions/0009-documentation-for-agents.md)
-      - name: Check docs
-        run: ./scripts/check-docs.sh
-      - name: Build and test JVM modules
-        run: ./gradlew :protocol:build :sdk-server:build :server-scripting:build :server-app:build
-      # ubuntu-latest ships the Android SDK (ANDROID_HOME); AGP downloads the missing platform.
-      - name: Build and lint Android modules
-        run: ./gradlew :sdk-android:assembleDebug :sdk-android:lintDebug :app-template:assembleDebug :app-template:lintDebug
-      # Server document -> Android player, compared with the golden screenshots in
-      # compat-tests/src/test/screenshots (record them with :compat-tests:recordRoborazziDebug).
-      - name: Verify screenshots
-        run: ./gradlew :compat-tests:verifyRoborazziDebug
+      # The same single entry point agents run locally: docs, architecture rules, JVM build + tests,
+      # Android build + lint (ubuntu-latest ships the Android SDK), screenshot verification.
+      - name: Verify
+        run: ./scripts/verify.sh
       - name: Upload screenshot diffs
         if: failure()
         uses: actions/upload-artifact@v4

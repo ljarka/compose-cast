@@ -3,6 +3,7 @@
 #  - every Gradle module has an AGENTS.md
 #  - relative links in Markdown files point to existing files
 #  - every ADR in docs/decisions is listed in docs/decisions/README.md
+#  - every playbook / task is listed in its folder README
 #  - root AGENTS.md stays an index (< 150 lines)
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -34,6 +35,13 @@ index = (decisions / "README.md").read_text()
 for adr in sorted(decisions.glob("[0-9][0-9][0-9][0-9]-*.md")):
     if adr.name not in index:
         errors.append(f"ADR {adr.name} is not listed in docs/decisions/README.md")
+
+for folder, pattern in (("docs/playbooks", "*.md"), ("docs/tasks", "T-[0-9][0-9][0-9]-*.md")):
+    index_file = root / folder / "README.md"
+    listed = index_file.read_text() if index_file.is_file() else ""
+    for f in sorted((root / folder).glob(pattern)):
+        if f.name != "README.md" and f.name not in listed:
+            errors.append(f"{folder}/{f.name} is not listed in {folder}/README.md")
 
 lines = len((root / "AGENTS.md").read_text().splitlines())
 if lines >= 150:

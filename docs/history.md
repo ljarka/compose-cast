@@ -24,3 +24,6 @@ README roadmap's "Etap" numbers.
     APIs, sample apps; documentation restructured for agents
     ([0007](decisions/0007-ios-strategy-spike.md), [0008](decisions/0008-server-side-data-sources.md),
     [0009](decisions/0009-documentation-for-agents.md)).
+12. **Agent tooling** ([0010](decisions/0010-executable-rules-verify-tasks.md)):
+    `scripts/check-architecture.sh` (8 rules), `scripts/verify.sh` (CI runs it), playbooks,
+    task queue `docs/tasks/` with T-001…T-006.

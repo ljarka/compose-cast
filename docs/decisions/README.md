@@ -15,6 +15,7 @@ one (never silently contradict an accepted ADR).
 | [0007](0007-ios-strategy-spike.md) | iOS: decide by spike between RC player and DivKit | Proposed |
 | [0008](0008-server-side-data-sources.md) | External APIs are bound on the server (data sources) | Proposed |
 | [0009](0009-documentation-for-agents.md) | Documentation structure for AI agents | Accepted |
+| [0010](0010-executable-rules-verify-tasks.md) | Executable rules, one verify command, playbooks, task queue | Accepted |
 
 ## Template
 

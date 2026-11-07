@@ -7,17 +7,28 @@ natively. Android: **Remote Compose** documents played by the RC player. iOS: be
 
 This file is the index. Keep it short (< 150 lines); details live where the table below says.
 
+## Start here (first time in this repo)
+
+1. Read this file, then [docs/tasks/README.md](docs/tasks/README.md).
+2. Run `./scripts/verify.sh --quick` (full: `./scripts/verify.sh`) — it must be green before you
+   change anything; if not, fixing it is your first task.
+3. The owner's request wins. Without one, take the **first `ready` task** in the queue and follow its
+   file; use the [playbooks](docs/playbooks/README.md) for recurring procedures.
+4. Before touching an area, read its module `AGENTS.md` and the ADRs it links.
+5. Finish with the Definition of Done below; leave the next task specified for the next agent.
+
 ## Where knowledge lives
 
 | Need | Read |
 |---|---|
-| What to build next, vision, principles | [README → Vision, Roadmap](README.md#vision) |
+| **What to do next, exactly** | [docs/tasks/](docs/tasks/README.md) (task queue) |
+| How to do recurring things (add component, upgrades, emulator) | [docs/playbooks/](docs/playbooks/README.md) |
+| Vision, principles, roadmap | [README → Vision, Roadmap](README.md#vision) |
 | Why something is the way it is | [docs/decisions/](docs/decisions/README.md) (ADRs) |
 | How Remote Compose actually behaves (per version) | [docs/remote-compose.md](docs/remote-compose.md) |
 | What was done when | [docs/history.md](docs/history.md) |
 | A module's scope, files, decisions | `<module>/AGENTS.md` |
 
-Start a task by reading: this file → the module's `AGENTS.md` → ADRs that touch the area.
 Do not load the whole project.
 
 ## Module map
@@ -44,21 +55,22 @@ Do not load the whole project.
    ([0006](docs/decisions/0006-screenshot-tests-as-goldens.md)). Every new component gets one.
 5. Verify on a device/emulator for anything rendering-related; unit tests have missed every
    rendering bug so far.
-6. Changing an accepted decision = new ADR that supersedes it.
+6. Changing an accepted decision = new ADR that supersedes it. Architecture rules are enforced by
+   `scripts/check-architecture.sh` ([0010](docs/decisions/0010-executable-rules-verify-tasks.md)).
 7. Git: work on `main`; commit/push only when the owner asks.
 
 ## Definition of Done (every task)
 
-- [ ] CI-equivalent build green (commands below), screenshots verified.
+- [ ] `./scripts/verify.sh` green (same as CI: docs, architecture, builds, lint, screenshots).
 - [ ] Module `AGENTS.md` updated (files, decisions) for every module touched.
 - [ ] New decision → ADR; new RC fact → `docs/remote-compose.md`; entry in `docs/history.md`.
 - [ ] README roadmap boxes ticked / adjusted; README screenshots current.
-- [ ] `./scripts/check-docs.sh` passes.
+- [ ] Task queue updated: task `done (commit)`, next task specified enough to start.
 
 ## Environment
 
-- JDK 21 (Homebrew `openjdk@21`). Agent shells don't load `~/.zshrc`:
-  `export JAVA_HOME=/opt/homebrew/opt/openjdk@21` before `./gradlew`.
+- JDK 21 (Homebrew `openjdk@21`). `scripts/verify.sh` finds it; for raw `./gradlew` in agent
+  shells (no `~/.zshrc`): `export JAVA_HOME=/opt/homebrew/opt/openjdk@21`.
 - Android SDK `~/Library/Android/sdk` (`local.properties`, gitignored); AVD `Medium_Phone_API_37.0`,
   start it with `-gpu host` (≈20x faster).
 - No Xcode on the dev machine yet (needed for iOS); no `gh` CLI — CI:
@@ -70,22 +82,19 @@ Do not load the whole project.
 ## Commands
 
 ```bash
-# CI equivalent (.github/workflows/ci.yml)
-./gradlew :protocol:build :sdk-server:build :server-scripting:build :server-app:build
-./gradlew :sdk-android:assembleDebug :sdk-android:lintDebug :app-template:assembleDebug :app-template:lintDebug
-./gradlew :compat-tests:verifyRoborazziDebug      # record: :compat-tests:recordRoborazziDebug
-./scripts/check-docs.sh
+./scripts/verify.sh                               # = CI (.github/workflows/ci.yml)
+./scripts/verify.sh --quick                       # docs + architecture + JVM build/tests
+./gradlew :compat-tests:recordRoborazziDebug      # accept intended visual changes (look at PNGs!)
 
 # Server + debugging (endpoints: server-app/AGENTS.md)
 ./gradlew :server-app:run
 curl localhost:8080/screens/main/debug            # decoded RC document tree
 
-# Android end to end (emulator reaches the host at 10.0.2.2:8080)
-./gradlew :app-template:installDebug && adb shell am start -n io.composecast.demo/.MainActivity
-adb exec-out screencap -p > screen.png            # look at it
-adb shell uiautomator dump /sdcard/u.xml && adb shell cat /sdcard/u.xml
+# Android end to end: docs/playbooks/verify-on-emulator.md
 ```
 
 ## Current focus
 
-README roadmap → **Etap 2 (Foundations)** and the iOS spike ([0007](docs/decisions/0007-ios-strategy-spike.md)).
+[Task queue](docs/tasks/README.md): T-001 typed actions → T-002 JSON screen model → T-003
+per-request rendering → T-004 version negotiation (README roadmap Etap 2). T-005 iOS spike is
+blocked until Xcode is installed.
