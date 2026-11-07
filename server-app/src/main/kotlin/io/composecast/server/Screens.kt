@@ -1,9 +1,18 @@
 package io.composecast.server
 
+import io.composecast.server.sdk.HttpImageLoader
+import io.composecast.server.sdk.ImageLoader
 import io.composecast.server.sdk.ScreenRegistry
 import io.composecast.server.sdk.composeCast
 
-val registry: ScreenRegistry = composeCast {
+/** Screens served by this server. Rendered on first use (fetches images over the network). */
+val registry: ScreenRegistry by lazy { demoScreens() }
+
+/**
+ * The demo screens. A function so that screenshot tests (`compat-tests`) render exactly these
+ * screens with a fake [ImageLoader], without network access.
+ */
+fun demoScreens(imageLoader: ImageLoader = HttpImageLoader): ScreenRegistry = composeCast(imageLoader) {
     brand(
         name = "ComposeCast Demo",
         primaryColor = "#6200EE",

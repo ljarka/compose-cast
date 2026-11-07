@@ -2,7 +2,7 @@
 
 Shared types and constants used by both server and Android client.
 Screens themselves are **not** described here: they travel as Remote Compose binary documents
-built by `sdk-server`. (The old JSON `ScreenModel`/`ComponentModel` were removed in Stage 3.)
+built by `sdk-server`. (The old JSON `ScreenModel`/`ComponentModel` were removed during the cleanup, commit `ab79b5f`.)
 
 ## Scope
 

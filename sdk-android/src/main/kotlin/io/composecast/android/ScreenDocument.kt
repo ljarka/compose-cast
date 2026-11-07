@@ -12,4 +12,13 @@ class ScreenDocument internal constructor(
     /** Size of the Remote Compose document as received, in bytes. */
     val sizeBytes: Int,
     internal val document: RemoteDocument,
-)
+) {
+    companion object {
+        /**
+         * Decodes a Remote Compose document obtained some other way than [ComposeCastClient]
+         * (e.g. bundled offline, cached, or generated in tests). Call off the main thread.
+         */
+        fun fromBytes(id: String, title: String, bytes: ByteArray): ScreenDocument =
+            ScreenDocument(id, title, bytes.size, RemoteDocument(bytes))
+    }
+}

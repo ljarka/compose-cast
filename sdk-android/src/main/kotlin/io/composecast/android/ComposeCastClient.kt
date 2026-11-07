@@ -1,6 +1,5 @@
 package io.composecast.android
 
-import androidx.compose.remote.player.core.RemoteDocument
 import io.composecast.protocol.BrandConfig
 import io.composecast.protocol.Headers
 import io.ktor.client.HttpClient
@@ -40,8 +39,7 @@ class ComposeCastClient(private val config: ComposeCastConfig) {
             ?.let { URLDecoder.decode(it, Charsets.UTF_8.name()) }
             ?: id
         val bytes = response.readRawBytes()
-        val document = withContext(Dispatchers.Default) { RemoteDocument(bytes) }
-        return ScreenDocument(id, title, bytes.size, document)
+        return withContext(Dispatchers.Default) { ScreenDocument.fromBytes(id, title, bytes) }
     }
 
     suspend fun listScreens(): List<String> =

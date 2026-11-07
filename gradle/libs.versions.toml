@@ -4,6 +4,8 @@ agp = "9.5.1"
 remote-compose = "1.0.0-alpha20"
 ktor = "3.0.0"
 kotlinx-serialization = "1.7.3"
+robolectric = "4.17"
+roborazzi = "1.77.0"
 
 [libraries]
 remote-core = { module = "androidx.compose.remote:remote-core", version.ref = "remote-compose" }
@@ -30,6 +32,12 @@ compose-ui = { module = "androidx.compose.ui:ui", version = "1.7.5" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version = "1.7.5" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version = "1.7.5" }
 activity-compose = { module = "androidx.activity:activity-compose", version = "1.9.3" }
+compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version = "1.7.5" }
+compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version = "1.7.5" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
+roborazzi-compose = { module = "io.github.takahirom.roborazzi:roborazzi-compose", version.ref = "roborazzi" }
+junit = { module = "junit:junit", version = "4.13.2" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -37,3 +45,4 @@ android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }

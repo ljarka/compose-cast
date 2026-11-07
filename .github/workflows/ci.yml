@@ -18,7 +18,17 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
       - name: Build and test JVM modules
-        run: ./gradlew :protocol:build :sdk-server:build :server-scripting:build :server-app:build :compat-tests:build
+        run: ./gradlew :protocol:build :sdk-server:build :server-scripting:build :server-app:build
       # ubuntu-latest ships the Android SDK (ANDROID_HOME); AGP downloads the missing platform.
       - name: Build and lint Android modules
         run: ./gradlew :sdk-android:assembleDebug :sdk-android:lintDebug :app-template:assembleDebug :app-template:lintDebug
+      # Server document -> Android player, compared with the golden screenshots in
+      # compat-tests/src/test/screenshots (record them with :compat-tests:recordRoborazziDebug).
+      - name: Verify screenshots
+        run: ./gradlew :compat-tests:verifyRoborazziDebug
+      - name: Upload screenshot diffs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-diffs
+          path: compat-tests/build/outputs/roborazzi/

@@ -29,7 +29,7 @@ sdk-server: ScreenBuilder → ScreenNode ──► RC bytes ──── HTTP �
 | `server-app` | Ktor HTTP server; screens defined in `Screens.kt` | done |
 | `sdk-android` | Fetch RC documents, play them with `remote-player-view` | done |
 | `app-template` | Demo app: navigation, back stack, error state | done |
-| `compat-tests` | Golden-file compatibility tests | empty |
+| `compat-tests` | Screenshot tests: server document → Android player; goldens shown in README | done (see its AGENTS.md) |
 
 ## Task Strategy
 
@@ -61,8 +61,12 @@ adb shell uiautomator dump /sdcard/u.xml && adb shell cat /sdcard/u.xml   # text
 ```
 
 Full build = what CI runs (`.github/workflows/ci.yml`):
-`:protocol:build :sdk-server:build :server-scripting:build :server-app:build :compat-tests:build`
-then `:sdk-android:assembleDebug :sdk-android:lintDebug :app-template:assembleDebug :app-template:lintDebug`.
+`:protocol:build :sdk-server:build :server-scripting:build :server-app:build`
+then `:sdk-android:assembleDebug :sdk-android:lintDebug :app-template:assembleDebug :app-template:lintDebug`
+then `:compat-tests:verifyRoborazziDebug` (screenshot goldens; on failure CI uploads the diffs).
+**Any visual change** (renderer, DSL defaults, dependency bumps) must keep the screenshots green
+or re-record them (`:compat-tests:recordRoborazziDebug`), look at the PNGs, and commit them —
+they are the README images.
 Lint must stay green. `RestrictedApi` is downgraded to a warning **only in `sdk-android`** (the
 deliberate RC player usage). Note: under AGP 9.5 lint, compose-runtime 1.7.5's lint checks do not
 fire at all (verified: a `produceState` that never assigns is not reported), and lifecycle 2.6.2's
@@ -123,38 +127,45 @@ Each of these was found by running on the emulator, not by unit tests.
 
 ## History (why the code looks like this)
 
+Numbering here is the order of work, **not** the README roadmap's "Etap 0–8" (the owner's plan;
+the README roadmap is the source of truth for what to build next).
+
 1. **Initial state (commits up to `2f2103c`).** Despite the README, Remote Compose was not used:
    the server sent JSON `ScreenModel`, `sdk-android` drew it with a hand-written Compose renderer,
    RC dependencies were declared but unused. Android modules had never been compiled. The owner
    considered this a fundamental mistake — new components would require app releases, which is
    exactly what Remote Compose is meant to avoid.
-2. **Stage 1 — server emits RC (`99d8979`).** `RemoteComposeRenderer`, binary `/screens/{id}`,
+2. **Server emits RC (`99d8979`).** `RemoteComposeRenderer`, binary `/screens/{id}`,
    `/debug` endpoint, build-time validation, tests decoding documents with `remote-core`.
    Also `c39bb91`: debug-only cleartext HTTP config so the emulator can reach `http://10.0.2.2`
    (targetSdk 35 blocks cleartext by default).
-3. **Stage 2 — app plays RC.** `sdk-android` rewritten around `RemoteComposePlayer`
+3. **App plays RC.** `sdk-android` rewritten around `RemoteComposePlayer`
    (`ScreenDocument`, `ComposeCastScreen`), JSON renderer deleted, `expectSuccess = true` (404 is a
    clear error), `minSdk 26`. App: back stack + `BackHandler`, survives rotation. Server: embedded
    images, dp/sp units, `height` workaround (gotchas 1–3), vertical scroll.
-4. **Stage 3 — cleanup.** Removed legacy JSON `ScreenModel`/`ComponentModel`; Android build + lint
+4. **Cleanup.** Removed legacy JSON `ScreenModel`/`ComponentModel`; Android build + lint
    in CI; `protocol` exposes serialization as `api`; `jvmTarget` → `kotlin.compilerOptions`;
    unused version-catalog entries removed (`compose-bom`, `compose-compiler`, `ktlint`,
    `kotlin-stdlib`); README rewritten.
 5. **AGP 8.7.0 → 9.5.1**, Gradle 8.10 → 9.6.0, migrated to built-in Kotlin (removed
    `kotlin-android` plugin and the explicit `jvmTarget`). Removed the `@SuppressLint` for the
    `produceState` false positive (the check no longer runs, see Run & Verify).
+6. **Screenshot tests** in `compat-tests` (Robolectric + Roborazzi), goldens in the README,
+   verified in CI. `demoScreens()` extracted in `server-app`; `ScreenDocument.fromBytes` added.
 
-## Open Work (in suggested order)
+## Open Work (technical; feature plan = README roadmap)
 
 1. **Dependency refresh:** Compose 1.7.5 (hard-coded, no BOM — switch to the BOM; also brings
    working Compose lint checks), compileSdk/targetSdk 35 → 36+, Ktor 3.0.0, kotlinx-serialization
-   1.7.3, Kotlin 2.2.20. Then decide on `remote-player-compose`.
+   1.7.3, Kotlin 2.2.20. Then decide on `remote-player-compose`. Remote Compose itself has
+   newer alphas (alpha23 at the time of writing) — bump it separately; the screenshot tests and
+   gotchas 1–3 are what to re-check.
 2. Optional: enable Gradle configuration cache (Gradle 9 suggests it on every build).
 3. **Version negotiation:** client sends `X-Composecast-Player-Version`, server ignores it. Needed
    before any app ships, since RC document features must match the player.
 4. **Brand in the app:** `/brand` and `getBrand()` exist but the app uses default `MaterialTheme`.
-5. `compat-tests` (golden RC documents), `server-scripting` (`.screen.kts` hot-reload; note screens
-   are pre-rendered, so reload must rebuild the registry).
+5. `server-scripting` (`.screen.kts` hot-reload; note screens are pre-rendered, so reload must
+   rebuild the registry).
 6. Images are fetched once at server start (picsum.photos returns a random image each time).
 
 ## Git
