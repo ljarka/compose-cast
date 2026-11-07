@@ -1,6 +1,6 @@
 # T-001 — Typed actions
 
-Status: done (`4bce343`) · Roadmap: Etap 2 · Depends on: —
+Status: done (`8c8dabb`) · Roadmap: Etap 2 · Depends on: —
 
 ## Outcome (2026-11-07)
 Implemented as designed; `./scripts/verify.sh` green; emulator: every action checked (Open URL

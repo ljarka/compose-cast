@@ -10,7 +10,7 @@ has user accounts with roles, global App Settings (name, `applicationId`, server
 and per-screen draft/live state with history. ADR 0011 (JSON files on disk) and ADR 0014 (snapshot
 files) were written for a password-only, screens-only panel; users, sessions, settings and
 uploaded logos are relational/binary data that files handle badly. The roadmap was switched to
-"SQLite storage (Exposed)" in commit `bcc7449`; this ADR records that decision and reconciles it
+"SQLite storage (Exposed)" in commit `ba04c0f`; this ADR records that decision and reconciles it
 with what is already built.
 
 Already built and kept: the `ScreenDefinition` model and its strict canonical JSON (`ScreenJson`,

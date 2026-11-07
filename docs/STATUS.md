@@ -11,9 +11,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 | Task | Roadmap | Status |
 |---|---|---|
-| [T-001 Typed actions](tasks/T-001-typed-actions.md) | Etap 2 | done (`4bce343`) |
-| [T-002 Serializable screen model + JSON screens](tasks/T-002-screen-model-json.md) | Etap 2 | done (`2918209`) |
-| [T-003 Per-request rendering, route params, ETag](tasks/T-003-per-request-rendering.md) | Etap 2 | done (`311cd75`) |
+| [T-001 Typed actions](tasks/T-001-typed-actions.md) | Etap 2 | done (`8c8dabb`) |
+| [T-002 Serializable screen model + JSON screens](tasks/T-002-screen-model-json.md) | Etap 2 | done (`8e3e935`) |
+| [T-003 Per-request rendering, route params, ETag](tasks/T-003-per-request-rendering.md) | Etap 2 | done (`d2c4de6`) |
 | [T-009 Backend in one command (Docker)](tasks/T-009-docker.md) | Etap 6 | ready |
 | [T-006 Data sources](tasks/T-006-data-sources.md) | Etap 4 | needs design detail — design it right after T-009 (critical path to Milestone 1) |
 | [T-008 Local state spike](tasks/T-008-local-state-spike.md) | Etap 5/10 | queued (after T-006); RC API verified, PoC remains |

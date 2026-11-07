@@ -4,7 +4,7 @@
 - Date: 2026-11-07
 
 ## Context
-The project started (commits up to `2f2103c`) as JSON `ScreenModel` + a hand-written Compose
+The project started (commits up to `64c58d1`) as JSON `ScreenModel` + a hand-written Compose
 renderer, with Remote Compose dependencies declared but unused. The owner considered this a
 fundamental mistake: with a custom renderer every new component needs an app release, which is
 exactly what Remote Compose (RC) avoids — the player renders whatever operations a document

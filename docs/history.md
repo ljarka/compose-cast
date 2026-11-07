@@ -3,21 +3,21 @@
 What was done, in order, and where the reasoning lives. Numbers are the order of work — not the
 README roadmap's "Etap" numbers.
 
-1. **Initial state** (up to `2f2103c`): JSON `ScreenModel` + hand-written renderer, RC unused,
+1. **Initial state** (up to `64c58d1`): JSON `ScreenModel` + hand-written renderer, RC unused,
    Android never compiled → [ADR 0001](decisions/0001-remote-compose-wire-format.md).
-2. **Server emits RC** (`99d8979`): `RemoteComposeRenderer`, binary `/screens/{id}`, `/debug`,
-   build-time validation. `c39bb91`: debug-only cleartext HTTP for the emulator (targetSdk ≥ 28
+2. **Server emits RC** (`2c92957`): `RemoteComposeRenderer`, binary `/screens/{id}`, `/debug`,
+   build-time validation. `adc933d`: debug-only cleartext HTTP for the emulator (targetSdk ≥ 28
    blocks cleartext).
-3. **App plays RC** (`e47cdb2`): `sdk-android` on `RemoteComposePlayer`, JSON renderer deleted,
+3. **App plays RC** (`acb2cbf`): `sdk-android` on `RemoteComposePlayer`, JSON renderer deleted,
    `expectSuccess = true`, back stack. Embedded images, units, `height` workaround
    ([0003](decisions/0003-embed-images-server-side.md), [0004](decisions/0004-units-dp-and-sp.md)).
-4. **Handoff docs** (`5ac3534`).
-5. **Cleanup** (`ab79b5f`): legacy JSON models removed, Android build + lint in CI.
-6. **AGP 9.5.1 / Gradle 9.6.0** (`cd9029d`): built-in Kotlin, no `kotlin-android` plugin.
-7. **Screenshot tests** (`e8dd8f1`): `compat-tests` → [ADR 0006](decisions/0006-screenshot-tests-as-goldens.md).
-8. **Dependency refresh** (`f31415c`): Compose BOM, Kotlin 2.4.21, Ktor 3.6.1, compileSdk 37 /
+4. **Handoff docs** (`9c75da7`).
+5. **Cleanup** (`bbc76bb`): legacy JSON models removed, Android build + lint in CI.
+6. **AGP 9.5.1 / Gradle 9.6.0** (`0166b43`): built-in Kotlin, no `kotlin-android` plugin.
+7. **Screenshot tests** (`55190ca`): `compat-tests` → [ADR 0006](decisions/0006-screenshot-tests-as-goldens.md).
+8. **Dependency refresh** (`6da87ff`): Compose BOM, Kotlin 2.4.21, Ktor 3.6.1, compileSdk 37 /
    targetSdk 36. Material3 TopAppBar shorter under Robolectric; RC content pixel-identical.
-9. **Vision & roadmap** (`9e67e84`): DivKit-style framework on RC.
+9. **Vision & roadmap** (`7623147`): DivKit-style framework on RC.
 10. **RC alpha20 → alpha23**: units rewritten for the new density semantics (ADR 0004 table);
     screenshots unchanged with the fix, 42% diff without it.
 11. **New goals** (owner): Android + iOS, admin panel, easy backend, components bound to external
@@ -33,7 +33,7 @@ README roadmap's "Etap" numbers.
     order, 4000-char RC limit), `api(protocol)` in `sdk-android`, no `Action.Unknown` (decode → null,
     keeps T-002 JSON strict), demo `actions` screen for device checks, single `ready` status,
     tap-by-text in the emulator playbook, README Etap 2 order.
-14. **Roadmap expansion** (`907ed06`, `c6288a9`): full Etap 0–12 roadmap in README (DivKit mapping
+14. **Roadmap expansion** (`d9716a7`, `e2299f1`): full Etap 0–12 roadmap in README (DivKit mapping
     table, two app milestones, admin panel, iOS, data sources); Etap 12 Experimentation (A/B
     testing, feature flags, gradual rollout) added; admin panel governance (change history,
     rollback, screen variants) added to Etap 8.

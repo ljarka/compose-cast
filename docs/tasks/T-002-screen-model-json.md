@@ -1,6 +1,6 @@
 # T-002 — Serializable screen model + JSON screens
 
-Status: done (`2918209`) · Roadmap: Etap 2 · Depends on: T-001
+Status: done (`8e3e935`) · Roadmap: Etap 2 · Depends on: T-001
 
 ## Outcome (2026-11-07)
 Implemented; `./scripts/verify.sh` green, screenshots unchanged, emulator renders as before.
