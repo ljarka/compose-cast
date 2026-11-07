@@ -23,10 +23,21 @@ Edit `Screens.kt`, add a `screen("id") { ... }` block inside `composeCast {}`.
 ```bash
 ./gradlew :server-app:run
 curl http://localhost:8080/health
-curl http://localhost:8080/screens/main
+curl -o main.rc http://localhost:8080/screens/main   # Remote Compose binary
+curl http://localhost:8080/screens/main/debug          # decoded document tree
 curl http://localhost:8080/brand
 curl http://localhost:8080/screens
 ```
+
+## Endpoints
+
+| Endpoint | Response |
+|---|---|
+| `GET /health` | `ok` |
+| `GET /brand` | BrandConfig JSON |
+| `GET /screens` | JSON list of screen ids |
+| `GET /screens/{id}` | Remote Compose document, `application/octet-stream`; title in `X-Composecast-Screen-Title` (URL-encoded) |
+| `GET /screens/{id}/debug` | Plain-text dump of the decoded document |
 
 ## Dependencies
 
