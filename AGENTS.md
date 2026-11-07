@@ -99,6 +99,6 @@ curl localhost:8080/screens/main/debug            # decoded RC document tree
 
 ## Current focus
 
-[Task queue](docs/tasks/README.md): T-001 typed actions → T-002 JSON screen model → T-003
+[Task queue](docs/tasks/README.md): T-001 done → **T-002 JSON screen model** → T-003
 per-request rendering → T-004 version negotiation (README roadmap Etap 2). T-005 iOS spike is
 blocked until Xcode is installed.

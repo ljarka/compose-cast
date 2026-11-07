@@ -10,7 +10,7 @@ AndroidX Remote Compose player (`remote-player-view`).
 | `ComposeCastConfig` | Server URL, player version, logging flag |
 | `ComposeCastClient` | Ktor client: `getScreen` (→ `ScreenDocument`), `listScreens`, `getBrand` |
 | `ScreenDocument` | Decoded RC document + `id`, `title` (from `X-Composecast-Screen-Title`), `sizeBytes` |
-| `ComposeCastScreen` | Composable: `AndroidView` hosting `RemoteComposePlayer`; routes host actions |
+| `ComposeCastScreen` | Composable: `AndroidView` hosting `RemoteComposePlayer`; `onAction(Action)` |
 
 ## Usage Pattern (app-template)
 
@@ -20,17 +20,28 @@ val client = ComposeCastClient(ComposeCastConfig(serverUrl = "http://10.0.2.2:80
 val screen by produceState<ScreenDocument?>(null) { value = client.getScreen("main") }
 
 screen?.let {
-    ComposeCastScreen(screen = it, modifier = Modifier.fillMaxSize()) { action, payload ->
-        // "navigate:onboarding" arrives as ("navigate", "onboarding")
+    ComposeCastScreen(screen = it, modifier = Modifier.fillMaxSize()) { action ->
+        when (action) {   // io.composecast.protocol.Action
+            is Action.Navigate -> { /* push action.screen */ }
+            is Action.OpenUrl -> { /* Intent.ACTION_VIEW */ }
+            Action.Reload, is Action.Track, is Action.Custom -> { }
+        }
     }
 }
 ```
 
 ## Action Routing
 
-Buttons emit RC host actions named `type:payload` (constants in `protocol/Actions.kt`):
-`navigate:screen_id`, `open_url:https://...`, `track:event_name`, `custom:any_payload`.
-`ComposeCastScreen` splits on the first `:`.
+Buttons emit RC host actions encoded by `protocol`'s `ActionCodec` (grammar in
+`protocol/AGENTS.md`). `ComposeCastScreen` decodes them into typed `Action`s; unknown or malformed
+names are logged (`Log.w`, tag `ComposeCast`) and ignored. `protocol` is an `api` dependency because
+`Action` is part of this module's public API.
+
+## Logging
+
+`ComposeCastConfig(logEnabled = true)` logs HTTP requests to logcat, tag `ComposeCast`
+(`adb logcat -s ComposeCast`). Ktor's default logger needs SLF4J, which Android lacks — the client
+installs an `android.util.Log` logger.
 
 ## Decisions
 

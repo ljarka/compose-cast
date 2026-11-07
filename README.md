@@ -54,7 +54,7 @@ Principles:
 | Variables | Named variables, set by the host (`setUserLocal*` on the player) | ⏳ Etap 10 |
 | Expressions | On-device float/text expressions, conditional operations | used internally for dp/sp; DSL ⏳ Etap 10 |
 | States | `StateLayout` + local value-change actions | ⏳ Etap 10 |
-| Actions | Host actions (named) + local value changes | host actions as `type:payload` ✅; typed ⏳ Etap 2 |
+| Actions | Host actions (named) + local value changes | typed `Action` (navigate with params, open_url, reload, track, custom) ✅ |
 | Light/dark, theming | Themed colors in the document | ⏳ Etap 7 |
 | Custom elements / extensions | `Custom` component + player custom support | ⏳ later |
 | Loading new markup without release | Whole document per request; player `updateDocument` | ✅ per screen; partial updates ⏳ investigate |
@@ -73,6 +73,7 @@ rendered to Remote Compose documents by the server SDK and played by the Android
   <tr>
     <td align="center"><img src="compat-tests/src/test/screenshots/main.png" width="270" alt="Home screen"><br><code>main</code></td>
     <td align="center"><img src="compat-tests/src/test/screenshots/onboarding.png" width="270" alt="Get Started screen"><br><code>onboarding</code></td>
+    <td align="center"><img src="compat-tests/src/test/screenshots/actions.png" width="270" alt="Actions screen"><br><code>actions</code></td>
   </tr>
 </table>
 
@@ -117,7 +118,9 @@ val registry = composeCast {
 }
 ```
 
-Actions: `navigate:<screen>`, `open_url:<url>`, `track:<event>`, `custom:<payload>`.
+Actions are typed (`io.composecast.protocol.Action`): `Action.Navigate("movie", mapOf("id" to "42"))`,
+`OpenUrl`, `Reload`, `Track`, `Custom`. The wire form also works as a string:
+`navigate:<screen>`, `open_url:<url>`, `reload:`, `track:<event>`, `custom:<payload>`.
 Invalid definitions (unknown style or action, duplicate id, bad color) fail at server start.
 Demo screens live in `server-app/src/main/kotlin/io/composecast/server/Screens.kt`.
 
@@ -185,7 +188,7 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 
 ### Etap 2 — Foundations ⏳
 - [x] Remote Compose alpha20 → alpha23 (units revised, [ADR 0004](docs/decisions/0004-units-dp-and-sp.md))
-- [ ] Typed actions with parameters (`navigate` with params, `open_url`, `reload`, `track`) — T-001
+- [x] Typed actions with parameters (`navigate` with params, `open_url`, `reload`, `track`) — T-001
 - [ ] **Serializable screen model** (JSON) — one model for the DSL, scripts and the admin panel
 - [ ] **Per-request rendering**: routes with parameters (`movie/{id}`), locale; today screens are
   pre-rendered once at start

@@ -40,3 +40,6 @@ README roadmap's "Etap" numbers.
 15. **RC knowledge gap fixed**: `fontSize()` = 14sp assumption documented in
     `docs/remote-compose.md` (item 7) — silent failure risk on RC upgrades.
     Admin panel task stub added (`docs/tasks/T-007-admin-panel.md`).
+16. **T-001 typed actions** ([task](tasks/T-001-typed-actions.md)): `Action` + `ActionCodec` in
+    `protocol`, DSL/renderer/SDK/app migrated, demo `actions` screen + golden, Android client
+    logging fixed (SLF4J had no binding).

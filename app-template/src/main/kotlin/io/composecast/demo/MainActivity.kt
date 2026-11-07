@@ -19,6 +19,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -32,7 +33,7 @@ import io.composecast.android.ComposeCastClient
 import io.composecast.android.ComposeCastConfig
 import io.composecast.android.ComposeCastScreen
 import io.composecast.android.ScreenDocument
-import io.composecast.protocol.Actions
+import io.composecast.protocol.Action
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -83,7 +84,8 @@ private fun ComposeCastApp(
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    val screenState by produceState<Result<ScreenDocument>?>(initialValue = null, key1 = screenId) {
+    var reloadKey by remember { mutableIntStateOf(0) }
+    val screenState by produceState<Result<ScreenDocument>?>(initialValue = null, key1 = screenId, key2 = reloadKey) {
         value = null
         value = runCatching { client.getScreen(screenId) }
     }
@@ -116,14 +118,13 @@ private fun ComposeCastApp(
                 else -> ComposeCastScreen(
                     screen = screenState!!.getOrThrow(),
                     modifier = Modifier.fillMaxSize(),
-                    onAction = { action, payload ->
+                    onAction = { action ->
                         when (action) {
-                            Actions.NAVIGATE -> backStack = backStack + payload
-                            Actions.OPEN_URL -> onOpenUrl(payload)
-                            Actions.TRACK -> { /* analytics hook */ }
-                            else -> scope.launch {
-                                snackbar.showSnackbar("Action: $action → $payload")
-                            }
+                            is Action.Navigate -> backStack = backStack + action.screen // T-003: pass params
+                            is Action.OpenUrl -> onOpenUrl(action.url)
+                            Action.Reload -> reloadKey++
+                            is Action.Track -> { /* analytics hook */ }
+                            is Action.Custom -> scope.launch { snackbar.showSnackbar("Custom: ${action.payload}") }
                         }
                     },
                 )

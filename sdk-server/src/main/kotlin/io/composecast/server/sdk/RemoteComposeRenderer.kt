@@ -27,6 +27,7 @@ import androidx.compose.remote.creation.dsl.padding
 import androidx.compose.remote.creation.dsl.verticalScroll
 import androidx.compose.remote.creation.modifiers.RoundedRectShape
 import androidx.compose.remote.creation.profile.Profile
+import io.composecast.protocol.ActionCodec
 import io.composecast.protocol.BrandConfig
 import java.io.ByteArrayInputStream
 import java.util.logging.Logger
@@ -100,7 +101,7 @@ internal class RemoteComposeRenderer(
                     .fillMaxWidth()
                     .clip(RoundedRectShape(BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS))
                     .background(primary)
-                    .onClick { hostAction(node.action) }
+                    .onClick { hostAction(ActionCodec.encode(node.action)) }
                     .padding(14f),
                 horizontal = RcHorizontalPositioning.Center,
                 vertical = RcVerticalPositioning.Center,

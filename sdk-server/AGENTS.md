@@ -25,7 +25,8 @@ val registry = composeCast {
         title = "Home"
         text("Hello", style = "h1")          // h1 | h2 | h3 | body | caption
         image("https://example.com/a.png", alt = "Hero")
-        button("Go", action = "navigate:detail") // emitted as RC hostAction("navigate:detail")
+        button("Go", Action.Navigate("detail", mapOf("id" to "42"))) // RC hostAction("navigate:detail?id=42")
+        button("Docs", action = "open_url:https://example.com")     // wire form, validated at build
     }
 }
 registry.get("home")?.document  // ByteArray, Remote Compose document

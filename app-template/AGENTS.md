@@ -8,6 +8,23 @@ back stack, loading/error states, action routing.
 This module only. For SDK details, read `sdk-android/AGENTS.md`.
 Do NOT modify this app to prove SDK behavior — use `compat-tests` for that.
 
+## Architecture
+
+```
+MainActivity
+ └── ComposeCastApp (Composable)
+      ├── backStack (rememberSaveable) + BackHandler; screenId = backStack.last()
+      ├── produceState(screenId, reloadKey) → ComposeCastClient.getScreen(screenId) → ScreenDocument
+      ├── loading  → CircularProgressIndicator
+      ├── error    → error message with server URL hint
+      └── success  → ComposeCastScreen(screen, onAction: (Action) -> Unit)   (Remote Compose player)
+                          └── Navigate: pushes action.screen onto backStack (params: T-003)
+                              OpenUrl:  Intent.ACTION_VIEW
+                              Reload:   reloadKey++ → re-fetch current screen
+                              Track:    analytics hook (no-op in demo)
+                              Custom:   Snackbar
+```
+
 ## Key files
 
 | File | Purpose |
@@ -23,18 +40,23 @@ For a real device or remote server, change `SERVER_URL` in `MainActivity`.
 ## Back stack
 
 Navigation is manual:
-- `navigate:screen_id` action → push `screen_id` onto `backStack`
+- `Action.Navigate(screen)` → push `screen` onto `backStack` (params ignored until T-003)
 - System back → pop `backStack`
 - `backStack` is `rememberSaveable` → survives rotation
 
 ## Action routing (in `ComposeCastApp`)
 
+Exhaustive `when (action)` over `io.composecast.protocol.Action` (a new subtype is a compile error):
+
 | Action | Handler |
 |---|---|
-| `navigate` | Push screen id onto back stack |
-| `open_url` | `startActivity(Intent.ACTION_VIEW)` |
-| `track` | No-op (analytics hook placeholder) |
-| other | Show snackbar |
+| `Navigate` | Push screen id onto back stack |
+| `OpenUrl` | `startActivity(Intent.ACTION_VIEW)` |
+| `Reload` | `reloadKey++` → `produceState` re-fetches the current screen |
+| `Track` | No-op (analytics hook placeholder) |
+| `Custom` | Show snackbar |
+
+Unknown actions never reach the app: `sdk-android` logs and drops them.
 
 ## Configuration
 

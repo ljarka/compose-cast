@@ -15,6 +15,7 @@ and the only place where these two modules are allowed to be on the same classpa
 | `DemoScreensScreenshotTest.kt` | Renders `demoScreens()` with a fake `ImageLoader` (no network), captures PNGs |
 | `src/test/screenshots/main.png` | Golden for the `main` screen (README image) |
 | `src/test/screenshots/onboarding.png` | Golden for the `onboarding` screen (README image) |
+| `src/test/screenshots/actions.png` | Golden for the `actions` screen: one button per action type (README image) |
 
 ## Rules (ADR 0006)
 
@@ -42,6 +43,19 @@ and the only place where these two modules are allowed to be on the same classpa
 
 ## Dependencies
 
-- `:sdk-server` (testImplementation) — `demoScreens()`, `ImageLoader`
+- `:server-app` (testImplementation) — `demoScreens()`, so README shows exactly what the server serves
+- `:sdk-server` (testImplementation) — `ImageLoader`
 - `:sdk-android` (testImplementation) — `ComposeCastScreen`, `ScreenDocument`
 - Roborazzi, Robolectric, Compose Test
+
+## Decisions
+
+- Android library module with unit tests only (no main code); depends on `server-app` in test
+  scope just for `demoScreens()`, so README shows exactly what the server serves.
+- `changeThreshold = 0.0002` (0.02% of pixels): goldens are recorded on macOS, CI is Linux.
+  Changing two words on a button is ~0.14%, so content changes are still caught (verified).
+- Add a screen to the demo → add a `@Test` here and record. Current tests: `main`, `onboarding`,
+  `actions` (one button per action type).
+- The Material3 `TopAppBar` frame is not the subject: its status-bar inset differs between
+  Robolectric and devices (and changed with Compose upgrades). When a diff appears, check whether
+  the RC content itself moved/changed before re-recording.

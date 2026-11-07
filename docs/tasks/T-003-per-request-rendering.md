@@ -15,6 +15,9 @@ Data screens (T-006) and personalization need a screen to be a function of the r
   passes `params` (path + query) to rendering. Navigation actions (T-001) carry params, the SDK
   sends them as path/query.
 - `ScreenRegistry.render(path, RenderContext(params, …)): RenderedScreen(bytes, title, etag)`.
+  Design `RenderContext` to grow: README Etap 12 (targeting, A/B, feature flags) will add client
+  attributes (app version, platform, country, plan from headers/JWT) — the ETag/cache key must
+  include whatever the rendering reads.
   Static screens (no params) are still rendered once at startup **for validation** (fail fast) and
   may be cached; parameterized screens render per request.
 - Image cache: thread-safe, bounded (e.g. LRU 256 entries) shared across renders — the current

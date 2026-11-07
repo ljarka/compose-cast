@@ -1,5 +1,7 @@
 package io.composecast.server.sdk
 
+import io.composecast.protocol.Action
+import io.composecast.protocol.ActionCodec
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
@@ -90,6 +92,21 @@ class RemoteComposeRendererTest {
     }
 
     @Test
+    fun `typed actions with params are encoded deterministically into the document`() {
+        fun build() = composeCast(fakeImages) {
+            screen("a") {
+                button("Open", Action.Navigate("movie", linkedMapOf("id" to "42", "lang" to "pl")))
+                button("Legacy", action = "navigate:onboarding")
+            }
+        }
+        val bytes = build().get("a")!!.document
+        val text = String(bytes, Charsets.ISO_8859_1)
+        assertTrue("navigate:movie?id=42&lang=pl" in text, "encoded action missing")
+        assertTrue("navigate:onboarding" in text, "legacy action missing")
+        assertContentEquals(bytes, build().get("a")!!.document)
+    }
+
+    @Test
     fun `title defaults to id`() {
         assertEquals("Home", registry.get("main")!!.title)
         assertEquals("second", registry.get("second")!!.title)
@@ -99,6 +116,10 @@ class RemoteComposeRendererTest {
     fun `invalid definitions fail at build time`() {
         assertFailsWith<IllegalArgumentException> { composeCast { screen("a") { text("x", style = "huge") } } }
         assertFailsWith<IllegalArgumentException> { composeCast { screen("a") { button("x", action = "goto:b") } } }
+        assertFailsWith<IllegalArgumentException> { composeCast { screen("a") { button("x", action = "navigate:") } } }
+        assertFailsWith<IllegalArgumentException> {
+            composeCast { screen("a") { button("x", Action.Custom("x".repeat(ActionCodec.MAX_ENCODED_LENGTH))) } }
+        }
         assertFailsWith<IllegalArgumentException> { composeCast { screen("a") {}; screen("a") {} } }
         assertFailsWith<IllegalArgumentException> {
             composeCast { brand(name = "B", primaryColor = "purple", secondaryColor = "#000000"); screen("a") {} }

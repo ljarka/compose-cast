@@ -26,7 +26,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":protocol"))
+    api(project(":protocol")) // Action is part of the public API (ComposeCastScreen)
     implementation(libs.remote.core)
     implementation(libs.remote.player.core)
     implementation(libs.remote.player.view)

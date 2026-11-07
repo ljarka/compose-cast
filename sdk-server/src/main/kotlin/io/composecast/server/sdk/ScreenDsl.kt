@@ -1,6 +1,7 @@
 package io.composecast.server.sdk
 
-import io.composecast.protocol.Actions
+import io.composecast.protocol.Action
+import io.composecast.protocol.ActionCodec
 
 @DslMarker
 annotation class ScreenDslMarker
@@ -30,7 +31,7 @@ enum class TextStyle(val key: String) {
 internal sealed interface ScreenNode {
     data class Text(val text: String, val style: TextStyle) : ScreenNode
     data class Image(val url: String, val alt: String) : ScreenNode
-    data class Button(val label: String, val action: String) : ScreenNode
+    data class Button(val label: String, val action: Action) : ScreenNode
     data class Spacer(val height: Int) : ScreenNode
 }
 
@@ -47,17 +48,26 @@ class ScreenBuilder internal constructor(val id: String) {
         nodes += ScreenNode.Image(url, alt)
     }
 
-    /**
-     * A tappable button. [action] uses the `type:payload` convention, e.g. `navigate:onboarding`
-     * or `open_url:https://example.com`; it is emitted as a Remote Compose host action.
-     */
-    fun button(label: String, action: String) {
-        val type = action.substringBefore(':')
-        require(type in KNOWN_ACTIONS) {
-            "Screen '$id', button '$label': unknown action type '$type' in '$action'. " +
-                "Allowed: ${KNOWN_ACTIONS.joinToString()}"
+    /** A tappable button; [action] is emitted as a Remote Compose host action ([ActionCodec]). */
+    fun button(label: String, action: Action) {
+        val encoded = ActionCodec.encode(action)
+        require(encoded.length <= ActionCodec.MAX_ENCODED_LENGTH) {
+            "Screen '$id', button '$label': encoded action is ${encoded.length} characters, " +
+                "Remote Compose allows ${ActionCodec.MAX_ENCODED_LENGTH}"
         }
         nodes += ScreenNode.Button(label, action)
+    }
+
+    /**
+     * Convenience for the wire form, e.g. `navigate:onboarding` or `open_url:https://example.com`
+     * (grammar in [ActionCodec]). Unknown or malformed actions fail when the screen is built.
+     */
+    fun button(label: String, action: String) {
+        val decoded = requireNotNull(ActionCodec.decode(action)) {
+            "Screen '$id', button '$label': unknown or malformed action '$action'. " +
+                "Expected navigate:<screen>, open_url:<url>, reload:, track:<event> or custom:<payload>"
+        }
+        button(label, decoded)
     }
 
     fun spacer(height: Int = 8) {
@@ -66,8 +76,4 @@ class ScreenBuilder internal constructor(val id: String) {
     }
 
     internal fun nodes(): List<ScreenNode> = nodes.toList()
-
-    private companion object {
-        val KNOWN_ACTIONS = setOf(Actions.NAVIGATE, Actions.OPEN_URL, Actions.TRACK, Actions.CUSTOM)
-    }
 }

@@ -51,6 +51,9 @@ class DemoScreensScreenshotTest {
     @Test
     fun onboarding() = capture("onboarding")
 
+    @Test
+    fun actions() = capture("actions")
+
     @OptIn(ExperimentalMaterial3Api::class)
     private fun capture(id: String) {
         val screen = requireNotNull(registry.get(id)) { "no demo screen '$id'" }

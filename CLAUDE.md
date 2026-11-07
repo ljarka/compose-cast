@@ -14,13 +14,16 @@
 
 | # | Rule |
 |---|---|
-| R1 | RC creation API only in `sdk-server/…/RemoteComposeRenderer.kt` |
-| R2 | RC player API only in `sdk-android` |
-| R3 | No RC types in public APIs or `protocol` |
-| R4 | Never apply `org.jetbrains.kotlin.android` plugin (AGP 9 built-in Kotlin) |
-| R5 | Compose always via BOM (`platform(libs.compose.bom)`) |
-| R6 | All versions pinned in `gradle/libs.versions.toml` |
-| R7 | `server-scripting` must not depend on Ktor |
+| R1 | RC API only in `sdk-server/…/RemoteComposeRenderer.kt` and `sdk-android` main sources |
+| R2 | RC Gradle dependencies only in `sdk-server` and `sdk-android` |
+| R3 | No RC type in a public signature of `sdk-android` |
+| R4 | `protocol` stays pure: no RC, no Android, no Ktor |
+| R5 | Never apply `org.jetbrains.kotlin.android` plugin (AGP 9 built-in Kotlin) |
+| R6 | Compose versions only from the BOM (`platform(libs.compose.bom)`) |
+| R7 | All dependency versions in `gradle/libs.versions.toml` |
+| R8 | `server-scripting` must not depend on Ktor |
+
+Source of truth: `scripts/check-architecture.sh` (numbers match its error messages).
 
 Breaking any rule → `./scripts/verify.sh` fails. Fix the code, not the script.
 

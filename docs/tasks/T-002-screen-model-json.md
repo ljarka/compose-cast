@@ -1,6 +1,6 @@
 # T-002 — Serializable screen model + JSON screens
 
-Status: queued (after T-001) · Roadmap: Etap 2 · Depends on: T-001
+Status: ready · Roadmap: Etap 2 · Depends on: T-001
 
 ## Goal
 One serializable screen model that the Kotlin DSL builds **and** that can be loaded from JSON files,
@@ -41,6 +41,9 @@ README Etap 2.
   `server-app/src/test/resources/screens/` used by a test proving both paths produce identical RC
   bytes.
 - `sdk-server` needs the `kotlin-serialization` plugin + `kotlinx-serialization-json`.
+- `Action` (from T-001, `protocol`) is already `@Serializable` with discriminator `type`:
+  `{"type":"navigate","screen":"onboarding","params":{"id":"42"}}` — verified by
+  `ActionCodecTest` "actions serialize to JSON". Reuse it; do not invent another action format.
 
 ## Acceptance criteria
 - DSL `demoScreens()` and the JSON files render byte-identical documents (test).

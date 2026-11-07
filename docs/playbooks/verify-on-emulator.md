@@ -34,6 +34,7 @@ tap_text() {
 tap_text "Get started"                                           # then: tap_text "Continue"
 $ADB shell input keyevent KEYCODE_BACK                           # back stack must pop, not exit
 $ADB logcat -d | grep 'FATAL EXCEPTION'                          # must be empty
+$ADB logcat -d -s ComposeCast | grep REQUEST                     # app's HTTP requests (count reloads)
 ```
 
 Buttons rendered by Remote Compose appear in the dump with their text and bounds; re-dump after

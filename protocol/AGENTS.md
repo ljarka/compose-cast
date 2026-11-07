@@ -14,9 +14,19 @@ This module only. **Do not** import `sdk-server`, `server-app`, or `sdk-android`
 
 | File | Purpose |
 |---|---|
-| `Actions.kt` | `Actions` object (NAVIGATE, OPEN_URL, TRACK, CUSTOM); `Headers` (player version, brand ETag, screen title); `Variables` (user_name, cart_count) |
-| `BrandConfig.kt` | `BrandConfig` — name, primaryColor, secondaryColor, backgroundColor, fontFamily |
-| `BrandTokens.kt` | `BrandTokens` — light/dark `ColorScheme`, `Shapes`, `Typography` |
+| `Action.kt` | `Action` (Navigate, OpenUrl, Reload, Track, Custom) + `ActionCodec` (wire form) |
+| `Actions.kt` | `Actions` (wire type names, used only by the codec), `Headers` (HTTP headers), `Variables` (unused placeholders) |
+| `BrandConfig.kt` | Brand colors + font, served as JSON by `GET /brand` |
+| `BrandTokens.kt` | Full Material3 token set (light/dark/shapes/typography); not used yet |
+
+## Actions wire format
+
+Inside a Remote Compose document an action is the host-action name (a string, max 4000 chars):
+`navigate:<enc screen>[?<enc k>=<enc v>&…]`, `open_url:<url raw>`, `reload:`,
+`track:<enc event>[?params]`, `custom:<payload raw>`; `enc` = URL encoding (UTF-8). Params keep
+insertion order. `ActionCodec.decode` returns `null` for unknown/malformed input (old apps ignore
+newer actions); there is no "unknown" `Action`, so JSON definitions stay strict.
+Details and test cases: `ActionCodecTest`.
 
 ## Rules
 
@@ -35,5 +45,5 @@ None (pure Kotlin + kotlinx.serialization).
 ## Test
 
 ```bash
-./gradlew :protocol:build
+./gradlew :protocol:test   # ActionCodecTest
 ```

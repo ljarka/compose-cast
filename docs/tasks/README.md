@@ -6,8 +6,8 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 
 | Task | Roadmap | Status |
 |---|---|---|
-| [T-001 Typed actions](T-001-typed-actions.md) | Etap 2 | ready |
-| [T-002 Serializable screen model + JSON screens](T-002-screen-model-json.md) | Etap 2 | queued (after T-001) |
+| [T-001 Typed actions](T-001-typed-actions.md) | Etap 2 | done |
+| [T-002 Serializable screen model + JSON screens](T-002-screen-model-json.md) | Etap 2 | ready |
 | [T-003 Per-request rendering, route params, ETag](T-003-per-request-rendering.md) | Etap 2 | queued (after T-002) |
 | [T-004 Version negotiation](T-004-version-negotiation.md) | Etap 2 | queued (after T-003) |
 | [T-005 iOS spike](T-005-ios-spike.md) | Etap 3 | blocked: needs Xcode on the dev machine |

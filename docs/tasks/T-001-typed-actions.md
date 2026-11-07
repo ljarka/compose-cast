@@ -1,6 +1,15 @@
 # T-001 — Typed actions
 
-Status: ready · Roadmap: Etap 2 · Depends on: —
+Status: done · Roadmap: Etap 2 · Depends on: —
+
+## Outcome (2026-11-07)
+Implemented as designed; `./scripts/verify.sh` green; emulator: every action checked (Open URL
+opened Chrome, Reload issued a second request, Custom showed the snackbar, Back popped each step).
+Deviations / findings:
+- The server does not log requests, so "server log shows a second GET" was not checkable; reload
+  is verified with the app's request log (`adb logcat -s ComposeCast`).
+- Found and fixed: `logEnabled = true` printed nothing (Ktor's default logger needs SLF4J, absent
+  on Android) — the client now logs via `android.util.Log`.
 
 ## Goal
 Replace stringly-typed `"type:payload"` actions with a typed `Action` model in `protocol`, shared by
@@ -101,7 +110,7 @@ object ActionCodec {
   `IllegalArgumentException` (existing test); an encoding > 4000 chars throws too.
 - `main` golden unchanged; `onboarding` changed only by the new button; `actions` golden added.
 - Emulator: Get started → onboarding; Actions demo → actions; Open URL opens a browser; Reload
-  re-fetches (server log shows a second `GET /screens/actions`); Custom shows a snackbar; Back pops
+  re-fetches (`adb logcat -s ComposeCast` shows a second `REQUEST …/screens/actions`); Custom shows a snackbar; Back pops
   each step; no `FATAL EXCEPTION`.
 
 ## Verification
