@@ -5,11 +5,11 @@ plugins {
 
 android {
     namespace = "io.composecast.demo"
-    compileSdk = 35
+    compileSdk = 37
     defaultConfig {
         applicationId = "io.composecast.demo"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
     }
@@ -25,6 +25,7 @@ android {
 dependencies {
     implementation(project(":sdk-android"))
     implementation(project(":protocol"))
+    implementation(platform(libs.compose.bom))
     implementation(libs.activity.compose)
     implementation(libs.compose.material3)
     implementation(libs.compose.ui.tooling.preview)

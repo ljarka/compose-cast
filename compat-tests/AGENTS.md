@@ -25,3 +25,6 @@ Look at the recorded PNGs before committing them — a green record proves nothi
 - `changeThreshold = 0.0002` (0.02% of pixels): goldens are recorded on macOS, CI is Linux.
   Changing two words on a button is ~0.14%, so content changes are still caught (verified).
 - Add a screen to the demo → add a `@Test` here and record.
+- The Material3 `TopAppBar` frame is not the subject: its status-bar inset differs between
+  Robolectric and devices (and changed with Compose upgrades). When a diff appears, check whether
+  the RC content itself moved/changed before re-recording.

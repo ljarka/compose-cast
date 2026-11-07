@@ -13,7 +13,7 @@ plugins {
 
 android {
     namespace = "io.composecast.compat"
-    compileSdk = 35
+    compileSdk = 37
     defaultConfig {
         minSdk = 26
     }
@@ -33,11 +33,13 @@ dependencies {
     testImplementation(project(":sdk-android"))
     testImplementation(project(":sdk-server"))
     testImplementation(project(":server-app")) // demoScreens()
+    testImplementation(platform(libs.compose.bom))
     testImplementation(libs.compose.material3)
     testImplementation(libs.compose.ui.test.junit4)
     testImplementation(libs.robolectric)
     testImplementation(libs.roborazzi)
     testImplementation(libs.roborazzi.compose)
     testImplementation(libs.junit)
+    debugImplementation(platform(libs.compose.bom))
     debugImplementation(libs.compose.ui.test.manifest)
 }

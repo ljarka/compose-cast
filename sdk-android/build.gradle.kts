@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "io.composecast.android"
-    compileSdk = 35
+    compileSdk = 37
     defaultConfig {
         minSdk = 26 // required by remote-player-*
     }
@@ -36,6 +36,7 @@ dependencies {
     implementation(libs.ktor.client.logging)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.kotlinx.serialization.json)
+    implementation(platform(libs.compose.bom))
     implementation(libs.compose.runtime)
     implementation(libs.compose.foundation)
     implementation(libs.compose.ui)
