@@ -6,6 +6,25 @@ through every section.
 
 Current version: **1.0.0-alpha23** (catalog: `remote-compose` in `gradle/libs.versions.toml`).
 
+---
+
+## What It Is
+
+Remote Compose is an AndroidX / Jetpack library that lets you write UI with Compose-style APIs but
+**execute and render that UI in a different process**. The app creates a serialized UI document; a
+**player** in a host process receives and renders it locally without calling back into the originating
+app. Primary use cases designed by Google: App Widgets, Wear OS widgets.
+compose-cast repurposes this for HTTP server-driven UI over a network.
+
+### Three Stages
+
+1. **Create** — `@RemoteComposable` functions run and record a compact, serialized UI document.
+2. **Transport** — The document is passed to a host process (via IPC, HTTP, or any channel).
+3. **Play** — A Remote Compose **player** in the host reads the document and handles layout, input,
+   state, and animations locally — no calls back to the originating app.
+
+---
+
 ## Artifacts we use
 
 | Artifact | Used in | Notes |
@@ -16,7 +35,10 @@ Current version: **1.0.0-alpha23** (catalog: `remote-compose` in `gradle/libs.ve
 
 Also published (unused): `remote-player-compose`, `remote-creation-compose`,
 `remote-creation-android`, `remote-creation-expression`, `remote-testing`, `remote-tooling-preview`.
+
 **No iOS / Kotlin Multiplatform artifacts** (checked 2026-11-07) → [ADR 0007](decisions/0007-ios-strategy-spike.md).
+
+---
 
 ## How to research the API (do this instead of guessing)
 
@@ -28,10 +50,14 @@ unzip -q $A-$V-sources.jar -d $A
 Put downloads in a scratch directory, not in the repo. Most behavior lives in `remote-core`
 (`CoreDocument`, `operations/layout/managers/*`, `operations/layout/modifiers/*`, `Limits`).
 
+---
+
 ## API stability
 
 All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alpha23) →
 [ADR 0002](decisions/0002-confine-restricted-remote-compose-api.md).
+
+---
 
 ## Document versions
 
@@ -41,6 +67,8 @@ All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alph
   `RemoteComposeBuffer.setVersion`), so an unsupported op fails on the server.
 - We write profile `RcProfiles.PROFILE_ANDROIDX` (512); the profile is stored in the header
   (`DOC_PROFILES`) and the reader needs it to know e.g. `CORE_TEXT`.
+
+---
 
 ## Behaviors that bit us
 
@@ -55,6 +83,11 @@ All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alph
    `HostNamedActionOperation` also has an optional `valueId` (the callback's `value`). Verified alpha23.
 6. `RcFloat` expressions are lazy; `toFloat()` writes them. Text font size accepts an expression
    (NaN-encoded id) and listens to its variables.
+7. **`fontSize()`** — `FontTextSize.fontSize()` returns 14.0; use `fontSize() * value / 14` as a
+   scale factor to approximate `sp` units. Verify this constant on every RC upgrade (silent failure
+   risk: wrong text sizes without any error).
+
+---
 
 ## Player (Android)
 
@@ -62,3 +95,61 @@ All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alph
   thread.
 - Emulator performance: start the emulator with `-gpu host` (without it ~20x slower).
 - Texts from documents appear in the accessibility tree (useful with `uiautomator dump`).
+
+---
+
+## Community projects & experiments
+
+### armcha/remotecompose — Web Editor + JVM Converter + Android Player
+
+<https://github.com/armcha/remotecompose> | Live editor: <https://armcha.github.io/remotecompose/>
+
+Full server-driven UI pipeline outside the Google App Widget path:
+
+```
+CREATION (JVM Server)                   PLAYBACK (Android App)
+┌────────────────────────┐              ┌────────────────────────┐
+│  Web drag-and-drop     │              │  RemoteComposePlayer   │
+│  editor (HTML/JS)      │   binary     │  (View-based)          │
+│  → JSON config         │──  .rc  ────▶│                        │
+│  → RemoteComposeWriter │   files      │  No creation deps!     │
+└────────────────────────┘              └────────────────────────┘
+```
+
+Key takeaways: creation and playback are fully separable; `RemoteComposeWriter` from
+`remote-creation-core` + `remote-creation-jvm` works on pure JVM; `RemoteComposePlayer` is
+View-based → wrap in `AndroidView`.
+
+### camaelon/remotecompose-experiments — Multi-platform Players
+
+<https://github.com/camaelon/remotecompose-experiments>
+
+Players for multiple targets: C++/Skia (macOS/iOS/headless), Kotlin Multiplatform (Desktop),
+TypeScript (Web/VS Code). The `.rc` binary format is **not Android-only**.
+
+---
+
+## Kotlin Multiplatform (KMP) support
+
+Google/Jetpack has no official KMP support for Remote Compose (Android-only as of 2026-11-07).
+
+| Option | Notes |
+|---|---|
+| `remotecomposeplayer-cmp` (deanalvero) | Experimental KMP/CMP player for `.rc`; Android, iOS, Web, Desktop |
+| camaelon C++/Skia, TypeScript players | Experimental multi-platform readers |
+
+For compose-cast: the JVM server generates `.rc` today; `remotecomposeplayer-cmp` is an optional
+future client for iOS/Web → [ADR 0007](decisions/0007-ios-strategy-spike.md).
+
+---
+
+## Official sources
+
+| Resource | URL |
+|---|---|
+| Conceptual guide | <https://developer.android.com/develop/ui/compose/system/remote-compose> |
+| AndroidX releases | <https://developer.android.com/jetpack/androidx/releases/compose-remote> |
+| Foundation artifacts | <https://developer.android.com/jetpack/androidx/releases/compose-remote-foundation> |
+| Wear OS | <https://developer.android.com/jetpack/androidx/releases/wear-compose-remote> |
+| Procedural components guide | <https://github.com/androidx/androidx/blob/androidx-main/compose/remote/remote-creation/doc/guides/PROCEDURAL_COMPONENTS_GUIDE.md> |
+| AndroidX source | <https://github.com/androidx/androidx/tree/androidx-main/compose/remote> |
