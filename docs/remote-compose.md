@@ -152,6 +152,14 @@ Put downloads in a scratch directory, not in the repo. Most behavior lives in `r
 
 ---
 
+## Watching releases
+
+RC is alpha and semantics change between releases (alpha20 → alpha23 changed density scaling).
+Watch the [AndroidX release notes](https://developer.android.com/jetpack/androidx/releases/compose-remote):
+`./scripts/check-rc-release.sh` compares our version with Google Maven; CI runs it every Monday
+(`.github/workflows/rc-release-watch.yml`, a failed run = new release). Upgrade with
+[the playbook](playbooks/upgrade-remote-compose.md), and record changed behaviors here with the version.
+
 ## API stability
 
 All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alpha23) →

@@ -5,11 +5,10 @@ would have doubled sizes). Read first: [docs/remote-compose.md](../remote-compos
 [ADR 0003](../decisions/0003-embed-images-server-side.md), [ADR 0004](../decisions/0004-units-dp-and-sp.md).
 Upgrade RC **alone**, never together with other dependencies.
 
-1. **Latest version**
-   ```bash
-   curl -s https://dl.google.com/android/maven2/androidx/compose/remote/remote-core/maven-metadata.xml \
-     | grep -o '<version>[^<]*' | tail -5
-   ```
+1. **Latest version and what changed**: `./scripts/check-rc-release.sh` (also runs weekly in CI:
+   a failed "Remote Compose release watch" run = new release). Read the
+   [release notes](https://developer.android.com/jetpack/androidx/releases/compose-remote) for
+   every version between ours and the new one; note API/behavior changes to re-check in step 3.
 2. **Bump** `remote-compose` in `gradle/libs.versions.toml`; `./scripts/verify.sh --quick`.
 3. **Re-check every known behavior in the new sources** (download as in docs/remote-compose.md, in a
    scratch dir):

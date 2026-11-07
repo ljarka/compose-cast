@@ -1,0 +1,16 @@
+name: Remote Compose release watch
+
+# RC is alpha and changes semantics between releases (docs/remote-compose.md). A failed run of this
+# workflow = a new release is out: read the release notes, then docs/playbooks/upgrade-remote-compose.md.
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Newer Remote Compose release?
+        run: ./scripts/check-rc-release.sh
