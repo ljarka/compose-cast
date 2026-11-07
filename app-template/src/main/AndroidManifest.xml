@@ -5,7 +5,7 @@
 
     <application
         android:label="@string/app_name"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+        android:theme="@style/Theme.ComposeCastDemo"
         android:supportsRtl="true">
 
         <activity
