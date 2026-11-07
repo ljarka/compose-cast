@@ -258,18 +258,36 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
   verified); server renders for it or answers "update required" — before apps reach users
 
 ### Etap 8 — Admin panel MVP
-- [ ] Ktor-served web UI + REST CRUD on the JSON screen model (files on disk, git-friendly)
-- [ ] Component palette, property editor, data-source editor
+
+> **Deployment model:** a user buys a VPS, deploys compose-cast, configures their app in the admin
+> panel, and publishes a branded Android app to Google Play. One server = one product.
+
+- [ ] Ktor-served web UI; SQLite storage (Exposed) — one row per screen, with draft/live status and
+  full history
+- [ ] User accounts (email + bcrypt password), roles: `admin` / `editor` / `viewer`; session cookie;
+  no ADMIN_PASSWORD env-var approach
+- [ ] Component palette + property editor; data-source editor (Etap 4 bindings)
 - [ ] Preview in the browser (community TypeScript RC player or server-rendered PNG) and on a device
   via WebSocket push
-- [ ] Publish (screen goes live), basic auth (`ADMIN_PASSWORD`)
-- [ ] Change history per screen (who published, when, diff); one-click rollback to any previous version
-- [ ] Screen variants: multiple draft versions of a screen, one marked active
+- [ ] Publish (screen goes live); change history per screen (who published, when); one-click rollback
+- [ ] **App Settings page:** app name, `applicationId`, server URL, `BrandConfig` (primary colour,
+  background colour, logo upload)
 
-### Etap 9 — Milestone 2: TV shows app on Android and iOS
+### Etap 9 — White-label app export + TV shows milestone
+
+> **App export:** user fills in App Settings, clicks “Export Android project”. The server
+> generates a configured ZIP of `app-template` (SERVER\_URL, BrandConfig, app name, applicationId,
+> launcher icon from the uploaded logo). User unzips, builds in Android Studio, submits to
+> Google Play. **No APK is generated server-side** — only a ready-to-build Gradle project.
+
+- [ ] `app-template` fully configurable via `compose-cast.properties` (SERVER\_URL, app name,
+  applicationId, BrandConfig) — no hardcoded values
+- [ ] Admin panel “Export project” endpoint: generates a ZIP of the configured template
+- [ ] **AI brand setup (optional):** user describes their brand in a text field (“dark blue,
+  minimalist, fintech”); AI generates a `BrandConfig` colour palette suggestion
 - [ ] TV shows app on [TVMaze](https://www.tvmaze.com/api) (no API key): search results, show
-  detail, episodes — built **only** in the admin panel
-- [ ] Same server, both platforms; screenshots of both in this README
+  detail, episodes — built **only** in the admin panel; exported as a branded app
+- [ ] Same server, both Android and iOS (Etap 3); screenshots of both in this README
 
 ### Etap 10 — Interactivity (DivKit core)
 - [ ] Host → document variables (RC named variables); local state (`StateLayout`): toggles, tabs

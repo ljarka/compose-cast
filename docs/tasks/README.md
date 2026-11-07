@@ -15,6 +15,7 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-004 Version negotiation](T-004-version-negotiation.md) | Etap 7 | queued (after Milestone 1, Etap 6) — no installed apps before that; the app already sends its player version |
 | [T-005 iOS spike](T-005-ios-spike.md) | Etap 3 | blocked: needs Xcode on the dev machine |
 | [T-007 Admin panel](T-007-admin-panel.md) | Etap 8 | needs design detail (ADRs 0011–0014 first; after T-002) |
+| [T-010 White-label app export](T-010-app-export.md) | Etap 9 | queued (after T-007) |
 
 Rows are in priority order (owner, 2026-11-07): fastest path to Milestone 1 (weather app).
 
