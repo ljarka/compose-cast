@@ -25,6 +25,82 @@ compose-cast repurposes this for HTTP server-driven UI over a network.
 
 ---
 
+## Official Higher-Level API (`@RemoteComposable`)
+
+The official docs describe a **Compose DSL approach** using `@RemoteComposable` annotated functions
+and a component library. This is exposed through the `remote-creation-compose` artifact (unused by
+compose-cast today — requires Compose runtime at creation time).
+
+### Why compose-cast uses the lower-level procedural API instead
+
+`remote-creation-compose` likely requires a Compose runtime, which does not run on a plain JVM
+server without Compose Multiplatform. compose-cast uses `remote-creation-core` + `remote-creation-jvm`
+for server-side document creation — pure JVM, no Compose runtime dependency.
+
+If Compose Multiplatform support for `remote-creation-compose` is confirmed in a future RC release,
+evaluate migrating to the higher-level DSL (task: spike in Etap 1 or Etap 2 upgrade).
+
+### Component catalog (from official docs, alpha23)
+
+| Component | Type | Notes |
+|---|---|---|
+| `RemoteBox`, `RemoteRow`, `RemoteColumn` | Basic layout | Standard containers |
+| `RemoteFitBox`, `RemoteCollapsibleRow`, `RemoteCollapsibleColumn` | Adaptive layout | Handle dynamic screen sizes |
+| `RemoteMaterialTheme` | Theming | Color + typography for Wear OS |
+| `RemoteCanvas` | Custom drawing | Records draw commands; runs on player host |
+| `RemoteText` | Text | Accepts `RemoteString` for dynamic text |
+
+### State API (symbolic references, not in-memory values)
+
+```kotlin
+// App code cannot read these values back — the player manages them on the host
+val count = rememberMutableRemoteInt(0)
+val color = rememberNamedRemoteColor("primary")
+val label = rememberMutableRemoteString("")
+```
+
+### Actions and dynamic branching
+
+```kotlin
+// Declarative actions (instead of lambdas)
+RemoteModifier.clickable(action)        // attach action to any element
+RemoteModifier.background(remoteColor)  // dynamic styling from remote state
+
+// Action types
+valueChange(stateRef, newValue)         // update remote state on host
+pendingIntentAction(pendingIntent)      // hand off to app/host
+hostAction("name")                      // named callback → addActionCallback on player
+combinedAction(action1, action2)        // sequence of actions
+
+// Dynamic UI branching (instead of Kotlin if/when over remote state)
+RemoteStateLayout(state) {              // maps state values to different UI slots
+    on(0) { /* branch A */ }
+    on(1) { /* branch B */ }
+}
+```
+
+### Remote system context (use on host, not local app environment)
+
+```kotlin
+// Don't use LocalConfiguration / LocalDensity — they reflect app environment at recording time
+// Use instead:
+RemoteConfiguration   // resolves on host at runtime
+RemoteDensity         // resolves on host at runtime
+```
+
+### Standard Compose vs Remote Compose comparison (official)
+
+| Feature | Standard Compose | Remote Compose |
+|---|---|---|
+| Click events | In-process lambdas | Declarative `Action` objects |
+| Conditional logic | Kotlin `if`/`when` over live state | `if`/`when` works for static state; dynamic → `RemoteStateLayout` |
+| Loops | Standard `for`/`while` | `for`/`forEach` only over data known at record time |
+| Execution host | App process | Launcher (AppWidget), Wear OS, or any player |
+| State | Local memory values | Symbolic references (`rememberMutableRemoteInt()`) |
+| Side effects | `LaunchedEffect` coroutines | Not available on host |
+
+---
+
 ## Artifacts we use
 
 | Artifact | Used in | Notes |
