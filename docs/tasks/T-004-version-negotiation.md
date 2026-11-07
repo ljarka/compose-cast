@@ -1,6 +1,6 @@
 # T-004 — Version negotiation
 
-Status: ready (after T-003) · Roadmap: Etap 2 · Depends on: T-003
+Status: queued (after T-003) · Roadmap: Etap 2 · Depends on: T-003
 
 ## Goal
 Clients report which Remote Compose documents they can play; the server renders for that, or

@@ -27,3 +27,9 @@ README roadmap's "Etap" numbers.
 12. **Agent tooling** ([0010](decisions/0010-executable-rules-verify-tasks.md)):
     `scripts/check-architecture.sh` (8 rules), `scripts/verify.sh` (CI runs it), playbooks,
     task queue `docs/tasks/` with T-001…T-006.
+13. **Cold-read test #1** (2026-11-07, [playbook](playbooks/cold-read-test.md)): a fresh agent found
+    T-001 unaided, confidence 8/10. Fixed: `verify.sh` Android SDK fallback (failed in a fresh
+    worktree), DoD vs "commit only when asked", T-001 wire grammar (raw `open_url`/`custom`, param
+    order, 4000-char RC limit), `api(protocol)` in `sdk-android`, no `Action.Unknown` (decode → null,
+    keeps T-002 JSON strict), demo `actions` screen for device checks, single `ready` status,
+    tap-by-text in the emulator playbook, README Etap 2 order.

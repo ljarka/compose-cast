@@ -1,6 +1,6 @@
 # T-002 — Serializable screen model + JSON screens
 
-Status: ready (after T-001) · Roadmap: Etap 2 · Depends on: T-001
+Status: queued (after T-001) · Roadmap: Etap 2 · Depends on: T-001
 
 ## Goal
 One serializable screen model that the Kotlin DSL builds **and** that can be loaded from JSON files,
@@ -33,7 +33,8 @@ README Etap 2.
   renderer renders `ScreenDefinition` (no RC types in the model — rule R1 still holds).
 - Validation lives in one place (`ScreenDefinition.validate()` or a `ScreenValidator`), used by
   the DSL and the JSON loader: duplicate ids, empty id, negative spacer, colors, unknown action
-  (`Action.Unknown` is not allowed in definitions).
+  (an unknown action `type` in JSON is a decoding error naming the file — `Action` has no unknown
+  subtype, see T-001).
 - Loading: `composeCast { screensFrom(directory: Path) }` (or `ScreenRegistry` builder option) loads
   every `*.json` file; a JSON error names the file and the JSON path.
 - `server-app`: keep `demoScreens()` in Kotlin; add an equivalent JSON copy under

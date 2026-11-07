@@ -1,6 +1,6 @@
 # T-003 — Per-request rendering, route params, ETag
 
-Status: ready (after T-002) · Roadmap: Etap 2 · Depends on: T-002
+Status: queued (after T-002) · Roadmap: Etap 2 · Depends on: T-002
 
 ## Goal
 Render documents per request instead of once at startup, with route parameters

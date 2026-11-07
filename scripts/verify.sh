@@ -3,7 +3,8 @@
 #
 #   ./scripts/verify.sh           full: docs, architecture, JVM build + tests, Android build + lint,
 #                                 screenshot verification
-#   ./scripts/verify.sh --quick   docs, architecture, JVM build + tests (no Android SDK needed)
+#   ./scripts/verify.sh --quick   docs, architecture, JVM build + tests (no Android SDK needed);
+#                                 enough as a baseline only for server-only work
 #
 # Exits non-zero on the first failing step and says what to look at.
 set -euo pipefail
@@ -19,6 +20,13 @@ if [[ -z "${JAVA_HOME:-}" ]]; then
   done
 fi
 [[ -n "${JAVA_HOME:-}" ]] || { echo "JDK 21 not found: set JAVA_HOME"; exit 1; }
+
+# Android SDK: local.properties is gitignored, so fresh checkouts/worktrees lack it.
+if [[ ! -f local.properties && -z "${ANDROID_HOME:-}" && -z "${ANDROID_SDK_ROOT:-}" ]]; then
+  for candidate in "$HOME/Library/Android/sdk" "$HOME/Android/Sdk"; do
+    if [[ -d "$candidate/platforms" ]]; then export ANDROID_HOME="$candidate"; break; fi
+  done
+fi
 
 step() { echo; echo "=== $1"; }
 gradle() { ./gradlew --console=plain "$@"; }

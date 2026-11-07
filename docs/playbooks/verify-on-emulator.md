@@ -24,10 +24,18 @@ $ADB shell am start -W -n io.composecast.demo/.MainActivity     # TotalTime ≈ 
 # 4. Look and interact
 $ADB exec-out screencap -p > screen.png                          # open it
 $ADB shell uiautomator dump /sdcard/u.xml && $ADB shell cat /sdcard/u.xml | grep -o 'text="[^"]*"'
-$ADB shell input tap 540 1064                                    # e.g. the "Get started" button (1080x2400)
+# tap a button by its text: center of its bounds from the dump
+tap_text() {
+  $ADB shell uiautomator dump /sdcard/u.xml >/dev/null
+  set -- $($ADB shell cat /sdcard/u.xml | grep -o "text=\"$1\"[^>]*bounds=\"[^\"]*\"" \
+    | sed -E 's/.*bounds="\[([0-9]+),([0-9]+)\]\[([0-9]+),([0-9]+)\]".*/\1 \2 \3 \4/')
+  $ADB shell input tap $(( ($1+$3)/2 )) $(( ($2+$4)/2 ))
+}
+tap_text "Get started"                                           # then: tap_text "Continue"
 $ADB shell input keyevent KEYCODE_BACK                           # back stack must pop, not exit
 $ADB logcat -d | grep 'FATAL EXCEPTION'                          # must be empty
 ```
 
-If the first screen shows only the loading spinner, take the screenshot a few seconds later
+Buttons rendered by Remote Compose appear in the dump with their text and bounds; re-dump after
+each navigation. If the first screen shows only the loading spinner, take the screenshot a few seconds later
 before suspecting the code. Performance doubts: `$ADB shell dumpsys gfxinfo io.composecast.demo`.

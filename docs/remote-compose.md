@@ -51,6 +51,8 @@ All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alph
    (`written(...)` in the renderer). Verified alpha20, alpha23.
 4. `HTag` header tags with `DOC_DENSITY_BEHAVIOR` are passed to `createRcBuffer(profile, *tags)`.
 5. Host actions: `Modifier.onClick { hostAction("name") }` → player `addActionCallback { name, value }`.
+   The name is a `TextData` UTF-8 string, max `Limits.MAX_STRING_SIZE = 4000` chars;
+   `HostNamedActionOperation` also has an optional `valueId` (the callback's `value`). Verified alpha23.
 6. `RcFloat` expressions are lazy; `toFloat()` writes them. Text font size accepts an expression
    (NaN-encoded id) and listens to its variables.
 

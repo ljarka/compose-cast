@@ -185,13 +185,13 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 
 ### Etap 2 — Foundations ⏳
 - [x] Remote Compose alpha20 → alpha23 (units revised, [ADR 0004](docs/decisions/0004-units-dp-and-sp.md))
+- [ ] Typed actions with parameters (`navigate` with params, `open_url`, `reload`, `track`) — T-001
 - [ ] **Serializable screen model** (JSON) — one model for the DSL, scripts and the admin panel
 - [ ] **Per-request rendering**: routes with parameters (`movie/{id}`), locale; today screens are
   pre-rendered once at start
 - [ ] `ETag` / `If-None-Match`
 - [ ] **Version negotiation**: client reports the RC document API level it plays (6–8 verified);
   server renders for it or answers "update required"
-- [ ] Typed actions with parameters (`navigate` with params, `open_url`, `reload`, `track`)
 
 ### Etap 3 — iOS spike (parallel to 2–5; needs Xcode)
 - [ ] (a) Community Remote Compose engine / SwiftUI viewer plays our documents

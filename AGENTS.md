@@ -10,8 +10,9 @@ This file is the index. Keep it short (< 150 lines); details live where the tabl
 ## Start here (first time in this repo)
 
 1. Read this file, then [docs/tasks/README.md](docs/tasks/README.md).
-2. Run `./scripts/verify.sh --quick` (full: `./scripts/verify.sh`) — it must be green before you
-   change anything; if not, fixing it is your first task.
+2. Run `./scripts/verify.sh` (it finds the JDK and Android SDK itself; `--quick` skips Android and
+   screenshots — enough only for server-only work). It must be green before you change anything;
+   if not, fixing it is your first task.
 3. The owner's request wins. Without one, take the **first `ready` task** in the queue and follow its
    file; use the [playbooks](docs/playbooks/README.md) for recurring procedures.
 4. Before touching an area, read its module `AGENTS.md` and the ADRs it links.
@@ -57,7 +58,8 @@ Do not load the whole project.
    rendering bug so far.
 6. Changing an accepted decision = new ADR that supersedes it. Architecture rules are enforced by
    `scripts/check-architecture.sh` ([0010](docs/decisions/0010-executable-rules-verify-tasks.md)).
-7. Git: work on `main`; commit/push only when the owner asks.
+7. Git: work on `main` (or the branch/worktree you were given). **Commit/push only when the owner
+   asks** — finishing a task does not imply a commit.
 
 ## Definition of Done (every task)
 
@@ -65,14 +67,16 @@ Do not load the whole project.
 - [ ] Module `AGENTS.md` updated (files, decisions) for every module touched.
 - [ ] New decision → ADR; new RC fact → `docs/remote-compose.md`; entry in `docs/history.md`.
 - [ ] README roadmap boxes ticked / adjusted; README screenshots current.
-- [ ] Task queue updated: task `done (commit)`, next task specified enough to start.
+- [ ] Task queue updated: task `done` (add the commit hash once the owner had it committed), next
+  task specified enough to start.
 
 ## Environment
 
 - JDK 21 (Homebrew `openjdk@21`). `scripts/verify.sh` finds it; for raw `./gradlew` in agent
   shells (no `~/.zshrc`): `export JAVA_HOME=/opt/homebrew/opt/openjdk@21`.
-- Android SDK `~/Library/Android/sdk` (`local.properties`, gitignored); AVD `Medium_Phone_API_37.0`,
-  start it with `-gpu host` (≈20x faster).
+- Android SDK `~/Library/Android/sdk` (`local.properties` is gitignored; `verify.sh` falls back to
+  `~/Library/Android/sdk` or `~/Android/Sdk`); AVD `Medium_Phone_API_37.0`, start it with
+  `-gpu host` (≈20x faster). On Linux `verify.sh` also probes `/usr/lib/jvm/*21*`.
 - No Xcode on the dev machine yet (needed for iOS); no `gh` CLI — CI:
   https://github.com/ljarka/compose-cast/actions (public API, rate-limited).
 - Toolchain: AGP 9.5.1 (built-in Kotlin: never apply `org.jetbrains.kotlin.android`), Gradle 9.6.0,
