@@ -35,7 +35,9 @@ Buttons emit RC host actions named `type:payload` (constants in `protocol/Action
 ## Decisions
 
 - Player: `remote-player-view` wrapped in our own `AndroidView` (~30 lines), not
-  `remote-player-compose` (pulls Compose 1.11 → would force compileSdk 36 / newer AGP).
+  `remote-player-compose` (pulls Compose 1.11 + appcompat; possible since AGP 9.5, revisit with
+  the Compose upgrade).
+- AGP 9 built-in Kotlin: no `org.jetbrains.kotlin.android` plugin; `jvmTarget` = `targetCompatibility`.
 - RC player API is `@RestrictTo(LIBRARY_GROUP)` in alpha20; keep it inside this module.
 - Document decoding (`RemoteDocument(bytes)`) runs on `Dispatchers.Default`, not the main thread.
 - `expectSuccess = true`: unknown screen → `ClientRequestException` (404), not a decode error.

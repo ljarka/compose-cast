@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.compose)
 }
@@ -41,10 +40,4 @@ dependencies {
     implementation(libs.compose.foundation)
     implementation(libs.compose.ui)
     testImplementation(libs.kotlin.test)
-}
-
-kotlin {
-    compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
-    }
 }

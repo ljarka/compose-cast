@@ -53,7 +53,7 @@ curl http://localhost:8080/screens/main/debug      # decoded RC tree, human-read
 ./gradlew :sdk-server:test                         # decodes documents with remote-core
 
 # Android, end to end (server must be running; emulator reaches it at 10.0.2.2:8080)
-~/Library/Android/sdk/emulator/emulator -avd Medium_Phone_API_37.0 &
+~/Library/Android/sdk/emulator/emulator -avd Medium_Phone_API_37.0 -gpu host &   # -gpu host matters, see below
 ./gradlew :app-template:installDebug
 adb shell am start -n io.composecast.demo/.MainActivity
 adb exec-out screencap -p > screen.png            # look at it; tests alone do not catch layout bugs
@@ -64,8 +64,13 @@ Full build = what CI runs (`.github/workflows/ci.yml`):
 `:protocol:build :sdk-server:build :server-scripting:build :server-app:build :compat-tests:build`
 then `:sdk-android:assembleDebug :sdk-android:lintDebug :app-template:assembleDebug :app-template:lintDebug`.
 Lint must stay green. `RestrictedApi` is downgraded to a warning **only in `sdk-android`** (the
-deliberate RC player usage); one documented `@SuppressLint` in `MainActivity` for a lint false
-positive (`ProduceStateDoesNotAssignValue`, compose-runtime 1.7.5 detector under Kotlin 2.2).
+deliberate RC player usage). Note: under AGP 9.5 lint, compose-runtime 1.7.5's lint checks do not
+fire at all (verified: a `produceState` that never assigns is not reported), and lifecycle 2.6.2's
+checks are skipped as obsolete — upgrading Compose restores them.
+
+Emulator: started from a terminal without `-gpu host` it was ~20x slower (activity start 7–10 s,
+100% janky frames system-wide); with `-gpu host` start is ~0.4 s. If the app looks slow on the
+emulator, check this before blaming the code.
 
 Endpoints:
 - `GET /health` → `ok`
@@ -86,9 +91,14 @@ Endpoints:
 - **Actions:** button = clickable `Box` + `hostAction("type:payload")`; types in `protocol/Actions.kt`
   (`navigate`, `open_url`, `track`, `custom`). The app splits on the first `:`.
 - **Screens are rendered once** in `composeCast {}` (after brand is known) and served from memory.
-- **Player wrapper:** `remote-player-view` inside our own `AndroidView`, not `remote-player-compose`
-  (it pulls Compose 1.11 → compileSdk 36 + AGP upgrade). AGP is still 8.7.0; upgrading is a
-  separate, planned change.
+- **Build toolchain:** AGP 9.5.1, Gradle 9.6.0, Kotlin/KGP 2.2.20 (AGP 9.5 needs ≥ 2.2.10).
+  AGP 9 **built-in Kotlin**: Android modules must not apply `org.jetbrains.kotlin.android`;
+  `jvmTarget` follows `compileOptions.targetCompatibility` (11), so no `kotlin {}` block there.
+  New DSL is on (legacy variant API unavailable). `org.gradle.tooling.parallel=true` was added by
+  Android Studio for Gradle 9.4+ sync.
+- **Player wrapper:** `remote-player-view` inside our own `AndroidView`, not `remote-player-compose`.
+  Since AGP 9.5 switching would be possible (it needs Compose 1.11, compileSdk 36), but it adds
+  appcompat + Compose 1.11 for little gain; revisit together with the Compose upgrade.
 - Ktor on both sides; `kotlinx.serialization` for the JSON endpoints (`/brand`, `/screens`).
 
 ## Remote Compose gotchas (alpha20) — read before touching rendering
@@ -130,12 +140,16 @@ Each of these was found by running on the emulator, not by unit tests.
    in CI; `protocol` exposes serialization as `api`; `jvmTarget` → `kotlin.compilerOptions`;
    unused version-catalog entries removed (`compose-bom`, `compose-compiler`, `ktlint`,
    `kotlin-stdlib`); README rewritten.
+5. **AGP 8.7.0 → 9.5.1**, Gradle 8.10 → 9.6.0, migrated to built-in Kotlin (removed
+   `kotlin-android` plugin and the explicit `jvmTarget`). Removed the `@SuppressLint` for the
+   `produceState` false positive (the check no longer runs, see Run & Verify).
 
 ## Open Work (in suggested order)
 
-1. **AGP upgrade** (8.7.0 → current); then reconsider `remote-player-compose`. Compose versions
-   are hard-coded in `libs.versions.toml` (no BOM) — align them in the same change.
-2. Dependency refresh: Ktor 3.0.0 and kotlinx-serialization 1.7.3 are old for Kotlin 2.2.20.
+1. **Dependency refresh:** Compose 1.7.5 (hard-coded, no BOM — switch to the BOM; also brings
+   working Compose lint checks), compileSdk/targetSdk 35 → 36+, Ktor 3.0.0, kotlinx-serialization
+   1.7.3, Kotlin 2.2.20. Then decide on `remote-player-compose`.
+2. Optional: enable Gradle configuration cache (Gradle 9 suggests it on every build).
 3. **Version negotiation:** client sends `X-Composecast-Player-Version`, server ignores it. Needed
    before any app ships, since RC document features must match the player.
 4. **Brand in the app:** `/brand` and `getBrand()` exist but the app uses default `MaterialTheme`.
