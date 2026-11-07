@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,15 +22,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import io.composecast.android.ComposeCastClient
 import io.composecast.android.ComposeCastConfig
 import io.composecast.android.ComposeCastScreen
+import io.composecast.android.ScreenDocument
 import io.composecast.protocol.Actions
-import io.composecast.protocol.ScreenModel
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -73,11 +76,14 @@ private fun ComposeCastApp(
     client: ComposeCastClient,
     onOpenUrl: (String) -> Unit,
 ) {
-    var screenId by remember { mutableStateOf("main") }
+    // Back stack of screen ids; survives rotation. System back pops it.
+    var backStack by rememberSaveable { mutableStateOf(listOf("main")) }
+    val screenId = backStack.last()
+    BackHandler(enabled = backStack.size > 1) { backStack = backStack.dropLast(1) }
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    val screenState by produceState<Result<ScreenModel>?>(initialValue = null, key1 = screenId) {
+    val screenState by produceState<Result<ScreenDocument>?>(initialValue = null, key1 = screenId) {
         value = null
         value = runCatching { client.getScreen(screenId) }
     }
@@ -104,14 +110,15 @@ private fun ComposeCastApp(
 
                 screenState!!.isFailure -> Text(
                     text = "Cannot reach server.\nCheck SERVER_URL in MainActivity.\n\n${screenState!!.exceptionOrNull()?.message}",
-                    modifier = Modifier.padding(padding),
+                    modifier = Modifier.padding(16.dp),
                 )
 
                 else -> ComposeCastScreen(
                     screen = screenState!!.getOrThrow(),
+                    modifier = Modifier.fillMaxSize(),
                     onAction = { action, payload ->
                         when (action) {
-                            Actions.NAVIGATE -> screenId = payload
+                            Actions.NAVIGATE -> backStack = backStack + payload
                             Actions.OPEN_URL -> onOpenUrl(payload)
                             Actions.TRACK -> { /* analytics hook */ }
                             else -> scope.launch {

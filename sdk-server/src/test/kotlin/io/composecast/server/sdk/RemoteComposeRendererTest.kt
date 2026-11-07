@@ -1,5 +1,8 @@
 package io.composecast.server.sdk
 
+import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
+import javax.imageio.ImageIO
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -9,7 +12,13 @@ import kotlin.test.assertTrue
 
 class RemoteComposeRendererTest {
 
-    private val registry = composeCast {
+    /** Serves a generated 40x20 PNG for every URL, so tests never touch the network. */
+    private val fakeImages = ImageLoader { _ ->
+        ByteArrayOutputStream().also { ImageIO.write(BufferedImage(40, 20, BufferedImage.TYPE_INT_RGB), "png", it) }
+            .toByteArray()
+    }
+
+    private val registry = composeCast(fakeImages) {
         brand(name = "Test", primaryColor = "#6200EE", secondaryColor = "#03DAC6")
         screen("main") {
             title = "Home"
@@ -48,11 +57,36 @@ class RemoteComposeRendererTest {
 
     @Test
     fun `rendering is deterministic`() {
-        val again = composeCast {
+        val again = composeCast(fakeImages) {
             brand(name = "Test", primaryColor = "#6200EE", secondaryColor = "#03DAC6")
             screen("second") { text("Only text") }
         }
         assertContentEquals(registry.get("second")!!.document, again.get("second")!!.document)
+    }
+
+    @Test
+    fun `image is embedded with its real size, decodable without URL support`() {
+        // describe() runs the RC reader with default Limits, i.e. URL images disabled.
+        val dump = registry.get("main")!!.describe()
+        assertTrue("BITMAP DATA" in dump, "no bitmap in:\n$dump")
+        assertTrue("IMAGE_LAYOUT" in dump, "no image layout in:\n$dump")
+    }
+
+    @Test
+    fun `sizes are device-side expressions, never collapsed to zero`() {
+        val dump = registry.get("main")!!.describe()
+        assertTrue("DENSITY_BEHAVIOR 2" in dump, "document not in dp mode:\n$dump")
+        assertTrue("Height(EXACT, 0.0)" !in dump, "a height collapsed to 0:\n$dump")
+    }
+
+    @Test
+    fun `failed image falls back to alt text instead of failing the build`() {
+        val broken = composeCast(imageLoader = { error("offline") }) {
+            screen("a") { image("https://example.com/x.png", alt = "Hero image") }
+        }
+        val dump = broken.get("a")!!.describe()
+        assertTrue("IMAGE_LAYOUT" !in dump, "unexpected image in:\n$dump")
+        assertTrue("Hero image" in String(broken.get("a")!!.document, Charsets.ISO_8859_1))
     }
 
     @Test

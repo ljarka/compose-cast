@@ -29,7 +29,7 @@ class ScreenRegistry internal constructor(
 }
 
 @ScreenDslMarker
-class RegistryBuilder internal constructor() {
+class RegistryBuilder internal constructor(private val imageLoader: ImageLoader) {
     private val screens = linkedMapOf<String, ScreenBuilder>()
     private var brand: BrandConfig? = null
 
@@ -50,7 +50,7 @@ class RegistryBuilder internal constructor() {
 
     /** Renders every screen to Remote Compose once; screens are rendered after the brand is known. */
     internal fun build(): ScreenRegistry {
-        val renderer = RemoteComposeRenderer(brand)
+        val renderer = RemoteComposeRenderer(brand, imageLoader)
         val rendered = screens.mapValues { (id, builder) ->
             RemoteScreen(id, builder.title, renderer.render(builder.nodes()))
         }
@@ -58,5 +58,11 @@ class RegistryBuilder internal constructor() {
     }
 }
 
-fun composeCast(block: RegistryBuilder.() -> Unit): ScreenRegistry =
-    RegistryBuilder().apply(block).build()
+/**
+ * Defines brand and screens and renders them to Remote Compose documents.
+ * Images referenced by screens are fetched with [imageLoader] and embedded in the documents.
+ */
+fun composeCast(
+    imageLoader: ImageLoader = HttpImageLoader,
+    block: RegistryBuilder.() -> Unit,
+): ScreenRegistry = RegistryBuilder(imageLoader).apply(block).build()

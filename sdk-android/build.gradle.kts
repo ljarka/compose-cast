@@ -9,7 +9,7 @@ android {
     namespace = "io.composecast.android"
     compileSdk = 35
     defaultConfig {
-        minSdk = 24
+        minSdk = 26 // required by remote-player-*
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -25,6 +25,7 @@ android {
 
 dependencies {
     implementation(project(":protocol"))
+    implementation(libs.remote.core)
     implementation(libs.remote.player.core)
     implementation(libs.remote.player.view)
     implementation(libs.ktor.client.core)
@@ -35,7 +36,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.compose.runtime)
     implementation(libs.compose.foundation)
-    implementation(libs.compose.material3)
     implementation(libs.compose.ui)
     testImplementation(libs.kotlin.test)
 }

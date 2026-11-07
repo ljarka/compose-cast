@@ -1,12 +1,16 @@
 package io.composecast.server.sdk
 
 import androidx.compose.remote.core.CoreDocument
-import androidx.compose.remote.core.Limits
+import androidx.compose.remote.core.RcPlatformServices
 import androidx.compose.remote.core.RcProfiles
 import androidx.compose.remote.core.RemoteComposeBuffer
+import androidx.compose.remote.core.operations.Header
 import androidx.compose.remote.creation.JvmRcPlatformServices
 import androidx.compose.remote.creation.RemoteComposeWriter
 import androidx.compose.remote.creation.dsl.Modifier
+import androidx.compose.remote.creation.dsl.RcContentScale
+import androidx.compose.remote.creation.dsl.RcFloat
+import androidx.compose.remote.creation.dsl.RcSp
 import androidx.compose.remote.creation.dsl.RcFontWeight
 import androidx.compose.remote.creation.dsl.RcHorizontalPositioning
 import androidx.compose.remote.creation.dsl.RcProfile
@@ -20,10 +24,13 @@ import androidx.compose.remote.creation.dsl.fillMaxWidth
 import androidx.compose.remote.creation.dsl.height
 import androidx.compose.remote.creation.dsl.onClick
 import androidx.compose.remote.creation.dsl.padding
-import androidx.compose.remote.creation.dsl.rsp
+import androidx.compose.remote.creation.dsl.verticalScroll
 import androidx.compose.remote.creation.modifiers.RoundedRectShape
 import androidx.compose.remote.creation.profile.Profile
 import io.composecast.protocol.BrandConfig
+import java.io.ByteArrayInputStream
+import java.util.logging.Logger
+import javax.imageio.ImageIO
 
 /**
  * The only place in compose-cast that talks to the Remote Compose creation API.
@@ -31,14 +38,19 @@ import io.composecast.protocol.BrandConfig
  * As of remote-compose 1.0.0-alpha20 the whole creation API is `@RestrictTo(LIBRARY_GROUP)`
  * and may change between alphas, so it is deliberately kept behind this one internal class.
  */
-internal class RemoteComposeRenderer(brand: BrandConfig?) {
-
+internal class RemoteComposeRenderer(
+    brand: BrandConfig?,
+    private val imageLoader: ImageLoader,
+) {
     private val primary = parseColor(brand?.primaryColor ?: DEFAULT_PRIMARY)
     private val background = parseColor(brand?.backgroundColor ?: DEFAULT_BACKGROUND)
 
+    /** Images fetched so far, shared by all screens of one registry. `null` = failed to load. */
+    private val images = mutableMapOf<String, EncodedImage?>()
+
     fun render(nodes: List<ScreenNode>): ByteArray =
-        createRcBuffer(PROFILE) {
-            Column(Modifier.fillMaxSize().background(background).padding(16f)) {
+        createRcBuffer(PROFILE, *HEADER_TAGS) {
+            Column(Modifier.fillMaxSize().background(background).verticalScroll().padding(SCREEN_PADDING)) {
                 nodes.forEach { node -> renderNode(node) }
             }
         }
@@ -57,17 +69,30 @@ internal class RemoteComposeRenderer(brand: BrandConfig?) {
                     node.text,
                     modifier = Modifier.fillMaxWidth(),
                     color = TEXT_COLOR,
-                    fontSize = size.rsp,
+                    fontSize = sp(size),
                     fontWeight = weight,
                 )
             }
 
-            // Named, so a host app can supply the bitmap itself if its player does not fetch URLs.
-            is ScreenNode.Image -> Image(
-                remoteNamedBitmapUrl("$IMAGE_NAME_PREFIX${node.url}", node.url),
-                modifier = Modifier.fillMaxWidth(),
-                contentDescription = node.alt.ifBlank { null },
-            )
+            is ScreenNode.Image -> {
+                val image = images.getOrPut(node.url) { fetch(node.url) }
+                if (image != null) {
+                    // Full width, keeping aspect ratio, but never upscaled past the natural size
+                    // (pixels treated as dp). Height is an expression evaluated on the device.
+                    val ratio = image.height.toFloat() / image.width
+                    val fullWidthHeight = (windowWidth() - dp(2 * SCREEN_PADDING)) * ratio
+                    Image(
+                        remoteNamedBitmap("$IMAGE_NAME_PREFIX${node.url}", image),
+                        modifier = Modifier.fillMaxWidth()
+                            .height(written(min(fullWidthHeight, dp(image.height.toFloat())))),
+                        contentDescription = node.alt.ifBlank { null },
+                        contentScale = RcContentScale.Fit,
+                    )
+                } else {
+                    // Keep the screen usable when an image cannot be fetched.
+                    Text(node.alt.ifBlank { node.url }, color = PLACEHOLDER_COLOR, fontSize = sp(12))
+                }
+            }
 
             is ScreenNode.Button -> Box(
                 modifier = Modifier
@@ -79,35 +104,88 @@ internal class RemoteComposeRenderer(brand: BrandConfig?) {
                 horizontal = RcHorizontalPositioning.Center,
                 vertical = RcVerticalPositioning.Center,
             ) {
-                Text(node.label, color = ON_PRIMARY, fontSize = 16.rsp, fontWeight = RcFontWeight.W500)
+                Text(node.label, color = ON_PRIMARY, fontSize = sp(16), fontWeight = RcFontWeight.W500)
             }
 
-            is ScreenNode.Spacer -> Spacer(Modifier.height(node.height.toFloat()))
+            is ScreenNode.Spacer -> Spacer(Modifier.height(written(dp(node.height.toFloat()))))
         }
     }
 
+    /*
+     * Units. DENSITY_BEHAVIOR_DP makes the player scale padding, borders and clip radii, but not
+     * font sizes, width/height or bitmaps (alpha20). Those are emitted as device-side expressions.
+     */
+
+    /**
+     * Writes [value]'s expression to the document now. Workaround for alpha20: the height(RcFloat)
+     * modifier reads the expression id without writing it first, producing `Height(EXACT, 0.0)`.
+     */
+    private fun written(value: RcFloat): RcFloat = value.also { it.toFloat() }
+
+    /** [value] dp in pixels: `density * value`. */
+    private fun RcScope.dp(value: Float): RcFloat = density() * value
+
+    /**
+     * [value] sp as a font size. The player sets FONT_SIZE to 14sp in pixels (density and the
+     * user's font scale applied), so `FONT_SIZE * value / 14` honors accessibility font scaling.
+     */
+    private fun RcScope.sp(value: Int): RcSp = RcSp((fontSize() * (value / 14f)).toFloat())
+
+    private fun fetch(url: String): EncodedImage? =
+        try {
+            val bytes = imageLoader.load(url)
+            val decoded = ImageIO.read(ByteArrayInputStream(bytes))
+                ?: error("unsupported image format (supported: PNG, JPEG, GIF, BMP)")
+            EncodedImage(bytes, decoded.width, decoded.height)
+        } catch (e: Exception) {
+            log.warning("Image '$url' not embedded, showing placeholder: ${e.message}")
+            null
+        }
+
+    /** Original encoded bytes plus size; embedded as-is, so JPEGs are not re-encoded as PNG. */
+    private class EncodedImage(val bytes: ByteArray, val width: Int, val height: Int)
+
+    /** JVM platform services that understand [EncodedImage]. */
+    private object PlatformServices : RcPlatformServices by JvmRcPlatformServices() {
+        private val jvm = JvmRcPlatformServices()
+        override fun imageToByteArray(image: Any): ByteArray? =
+            (image as? EncodedImage)?.bytes ?: jvm.imageToByteArray(image)
+        override fun getImageWidth(image: Any): Int =
+            (image as? EncodedImage)?.width ?: jvm.getImageWidth(image)
+        override fun getImageHeight(image: Any): Int =
+            (image as? EncodedImage)?.height ?: jvm.getImageHeight(image)
+        override fun isAlpha8Image(image: Any): Boolean =
+            if (image is EncodedImage) false else jvm.isAlpha8Image(image)
+    }
+
     companion object {
+        private val log = Logger.getLogger(RemoteComposeRenderer::class.java.name)
+
         private const val DEFAULT_PRIMARY = "#6200EE"
         private const val DEFAULT_BACKGROUND = "#FFFFFF"
         private const val TEXT_COLOR = 0xFF1C1B1F.toInt()
+        private const val PLACEHOLDER_COLOR = 0xFF79747E.toInt()
         private const val ON_PRIMARY = 0xFFFFFFFF.toInt()
         private const val BUTTON_RADIUS = 12f
         private const val IMAGE_NAME_PREFIX = "image:"
+        private const val SCREEN_PADDING = 16f
 
         private val PROFILE = RcProfile(
             Profile(
                 CoreDocument.DOCUMENT_API_LEVEL,
                 RcProfiles.PROFILE_ANDROIDX,
-                JvmRcPlatformServices(),
+                PlatformServices,
             ) { info, profile, tag -> RemoteComposeWriter(info, null, profile, tag) },
             false,
         )
 
+        /** All sizes in the document are dp/sp; without this the player mixes pixels and dp. */
+        private val HEADER_TAGS = arrayOf(
+            RemoteComposeWriter.HTag(Header.DOC_DENSITY_BEHAVIOR, CoreDocument.DENSITY_BEHAVIOR_DP),
+        )
+
         /** Decodes a document with the Remote Compose core reader and dumps its operation tree. */
         fun describe(bytes: ByteArray): String {
-            // URL images are disabled by default in the RC reader (also in the Android player,
-            // which must opt in the same way). Safe here: the server only decodes for debugging.
-            Limits.ENABLE_IMAGE_URLS = true
             val document = CoreDocument()
             document.initFromBuffer(RemoteComposeBuffer.fromInputStream(bytes.inputStream()))
             return document.toNestedString()
