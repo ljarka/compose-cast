@@ -1,0 +1,24 @@
+# Formatting rules for ktlint (run via Spotless: ./gradlew spotlessApply / spotlessCheck).
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{kt,kts}]
+ktlint_code_style = intellij_idea
+max_line_length = 120
+# Compose: @Composable functions are PascalCase.
+ktlint_function_naming_ignore_when_annotated_with = Composable
+# Wildcard imports are used deliberately for Ktor's DSL packages.
+ktlint_standard_no-wildcard-imports = disabled
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.{yml,yaml,json}]
+indent_size = 2
