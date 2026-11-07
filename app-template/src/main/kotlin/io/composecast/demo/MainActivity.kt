@@ -1,5 +1,6 @@
 package io.composecast.demo
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -70,6 +71,9 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// False positive: the producer below does assign `value`. The detector shipped with
+// compose-runtime 1.7.5 misreads it under Kotlin 2.2 (also with `this.value`).
+@SuppressLint("ProduceStateDoesNotAssignValue")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ComposeCastApp(

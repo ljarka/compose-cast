@@ -1,6 +1,8 @@
 # protocol — AGENTS.md
 
-Shared serializable types used by both server and Android client.
+Shared types and constants used by both server and Android client.
+Screens themselves are **not** described here: they travel as Remote Compose binary documents
+built by `sdk-server`. (The old JSON `ScreenModel`/`ComponentModel` were removed in Stage 3.)
 
 ## Scope
 
@@ -10,17 +12,15 @@ This module only. No dependencies on other compose-cast modules.
 
 | File | Type |
 |---|---|
-| `ScreenModel.kt` | Root screen descriptor |
-| `ComponentModel.kt` | Sealed class: Text, Image, Button, Spacer |
-| `BrandConfig.kt` | Simple brand colors + font |
-| `BrandTokens.kt` | Full Material3 token set (light/dark/shapes/typography) |
-| `Actions.kt` | Action and header name constants |
+| `Actions.kt` | `Actions` (host action types), `Headers` (HTTP headers), `Variables` (unused placeholders) |
+| `BrandConfig.kt` | Brand colors + font, served as JSON by `GET /brand` |
+| `BrandTokens.kt` | Full Material3 token set (light/dark/shapes/typography); not used yet |
 
 ## Rules
 
-- All types must be `@Serializable` (kotlinx.serialization)
-- `ComponentModel` subtypes must have `@SerialName` discriminators
+- JSON-carried types are `@Serializable` (kotlinx.serialization); exposed as `api` dependency
 - No business logic here — only data types and constants
+- No Remote Compose dependency here
 
 ## Test
 

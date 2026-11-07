@@ -17,5 +17,8 @@ jobs:
           distribution: 'temurin'
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-      - name: Build JVM modules
+      - name: Build and test JVM modules
         run: ./gradlew :protocol:build :sdk-server:build :server-scripting:build :server-app:build :compat-tests:build
+      # ubuntu-latest ships the Android SDK (ANDROID_HOME); AGP downloads the missing platform.
+      - name: Build and lint Android modules
+        run: ./gradlew :sdk-android:assembleDebug :sdk-android:lintDebug :app-template:assembleDebug :app-template:lintDebug

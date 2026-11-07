@@ -41,6 +41,6 @@ MainActivity
 
 - `SERVER_URL = "http://10.0.2.2:8080"` — emulator default; change for real device
 - `produceState` keyed on `screenId` — re-fetches on every navigation
-- `TopAppBar` title comes from `ScreenModel.title` (falls back to screen id while loading)
+- `TopAppBar` title comes from `ScreenDocument.title` (header `X-Composecast-Screen-Title`; falls back to screen id while loading)
 - `android:Theme.Material.Light.NoActionBar` theme — prevents duplicate ActionBar with TopAppBar
 - System back pops the screen back stack; the app exits only from the first screen

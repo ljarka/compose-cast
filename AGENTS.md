@@ -23,7 +23,7 @@ sdk-server: ScreenBuilder → ScreenNode ──► RC bytes ──── HTTP �
 
 | Module | Scope | Status |
 |---|---|---|
-| `protocol` | Shared constants (`Actions`, `Headers`), `BrandConfig`, `BrandTokens` | done; still contains legacy `ScreenModel`/`ComponentModel` (unused, to delete) |
+| `protocol` | Shared constants (`Actions`, `Headers`), `BrandConfig`, `BrandTokens` | done |
 | `sdk-server` | DSL → RC documents; `ScreenRegistry`; `ImageLoader` | done |
 | `server-scripting` | `.screen.kts` script host (hot-reload) | empty |
 | `server-app` | Ktor HTTP server; screens defined in `Screens.kt` | done |
@@ -60,9 +60,12 @@ adb exec-out screencap -p > screen.png            # look at it; tests alone do n
 adb shell uiautomator dump /sdcard/u.xml && adb shell cat /sdcard/u.xml   # texts are in a11y tree
 ```
 
-Full build (what CI should run): `:protocol:build :sdk-server:build :server-scripting:build
-:server-app:build :compat-tests:build :sdk-android:assembleDebug :app-template:assembleDebug`.
-CI currently builds JVM modules only (`.github/workflows/ci.yml`) — Android modules are missing.
+Full build = what CI runs (`.github/workflows/ci.yml`):
+`:protocol:build :sdk-server:build :server-scripting:build :server-app:build :compat-tests:build`
+then `:sdk-android:assembleDebug :sdk-android:lintDebug :app-template:assembleDebug :app-template:lintDebug`.
+Lint must stay green. `RestrictedApi` is downgraded to a warning **only in `sdk-android`** (the
+deliberate RC player usage); one documented `@SuppressLint` in `MainActivity` for a lint false
+positive (`ProduceStateDoesNotAssignValue`, compose-runtime 1.7.5 detector under Kotlin 2.2).
 
 Endpoints:
 - `GET /health` → `ok`
@@ -123,15 +126,16 @@ Each of these was found by running on the emulator, not by unit tests.
    (`ScreenDocument`, `ComposeCastScreen`), JSON renderer deleted, `expectSuccess = true` (404 is a
    clear error), `minSdk 26`. App: back stack + `BackHandler`, survives rotation. Server: embedded
    images, dp/sp units, `height` workaround (gotchas 1–3), vertical scroll.
+4. **Stage 3 — cleanup.** Removed legacy JSON `ScreenModel`/`ComponentModel`; Android build + lint
+   in CI; `protocol` exposes serialization as `api`; `jvmTarget` → `kotlin.compilerOptions`;
+   unused version-catalog entries removed (`compose-bom`, `compose-compiler`, `ktlint`,
+   `kotlin-stdlib`); README rewritten.
 
 ## Open Work (in suggested order)
 
-1. **Stage 3 cleanup:** delete `ScreenModel`/`ComponentModel` from `protocol`; add Android modules
-   to CI; update `README.md` (architecture is right now, but it lacks Android run steps, the
-   `/debug` endpoint and the alpha20 caveats); remove unused entries in `libs.versions.toml` (`compose-bom`, `compose-compiler`,
-   `ktlint`, `kotlin-stdlib`); `protocol` should expose serialization as `api`.
-2. **AGP upgrade** (8.7.0 → current), `jvmTarget` → `compilerOptions`; then reconsider
-   `remote-player-compose`.
+1. **AGP upgrade** (8.7.0 → current); then reconsider `remote-player-compose`. Compose versions
+   are hard-coded in `libs.versions.toml` (no BOM) — align them in the same change.
+2. Dependency refresh: Ktor 3.0.0 and kotlinx-serialization 1.7.3 are old for Kotlin 2.2.20.
 3. **Version negotiation:** client sends `X-Composecast-Player-Version`, server ignores it. Needed
    before any app ships, since RC document features must match the player.
 4. **Brand in the app:** `/brand` and `getBrand()` exist but the app uses default `MaterialTheme`.
