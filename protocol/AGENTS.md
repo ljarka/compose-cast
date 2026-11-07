@@ -8,24 +8,32 @@ docs/tasks/T-002 — it is not a wire format; screens still travel as RC documen
 
 ## Scope
 
-This module only. No dependencies on other compose-cast modules.
+This module only. **Do not** import `sdk-server`, `server-app`, or `sdk-android` from here.
 
-## Key Files
+## Key files
 
-| File | Type |
+| File | Purpose |
 |---|---|
-| `Actions.kt` | `Actions` (host action types), `Headers` (HTTP headers), `Variables` (unused placeholders) |
-| `BrandConfig.kt` | Brand colors + font, served as JSON by `GET /brand` |
-| `BrandTokens.kt` | Full Material3 token set (light/dark/shapes/typography); not used yet |
+| `Actions.kt` | `Actions` object (NAVIGATE, OPEN_URL, TRACK, CUSTOM); `Headers` (player version, brand ETag, screen title); `Variables` (user_name, cart_count) |
+| `BrandConfig.kt` | `BrandConfig` — name, primaryColor, secondaryColor, backgroundColor, fontFamily |
+| `BrandTokens.kt` | `BrandTokens` — light/dark `ColorScheme`, `Shapes`, `Typography` |
 
 ## Rules
 
-- JSON-carried types are `@Serializable` (kotlinx.serialization); exposed as `api` dependency
-- No business logic here — only data types and constants
-- No Remote Compose dependency here
+- **No RC types here** — `protocol` must stay pure Kotlin + kotlinx.serialization. No Remote
+  Compose imports ever ([ADR 0002](../docs/decisions/0002-confine-restricted-remote-compose-api.md),
+  rule R3 in `scripts/check-architecture.sh`).
+- All new shared constants (action types, header names, variable names) go here, not in
+  `sdk-server` or `sdk-android`.
+- Adding a field to `BrandTokens`/`BrandConfig` is a protocol change — update both the server
+  DSL and the Android client.
+
+## Dependencies
+
+None (pure Kotlin + kotlinx.serialization).
 
 ## Test
 
 ```bash
-./gradlew :protocol:test
+./gradlew :protocol:build
 ```

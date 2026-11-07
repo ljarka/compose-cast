@@ -12,6 +12,7 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-004 Version negotiation](T-004-version-negotiation.md) | Etap 2 | queued (after T-003) |
 | [T-005 iOS spike](T-005-ios-spike.md) | Etap 3 | blocked: needs Xcode on the dev machine |
 | [T-006 Data sources](T-006-data-sources.md) | Etap 4 | needs design detail (after T-003) |
+| [T-007 Admin panel](T-007-admin-panel.md) | Etap 8 | needs design detail (ADRs 0011–0014 first; after T-002) |
 
 Statuses: `ready` (start now; only one task at a time) · `queued (after T-xxx)` · `in progress` ·
 `blocked: reason` · `needs design detail` · `done` (+ commit hash once committed).

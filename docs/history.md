@@ -33,3 +33,10 @@ README roadmap's "Etap" numbers.
     order, 4000-char RC limit), `api(protocol)` in `sdk-android`, no `Action.Unknown` (decode → null,
     keeps T-002 JSON strict), demo `actions` screen for device checks, single `ready` status,
     tap-by-text in the emulator playbook, README Etap 2 order.
+14. **Roadmap expansion** (`907ed06`, `c6288a9`): full Etap 0–12 roadmap in README (DivKit mapping
+    table, two app milestones, admin panel, iOS, data sources); Etap 12 Experimentation (A/B
+    testing, feature flags, gradual rollout) added; admin panel governance (change history,
+    rollback, screen variants) added to Etap 8.
+15. **RC knowledge gap fixed**: `fontSize()` = 14sp assumption documented in
+    `docs/remote-compose.md` (item 7) — silent failure risk on RC upgrades.
+    Admin panel task stub added (`docs/tasks/T-007-admin-panel.md`).
