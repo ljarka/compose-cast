@@ -1,14 +1,18 @@
 package io.composecast.demo
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -28,8 +32,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.composecast.android.ComposeCastClient
+import io.composecast.android.ComposeCastHttpException
 import io.composecast.android.ComposeCastConfig
 import io.composecast.android.ComposeCastScreen
 import io.composecast.android.ScreenDocument
@@ -54,7 +60,13 @@ class MainActivity : ComponentActivity() {
                 ComposeCastApp(
                     client = client,
                     onOpenUrl = { url ->
-                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                        // false = no app can open it (would otherwise crash with ActivityNotFoundException).
+                        try {
+                            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                            true
+                        } catch (e: ActivityNotFoundException) {
+                            false
+                        }
                     },
                 )
             }
@@ -75,7 +87,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun ComposeCastApp(
     client: ComposeCastClient,
-    onOpenUrl: (String) -> Unit,
+    onOpenUrl: (String) -> Boolean,
 ) {
     // Back stack of screen ids; survives rotation. System back pops it.
     var backStack by rememberSaveable { mutableStateOf(listOf("main")) }
@@ -110,10 +122,23 @@ private fun ComposeCastApp(
             when {
                 screenState == null -> CircularProgressIndicator()
 
-                screenState!!.isFailure -> Text(
-                    text = "Cannot reach server.\nCheck SERVER_URL in MainActivity.\n\n${screenState!!.exceptionOrNull()?.message}",
+                screenState!!.isFailure -> Column(
                     modifier = Modifier.padding(16.dp),
-                )
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    val error = screenState!!.exceptionOrNull()
+                    Text(
+                        text = if (error is ComposeCastHttpException) {
+                            // The server answered (e.g. 404 unknown screen): not a connectivity problem.
+                            "Server error ${error.status} for screen '$screenId'."
+                        } else {
+                            "Cannot reach server.\nCheck SERVER_URL in MainActivity.\n\n${error?.message}"
+                        },
+                        textAlign = TextAlign.Center,
+                    )
+                    Button(onClick = { reloadKey++ }) { Text("Retry") }
+                }
 
                 else -> ComposeCastScreen(
                     screen = screenState!!.getOrThrow(),
@@ -121,7 +146,9 @@ private fun ComposeCastApp(
                     onAction = { action ->
                         when (action) {
                             is Action.Navigate -> backStack = backStack + action.screen // T-003: pass params
-                            is Action.OpenUrl -> onOpenUrl(action.url)
+                            is Action.OpenUrl -> if (!onOpenUrl(action.url)) {
+                                scope.launch { snackbar.showSnackbar("No app can open ${action.url}") }
+                            }
                             Action.Reload -> reloadKey++
                             is Action.Track -> { /* analytics hook */ }
                             is Action.Custom -> scope.launch { snackbar.showSnackbar("Custom: ${action.payload}") }

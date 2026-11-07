@@ -54,3 +54,10 @@ README roadmap's "Etap" numbers.
     `ScreenJson` + validation in `protocol` (not `sdk-server`, per ADR 0011); DSL builds it,
     renderer renders it, `screensFrom(dir)` loads `<id>.json`; JSON copy of the demo screens
     renders byte-identical documents. CLAUDE.md rule table fixed to match `check-architecture.sh`.
+18. **Review after T-002** (2026-11-07): server logged nothing (no SLF4J provider → logback +
+    CallLogging + StatusPages JSON 500); registry built before startup (was lazy → invalid screens
+    surfaced on the first request, not at start); `PORT` / `COMPOSECAST_DATA_DIR` env config and
+    `examples/demo` data dir (JSON screens + brand, served without Kotlin); app: `OpenUrl` without a
+    handler no longer crashes, 404 vs unreachable error + Retry (`ComposeCastHttpException` in the
+    SDK); CLAUDE.md now imports AGENTS.md (the copy had drifted). Review notes for T-003 (swappable
+    registry, image cache TTL/size limit, URL encoding) and T-007 (ADR 0011–0014 inconsistencies).

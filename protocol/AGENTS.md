@@ -43,7 +43,7 @@ Strict: unknown keys/types fail with the source and the JSON path.
 ] }
 ```
 Actions: `navigate` (screen, params), `open_url` (url), `reload`, `track` (event, params),
-`custom` (payload). Full examples: `server-app/src/test/resources/screens/`; cases: `ScreenJsonTest`.
+`custom` (payload). Full examples: `examples/demo/screens/`; cases: `ScreenJsonTest`.
 
 ## Rules
 

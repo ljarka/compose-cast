@@ -40,5 +40,5 @@ the only model was an internal `ScreenNode` list inside `sdk-server`, reachable 
 ## How to verify it still holds
 
 `./gradlew :server-app:test` — `JsonScreensTest`: the JSON copy of the demo screens
-(`server-app/src/test/resources/screens/`) equals the DSL definitions, is canonical, and renders
+(`examples/demo/`) equals the DSL definitions, is canonical, and renders
 byte-identical RC documents. `grep -rn "ScreenNode" --include=*.kt .` finds nothing.

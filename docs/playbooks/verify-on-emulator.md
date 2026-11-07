@@ -11,8 +11,10 @@ ADB=~/Library/Android/sdk/platform-tools/adb
 $ADB wait-for-device
 until [ "$($ADB shell getprop sys.boot_completed | tr -d '\r')" = 1 ]; do sleep 1; done
 
-# 2. Server (restart it after server-side changes: screens are rendered at start)
-./gradlew :server-app:run &
+# 2. Server (restart it after server-side changes: screens are rendered at start).
+#    It logs every request ("200 OK: GET - /screens/main"); add COMPOSECAST_DATA_DIR=examples/demo
+#    to serve the JSON screens instead of the DSL ones.
+./gradlew :server-app:run > server.log 2>&1 &
 until curl -s localhost:8080/health >/dev/null; do sleep 1; done
 
 # 3. App
@@ -35,8 +37,9 @@ tap_text "Get started"                                           # then: tap_tex
 $ADB shell input keyevent KEYCODE_BACK                           # back stack must pop, not exit
 $ADB logcat -d | grep 'FATAL EXCEPTION'                          # must be empty
 $ADB logcat -d -s ComposeCast | grep REQUEST                     # app's HTTP requests (count reloads)
+grep 'GET - /screens' server.log                                 # the same requests, server side
 ```
 
-Buttons rendered by Remote Compose appear in the dump with their text and bounds; re-dump after
+Snippets are bash (`bash -c` from zsh: zsh does not word-split `$var`). Buttons rendered by Remote Compose appear in the dump with their text and bounds; re-dump after
 each navigation. If the first screen shows only the loading spinner, take the screenshot a few seconds later
 before suspecting the code. Performance doubts: `$ADB shell dumpsys gfxinfo io.composecast.demo`.

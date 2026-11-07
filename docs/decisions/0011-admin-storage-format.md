@@ -3,6 +3,10 @@
 - Status: Accepted
 - Date: 2026-11-07
 
+> Review 2026-11-07: the "metadata, draft/live status" inside `<id>.json` conflicts with ADRs
+> 0013/0014 and the strict `ScreenJson` format (T-002) — see
+> [T-007 review notes](../tasks/T-007-admin-panel.md#review-notes-2026-11-07--reconcile-before-detailing-the-steps).
+
 ## Context
 
 The admin panel (T-007, Etap 8) needs to persist screen definitions created by non-developer

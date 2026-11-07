@@ -12,6 +12,7 @@ Deviations from the design below:
   action must round-trip through `ActionCodec` (catches empty names/keys/URLs).
 - Loader `screensFrom(dir)` requires `<id>.json` file names (ADR 0011 layout); also added
   `screen(definition)`, `brand(BrandConfig)`, `RemoteScreen.definition` (export DSL → JSON).
+- The JSON copy later moved to `examples/demo/` (servable data dir, see server-app/AGENTS.md).
 - `JsonScreensTest` additionally checks the files are canonical (`ScreenJson.encode` output).
 
 ## Goal

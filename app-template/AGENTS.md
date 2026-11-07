@@ -16,7 +16,7 @@ MainActivity
       ├── backStack (rememberSaveable) + BackHandler; screenId = backStack.last()
       ├── produceState(screenId, reloadKey) → ComposeCastClient.getScreen(screenId) → ScreenDocument
       ├── loading  → CircularProgressIndicator
-      ├── error    → error message with server URL hint
+      ├── error    → ComposeCastHttpException: "Server error <status>"; else server URL hint; Retry (reloadKey++)
       └── success  → ComposeCastScreen(screen, onAction: (Action) -> Unit)   (Remote Compose player)
                           └── Navigate: pushes action.screen onto backStack (params: T-003)
                               OpenUrl:  Intent.ACTION_VIEW
@@ -51,7 +51,7 @@ Exhaustive `when (action)` over `io.composecast.protocol.Action` (a new subtype 
 | Action | Handler |
 |---|---|
 | `Navigate` | Push screen id onto back stack |
-| `OpenUrl` | `startActivity(Intent.ACTION_VIEW)` |
+| `OpenUrl` | `startActivity(Intent.ACTION_VIEW)`; no app for the URL → snackbar (not a crash) |
 | `Reload` | `reloadKey++` → `produceState` re-fetches the current screen |
 | `Track` | No-op (analytics hook placeholder) |
 | `Custom` | Show snackbar |

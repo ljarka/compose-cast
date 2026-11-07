@@ -37,6 +37,30 @@ Storage (TBD by ADR 0011)
 Auth: HTTP Basic, password from ADMIN_PASSWORD env var
 ```
 
+## Review notes (2026-11-07) — reconcile before detailing the steps
+
+ADRs 0011–0014 were written before T-002 existed. Against the implemented model:
+
+1. **File content.** ADR 0011 says `<id>.json` holds "components, metadata, draft/live status",
+   but ADR 0013 keeps drafts in memory only, ADR 0014 says the current file *is* the live version,
+   and `ScreenJson` is strict (extra keys are errors). Proposal: `<id>.json` = exactly a
+   `ScreenDefinition` — the same format as `examples/demo/screens`, so a hand-edited data dir and
+   an admin-edited one are the same thing and `COMPOSECAST_DATA_DIR` already serves it. Publish
+   metadata (who/when) goes into the history snapshot name or a sidecar file, not into `<id>.json`.
+2. **One process.** "Backend easy to start" and the `/screens/__preview` URL on the public port
+   both point to the admin being a module *mounted into* `server-app` (same port, same registry),
+   not a separate deployable (resolves step 7). Requires T-003's swappable registry.
+3. **Snapshot names** (ADR 0014): `2026-11-07T14:32:00Z.json` has `:` (invalid on Windows, needs
+   escaping in the rollback URL) and collides for two publishes in one second → use
+   `20261107T143200Z[-n].json`.
+4. **Preview on device** (ADR 0013) needs the app to open a given screen: `app-template` has no
+   deep links / QR handling yet → add an app step (e.g. `composecast://screen/__preview` intent
+   filter). The ADR's curl example posts `{"components":[]}` without the required `id`.
+5. **Validation UX:** publish runs `ScreenDefinition.problems()` and shows the
+   `components[i].field: …` messages next to the editor; nothing invalid reaches the registry.
+6. **Security:** admin-entered image URLs are fetched by the server (SSRF, huge downloads) —
+   T-003 adds scheme + size limits; consider blocking private address ranges.
+
 ## Steps (to be filled after ADRs)
 
 1. Write ADRs 0011–0014 (storage, UI tech, preview, change history).

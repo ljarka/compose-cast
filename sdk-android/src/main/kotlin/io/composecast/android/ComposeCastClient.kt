@@ -6,6 +6,7 @@ import io.composecast.protocol.Headers
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.android.Android
+import io.ktor.client.plugins.ResponseException
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
@@ -41,10 +42,18 @@ class ComposeCastClient(private val config: ComposeCastConfig) {
         }
     }
 
-    /** Downloads a screen's Remote Compose document and decodes it off the main thread. */
+    /**
+     * Downloads a screen's Remote Compose document and decodes it off the main thread.
+     * @throws ComposeCastHttpException when the server answers with a non-2xx status (e.g. 404);
+     *   other exceptions (IOException, …) mean the server was not reached.
+     */
     suspend fun getScreen(id: String): ScreenDocument {
-        val response = http.get("${config.serverUrl}/screens/$id") {
-            header(Headers.PLAYER_VERSION, config.playerVersion)
+        val response = try {
+            http.get("${config.serverUrl}/screens/$id") {
+                header(Headers.PLAYER_VERSION, config.playerVersion)
+            }
+        } catch (e: ResponseException) {
+            throw ComposeCastHttpException(e.response.status.value, "HTTP ${e.response.status.value} for screen '$id'", e)
         }
         val title = response.headers[Headers.SCREEN_TITLE]
             ?.let { URLDecoder.decode(it, Charsets.UTF_8.name()) }
@@ -61,3 +70,6 @@ class ComposeCastClient(private val config: ComposeCastConfig) {
 
     fun close() = http.close()
 }
+
+/** The server answered with a non-2xx [status] (e.g. 404 = unknown screen). */
+class ComposeCastHttpException(val status: Int, message: String, cause: Throwable? = null) : Exception(message, cause)

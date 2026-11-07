@@ -1,64 +1,7 @@
 # CLAUDE.md — compose-cast
 
-> This file is read by Claude Code at session start. `AGENTS.md` (same directory) is the
-> authoritative index for all other AI agents. Both files must stay in sync.
+All project instructions for every AI agent live in `AGENTS.md`; this file only imports it, so the
+two can never drift apart (an earlier copy here had already diverged: wrong rule numbers, a
+different verify command). Do not add content here — edit `AGENTS.md`.
 
-## Start here
-
-1. Read `AGENTS.md` (this directory) — module map, rules, Definition of Done.
-2. Run `./scripts/verify.sh --quick` before touching anything; it must be green.
-3. Without a specific owner request, take the first `ready` task in `docs/tasks/README.md`.
-4. Before touching a module, read its own `AGENTS.md`.
-
-## Critical rules (enforced by `scripts/check-architecture.sh`)
-
-| # | Rule |
-|---|---|
-| R1 | RC API only in `sdk-server/…/RemoteComposeRenderer.kt` and `sdk-android` main sources |
-| R2 | RC Gradle dependencies only in `sdk-server` and `sdk-android` |
-| R3 | No RC type in a public signature of `sdk-android` |
-| R4 | `protocol` stays pure: no RC, no Android, no Ktor |
-| R5 | Never apply `org.jetbrains.kotlin.android` plugin (AGP 9 built-in Kotlin) |
-| R6 | Compose versions only from the BOM (`platform(libs.compose.bom)`) |
-| R7 | All dependency versions in `gradle/libs.versions.toml` |
-| R8 | `server-scripting` must not depend on Ktor |
-
-Source of truth: `scripts/check-architecture.sh` (numbers match its error messages).
-
-Breaking any rule → `./scripts/verify.sh` fails. Fix the code, not the script.
-
-## Never guess RC behavior
-
-Read the sources jar instead:
-
-```bash
-V=1.0.0-alpha23; A=remote-creation-core
-curl -sfLO https://dl.google.com/android/maven2/androidx/compose/remote/$A/$V/$A-$V-sources.jar
-unzip -q $A-$V-sources.jar -d $A
-```
-
-Record findings in `docs/remote-compose.md` with the version.
-
-## Wire format
-
-The Android wire format is **binary Remote Compose (`.rc`)** — not JSON, not protobuf, not custom.
-See [ADR 0001](docs/decisions/0001-remote-compose-wire-format.md).
-
-## Verification
-
-```bash
-./scripts/verify.sh          # full (needs Android SDK)
-./scripts/verify.sh --quick  # JVM only (no Android SDK needed)
-```
-
-CI runs `./scripts/verify.sh` (full). Green locally = green in CI.
-
-## Environment
-
-- JDK 21. In agent shells without `~/.zshrc`: `export JAVA_HOME=/opt/homebrew/opt/openjdk@21`
-- Android SDK: `~/Library/Android/sdk` (mac) or `$ANDROID_HOME` (CI)
-- Port: `8080`
-
-## Full documentation index
-
-See `AGENTS.md` → "Where knowledge lives" table.
+@AGENTS.md

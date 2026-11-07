@@ -8,7 +8,7 @@ AndroidX Remote Compose player (`remote-player-view`).
 | Class | Purpose |
 |---|---|
 | `ComposeCastConfig` | Server URL, player version, logging flag |
-| `ComposeCastClient` | Ktor client: `getScreen` (→ `ScreenDocument`), `listScreens`, `getBrand` |
+| `ComposeCastClient` | Ktor client: `getScreen` (→ `ScreenDocument`, throws `ComposeCastHttpException`), `listScreens`, `getBrand` |
 | `ScreenDocument` | Decoded RC document + `id`, `title` (from `X-Composecast-Screen-Title`), `sizeBytes` |
 | `ComposeCastScreen` | Composable: `AndroidView` hosting `RemoteComposePlayer`; `onAction(Action)` |
 
@@ -51,6 +51,8 @@ installs an `android.util.Log` logger.
 - AGP 9 built-in Kotlin: no `org.jetbrains.kotlin.android` plugin; `jvmTarget` = `targetCompatibility`.
 - RC player API is `@RestrictTo(LIBRARY_GROUP)` (alpha20–alpha23); keep it inside this module ([ADR 0002](../docs/decisions/0002-confine-restricted-remote-compose-api.md)).
 - Document decoding (`RemoteDocument(bytes)`) runs on `Dispatchers.Default`, not the main thread.
-- `expectSuccess = true`: unknown screen → `ClientRequestException` (404), not a decode error.
+- `expectSuccess = true`; `getScreen` turns a non-2xx answer into `ComposeCastHttpException(status)`
+  (e.g. 404 unknown screen) so apps can tell "server answered" from "server not reached"
+  (any other exception) without depending on Ktor types (Ktor is `implementation`).
 - Images are embedded by the server; the player never fetches URLs.
 - `minSdk = 26` (required by `remote-player-*`).

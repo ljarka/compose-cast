@@ -2,7 +2,6 @@ package io.composecast.server
 
 import io.composecast.protocol.ScreenJson
 import io.composecast.server.sdk.ImageLoader
-import io.composecast.server.sdk.composeCast
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.nio.file.Path
@@ -12,18 +11,24 @@ import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
-/** The JSON copy of the demo screens (src/test/resources/screens) is the same product as the DSL. */
+/**
+ * `examples/demo` (JSON screens + brand.json, servable with `COMPOSECAST_DATA_DIR=examples/demo`) is
+ * the same product as the DSL `demoScreens()`.
+ */
 class JsonScreensTest {
     private val fakeImages = ImageLoader { _ ->
         ByteArrayOutputStream().also { ImageIO.write(BufferedImage(40, 20, BufferedImage.TYPE_INT_RGB), "png", it) }
             .toByteArray()
     }
-    private val dir = Path.of(requireNotNull(javaClass.getResource("/screens")).toURI())
+    private val dataDir = Path.of(System.getProperty("composecast.examples"), "demo")
+    private val dir = dataDir.resolve("screens")
 
     private val fromDsl = demoScreens(fakeImages)
-    private val fromJson = composeCast(fakeImages) {
-        brand(demoBrand)
-        screensFrom(dir)
+    private val fromJson = loadScreens(dataDir, fakeImages)
+
+    @Test
+    fun `brand json equals the DSL brand`() {
+        assertEquals(demoBrand, fromJson.brand)
     }
 
     @Test

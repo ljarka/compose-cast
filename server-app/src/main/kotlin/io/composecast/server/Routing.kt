@@ -1,13 +1,14 @@
 package io.composecast.server
 
 import io.composecast.protocol.Headers
+import io.composecast.server.sdk.ScreenRegistry
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import java.net.URLEncoder
 
-fun Application.configureRouting() {
+fun Application.configureRouting(registry: ScreenRegistry) {
     routing {
         get("/health") {
             call.respondText("ok")

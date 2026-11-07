@@ -157,12 +157,19 @@ Format reference: [protocol/AGENTS.md](protocol/AGENTS.md#screen-json-format).
 
 ## Quick start
 
-Server:
+Server (built-in demo screens from `Screens.kt`):
 
 ```bash
 ./gradlew :server-app:run
-curl http://localhost:8080/screens                 # ["main","onboarding"]
+curl http://localhost:8080/screens                 # ["main","onboarding","actions"]
 curl http://localhost:8080/screens/main/debug      # human-readable document tree
+```
+
+Without Kotlin — serve screens from JSON files (`<dir>/screens/<id>.json`, optional
+`<dir>/brand.json`; an invalid file stops startup with the file and JSON path):
+
+```bash
+COMPOSECAST_DATA_DIR=examples/demo ./gradlew :server-app:run    # PORT=8080 by default
 ```
 
 | Endpoint | Response |
@@ -236,6 +243,7 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 ### Etap 6 — Milestone 1: Weather app on Android
 - [ ] Weather app on [Open-Meteo](https://open-meteo.com) (no API key): current conditions,
   hourly/daily forecast, city list — screens as JSON, data via data sources
+- [x] Server serves JSON screens from a directory (`COMPOSECAST_DATA_DIR`, `PORT`), request logging
 - [ ] Backend in one command: Docker image (amd64 + arm64) + `docker-compose.yml`, screens on a
   volume, secrets in `.env`, healthcheck
 - [ ] Screenshots in this README; RAM/latency measured with per-request rendering
