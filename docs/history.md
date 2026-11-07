@@ -70,3 +70,7 @@ README roadmap's "Etap" numbers.
     120 columns, `@Composable` PascalCase); one formatting-only commit; `spotlessCheck` in
     `verify.sh`; CI badge. Why it was missed: the roadmap item had no task, and agents only take
     work from the queue → `check-docs.sh` now fails on open items in ✅/⏳ Etaps without `T-NNN`.
+22. **`protocol` cleanup** (2026-11-07): removed never-used `BrandTokens`, `Variables`,
+    `Headers.BRAND_ETAG` (placeholders from the initial structure). `protocol` keeps what server
+    and app must share (`Action`/`ActionCodec`, `Headers`, `BrandConfig`) plus the screen model.
+    Theming (README Etap 7) will design its tokens when it is implemented.

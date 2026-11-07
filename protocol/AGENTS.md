@@ -15,9 +15,8 @@ This module only. **Do not** import `sdk-server`, `server-app`, or `sdk-android`
 |---|---|
 | `Screen.kt` | `ScreenDefinition`, `Component` (Text, Image, Button, Spacer), `TextStyle`, validation (`problems()`/`validate()`), `ScreenJson` |
 | `Action.kt` | `Action` (Navigate, OpenUrl, Reload, Track, Custom) + `ActionCodec` (wire form) |
-| `Actions.kt` | `Actions` (wire type names, used only by the codec), `Headers` (HTTP headers), `Variables` (unused placeholders) |
+| `Actions.kt` | `Actions` (wire type names, used only by the codec), `Headers` (HTTP headers) |
 | `BrandConfig.kt` | Brand colors + font, served as JSON by `GET /brand` |
-| `BrandTokens.kt` | Full Material3 token set (light/dark/shapes/typography); not used yet |
 
 ## Actions wire format
 
@@ -50,9 +49,11 @@ Actions: `navigate` (screen, params), `open_url` (url), `reload`, `track` (event
 - **No RC types here** — `protocol` must stay pure Kotlin + kotlinx.serialization. No Remote
   Compose imports ever ([ADR 0002](../docs/decisions/0002-confine-restricted-remote-compose-api.md),
   rule R3 in `scripts/check-architecture.sh`).
-- All new shared constants (action types, header names, variable names) go here, not in
+- Only what server **and** app must agree on goes here (plus the screen model, ADR 0015); no
+  speculative placeholders — unused `BrandTokens`, `Variables`, `Headers.BRAND_ETAG` were removed
+  (2026-11-07). New shared constants (action types, header names) go here, not in
   `sdk-server` or `sdk-android`.
-- Adding a field to `BrandTokens`/`BrandConfig` is a protocol change — update both the server
+- Adding a field to `BrandConfig` is a protocol change — update both the server
   DSL and the Android client.
 
 ## Dependencies
