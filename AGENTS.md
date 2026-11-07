@@ -68,9 +68,8 @@ then `:compat-tests:verifyRoborazziDebug` (screenshot goldens; on failure CI upl
 or re-record them (`:compat-tests:recordRoborazziDebug`), look at the PNGs, and commit them —
 they are the README images.
 Lint must stay green. `RestrictedApi` is downgraded to a warning **only in `sdk-android`** (the
-deliberate RC player usage). Note: under AGP 9.5 lint, compose-runtime 1.7.5's lint checks do not
-fire at all (verified: a `produceState` that never assigns is not reported), and lifecycle 2.6.2's
-checks are skipped as obsolete — upgrading Compose restores them.
+deliberate RC player usage). Compose lint checks are active (verified with a deliberately wrong
+`produceState`); with Compose 1.7.5 under AGP 9.5 they silently did not run.
 
 Emulator: started from a terminal without `-gpu host` it was ~20x slower (activity start 7–10 s,
 100% janky frames system-wide); with `-gpu host` start is ~0.4 s. If the app looks slow on the
@@ -95,7 +94,9 @@ Endpoints:
 - **Actions:** button = clickable `Box` + `hostAction("type:payload")`; types in `protocol/Actions.kt`
   (`navigate`, `open_url`, `track`, `custom`). The app splits on the first `:`.
 - **Screens are rendered once** in `composeCast {}` (after brand is known) and served from memory.
-- **Build toolchain:** AGP 9.5.1, Gradle 9.6.0, Kotlin/KGP 2.2.20 (AGP 9.5 needs ≥ 2.2.10).
+- **Build toolchain:** AGP 9.5.1, Gradle 9.6.0, Kotlin/KGP 2.4.21 (AGP 9.5 needs ≥ 2.2.10).
+  Compose via BOM (`platform(libs.compose.bom)` in every module using Compose), compileSdk 37,
+  targetSdk 36. Ktor 3.6.1, kotlinx-serialization 1.12.0.
   AGP 9 **built-in Kotlin**: Android modules must not apply `org.jetbrains.kotlin.android`;
   `jvmTarget` follows `compileOptions.targetCompatibility` (11), so no `kotlin {}` block there.
   New DSL is on (legacy variant API unavailable). `org.gradle.tooling.parallel=true` was added by
@@ -152,21 +153,20 @@ the README roadmap is the source of truth for what to build next).
    `produceState` false positive (the check no longer runs, see Run & Verify).
 6. **Screenshot tests** in `compat-tests` (Robolectric + Roborazzi), goldens in the README,
    verified in CI. `demoScreens()` extracted in `server-app`; `ScreenDocument.fromBytes` added.
+7. **Dependency refresh:** Compose 1.7.5 → BOM 2026.09.00, activity-compose 1.13.0, Kotlin
+   2.4.21, Ktor 3.6.1, kotlinx-serialization 1.12.0, compileSdk 37 / targetSdk 36. Remote Compose
+   kept at alpha20. Screenshots re-recorded: RC content pixel-identical, only the Material3
+   TopAppBar is shorter under Robolectric (status-bar inset); on the emulator the app is unchanged.
 
-## Open Work (technical; feature plan = README roadmap)
+## Open Work
 
-1. **Dependency refresh:** Compose 1.7.5 (hard-coded, no BOM — switch to the BOM; also brings
-   working Compose lint checks), compileSdk/targetSdk 35 → 36+, Ktor 3.0.0, kotlinx-serialization
-   1.7.3, Kotlin 2.2.20. Then decide on `remote-player-compose`. Remote Compose itself has
-   newer alphas (alpha23 at the time of writing) — bump it separately; the screenshot tests and
-   gotchas 1–3 are what to re-check.
-2. Optional: enable Gradle configuration cache (Gradle 9 suggests it on every build).
-3. **Version negotiation:** client sends `X-Composecast-Player-Version`, server ignores it. Needed
-   before any app ships, since RC document features must match the player.
-4. **Brand in the app:** `/brand` and `getBrand()` exist but the app uses default `MaterialTheme`.
-5. `server-scripting` (`.screen.kts` hot-reload; note screens are pre-rendered, so reload must
-   rebuild the registry).
-6. Images are fetched once at server start (picsum.photos returns a random image each time).
+The plan is the README roadmap (Vision + Etap 0–10); read the Vision principles before adding
+features. Next in order: **Etap 2 — Foundations** (RC bump, version negotiation, dynamic
+per-request screens, ETag, typed actions). Technical leftovers not in the roadmap:
+
+- Gradle configuration cache (Gradle 9 suggests it on every build).
+- Images are fetched once at server start (picsum.photos returns a random image each time) —
+  goes away with dynamic screens.
 
 ## Git
 
