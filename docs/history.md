@@ -40,6 +40,12 @@ README roadmap's "Etap" numbers.
 15. **RC knowledge gap fixed**: `fontSize()` = 14sp assumption documented in
     `docs/remote-compose.md` (item 7) — silent failure risk on RC upgrades.
     Admin panel task stub added (`docs/tasks/T-007-admin-panel.md`).
+17. **T-008 local state spike added**: official RC docs (`developer.android.com`) confirmed
+    `RemoteStateLayout`, `RemoteCollapsibleRow/Column`, `rememberMutableRemoteInt` exist.
+    Unknown whether these are accessible from procedural `remote-creation-core` API (JVM).
+    T-008 spike task added to investigate. T-007 admin panel explicitly scoped to static
+    documents until T-008 resolves. Official component catalog added to
+    `docs/remote-compose.md`.
 16. **T-001 typed actions** ([task](tasks/T-001-typed-actions.md)): `Action` + `ActionCodec` in
     `protocol`, DSL/renderer/SDK/app migrated, demo `actions` screen + golden, Android client
     logging fixed (SLF4J had no binding).

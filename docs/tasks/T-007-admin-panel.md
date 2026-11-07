@@ -78,3 +78,6 @@ curl http://localhost:8080/screens/test | xxd | head   # should be .rc binary
 - Authentication beyond HTTP Basic (OAuth, SSO)
 - Multi-user / roles (editor vs publisher) — later enhancement
 - Experiment/A/B variant management (Etap 12)
+- **Stateful / interactive components** (expand/collapse, toggle, counter) — blocked on T-008
+  spike; first version of admin panel supports static documents only. Add after T-008 confirms
+  state API availability in procedural RC.
