@@ -231,6 +231,8 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 - [ ] Preview in the browser (community TypeScript RC player or server-rendered PNG) and on a device
   via WebSocket push
 - [ ] Publish (screen goes live), basic auth (`ADMIN_PASSWORD`)
+- [ ] Change history per screen (who published, when, diff); one-click rollback to any previous version
+- [ ] Screen variants: multiple draft versions of a screen, one marked active
 
 ### Etap 9 — Milestone 2: TV shows app on Android and iOS
 - [ ] TV shows app on [TVMaze](https://www.tvmaze.com/api) (no API key): search results, show
@@ -245,6 +247,19 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 ### Etap 11 — Release 0.1.0-alpha
 - [ ] Docs: quick start, components reference, data sources, action protocol, compatibility policy
 - [ ] Publish SDKs (Maven/JitPack, SwiftPM) + server image (GHCR); tag, CHANGELOG, GitHub Release
+
+### Etap 12 — Experimentation & feature flags
+Production SDUI systems (Nubank, Yelp, RevenueCat) treat server-driven screens as an
+experimentation platform — no release needed to change what a user sees.
+
+- [ ] Screen targeting: serve a different screen variant based on a user attribute (plan, country,
+  app version, platform) passed in the request header or JWT claim
+- [ ] A/B experiment definition: two or more screen variants with traffic split %; server records
+  which variant was served; client tracks which actions happened
+- [ ] Gradual rollout: expose a new screen to X% of requests; ramp up / roll back via the admin panel
+- [ ] Feature flags: boolean or string flags embedded in the screen response — the DSL can gate
+  components behind a flag, the server resolves them without a client release
+- [ ] Experiment results dashboard (conversion per variant, action counts)
 
 ### Later / chores
 - [ ] `.screen.kts` hot reload (`server-scripting`) + dev-loop push refresh
