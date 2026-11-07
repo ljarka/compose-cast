@@ -91,6 +91,84 @@ Cleartext HTTP is allowed only in debug builds and only for local addresses.
 - Android SDK with platform 35 (installed automatically by the Android Gradle Plugin)
 - Android 8.0 (API 26) or newer on the device
 
+## Roadmap
+
+### Etap 0 — Technical Spike ✅ (done as part of initial build)
+- [x] Verify `remote-creation-jvm` works on plain JVM
+- [x] Generate and serve Remote Compose binary documents
+- [x] Play `.rc` documents in Android with `RemoteComposePlayer`
+
+### Etap 1 — Repository & CI
+- [x] Gradle multi-module structure
+- [x] GitHub Actions CI (build + lint)
+- [ ] ktlint config + badge
+
+### Etap 2 — Server SDK & Document Endpoints
+- [x] DSL facade over `RemoteComposeWriter` (Text, Image, Button, Spacer)
+- [x] `GET /screens/{id}` returns binary Remote Compose document
+- [x] `GET /screens/{id}/debug` returns decoded document tree
+- [x] `GET /brand` brand tokens
+- [ ] Component DSL: Row, Column, Box, Card
+- [ ] Named colors and brand token integration in components
+- [ ] `.screen.kts` hot-reload script host (`server-scripting`)
+- [ ] Golden compatibility tests (`compat-tests`)
+
+### Etap 3 — Android SDK
+- [x] `RemoteComposePlayer` wrapped in `AndroidView`
+- [x] OkHttp fetch with disk cache
+- [x] Loading / error states
+- [x] Action router (`navigate`, `open_url`, `track`, `custom`)
+- [ ] Variable passing to document
+- [ ] ETag / conditional requests
+
+### Etap 4 — Brand & Appearance
+- [ ] Named colors propagated from `BrandTokens` to screen components
+- [ ] `BrandTheme` for Android native frame (status bar, background)
+- [ ] Light/dark theme switching
+- [ ] `app-template` white-label setup
+
+### Etap 5 — Docker & VPS
+- [ ] Docker image (JRE 21, amd64 + arm64)
+- [ ] `docker-compose.yml` + `example.env` in `deploy/`
+- [ ] Healthcheck, persistent volumes
+- [ ] RAM measurement under load
+
+### Etap 6 — Demo & Dev Loop
+- [ ] Demo app: product list, product card, welcome screen
+- [ ] Dev mode: file watcher + WebSocket push refresh to Android
+- [ ] GIF / screenshot for README
+
+### Etap 7 — Release 0.1.0
+- [ ] Docs: Quick start, components reference, action protocol
+- [ ] Publish to JitPack + GHCR
+- [ ] Tag v0.1.0, CHANGELOG, GitHub Release
+
+### Etap 8 — Admin Panel
+A web interface for managing screens without touching code.
+
+**Backend (`admin-server` module):**
+- [ ] REST CRUD: `POST/GET/PUT/DELETE /admin/api/screens`
+- [ ] Screen definition storage: JSON files on disk (git-friendly)
+- [ ] `POST /admin/api/screens/{id}/preview` — returns live binary `.rc` for preview
+- [ ] Basic auth via `ADMIN_PASSWORD` env var
+
+**Admin UI (HTML/JS, served by Ktor):**
+- [ ] Screen list with create / edit / delete
+- [ ] Component palette: Text, Button, Image, Row, Column, Spacer, Card
+- [ ] Property editor per component (font, color, padding, action)
+- [ ] Publish button — makes screen live on `/screens/{id}`
+- [ ] Live device preview via WebSocket push refresh
+
+---
+
+## References
+
+- [Remote Compose — official guide](https://developer.android.com/develop/ui/compose/system/remote-compose)
+- [AndroidX releases — compose-remote](https://developer.android.com/jetpack/androidx/releases/compose-remote)
+- [armcha/remotecompose — web editor + JVM converter + Android player](https://github.com/armcha/remotecompose)
+- [camaelon/remotecompose-experiments — multi-platform players](https://github.com/camaelon/remotecompose-experiments)
+- [android/skills — AI-optimised Android skill files](https://github.com/android/skills)
+
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE).
