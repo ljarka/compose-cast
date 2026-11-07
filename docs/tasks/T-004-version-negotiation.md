@@ -1,6 +1,10 @@
 # T-004 — Version negotiation
 
-Status: queued (after T-003) · Roadmap: Etap 2 · Depends on: T-003
+Status: queued (after Milestone 1) · Roadmap: Etap 7 · Depends on: T-003
+
+Deprioritized 2026-11-07 (owner): needed before apps are in users' hands, not before the first
+sample app. `ComposeCastClient` already sends `Headers.PLAYER_VERSION`, so servers can start
+reading it later without an app update.
 
 ## Goal
 Clients report which Remote Compose documents they can play; the server renders for that, or

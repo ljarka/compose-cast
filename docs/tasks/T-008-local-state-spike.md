@@ -1,6 +1,14 @@
 # T-008 — Spike: local state in procedural RC API
 
-Status: queued (after T-002) · Roadmap: Etap 2 / Etap 5 · Depends on: none (independent spike)
+Status: queued (after T-003) · Roadmap: Etap 5 / Etap 10 · Depends on: none (independent spike)
+
+## Research result (2026-11-07) — questions 1–4 answered from sources
+**Yes, accessible.** The procedural `RcScope` DSL in `remote-creation-core` alpha23 has mutable
+variables (`remoteInteger`, `remoteNamedInteger`, `remoteBool`), `setValue` inside
+`Modifier.onClick { }`, `StateLayout(stateIndex)` and `CollapsibleRow/Column` — details and file
+locations in [docs/remote-compose.md → State API — procedural](../remote-compose.md#state-api--procedural-verified-in-remote-creation-core-100-alpha23-sources).
+What remains is the **proof of concept** (steps 3 below), which needs device verification.
+Steps 1–2 and the "not accessible" branch (step 4) are obsolete.
 
 ## Goal
 
@@ -57,20 +65,23 @@ cat remote-creation-compose-$V.pom
 2. Answer questions 1–4. Document findings in `docs/remote-compose.md` under a new "State API —
    procedural" section.
 3. If state is **accessible**: implement one minimal stateful component in `RemoteComposeRenderer.kt`
-   (e.g., expandable `ScreenNode.Expandable` using `RemoteCollapsibleColumn` or `RemoteStateLayout`).
-   Add it to `ScreenNode` sealed class in `protocol/`.
+   (e.g. `Component.Expandable(title, content: List<Component>)` rendered with
+   `remoteInteger(0)` + `StateLayout` + `onClick { setValue(state, 1 - state) }`). The model is
+   `Component` in `protocol/.../Screen.kt` (T-002 replaced `ScreenNode`); follow
+   [add-component.md](../playbooks/add-component.md) (model, validation, DSL, renderer, JSON,
+   screenshot, emulator).
 4. If state is **not accessible** from procedural API: document the blocker and evaluate whether
-   `remote-creation-compose` can run on JVM (Compose Multiplatform). Create ADR 0015 with the
+   `remote-creation-compose` can run on JVM (Compose Multiplatform). Create a new ADR (next free number) with the
    finding and chosen strategy (accept limitation / add CMP dependency / defer to RC stable release).
 
 ## Acceptance criteria
 
 **Minimum** (always):
 - `docs/remote-compose.md` updated with findings on state API availability.
-- If blocked: ADR 0015 written with the chosen strategy.
+- (Obsolete: state is accessible.)
 
 **If state is accessible**:
-- `ScreenNode.Expandable` added to `protocol/` model.
+- `Component.Expandable` added to the `protocol` model (+ JSON, validation, `ScreenJsonTest`).
 - `RemoteComposeRenderer.kt` renders it using local state (expand/collapse without server call).
 - `compat-tests` golden updated for the new component.
 - `./scripts/verify.sh` green.
@@ -80,7 +91,8 @@ cat remote-creation-compose-$V.pom
 ```bash
 ./scripts/verify.sh --quick
 # If state works: add expandable section to a test screen and verify it toggles on device
-# without a network request (use Android Studio Network Inspector — 0 HTTP calls on expand)
+# without a network request: `adb logcat -s ComposeCast | grep REQUEST` and the server log
+# (`GET - /screens`) must not grow when expanding/collapsing
 ```
 
 ## Docs to update
@@ -88,8 +100,7 @@ cat remote-creation-compose-$V.pom
 - `docs/remote-compose.md` — "State API — procedural" section
 - `docs/tasks/README.md` — mark done; if state works, update T-007 to include stateful components
 - `docs/history.md` — entry for this spike
-- `protocol/AGENTS.md` — if `ScreenNode.Expandable` added
-- ADR 0015 (if blocked)
+- `protocol/AGENTS.md` — `Component.Expandable`; README DivKit table row "States"
 
 ## Out of scope
 

@@ -1,6 +1,6 @@
 # T-006 — Data sources (external APIs)
 
-Status: needs design detail (after T-003) · Roadmap: Etap 4 · Depends on: T-002, T-003
+Status: needs design detail — design right after T-003 (critical path) · Roadmap: Etap 4 · Depends on: T-002, T-003
 
 ## Goal
 Screens show data from external HTTP APIs, configured in the screen definition (no code), per

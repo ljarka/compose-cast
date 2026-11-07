@@ -219,8 +219,6 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 - [ ] **Per-request rendering**: routes with parameters (`movie/{id}`), locale; today screens are
   pre-rendered once at start
 - [ ] `ETag` / `If-None-Match`
-- [ ] **Version negotiation**: client reports the RC document API level it plays (6–8 verified);
-  server renders for it or answers "update required"
 
 ### Etap 3 — iOS spike (parallel to 2–5; needs Xcode)
 - [ ] (a) Community Remote Compose engine / SwiftUI viewer plays our documents
@@ -245,7 +243,7 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
   hourly/daily forecast, city list — screens as JSON, data via data sources
 - [x] Server serves JSON screens from a directory (`COMPOSECAST_DATA_DIR`, `PORT`), request logging
 - [ ] Backend in one command: Docker image (amd64 + arm64) + `docker-compose.yml`, screens on a
-  volume, secrets in `.env`, healthcheck
+  volume, secrets in `.env`, healthcheck — T-009 (right after per-request rendering)
 - [ ] Screenshots in this README; RAM/latency measured with per-request rendering
 
 ### Etap 7 — App shells & SDKs
@@ -254,6 +252,8 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 - [ ] HTTP cache, offline last-known screen, prefetch; analytics hooks (actions, visibility)
 - [ ] Brand tokens → document colors; light/dark via RC themed colors; native frame theming
 - [ ] iOS shell and SDK (renderer from Etap 3)
+- [ ] **Version negotiation** (T-004): client reports the RC document API level it plays (6–8
+  verified); server renders for it or answers "update required" — before apps reach users
 
 ### Etap 8 — Admin panel MVP
 - [ ] Ktor-served web UI + REST CRUD on the JSON screen model (files on disk, git-friendly)

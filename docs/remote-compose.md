@@ -40,6 +40,25 @@ for server-side document creation — pure JVM, no Compose runtime dependency.
 If Compose Multiplatform support for `remote-creation-compose` is confirmed in a future RC release,
 evaluate migrating to the higher-level DSL (task: spike in Etap 1 or Etap 2 upgrade).
 
+### State API — procedural (verified in `remote-creation-core` 1.0.0-alpha23 sources)
+
+The state machinery of the official API **is available in the procedural `RcScope` DSL we already
+use on the JVM** — no Compose runtime needed (answers T-008 questions 1–4):
+
+| Need | Procedural API (`androidx.compose.remote.creation.dsl`) |
+|---|---|
+| Mutable state | `remoteInteger(v)`, `remoteNamedInteger(name, v)` (named = host can set it), `remoteBool(v)`, `remoteLong(v)` → `RcInteger` / `RcBool` (`RcScope.kt` ~l.531, 1362) |
+| Change state on tap | `Modifier.onClick { setValue(variable, value or expression); hostAction(…) }` — local `ValueIntegerChange` ops and host actions can be combined in one click (`RcActionScope.kt`) |
+| Branch on state | `StateLayout(stateIndex: RcInteger) { child0; child1; … }` (`RcScope.kt` l.53) |
+| Adaptive layout | `CollapsibleColumn` / `CollapsibleRow` + `Modifier.vertical/horizontalCollapsiblePriority(p)` |
+| Other | `runAction { }`, `impulse(…)`, `skip(…)` (conditional segments), `timeAttribute(…)` |
+
+Not verified yet (T-008 PoC): player behavior of `StateLayout` (which child shows for each value,
+whether non-selected children are measured), and that a state change re-renders without any host
+callback. Also present but `@RestrictTo`: `creation/json/RemoteComposeJsonParser` — a low-level
+JSON form of RC operations (resources, expressions, modifiers); not a replacement for the semantic
+`ScreenDefinition` model ([ADR 0015](decisions/0015-screen-model-is-the-product.md)).
+
 ### Component catalog (from official docs, alpha23)
 
 | Component | Type | Notes |

@@ -40,12 +40,6 @@ README roadmap's "Etap" numbers.
 15. **RC knowledge gap fixed**: `fontSize()` = 14sp assumption documented in
     `docs/remote-compose.md` (item 7) — silent failure risk on RC upgrades.
     Admin panel task stub added (`docs/tasks/T-007-admin-panel.md`).
-17. **T-008 local state spike added**: official RC docs (`developer.android.com`) confirmed
-    `RemoteStateLayout`, `RemoteCollapsibleRow/Column`, `rememberMutableRemoteInt` exist.
-    Unknown whether these are accessible from procedural `remote-creation-core` API (JVM).
-    T-008 spike task added to investigate. T-007 admin panel explicitly scoped to static
-    documents until T-008 resolves. Official component catalog added to
-    `docs/remote-compose.md`.
 16. **T-001 typed actions** ([task](tasks/T-001-typed-actions.md)): `Action` + `ActionCodec` in
     `protocol`, DSL/renderer/SDK/app migrated, demo `actions` screen + golden, Android client
     logging fixed (SLF4J had no binding).
@@ -61,3 +55,13 @@ README roadmap's "Etap" numbers.
     handler no longer crashes, 404 vs unreachable error + Retry (`ComposeCastHttpException` in the
     SDK); CLAUDE.md now imports AGENTS.md (the copy had drifted). Review notes for T-003 (swappable
     registry, image cache TTL/size limit, URL encoding) and T-007 (ADR 0011–0014 inconsistencies).
+19. **T-008 local state spike added**: official RC docs (`developer.android.com`) confirmed
+    `RemoteStateLayout`, `RemoteCollapsibleRow/Column`, `rememberMutableRemoteInt` exist.
+    Unknown whether these are accessible from procedural `remote-creation-core` API (JVM).
+    T-008 spike task added to investigate. T-007 admin panel explicitly scoped to static
+    documents until T-008 resolves. Official component catalog added to
+    `docs/remote-compose.md`.
+20. **T-008 answered from sources + queue reprioritized** (2026-11-07): the RC state API
+    (`remoteInteger`, `setValue` in `onClick`, `StateLayout`, `CollapsibleRow/Column`) is in the
+    procedural alpha23 DSL we already use (docs/remote-compose.md); T-008 is now a PoC. Owner
+    approved order: T-003 → T-009 Docker (new) → T-006 design → T-008 → Milestone 1 → T-004.
