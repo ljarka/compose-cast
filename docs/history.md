@@ -1,0 +1,26 @@
+# History
+
+What was done, in order, and where the reasoning lives. Numbers are the order of work — not the
+README roadmap's "Etap" numbers.
+
+1. **Initial state** (up to `2f2103c`): JSON `ScreenModel` + hand-written renderer, RC unused,
+   Android never compiled → [ADR 0001](decisions/0001-remote-compose-wire-format.md).
+2. **Server emits RC** (`99d8979`): `RemoteComposeRenderer`, binary `/screens/{id}`, `/debug`,
+   build-time validation. `c39bb91`: debug-only cleartext HTTP for the emulator (targetSdk ≥ 28
+   blocks cleartext).
+3. **App plays RC** (`e47cdb2`): `sdk-android` on `RemoteComposePlayer`, JSON renderer deleted,
+   `expectSuccess = true`, back stack. Embedded images, units, `height` workaround
+   ([0003](decisions/0003-embed-images-server-side.md), [0004](decisions/0004-units-dp-and-sp.md)).
+4. **Handoff docs** (`5ac3534`).
+5. **Cleanup** (`ab79b5f`): legacy JSON models removed, Android build + lint in CI.
+6. **AGP 9.5.1 / Gradle 9.6.0** (`cd9029d`): built-in Kotlin, no `kotlin-android` plugin.
+7. **Screenshot tests** (`e8dd8f1`): `compat-tests` → [ADR 0006](decisions/0006-screenshot-tests-as-goldens.md).
+8. **Dependency refresh** (`f31415c`): Compose BOM, Kotlin 2.4.21, Ktor 3.6.1, compileSdk 37 /
+   targetSdk 36. Material3 TopAppBar shorter under Robolectric; RC content pixel-identical.
+9. **Vision & roadmap** (`9e67e84`): DivKit-style framework on RC.
+10. **RC alpha20 → alpha23**: units rewritten for the new density semantics (ADR 0004 table);
+    screenshots unchanged with the fix, 42% diff without it.
+11. **New goals** (owner): Android + iOS, admin panel, easy backend, components bound to external
+    APIs, sample apps; documentation restructured for agents
+    ([0007](decisions/0007-ios-strategy-spike.md), [0008](decisions/0008-server-side-data-sources.md),
+    [0009](decisions/0009-documentation-for-agents.md)).

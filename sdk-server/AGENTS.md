@@ -37,17 +37,14 @@ Screens are rendered once in `composeCast {}` (after the brand is known). Invali
 
 ## Decisions
 
-- remote-compose `1.0.0-alpha20`: the whole creation API is `@RestrictTo(LIBRARY_GROUP)` and
-  unstable, so it is confined to `RemoteComposeRenderer` and not exposed publicly.
+- RC creation API is confined to `RemoteComposeRenderer` ([ADR 0002](../docs/decisions/0002-confine-restricted-remote-compose-api.md)).
 - Buttons are a clickable `Box` with brand `primaryColor` background; click = `hostAction(action)`.
-- Images are fetched at render time (`ImageLoader`, default `HttpImageLoader`) and **embedded**
-  in the document (original bytes, real size), named `image:<url>`. URL images do not work in the
-  alpha20 player: disabled by default, size-checked against a 1x1 declared by the DSL, and fetched
-  synchronously on the main thread. A failed fetch renders the alt text instead (logged warning).
-- Units: header `DOC_DENSITY_BEHAVIOR = DP` makes the player scale padding/border/clip radius only.
-  Font sizes (`FONT_SIZE * sp / 14`, honors font scale) and heights (`density * dp`) are emitted as
-  device-side expressions. alpha20 bug: `height(RcFloat)` needs the expression written first
-  (`written(...)`), otherwise it becomes `Height(EXACT, 0.0)` — covered by a test.
+- Images are fetched at render time and embedded, named `image:<url>`; failed fetch → alt text
+  ([ADR 0003](../docs/decisions/0003-embed-images-server-side.md)).
+- Units: DP density header; sizes in dp; fonts via `sp()` expression; image height expression in
+  dp wrapped in `written(...)` ([ADR 0004](../docs/decisions/0004-units-dp-and-sp.md) — re-check its
+  table on every RC upgrade).
+- Screens are rendered once in `composeCast {}` (per-request rendering is planned, roadmap Etap 2).
 
 ## Dependencies
 

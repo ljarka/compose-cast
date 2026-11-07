@@ -1,0 +1,38 @@
+# Architecture Decision Records
+
+One decision per file: why the code is the way it is. Read the ADRs that touch the area you are
+changing **before** changing it; if you change a decision, write a new ADR that supersedes the old
+one (never silently contradict an accepted ADR).
+
+| ADR | Title | Status |
+|---|---|---|
+| [0001](0001-remote-compose-wire-format.md) | Remote Compose is the Android wire format and renderer | Accepted |
+| [0002](0002-confine-restricted-remote-compose-api.md) | Confine the restricted Remote Compose API | Accepted |
+| [0003](0003-embed-images-server-side.md) | Embed images in documents on the server | Accepted |
+| [0004](0004-units-dp-and-sp.md) | Units: DP density behavior + sp font expressions | Accepted |
+| [0005](0005-player-view-wrapper.md) | Wrap `remote-player-view` instead of `remote-player-compose` | Accepted |
+| [0006](0006-screenshot-tests-as-goldens.md) | Screenshot tests are the golden compatibility tests | Accepted |
+| [0007](0007-ios-strategy-spike.md) | iOS: decide by spike between RC player and DivKit | Proposed |
+| [0008](0008-server-side-data-sources.md) | External APIs are bound on the server (data sources) | Proposed |
+| [0009](0009-documentation-for-agents.md) | Documentation structure for AI agents | Accepted |
+
+## Template
+
+```markdown
+# NNNN — Title
+
+- Status: Proposed | Accepted | Superseded by NNNN
+- Date: YYYY-MM-DD
+
+## Context
+What forces the decision; facts verified (with versions).
+
+## Decision
+What we do.
+
+## Consequences
+What gets easier/harder; rules agents must follow.
+
+## How to verify it still holds
+Command, test or check that proves the decision is still implemented / still necessary.
+```

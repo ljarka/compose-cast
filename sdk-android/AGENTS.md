@@ -38,7 +38,7 @@ Buttons emit RC host actions named `type:payload` (constants in `protocol/Action
   `remote-player-compose` (pulls Compose 1.11 + appcompat; possible since AGP 9.5, revisit with
   the Compose upgrade).
 - AGP 9 built-in Kotlin: no `org.jetbrains.kotlin.android` plugin; `jvmTarget` = `targetCompatibility`.
-- RC player API is `@RestrictTo(LIBRARY_GROUP)` in alpha20; keep it inside this module.
+- RC player API is `@RestrictTo(LIBRARY_GROUP)` (alpha20–alpha23); keep it inside this module ([ADR 0002](../docs/decisions/0002-confine-restricted-remote-compose-api.md)).
 - Document decoding (`RemoteDocument(bytes)`) runs on `Dispatchers.Default`, not the main thread.
 - `expectSuccess = true`: unknown screen → `ClientRequestException` (404), not a decode error.
 - Images are embedded by the server; the player never fetches URLs.

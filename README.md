@@ -7,52 +7,61 @@ Screens are defined in a Kotlin DSL on the server, rendered to Remote Compose bi
 and played natively on Android by the Remote Compose player — no app update needed to change a
 screen.
 
-> **Status: experimental.** Built on `androidx.compose.remote` **1.0.0-alpha20**, whose creation
+> **Status: experimental.** Built on `androidx.compose.remote` **1.0.0-alpha23**, whose creation
 > and player APIs are marked `@RestrictTo(LIBRARY_GROUP)` and may change between alphas.
 
 ## Vision
 
-**DivKit-style server-driven UI for Android, with Remote Compose as both the wire format and the
-renderer.**
+**A DivKit-style framework for apps whose entire UI is controlled by the server** — screens,
+navigation and content are defined on the server (Kotlin DSL, later an admin panel), data comes
+from any HTTP API bound on the server, and Android/iOS apps render it natively.
 
-[DivKit](https://divkit.tech) defines its own JSON layout format and ships a renderer per platform.
-compose-cast does not build a renderer: AndroidX Remote Compose already has a binary document
-format and a player, including the runtime primitives DivKit is known for (variables, expressions,
-states, local actions, animation). compose-cast is the product layer around it:
+[DivKit](https://divkit.tech) defines its own JSON format and ships a renderer per platform.
+compose-cast builds on **AndroidX Remote Compose** instead: on Android the server sends RC binary
+documents and the official RC player renders them, including the runtime primitives DivKit is
+known for (variables, expressions, states, local actions, animation). Remote Compose has no
+official iOS player yet, so the iOS renderer is being decided by a spike
+([ADR 0007](docs/decisions/0007-ios-strategy-spike.md)).
 
-- **Authoring** — Kotlin DSL today; later scripts (`.screen.kts`) and an admin panel, all compiled
-  to the same internal screen model.
-- **Delivery** — server that renders documents per request and per player capability.
-- **Integration** — Android SDK: fetching, caching, actions, variables, images, navigation.
+compose-cast is the product layer around the renderers:
+
+- **Authoring** — Kotlin DSL; later `.screen.kts` scripts and an admin panel, all producing one
+  serializable screen model.
+- **Data** — screens bind to external HTTP APIs through server-side data sources; the APIs are not
+  part of the project and their keys never reach the app
+  ([ADR 0008](docs/decisions/0008-server-side-data-sources.md)).
+- **Delivery** — server renders per request and per client capability; starts with one command.
+- **Apps** — thin shells (Android now, iOS next) whose UI is entirely server-driven.
 - **Tooling** — debug dump, screenshot tests, preview, dev loop.
 
 Principles:
 
-1. Remote Compose is the only wire format; compose-cast never draws UI itself.
+1. The server's screen model is the product; wire formats are adapters. Android = Remote Compose,
+   never a custom Android renderer ([ADR 0001](docs/decisions/0001-remote-compose-wire-format.md)).
 2. A screen change must never break an app already in users' hands: the server renders for the
-   capabilities the player reports.
-3. Interaction runs on the device (RC variables, expressions, states) — no server round trip for
-   a toggle or a tab.
-4. Everything visual is screenshot-tested.
-5. Android-first: the official RC player is Android-only (other platforms are community
-   experiments, see References).
+   capabilities the client reports.
+3. Interaction runs on the device where possible (RC variables, expressions, states).
+4. Backend starts with one command (`docker compose up`).
+5. Everything visual is screenshot-tested; every decision is written down, so AI agents can
+   maintain the project long-term ([ADR 0009](docs/decisions/0009-documentation-for-agents.md)).
 
 ### DivKit concepts → Remote Compose → compose-cast
 
 | DivKit concept | Remote Compose primitive (alpha) | compose-cast |
 |---|---|---|
-| Element tree (containers, text, image) | `Column`/`Row`/`Box`/`Flow`, `Text`, `Image`, `Canvas` | Text, Image, Button, Spacer ✅; containers ⏳ Etap 3 |
-| Templates | Server-side Kotlin functions; RC macros (`defineMacro`/`inflate`) | ⏳ Etap 4 |
-| Variables | Named variables, set by the host (`setUserLocal*` on the player) | ⏳ Etap 4 |
-| Expressions | On-device float/text expressions, conditional operations | used internally for dp/sp; DSL ⏳ Etap 4 |
-| States | `StateLayout` + local value-change actions | ⏳ Etap 4 |
-| Actions | Host actions (named) + local value changes | host actions as `type:payload` ✅; typed ⏳ Etap 4 |
-| Light/dark, theming | Themed colors in the document | ⏳ Etap 5 |
+| Element tree (containers, text, image) | `Column`/`Row`/`Box`/`Flow`, `Text`, `Image`, `Canvas` | Text, Image, Button, Spacer ✅; containers ⏳ Etap 5 |
+| Templates | Server-side Kotlin functions; RC macros (`defineMacro`/`inflate`) | ⏳ Etap 10 |
+| Variables | Named variables, set by the host (`setUserLocal*` on the player) | ⏳ Etap 10 |
+| Expressions | On-device float/text expressions, conditional operations | used internally for dp/sp; DSL ⏳ Etap 10 |
+| States | `StateLayout` + local value-change actions | ⏳ Etap 10 |
+| Actions | Host actions (named) + local value changes | host actions as `type:payload` ✅; typed ⏳ Etap 2 |
+| Light/dark, theming | Themed colors in the document | ⏳ Etap 7 |
 | Custom elements / extensions | `Custom` component + player custom support | ⏳ later |
 | Loading new markup without release | Whole document per request; player `updateDocument` | ✅ per screen; partial updates ⏳ investigate |
-| Visibility actions (analytics) | no equivalent found | ⏳ SDK-side, Etap 6 |
-| Platforms: Android, iOS, web, KMP | Android player only | Android only (by design) |
-| Playground / editor | — | `/debug` dump ✅, PNG preview ⏳ Etap 7, admin panel Etap 10 |
+| Data from APIs | — (server-side) | data sources ⏳ Etap 4 |
+| Visibility actions (analytics) | no equivalent found | ⏳ SDK-side, Etap 7 |
+| Platforms: Android, iOS, web, KMP | official player: Android only | Android ✅; iOS ⏳ spike (Etap 3) |
+| Playground / editor | — | `/debug` dump ✅; admin panel with preview ⏳ Etap 8 |
 
 ## Screenshots
 
@@ -159,102 +168,94 @@ Cleartext HTTP is allowed only in debug builds and only for local addresses.
 
 ## Roadmap
 
+Ordered for the fastest path to real use: two milestones are complete apps (weather, TV shows)
+that force every layer to work end to end. Details and reasoning: [docs/decisions](docs/decisions/README.md).
+
 ### Etap 0 — Technical Spike ✅
 - [x] Verify `remote-creation-jvm` works on plain JVM
 - [x] Generate and serve Remote Compose binary documents
 - [x] Play `.rc` documents in Android with `RemoteComposePlayer`
 
-### Etap 1 — Repository, CI & Tests ✅
-- [x] Gradle multi-module structure
-- [x] GitHub Actions CI: build, lint, screenshot verification
+### Etap 1 — Repository, CI, Tests & Docs ✅
+- [x] Gradle multi-module structure; current toolchain (AGP 9.5, Gradle 9.6, Kotlin 2.4, Compose BOM)
+- [x] GitHub Actions CI: build, lint, screenshot verification, docs check
 - [x] Screenshot tests server → player (`compat-tests`), images in this README
-- [x] Current toolchain: AGP 9.5, Gradle 9.6, Kotlin 2.4, Compose BOM
+- [x] Agent documentation: index `AGENTS.md`, ADRs, Remote Compose knowledge base, history
 - [ ] ktlint config + badge
 
-### Etap 2 — Foundations (before more features)
-Things the rest depends on; cheaper now than after the DSL grows.
-- [ ] Bump Remote Compose alpha20 → latest alpha (re-check the known alpha20 workarounds)
-- [ ] **Version negotiation:** the SDK reports the RC document API level/profiles its player
-  supports; the server renders for it or returns a clear "update required" response
-- [ ] **Dynamic screens:** a screen is a function of the request (path/query params, user, locale),
-  rendered per request with caching — today screens are pre-rendered once at server start
-- [ ] `ETag` / `If-None-Match` on documents
-- [ ] Typed actions in `protocol` instead of `"type:payload"` strings
+### Etap 2 — Foundations ⏳
+- [x] Remote Compose alpha20 → alpha23 (units revised, [ADR 0004](docs/decisions/0004-units-dp-and-sp.md))
+- [ ] **Serializable screen model** (JSON) — one model for the DSL, scripts and the admin panel
+- [ ] **Per-request rendering**: routes with parameters (`movie/{id}`), locale; today screens are
+  pre-rendered once at start
+- [ ] `ETag` / `If-None-Match`
+- [ ] **Version negotiation**: client reports the RC document API level it plays (6–8 verified);
+  server renders for it or answers "update required"
+- [ ] Typed actions with parameters (`navigate` with params, `open_url`, `reload`, `track`)
 
-### Etap 3 — Component DSL
+### Etap 3 — iOS spike (parallel to 2–5; needs Xcode)
+- [ ] (a) Community Remote Compose engine / SwiftUI viewer plays our documents
+- [ ] (b) DivKit iOS player renders the same screen model (second server renderer)
+- [ ] Compare against Android screenshots; decide; supersede [ADR 0007](docs/decisions/0007-ios-strategy-spike.md)
+
+### Etap 4 — Data sources (APIs) — [ADR 0008](docs/decisions/0008-server-side-data-sources.md)
+- [ ] HTTP data sources: URL templates with route/query params, secrets from env
+- [ ] Bind JSON fields to components (`{{weather.current.temperature}}`); repeat over arrays
+- [ ] Loading / error / empty states; per-source timeouts and caching
+
+### Etap 5 — Components for real apps
 - [x] Text, Image, Button, Spacer
-- [ ] Containers: Row, Column, Box, Card, Divider; nesting
-- [ ] Layout: size, weight, alignment, padding; text color, alignment, max lines
-- [ ] Horizontal scrolling row / gallery
+- [ ] Row, Column, Box, Card, Divider; size, weight, alignment, padding; text color/lines
+- [ ] Lists and grids from data; horizontal gallery
+- [ ] Image sizing (aspect, crop, rounded); large/many images loaded by the SDK as named bitmaps
+- [ ] Tabs / bottom navigation defined by the server (app structure, not only screens)
 - [ ] Accessibility: content descriptions, roles
-- [ ] Image strategy: embed small static images (today); for lists and large images let the SDK
-  load them (Coil) and supply them as named bitmaps
 
-### Etap 4 — Variables, State & Templates (the DivKit core)
-- [ ] Host → document variables (e.g. user name, cart count) via RC named variables
-- [ ] Local state without a server round trip: toggles, tabs, expand/collapse (`StateLayout`)
-- [ ] Expressions in the DSL: conditional visibility, computed text
-- [ ] Templates: reusable Kotlin components; RC macros to shrink documents
-- [ ] Actions: `set_variable`, `reload`, `navigate`, `open_url`, `track`
+### Etap 6 — Milestone 1: Weather app on Android
+- [ ] Weather app on [Open-Meteo](https://open-meteo.com) (no API key): current conditions,
+  hourly/daily forecast, city list — screens as JSON, data via data sources
+- [ ] Backend in one command: Docker image (amd64 + arm64) + `docker-compose.yml`, screens on a
+  volume, secrets in `.env`, healthcheck
+- [ ] Screenshots in this README; RAM/latency measured with per-request rendering
 
-### Etap 5 — Brand & Appearance
-- [ ] Brand tokens (`BrandTokens`) → named colors in documents
-- [ ] Light/dark via RC themed colors (inside the document)
-- [ ] `BrandTheme` for the native frame (status bar, background)
-- [ ] `app-template` white-label setup
+### Etap 7 — App shells & SDKs
+- [x] Android SDK: `RemoteComposePlayer` in `AndroidView`, Ktor fetch, loading/error, action router
+- [ ] Android white-label shell: server URL + brand only, navigation/tabs from the server, deep links
+- [ ] HTTP cache, offline last-known screen, prefetch; analytics hooks (actions, visibility)
+- [ ] Brand tokens → document colors; light/dark via RC themed colors; native frame theming
+- [ ] iOS shell and SDK (renderer from Etap 3)
 
-### Etap 6 — Android SDK
-- [x] `RemoteComposePlayer` wrapped in `AndroidView`
-- [x] Ktor fetch, document decoding off the main thread
-- [x] Loading / error states
-- [x] Action router (`navigate`, `open_url`, `track`, `custom`)
-- [ ] HTTP cache, offline last-known screen, prefetch
-- [ ] Navigation helper (back stack) moved from `app-template` into the SDK
-- [ ] Analytics hooks: actions and screen/element visibility
-- [ ] Variable API (`setVariable`) backing Etap 4
+### Etap 8 — Admin panel MVP
+- [ ] Ktor-served web UI + REST CRUD on the JSON screen model (files on disk, git-friendly)
+- [ ] Component palette, property editor, data-source editor
+- [ ] Preview in the browser (community TypeScript RC player or server-rendered PNG) and on a device
+  via WebSocket push
+- [ ] Publish (screen goes live), basic auth (`ADMIN_PASSWORD`)
 
-### Etap 7 — Dev Loop & Tooling
-- [ ] `.screen.kts` hot reload (`server-scripting`) + WebSocket push refresh to the app
-- [ ] PNG preview endpoint (`/screens/{id}/preview.png`) rendered on the JVM like the screenshot
-  tests — RC has no official web player, so this is what a browser preview can show
-- [ ] Demo app: product list, product card, welcome screen (exercises dynamic screens + variables)
-- [ ] GIF for README
+### Etap 9 — Milestone 2: TV shows app on Android and iOS
+- [ ] TV shows app on [TVMaze](https://www.tvmaze.com/api) (no API key): search results, show
+  detail, episodes — built **only** in the admin panel
+- [ ] Same server, both platforms; screenshots of both in this README
 
-### Etap 8 — Docker & VPS
-- [ ] Docker image (JRE 21, amd64 + arm64)
-- [ ] `docker-compose.yml` + `example.env` in `deploy/`
-- [ ] Healthcheck, persistent volumes
-- [ ] RAM measurement under load (per-request rendering + image embedding)
+### Etap 10 — Interactivity (DivKit core)
+- [ ] Host → document variables (RC named variables); local state (`StateLayout`): toggles, tabs
+- [ ] Text input / search; expressions (conditional visibility, computed text)
+- [ ] Templates: reusable components; RC macros to shrink documents
 
-### Etap 9 — Release 0.1.0-alpha
-- [ ] Docs: Quick start, components reference, action protocol, compatibility policy
-- [ ] Publish SDKs (JitPack/Maven) + server image (GHCR)
-- [ ] Tag v0.1.0-alpha, CHANGELOG, GitHub Release
+### Etap 11 — Release 0.1.0-alpha
+- [ ] Docs: quick start, components reference, data sources, action protocol, compatibility policy
+- [ ] Publish SDKs (Maven/JitPack, SwiftPM) + server image (GHCR); tag, CHANGELOG, GitHub Release
 
-### Etap 10 — Admin Panel
-A web interface for managing screens without touching code.
-
-**Prerequisites:** a serializable screen schema (the same model the DSL builds, so DSL, scripts and
-the panel produce identical documents) and the PNG preview from Etap 7.
-
-**Backend (`admin-server` module):**
-- [ ] REST CRUD: `POST/GET/PUT/DELETE /admin/api/screens`
-- [ ] Screen definition storage: JSON files on disk (git-friendly)
-- [ ] `POST /admin/api/screens/{id}/preview` — PNG preview (and binary `.rc` for devices)
-- [ ] Basic auth via `ADMIN_PASSWORD` env var
-
-**Admin UI (HTML/JS, served by Ktor):**
-- [ ] Screen list with create / edit / delete
-- [ ] Component palette: Text, Button, Image, Row, Column, Spacer, Card
-- [ ] Property editor per component (font, color, padding, action)
-- [ ] Publish button — makes screen live on `/screens/{id}`
-- [ ] Live device preview via WebSocket push refresh
+### Later / chores
+- [ ] `.screen.kts` hot reload (`server-scripting`) + dev-loop push refresh
+- [ ] GIF for README; Gradle configuration cache
 
 ---
 
 ## References
 
 - [DivKit — the model this project follows](https://divkit.tech/docs/en/)
+- [Open-Meteo](https://open-meteo.com), [TVMaze API](https://www.tvmaze.com/api) — keyless APIs for the sample apps
 - [Remote Compose — official guide](https://developer.android.com/develop/ui/compose/system/remote-compose)
 - [AndroidX releases — compose-remote](https://developer.android.com/jetpack/androidx/releases/compose-remote)
 - [armcha/remotecompose — web editor + JVM converter + Android player](https://github.com/armcha/remotecompose)
