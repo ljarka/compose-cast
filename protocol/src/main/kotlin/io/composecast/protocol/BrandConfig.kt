@@ -8,5 +8,5 @@ data class BrandConfig(
     val primaryColor: String,
     val secondaryColor: String,
     val backgroundColor: String = "#FFFFFF",
-    val fontFamily: String = "default"
+    val fontFamily: String = "default",
 )

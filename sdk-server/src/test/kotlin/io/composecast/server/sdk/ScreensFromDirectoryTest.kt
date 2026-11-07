@@ -36,7 +36,12 @@ class ScreensFromDirectoryTest {
     @Test
     fun `duplicate of a DSL screen and missing directory fail`() {
         dir.resolve("a.json").writeText("""{"id":"a"}""")
-        assertFailsWith<IllegalArgumentException> { composeCast { screen("a") {}; screensFrom(dir) } }
+        assertFailsWith<IllegalArgumentException> {
+            composeCast {
+                screen("a") {}
+                screensFrom(dir)
+            }
+        }
         assertFailsWith<IllegalArgumentException> { composeCast { screensFrom(dir.resolve("missing")) } }
     }
 

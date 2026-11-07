@@ -10,11 +10,11 @@ import androidx.compose.remote.creation.RemoteComposeWriter
 import androidx.compose.remote.creation.dsl.Modifier
 import androidx.compose.remote.creation.dsl.RcContentScale
 import androidx.compose.remote.creation.dsl.RcFloat
-import androidx.compose.remote.creation.dsl.RcSp
 import androidx.compose.remote.creation.dsl.RcFontWeight
 import androidx.compose.remote.creation.dsl.RcHorizontalPositioning
 import androidx.compose.remote.creation.dsl.RcProfile
 import androidx.compose.remote.creation.dsl.RcScope
+import androidx.compose.remote.creation.dsl.RcSp
 import androidx.compose.remote.creation.dsl.RcVerticalPositioning
 import androidx.compose.remote.creation.dsl.background
 import androidx.compose.remote.creation.dsl.clip
@@ -42,22 +42,18 @@ import javax.imageio.ImageIO
  * As of remote-compose 1.0.0-alpha20 the whole creation API is `@RestrictTo(LIBRARY_GROUP)`
  * and may change between alphas, so it is deliberately kept behind this one internal class.
  */
-internal class RemoteComposeRenderer(
-    brand: BrandConfig?,
-    private val imageLoader: ImageLoader,
-) {
+internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoader: ImageLoader) {
     private val primary = parseColor(brand?.primaryColor ?: DEFAULT_PRIMARY)
     private val background = parseColor(brand?.backgroundColor ?: DEFAULT_BACKGROUND)
 
     /** Images fetched so far, shared by all screens of one registry. `null` = failed to load. */
     private val images = mutableMapOf<String, EncodedImage?>()
 
-    fun render(screen: ScreenDefinition): ByteArray =
-        createRcBuffer(PROFILE, *HEADER_TAGS) {
-            Column(Modifier.fillMaxSize().background(background).verticalScroll().padding(SCREEN_PADDING)) {
-                screen.components.forEach { node -> renderNode(node) }
-            }
+    fun render(screen: ScreenDefinition): ByteArray = createRcBuffer(PROFILE, *HEADER_TAGS) {
+        Column(Modifier.fillMaxSize().background(background).verticalScroll().padding(SCREEN_PADDING)) {
+            screen.components.forEach { node -> renderNode(node) }
         }
+    }
 
     private fun RcScope.renderNode(node: Component) {
         when (node) {
@@ -136,16 +132,15 @@ internal class RemoteComposeRenderer(
      */
     private fun RcScope.sp(value: Int): RcSp = RcSp((fontSize() * (value / 14f)).toFloat())
 
-    private fun fetch(url: String): EncodedImage? =
-        try {
-            val bytes = imageLoader.load(url)
-            val decoded = ImageIO.read(ByteArrayInputStream(bytes))
-                ?: error("unsupported image format (supported: PNG, JPEG, GIF, BMP)")
-            EncodedImage(bytes, decoded.width, decoded.height)
-        } catch (e: Exception) {
-            log.warning("Image '$url' not embedded, showing placeholder: ${e.message}")
-            null
-        }
+    private fun fetch(url: String): EncodedImage? = try {
+        val bytes = imageLoader.load(url)
+        val decoded = ImageIO.read(ByteArrayInputStream(bytes))
+            ?: error("unsupported image format (supported: PNG, JPEG, GIF, BMP)")
+        EncodedImage(bytes, decoded.width, decoded.height)
+    } catch (e: Exception) {
+        log.warning("Image '$url' not embedded, showing placeholder: ${e.message}")
+        null
+    }
 
     /** Original encoded bytes plus size; embedded as-is, so JPEGs are not re-encoded as PNG. */
     private class EncodedImage(val bytes: ByteArray, val width: Int, val height: Int)
@@ -155,12 +150,9 @@ internal class RemoteComposeRenderer(
         private val jvm = JvmRcPlatformServices()
         override fun imageToByteArray(image: Any): ByteArray? =
             (image as? EncodedImage)?.bytes ?: jvm.imageToByteArray(image)
-        override fun getImageWidth(image: Any): Int =
-            (image as? EncodedImage)?.width ?: jvm.getImageWidth(image)
-        override fun getImageHeight(image: Any): Int =
-            (image as? EncodedImage)?.height ?: jvm.getImageHeight(image)
-        override fun isAlpha8Image(image: Any): Boolean =
-            if (image is EncodedImage) false else jvm.isAlpha8Image(image)
+        override fun getImageWidth(image: Any): Int = (image as? EncodedImage)?.width ?: jvm.getImageWidth(image)
+        override fun getImageHeight(image: Any): Int = (image as? EncodedImage)?.height ?: jvm.getImageHeight(image)
+        override fun isAlpha8Image(image: Any): Boolean = if (image is EncodedImage) false else jvm.isAlpha8Image(image)
     }
 
     companion object {

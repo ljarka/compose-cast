@@ -27,10 +27,7 @@ class RemoteScreen internal constructor(
     fun describe(): String = RemoteComposeRenderer.describe(bytes)
 }
 
-class ScreenRegistry internal constructor(
-    val brand: BrandConfig?,
-    private val screens: Map<String, RemoteScreen>,
-) {
+class ScreenRegistry internal constructor(val brand: BrandConfig?, private val screens: Map<String, RemoteScreen>) {
     fun get(id: String): RemoteScreen? = screens[id]
 
     fun ids(): List<String> = screens.keys.toList()
@@ -97,7 +94,5 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader)
  * Defines brand and screens and renders them to Remote Compose documents.
  * Images referenced by screens are fetched with [imageLoader] and embedded in the documents.
  */
-fun composeCast(
-    imageLoader: ImageLoader = HttpImageLoader,
-    block: RegistryBuilder.() -> Unit,
-): ScreenRegistry = RegistryBuilder(imageLoader).apply(block).build()
+fun composeCast(imageLoader: ImageLoader = HttpImageLoader, block: RegistryBuilder.() -> Unit): ScreenRegistry =
+    RegistryBuilder(imageLoader).apply(block).build()

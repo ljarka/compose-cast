@@ -27,14 +27,7 @@ data class ColorScheme(
 )
 
 @Serializable
-data class Shapes(
-    val cornerSmall: Float = 4f,
-    val cornerMedium: Float = 12f,
-    val cornerLarge: Float = 16f,
-)
+data class Shapes(val cornerSmall: Float = 4f, val cornerMedium: Float = 12f, val cornerLarge: Float = 16f)
 
 @Serializable
-data class Typography(
-    val fontFamily: String = "default",
-    val scaleFactor: Float = 1f,
-)
+data class Typography(val fontFamily: String = "default", val scaleFactor: Float = 1f)

@@ -37,7 +37,10 @@ class ActionCodecTest {
     fun `params keep insertion order, encoding is deterministic`() {
         val a = Action.Navigate("s", linkedMapOf("b" to "2", "a" to "1"))
         assertEquals("navigate:s?b=2&a=1", ActionCodec.encode(a))
-        assertEquals(listOf("b", "a"), (ActionCodec.decode(ActionCodec.encode(a)) as Action.Navigate).params.keys.toList())
+        assertEquals(
+            listOf("b", "a"),
+            (ActionCodec.decode(ActionCodec.encode(a)) as Action.Navigate).params.keys.toList(),
+        )
     }
 
     @Test

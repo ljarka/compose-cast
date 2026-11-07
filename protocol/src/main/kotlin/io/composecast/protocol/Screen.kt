@@ -14,11 +14,7 @@ import kotlinx.serialization.json.Json
  * `{"id":"main","components":[{"type":"text","text":"Hi","style":"h1"}]}`.
  */
 @Serializable
-data class ScreenDefinition(
-    val id: String,
-    val title: String = id,
-    val components: List<Component> = emptyList(),
-) {
+data class ScreenDefinition(val id: String, val title: String = id, val components: List<Component> = emptyList()) {
     /**
      * Every problem in this definition, each prefixed with a JSON-like path
      * (`components[2].action: …`); empty when valid. The only validation of screen content —
@@ -82,17 +78,28 @@ sealed interface Component {
 /** Text styles of [Component.Text]; [key] is the JSON / DSL name. */
 @Serializable
 enum class TextStyle(val key: String) {
-    @SerialName("h1") H1("h1"),
-    @SerialName("h2") H2("h2"),
-    @SerialName("h3") H3("h3"),
-    @SerialName("body") Body("body"),
-    @SerialName("caption") Caption("caption"),
+    @SerialName("h1")
+    H1("h1"),
+
+    @SerialName("h2")
+    H2("h2"),
+
+    @SerialName("h3")
+    H3("h3"),
+
+    @SerialName("body")
+    Body("body"),
+
+    @SerialName("caption")
+    Caption("caption"),
     ;
 
     companion object {
-        fun fromKey(key: String): TextStyle =
-            entries.firstOrNull { it.key == key }
-                ?: throw IllegalArgumentException("Unknown text style '$key'. Allowed: ${entries.joinToString { it.key }}")
+        fun fromKey(key: String): TextStyle {
+            val allowed = entries.joinToString { it.key }
+            return entries.firstOrNull { it.key == key }
+                ?: throw IllegalArgumentException("Unknown text style '$key'. Allowed: $allowed")
+        }
     }
 }
 

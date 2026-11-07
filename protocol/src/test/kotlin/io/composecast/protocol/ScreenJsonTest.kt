@@ -30,8 +30,14 @@ class ScreenJsonTest {
 
     @Test
     fun `defaults are optional and omitted`() {
-        val minimal = ScreenJson.decode("""{"id":"a","components":[{"type":"text","text":"x"},{"type":"spacer"}]}""", "a.json")
-        assertEquals(ScreenDefinition("a", "a", listOf(Component.Text("x", TextStyle.Body), Component.Spacer(8))), minimal)
+        val minimal = ScreenJson.decode(
+            """{"id":"a","components":[{"type":"text","text":"x"},{"type":"spacer"}]}""",
+            "a.json",
+        )
+        assertEquals(
+            ScreenDefinition("a", "a", listOf(Component.Text("x", TextStyle.Body), Component.Spacer(8))),
+            minimal,
+        )
         val json = ScreenJson.encode(minimal)
         listOf("title", "style", "height").forEach { assertTrue("\"$it\"" !in json, "default '$it' encoded:\n$json") }
     }
@@ -47,24 +53,31 @@ class ScreenJsonTest {
     }
 
     @Test
-    fun `unknown component type names file and path`() =
-        assertError("""{"id":"a","components":[{"type":"text","text":"x"},{"type":"carousel"}]}""", "carousel", "components[1]")
+    fun `unknown component type names file and path`() = assertError(
+        """{"id":"a","components":[{"type":"text","text":"x"},{"type":"carousel"}]}""",
+        "carousel",
+        "components[1]",
+    )
 
     @Test
     fun `missing field names file and path`() =
         assertError("""{"id":"a","components":[{"type":"button","label":"x"}]}""", "action", "components[0]")
 
     @Test
-    fun `unknown action type names file and path`() =
-        assertError(
-            """{"id":"a","components":[{"type":"button","label":"x","action":{"type":"teleport"}}]}""",
-            "teleport", "components[0].action",
-        )
+    fun `unknown action type names file and path`() = assertError(
+        """{"id":"a","components":[{"type":"button","label":"x","action":{"type":"teleport"}}]}""",
+        "teleport",
+        "components[0].action",
+    )
 
     @Test
     fun `unknown key and bad style are errors`() {
         assertError("""{"id":"a","components":[{"type":"text","txt":"x"}]}""", "txt", "components[0]")
-        assertError("""{"id":"a","components":[{"type":"text","text":"x","style":"huge"}]}""", "huge", "components[0].style")
+        assertError(
+            """{"id":"a","components":[{"type":"text","text":"x","style":"huge"}]}""",
+            "huge",
+            "components[0].style",
+        )
     }
 
     @Test
@@ -75,7 +88,11 @@ class ScreenJsonTest {
             "components[0].action",
         )
         assertError("""{"id":" "}""", "id")
-        assertError("""{"id":"a","components":[{"type":"button","label":"x","action":{"type":"custom","payload":"${"x".repeat(4000)}"}}]}""", "4000")
+        val long = "x".repeat(4000)
+        assertError(
+            """{"id":"a","components":[{"type":"button","label":"x","action":{"type":"custom","payload":"$long"}}]}""",
+            "4000",
+        )
         assertError("""{"id":"a",""", "screens/a.json")
     }
 }

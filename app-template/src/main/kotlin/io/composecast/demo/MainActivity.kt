@@ -14,29 +14,29 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.composecast.android.ComposeCastClient
-import io.composecast.android.ComposeCastHttpException
 import io.composecast.android.ComposeCastConfig
+import io.composecast.android.ComposeCastHttpException
 import io.composecast.android.ComposeCastScreen
 import io.composecast.android.ScreenDocument
 import io.composecast.protocol.Action
@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
         ComposeCastConfig(
             serverUrl = SERVER_URL,
             logEnabled = true,
-        )
+        ),
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,10 +85,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ComposeCastApp(
-    client: ComposeCastClient,
-    onOpenUrl: (String) -> Boolean,
-) {
+private fun ComposeCastApp(client: ComposeCastClient, onOpenUrl: (String) -> Boolean) {
     // Back stack of screen ids; survives rotation. System back pops it.
     var backStack by rememberSaveable { mutableStateOf(listOf("main")) }
     val screenId = backStack.last()

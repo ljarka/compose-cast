@@ -17,11 +17,7 @@ import io.composecast.protocol.ActionCodec
  * Unknown or malformed actions (e.g. a newer server) are logged and ignored.
  */
 @Composable
-fun ComposeCastScreen(
-    screen: ScreenDocument,
-    modifier: Modifier = Modifier,
-    onAction: (Action) -> Unit = {},
-) {
+fun ComposeCastScreen(screen: ScreenDocument, modifier: Modifier = Modifier, onAction: (Action) -> Unit = {}) {
     val currentOnAction by rememberUpdatedState(onAction)
     AndroidView(
         modifier = modifier,
@@ -34,7 +30,13 @@ fun ComposeCastScreen(
                 player.document.document.clearActionCallbacks()
                 player.document.document.addActionCallback { name, _ ->
                     val action = ActionCodec.decode(name)
-                    if (action != null) currentOnAction(action) else Log.w("ComposeCast", "Ignoring unknown action '$name'")
+                    if (action !=
+                        null
+                    ) {
+                        currentOnAction(action)
+                    } else {
+                        Log.w("ComposeCast", "Ignoring unknown action '$name'")
+                    }
                 }
             }
         },

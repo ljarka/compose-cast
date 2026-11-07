@@ -53,7 +53,11 @@ class ComposeCastClient(private val config: ComposeCastConfig) {
                 header(Headers.PLAYER_VERSION, config.playerVersion)
             }
         } catch (e: ResponseException) {
-            throw ComposeCastHttpException(e.response.status.value, "HTTP ${e.response.status.value} for screen '$id'", e)
+            throw ComposeCastHttpException(
+                e.response.status.value,
+                "HTTP ${e.response.status.value} for screen '$id'",
+                e,
+            )
         }
         val title = response.headers[Headers.SCREEN_TITLE]
             ?.let { URLDecoder.decode(it, Charsets.UTF_8.name()) }
@@ -62,11 +66,9 @@ class ComposeCastClient(private val config: ComposeCastConfig) {
         return withContext(Dispatchers.Default) { ScreenDocument.fromBytes(id, title, bytes) }
     }
 
-    suspend fun listScreens(): List<String> =
-        http.get("${config.serverUrl}/screens").body()
+    suspend fun listScreens(): List<String> = http.get("${config.serverUrl}/screens").body()
 
-    suspend fun getBrand(): BrandConfig =
-        http.get("${config.serverUrl}/brand").body()
+    suspend fun getBrand(): BrandConfig = http.get("${config.serverUrl}/brand").body()
 
     fun close() = http.close()
 }

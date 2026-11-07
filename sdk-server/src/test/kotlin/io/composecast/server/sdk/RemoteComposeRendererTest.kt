@@ -120,9 +120,17 @@ class RemoteComposeRendererTest {
         assertFailsWith<IllegalArgumentException> {
             composeCast { screen("a") { button("x", Action.Custom("x".repeat(ActionCodec.MAX_ENCODED_LENGTH))) } }
         }
-        assertFailsWith<IllegalArgumentException> { composeCast { screen("a") {}; screen("a") {} } }
         assertFailsWith<IllegalArgumentException> {
-            composeCast { brand(name = "B", primaryColor = "purple", secondaryColor = "#000000"); screen("a") {} }
+            composeCast {
+                screen("a") {}
+                screen("a") {}
+            }
+        }
+        assertFailsWith<IllegalArgumentException> {
+            composeCast {
+                brand(name = "B", primaryColor = "purple", secondaryColor = "#000000")
+                screen("a") {}
+            }
         }
     }
 
