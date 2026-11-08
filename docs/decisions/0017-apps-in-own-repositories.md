@@ -28,7 +28,12 @@ gets compose-cast, deploys it, configures an app — no Kotlin.
 3. **A missing feature is a framework feature, never app code.** If the weather app needs
    something (a component, a binding, a list), it is added here, generically, with a task, a
    screenshot test and docs — then used from the app repository as configuration.
-4. The app repository pins a framework version (image tag, SDK version), so framework changes
+4. **Everything that differs between apps is configuration editable in the admin panel** (owner,
+   2026-11-08: "I don't need to modify backend code to adjust to my app"): screens, data sources,
+   lookups, brand, app settings. A feature that only a file or the DSL can express is incomplete
+   until the admin panel (T-007) can edit it; JSON files and the admin panel share one model
+   (ADR 0015), so a new model field is automatically admin-editable once T-007's editor covers it.
+5. The app repository pins a framework version (image tag, SDK version), so framework changes
    reach an app only when it upgrades.
 
 ## Open question (resolved 2026-11-08: (a), see ADR 0018)

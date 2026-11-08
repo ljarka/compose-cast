@@ -1,13 +1,15 @@
-# T-024 — Android artifacts on Maven Central + `io.composecast.app` Gradle plugin
+# T-024 — Android artifacts on Reposilite + `io.composecast.app` Gradle plugin
 
-Status: queued (after T-023) · Roadmap: Etap 6 · Depends on: T-011 (`compose-cast.properties`), owner Maven Central setup
+Status: queued (after T-023) · Roadmap: Etap 6 · Depends on: T-011 (`compose-cast.properties`), owner: Reposilite on the VPS ([playbook](../playbooks/maven-repository.md))
 
 ## Goal
 An app repository builds a branded Android app with **no Kotlin sources** — only Gradle files,
-`compose-cast.properties` and an icon ([ADR 0018](../decisions/0018-distribution-like-immich.md)):
+`compose-cast.properties` and an icon ([ADR 0018](../decisions/0018-distribution-like-immich.md),
+[ADR 0019](../decisions/0019-self-hosted-maven-reposilite.md)):
 
 ```kotlin
-// settings.gradle.kts: pluginManagement/dependencyResolution → google(), mavenCentral(), gradlePluginPortal()
+// settings.gradle.kts: pluginManagement/dependencyResolution → maven("https://maven.<domain>/releases"),
+//   google(), mavenCentral(), gradlePluginPortal() — exact block in the maven-repository playbook
 // build.gradle.kts
 plugins { id("io.composecast.app") version "0.1.0" }
 ```
@@ -24,23 +26,26 @@ plugins { id("io.composecast.app") version "0.1.0" }
    `io.composecast:app-shell:<plugin version>`; fails on missing keys and on `http://` for release.
 3. `app-template` becomes a consumer of the plugin through the included build: it then has the same
    files as an app repository (proves the path). Its Kotlin sources move to `app-shell`.
-4. Publishing: `com.vanniktech.maven.publish` for `protocol`, `sdk-android`, `app-shell` and the
-   plugin (with plugin marker), signed, to the Central Portal; group = owner's namespace (see below),
-   version = the release tag. Added to `.github/workflows/release.yml` from T-023.
+4. Publishing: plain `maven-publish` for `protocol`, `sdk-android`, `app-shell` and the plugin
+   (marker publication comes from `java-gradle-plugin`), group `io.composecast`, version = release
+   tag, repository name `composecast`, URL from Gradle property `composecastMavenUrl`, credentials
+   `composecastUsername`/`composecastPassword` (`credentials(PasswordCredentials::class)` +
+   `BasicAuthentication`, per the Reposilite Gradle guide). No signing. Added to
+   `.github/workflows/release.yml` (T-023) with secrets `COMPOSECAST_MAVEN_USERNAME` /
+   `COMPOSECAST_MAVEN_PASSWORD` and variable `COMPOSECAST_MAVEN_URL`.
 5. `docs/playbooks/new-app-repository.md`: the whole path (server from T-023 + Android from here),
    with the four Android files spelled out.
 
 ## Owner actions (cannot be done by an agent)
-- Central Portal account (https://central.sonatype.com), namespace: `io.github.ljarka` (verified via
-  GitHub) or a custom domain group (DNS TXT). Decide the group before step 4.
-- GPG key; repository secrets `MAVEN_CENTRAL_USERNAME`, `MAVEN_CENTRAL_PASSWORD`,
-  `SIGNING_IN_MEMORY_KEY`, `SIGNING_IN_MEMORY_KEY_PASSWORD`.
+- Reposilite + Cloudflare Tunnel on the VPS, `ci` token, GitHub secrets/variable:
+  [maven-repository.md](../playbooks/maven-repository.md).
 
 ## Acceptance criteria
 - `./gradlew publishToMavenLocal` + a scratch app repository using `mavenLocal()` builds and runs on
   the emulator against the Docker server with no `.kt` files.
 - `app-template` builds through the plugin; screenshots unchanged (`verify.sh` green).
-- Release workflow publishes all four artifacts on a tag (dry run: `publishToMavenLocal` in CI).
+- Release workflow publishes all four artifacts to Reposilite on a tag (dry run: `publishToMavenLocal`
+  in CI); a local Reposilite in Docker (`dzikoysk/reposilite:3.6.6`) accepts `./gradlew publish`.
 
 ## Verification
 `./scripts/verify.sh`; [verify-on-emulator.md](../playbooks/verify-on-emulator.md) with the scratch

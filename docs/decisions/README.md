@@ -13,7 +13,7 @@ one (never silently contradict an accepted ADR).
 | [0005](0005-player-view-wrapper.md) | Wrap `remote-player-view` instead of `remote-player-compose` | Accepted |
 | [0006](0006-screenshot-tests-as-goldens.md) | Screenshot tests are the golden compatibility tests | Accepted |
 | [0007](0007-ios-strategy-spike.md) | iOS: decide by spike between RC player and DivKit | Proposed |
-| [0008](0008-server-side-data-sources.md) | External APIs are bound on the server (data sources) | Proposed |
+| [0008](0008-server-side-data-sources.md) | External APIs are bound on the server (data sources) | Accepted |
 | [0009](0009-documentation-for-agents.md) | Documentation structure for AI agents | Accepted |
 | [0010](0010-executable-rules-verify-tasks.md) | Executable rules, one verify command, playbooks, task queue | Accepted |
 | [0011](0011-admin-storage-format.md) | Admin panel: JSON files on disk as storage format | Superseded by 0016 |
@@ -23,7 +23,8 @@ one (never silently contradict an accepted ADR).
 | [0015](0015-screen-model-is-the-product.md) | The serializable screen model (`ScreenDefinition`) is the product | Accepted |
 | [0016](0016-admin-storage-sqlite.md) | Admin panel storage: SQLite, accounts, two deployment modes | Accepted |
 | [0017](0017-apps-in-own-repositories.md) | Apps live in their own repositories, built without framework code changes | Accepted (distribution: 0018) |
-| [0018](0018-distribution-like-immich.md) | Distribution like Immich: release assets + GHCR image + Maven Central SDK | Accepted |
+| [0018](0018-distribution-like-immich.md) | Distribution like Immich: release assets + GHCR image + Maven Central SDK | Accepted; Maven Central part superseded by 0019 |
+| [0019](0019-self-hosted-maven-reposilite.md) | Android artifacts on a self-hosted Maven repository (Reposilite on the VPS) | Accepted |
 
 ## Template
 

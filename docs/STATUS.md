@@ -15,11 +15,11 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-002 Serializable screen model + JSON screens](tasks/T-002-screen-model-json.md) | Etap 2 | done (`8e3e935`) |
 | [T-003 Per-request rendering, route params, ETag](tasks/T-003-per-request-rendering.md) | Etap 2 | done (`d2c4de6`) |
 | [T-009 Backend in one command (Docker)](tasks/T-009-docker.md) | Etap 6 | done (`7405b52`) |
-| [T-006 Data sources](tasks/T-006-data-sources.md) | Etap 4 | needs design detail — **design it now** (critical path to Milestone 1; declarative only, ADR 0017) |
+| [T-006 Data sources](tasks/T-006-data-sources.md) | Etap 4 | ready (designed 2026-11-08; ADR 0008 accepted) |
 | [T-008 Local state spike](tasks/T-008-local-state-spike.md) | Etap 5/10 | queued (after T-006); RC API verified, PoC remains |
 | [T-011 `app-template` configurable without code](tasks/T-011-app-template-config.md) | Etap 7 | queued (after T-008, before Milestone 1) |
 | [T-023 Server distribution like Immich (GHCR + release assets)](tasks/T-023-app-repositories.md) | Etap 6 | queued (after T-011) — ADR 0018 |
-| [T-024 Android artifacts on Maven Central + `io.composecast.app` plugin](tasks/T-024-android-artifacts.md) | Etap 6 | queued (after T-023; owner: Maven Central namespace) |
+| [T-024 Android artifacts on Reposilite + `io.composecast.app` plugin](tasks/T-024-android-artifacts.md) | Etap 6 | queued (after T-023; owner: Reposilite on the VPS, ADR 0019) |
 | [T-012 Layout containers and common modifiers](tasks/T-012-layout-containers.md) | Etap 5 | queued (after T-011) — the weather app needs rows/columns |
 | [T-013 Text/image options, Icon, Divider, Card, button variants](tasks/T-013-text-image-styling.md) | Etap 5 | queued (after T-012) |
 | [T-004 Version negotiation](tasks/T-004-version-negotiation.md) | Etap 7 | queued (after Milestone 1, Etap 6) — no installed apps before that; the app already sends its player version |
@@ -56,20 +56,18 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Waiting for a decision or design
 
-- [T-006 Data sources](tasks/T-006-data-sources.md): needs design detail — **design it now** (critical path to Milestone 1; declarative only, ADR 0017)
 - [T-021 Native components via RC `Custom` (text input)](tasks/T-021-native-components.md): needs design detail (spike first)
 - [T-022 Advanced RC features (templates, drag, sensors)](tasks/T-022-advanced-rc-features.md): needs design detail (pick by real use case)
 - [T-005 iOS spike](tasks/T-005-ios-spike.md): blocked: needs Xcode on the dev machine
 - [T-007 Admin panel](tasks/T-007-admin-panel.md): needs design detail (storage/auth decided: ADR 0016; open review notes inside)
 - [T-010 White-label app export](tasks/T-010-app-export.md): needs design detail (after T-007, T-011; SDK distribution decision)
 - ADR [0007](decisions/0007-ios-strategy-spike.md): iOS: decide by spike between RC player and DivKit (Proposed)
-- ADR [0008](decisions/0008-server-side-data-sources.md): External APIs are bound on the server (data sources) (Proposed)
 
 ## Recent work (docs/history.md)
 
+- Self-hosted Maven repository
+- T-006 designed
 - Distribution like Immich
 - T-009 Docker
 - Component coverage plan
 - Review of STATUS.md / T-010 / Etap 8–9
-- RC release watch
-- T-003 per-request rendering

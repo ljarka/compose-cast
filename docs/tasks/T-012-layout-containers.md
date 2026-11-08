@@ -15,9 +15,9 @@ Today `ScreenDefinition.components` is a flat list rendered into one scrolling `
 (`RemoteComposeRenderer.render`). Real screens need side-by-side and stacked layouts. RC has all
 primitives (`docs/remote-compose.md` → Procedural catalog). The model is the product
 ([ADR 0015](../decisions/0015-screen-model-is-the-product.md)), so the nesting and modifier shape
-is a decision → write **ADR 0017**.
+is a decision → write **ADR 0020**.
 
-## Design (decide in ADR 0017, this is the proposal)
+## Design (decide in ADR 0020, this is the proposal)
 
 - `Component.Column(children, modifier, horizontalAlignment, verticalArrangement)`,
   `Component.Row(children, modifier, horizontalArrangement, verticalAlignment)`,
@@ -40,7 +40,7 @@ is a decision → write **ADR 0017**.
 
 ## Steps (files to touch)
 
-1. ADR `docs/decisions/0017-component-tree-and-modifiers.md` (+ index in `docs/decisions/README.md`).
+1. ADR `docs/decisions/0020-component-tree-and-modifiers.md` (+ index in `docs/decisions/README.md`).
 2. `protocol/.../Screen.kt`: containers, `Modifier`, enums, recursive `problems()`; `ScreenJsonTest`.
 3. `sdk-server/.../ScreenDsl.kt`: `column { }`, `row { }`, `box { }` builders (nested
    `ScreenBuilder`), `modifier = Modifier(...)` parameter on every function.
@@ -63,7 +63,7 @@ is a decision → write **ADR 0017**.
 
 ## Docs to update
 
-ADR 0017, `protocol/AGENTS.md` (JSON format), `sdk-server/AGENTS.md` (usage), README "Defining
+ADR 0020, `protocol/AGENTS.md` (JSON format), `sdk-server/AGENTS.md` (usage), README "Defining
 screens" + Etap 5 box, `docs/playbooks/add-component.md` (modifier on new components),
 `docs/remote-compose.md` (any behavior found, e.g. modifier order), `docs/history.md`.
 

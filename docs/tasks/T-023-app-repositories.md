@@ -14,7 +14,7 @@ wget -O .env https://github.com/ljarka/compose-cast/releases/latest/download/exa
 # put screens/<id>.json + brand.json into ./data, set COMPOSECAST_DOMAIN in .env
 docker compose up -d
 ```
-The Android half (Maven Central artifacts + Gradle plugin) is T-024.
+The Android half (artifacts on Reposilite + Gradle plugin) is T-024.
 
 ## Design
 1. `distribution/docker-compose.yml` (production shape; the root `docker-compose.yml` stays the

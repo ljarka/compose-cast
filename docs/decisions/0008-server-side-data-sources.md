@@ -1,6 +1,6 @@
 # 0008 — External APIs are bound on the server (data sources)
 
-- Status: Proposed
+- Status: Accepted (2026-11-08, format designed in [T-006](../tasks/T-006-data-sources.md))
 - Date: 2026-11-07
 
 ## Context
@@ -15,6 +15,14 @@ lists repeat an item template over an array. The server fetches, renders the RC 
 data, and serves it. Actions navigate with parameters (`navigate:movie?id=42`) or reload.
 Same definition format for the DSL and the admin panel.
 
+Format (2026-11-08, details and grammar in T-006): screen fields `params` (with defaults), `data`
+(name → `{url, headers, timeoutMs, cacheSeconds, optional}`), `lookups` (value tables), `error`
+(components shown when a source fails, else HTTP 502); `{{path | filter:arg}}` templates in string
+fields with a closed filter set (`round`, `date`, `lookup`, `default`, `upper`, `lower`); a `repeat`
+component over an array or over **zipped parallel arrays**; `{{secret.NAME}}` =
+`COMPOSECAST_SECRET_NAME`, only in source URLs/headers. Binding is a model-to-model transform
+before rendering, so renderers never see templates.
+
 ## Consequences
 - API keys never reach the app; works identically for any client renderer (RC, DivKit).
 - Every screen render may call external APIs → per-request rendering, caching per source,
@@ -22,4 +30,5 @@ Same definition format for the DSL and the admin panel.
 - Interactions needing no server (toggles, tabs) use RC local state later.
 
 ## How to verify it still holds
-To be defined with the implementation (sample apps on Open-Meteo / TVMaze render real data).
+`examples/demo/screens/data.json` renders live data; `compat-tests` renders it with fixture data;
+`grep -r "secret" ` in `/screens/*/debug` output never shows a secret value (T-006 tests).

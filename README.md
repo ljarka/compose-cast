@@ -44,7 +44,11 @@ Principles:
    capabilities the client reports.
 3. Interaction runs on the device where possible (RC variables, expressions, states).
 4. Backend starts with one command (`docker compose up`).
-5. Everything visual is screenshot-tested; every decision is written down, so AI agents can
+5. No backend code per app: everything that differs between apps (screens, data sources, brand,
+   app settings) is configuration, editable in the admin panel; apps live in their own repositories
+   and install the server like Immich ([ADR 0017](docs/decisions/0017-apps-in-own-repositories.md),
+   [ADR 0018](docs/decisions/0018-distribution-like-immich.md)).
+6. Everything visual is screenshot-tested; every decision is written down, so AI agents can
    maintain the project long-term ([ADR 0009](docs/decisions/0009-documentation-for-agents.md)).
 
 ### DivKit concepts → Remote Compose → compose-cast
@@ -253,9 +257,9 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 - [ ] Compare against Android screenshots; decide; supersede [ADR 0007](docs/decisions/0007-ios-strategy-spike.md)
 
 ### Etap 4 — Data sources (APIs) — [ADR 0008](docs/decisions/0008-server-side-data-sources.md)
-- [ ] HTTP data sources: URL templates with route/query params, secrets from env
-- [ ] Bind JSON fields to components (`{{weather.current.temperature}}`); repeat over arrays
-- [ ] Loading / error / empty states; per-source timeouts and caching
+- [ ] HTTP data sources: URL templates with route/query params, secrets from env — T-006
+- [ ] Bind JSON fields to components (`{{weather.current.temperature}}`); repeat over arrays — T-006
+- [ ] Loading / error / empty states; per-source timeouts and caching — T-006
 
 ### Etap 5 — Components for real apps
 - [x] Text, Image, Button, Spacer
@@ -282,7 +286,7 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
   + `example.env` from GitHub Releases, image on GHCR (amd64 + arm64), optional HTTPS (Caddy) — T-023
   ([ADR 0018](docs/decisions/0018-distribution-like-immich.md))
 - [ ] Android app without Kotlin: `sdk-android`, `app-shell` and the `io.composecast.app` Gradle
-  plugin on Maven Central — T-024
+  plugin on a self-hosted Maven repository (Reposilite, [ADR 0019](docs/decisions/0019-self-hosted-maven-reposilite.md)) — T-024
 - [x] Server serves JSON screens from a directory (`COMPOSECAST_DATA_DIR`, `PORT`), request logging
 - [x] Backend in one command: Docker image (amd64 + arm64) + `docker-compose.yml`, screens on a
   volume, secrets in `.env`, healthcheck — T-009

@@ -1,6 +1,6 @@
 # 0018 — Distribution like Immich: release assets + GHCR image + Maven Central SDK
 
-- Status: Accepted (owner, 2026-11-08)
+- Status: Accepted (owner, 2026-11-08; "Immich is right model type" — for the backend; apps stay branded). **Maven Central part superseded by [0019](0019-self-hosted-maven-reposilite.md)** (Reposilite on the VPS)
 - Date: 2026-11-08
 - Resolves the open question of [ADR 0017](0017-apps-in-own-repositories.md): **option (a), published artifacts**
 

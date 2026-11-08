@@ -106,3 +106,14 @@ README roadmap's "Etap" numbers.
     optional Caddy HTTPS profile; Android `protocol`/`sdk-android`/`app-shell` + Gradle plugin
     `io.composecast.app` on Maven Central so app repositories have no Kotlin. T-023 (server) and
     T-024 (Android) specified; T-010 export simplified.
+29. **T-006 designed** (2026-11-08): data sources + bindings as part of the screen model (`params`,
+    `data`, `lookups`, `error`, `repeat` over arrays or zipped parallel arrays, `{{path | filter}}`,
+    `{{secret.X}}` = `COMPOSECAST_SECRET_X` only in source URLs/headers); binding is a model-to-model
+    step, renderer unchanged; ADR 0008 accepted. Owner: Immich model confirmed, and everything
+    app-specific must be editable in the admin panel (ADR 0017 rule 4). T-012's planned ADR
+    renumbered 0017 → 0019 (0017/0018 taken).
+30. **Self-hosted Maven repository** (2026-11-08, owner): apps stay branded, one repository each
+    (Immich = backend model only); Android artifacts go to **Reposilite on the VPS** behind a
+    Cloudflare Tunnel instead of Maven Central → [ADR 0019](decisions/0019-self-hosted-maven-reposilite.md)
+    (supersedes that part of 0018), playbook `maven-repository.md`, T-024 updated. T-012's planned
+    ADR renumbered again → 0020.

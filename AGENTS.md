@@ -104,7 +104,7 @@ curl localhost:8080/screens/main/debug            # decoded RC document tree
 
 ## Current focus
 
-[Task queue](docs/tasks/README.md) (priority order): T-001…T-003, T-009 done → **T-006 data sources (design first)** → T-008 local state PoC → T-011 →
+[Task queue](docs/tasks/README.md) (priority order): T-001…T-003, T-009 done → **T-006 data sources (ready)** → T-008 local state PoC → T-011 →
 T-023/T-024 distribution like Immich ([ADR 0018](docs/decisions/0018-distribution-like-immich.md)) → T-012/T-013 layouts and styling → weather app in its own repo, zero
 framework code ([ADR 0017](docs/decisions/0017-apps-in-own-repositories.md), Milestone 1) → T-004 version negotiation. T-005 iOS spike is
 blocked until Xcode is installed.
