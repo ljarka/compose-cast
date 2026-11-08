@@ -35,7 +35,7 @@ class ScreenJsonTest {
             "a.json",
         )
         assertEquals(
-            ScreenDefinition("a", "a", listOf(Component.Text("x", TextStyle.Body), Component.Spacer(8))),
+            ScreenDefinition("a", "a", components = listOf(Component.Text("x", TextStyle.Body), Component.Spacer(8))),
             minimal,
         )
         val json = ScreenJson.encode(minimal)

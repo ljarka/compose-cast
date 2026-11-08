@@ -14,6 +14,8 @@ import io.ktor.server.response.respondBytes
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.net.URLEncoder
 
 fun Application.configureRouting(screens: LiveScreens) {
@@ -58,7 +60,9 @@ fun Application.configureRouting(screens: LiveScreens) {
 private suspend fun ApplicationCall.renderScreen(screens: LiveScreens): RemoteScreen? {
     val id = parameters["id"]!!
     val params = request.queryParameters.entries().associate { (name, values) -> name to values.first() }
-    val screen = screens.current.render(id, RenderContext(params))
+    // Bound screens block on data sources (T-006): keep them off the request threads.
+    val registry = screens.current
+    val screen = withContext(Dispatchers.IO) { registry.render(id, RenderContext(params)) }
     if (screen == null) respond(HttpStatusCode.NotFound, mapOf("error" to "Screen '$id' not found"))
     return screen
 }

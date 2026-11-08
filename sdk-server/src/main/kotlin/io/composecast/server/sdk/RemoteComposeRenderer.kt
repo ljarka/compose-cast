@@ -109,6 +109,9 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
             }
 
             is Component.Spacer -> Spacer(Modifier.height(node.height.toFloat()))
+
+            // BoundScreen expands repeats before rendering (T-006).
+            is Component.Repeat -> error("repeat must be expanded before rendering")
         }
     }
 

@@ -31,6 +31,17 @@
         "type": "navigate",
         "screen": "onboarding"
       }
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "button",
+      "label": "Live data",
+      "action": {
+        "type": "navigate",
+        "screen": "data"
+      }
     }
   ]
 }

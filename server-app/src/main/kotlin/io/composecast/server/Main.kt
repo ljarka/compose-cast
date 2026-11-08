@@ -1,5 +1,6 @@
 package io.composecast.server
 
+import io.composecast.server.sdk.DataSourceException
 import io.composecast.server.sdk.ScreenParameterException
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
@@ -36,6 +37,10 @@ fun Application.module(screens: LiveScreens) {
         // A dynamic screen without a required query parameter: the client's fault.
         exception<ScreenParameterException> { call, cause ->
             call.respond(HttpStatusCode.BadRequest, mapOf("error" to cause.message))
+        }
+        // An external API failed and the screen has no `error` components (T-006); already logged.
+        exception<DataSourceException> { call, cause ->
+            call.respond(HttpStatusCode.BadGateway, mapOf("error" to cause.message))
         }
         exception<Throwable> { call, cause ->
             call.application.environment.log.error("Unhandled error for ${call.request.local.uri}", cause)

@@ -54,15 +54,18 @@ class ScreenParameterException(message: String) : IllegalArgumentException(messa
 
 /**
  * All screens of an app. Static screens (DSL `screen`, JSON) are rendered and validated once at
- * build; dynamic screens (`dynamicScreen`) are built, validated and rendered on every [render].
- * Thread-safe.
+ * build; bound screens (params, data sources, `{{ }}` bindings — T-006) are validated at build and
+ * fetched, bound and rendered on every [render]; dynamic screens (`dynamicScreen`) are built,
+ * validated and rendered on every [render]. Thread-safe.
  */
 class ScreenRegistry internal constructor(
     val brand: BrandConfig?,
     private val ids: List<String>,
     private val static: Map<String, RemoteScreen>,
+    private val bound: Map<String, BoundScreen>,
     private val dynamic: Map<String, (RenderContext) -> ScreenDefinition>,
     private val renderer: RemoteComposeRenderer,
+    private val fetcher: DataFetcher,
 ) {
     /** The pre-rendered document of a static screen; `null` for unknown or dynamic screens. */
     fun get(id: String): RemoteScreen? = static[id]
@@ -73,24 +76,41 @@ class ScreenRegistry internal constructor(
     /** The pre-rendered static screens. */
     fun all(): Map<String, RemoteScreen> = static
 
+    /**
+     * The authored definitions of static and bound screens (not of DSL dynamic screens, which
+     * exist only per request), in definition order; `ScreenJson.encode` exports them.
+     */
+    fun definitions(): Map<String, ScreenDefinition> = ids.mapNotNull { id ->
+        (static[id]?.definition ?: bound[id]?.definition)?.let { id to it }
+    }.toMap()
+
     fun isDynamic(id: String): Boolean = id in dynamic
+
+    /** Rendered per request from data sources/params (T-006). */
+    fun isBound(id: String): Boolean = id in bound
 
     /**
      * The document for [id] in [context]: the cached one for static screens (they ignore params),
-     * a fresh render for dynamic ones. `null` = unknown id.
-     * @throws ScreenParameterException when a dynamic screen lacks a required parameter
+     * a fresh render for bound and dynamic ones. `null` = unknown id. Blocks while data sources
+     * are fetched: call it off the request thread (server-app uses `Dispatchers.IO`).
+     * @throws ScreenParameterException when a required parameter is missing (HTTP 400)
+     * @throws DataSourceException when a data source fails and the screen has no `error` components (HTTP 502)
      */
     fun render(id: String, context: RenderContext = RenderContext.EMPTY): RemoteScreen? {
         static[id]?.let { return it }
+        bound[id]?.let { return render(it.bind(context)) }
         val build = dynamic[id] ?: return null
         val definition = build(context).also { it.validate() }
-        return RemoteScreen(definition, renderer.render(definition))
+        return render(if (definition.isBound) BoundScreen(definition, fetcher).bind(context) else definition)
     }
+
+    private fun render(definition: ScreenDefinition) = RemoteScreen(definition, renderer.render(definition))
 }
 
 @ScreenDslMarker
-class RegistryBuilder internal constructor(private val imageLoader: ImageLoader) {
+class RegistryBuilder internal constructor(private val imageLoader: ImageLoader, private val fetcher: DataFetcher) {
     private val screens = linkedMapOf<String, ScreenDefinition>()
+    private val boundScreens = linkedMapOf<String, BoundScreen>()
     private val dynamicScreens = linkedMapOf<String, (RenderContext) -> ScreenDefinition>()
     private val ids = mutableListOf<String>()
     private var brand: BrandConfig? = null
@@ -105,11 +125,15 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader)
         screen(ScreenBuilder(id).apply(block).build())
     }
 
-    /** A screen from any other source (JSON, admin panel). Validated here. */
+    /**
+     * A screen from any other source (JSON, admin panel). Validated here; a bound screen also
+     * checks its secrets (environment) and date patterns here.
+     */
     fun screen(definition: ScreenDefinition) {
         definition.validate()
+        val bound = if (definition.isBound) BoundScreen(definition, fetcher) else null
         claim(definition.id)
-        screens[definition.id] = definition
+        if (bound != null) boundScreens[definition.id] = bound else screens[definition.id] = definition
     }
 
     /**
@@ -159,13 +183,27 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader)
     internal fun build(): ScreenRegistry {
         val renderer = RemoteComposeRenderer(brand, imageLoader)
         val rendered = screens.mapValues { (_, definition) -> RemoteScreen(definition, renderer.render(definition)) }
-        return ScreenRegistry(brand, ids.toList(), rendered, dynamicScreens.toMap(), renderer)
+        return ScreenRegistry(
+            brand,
+            ids.toList(),
+            rendered,
+            boundScreens.toMap(),
+            dynamicScreens.toMap(),
+            renderer,
+            fetcher,
+        )
     }
 }
 
 /**
  * Defines brand and screens and renders them to Remote Compose documents.
- * Images referenced by screens are fetched with [imageLoader] and embedded in the documents.
+ * Images referenced by screens are fetched with [imageLoader] and embedded in the documents; data
+ * sources (T-006) are fetched with [dataLoader]; `{{secret.NAME}}` reads `COMPOSECAST_SECRET_NAME`
+ * from [env].
  */
-fun composeCast(imageLoader: ImageLoader = HttpImageLoader, block: RegistryBuilder.() -> Unit): ScreenRegistry =
-    RegistryBuilder(imageLoader).apply(block).build()
+fun composeCast(
+    imageLoader: ImageLoader = HttpImageLoader,
+    dataLoader: DataLoader = HttpDataLoader,
+    env: (String) -> String? = System::getenv,
+    block: RegistryBuilder.() -> Unit,
+): ScreenRegistry = RegistryBuilder(imageLoader, DataFetcher(dataLoader, env)).apply(block).build()

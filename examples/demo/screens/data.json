@@ -1,0 +1,118 @@
+{
+  "id": "data",
+  "title": "{{params.city}}",
+  "params": {
+    "lat": {
+      "default": "52.52"
+    },
+    "lon": {
+      "default": "13.41"
+    },
+    "city": {
+      "default": "Berlin"
+    }
+  },
+  "data": {
+    "meteo": {
+      "url": "https://api.open-meteo.com/v1/forecast?latitude={{params.lat}}&longitude={{params.lon}}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&forecast_days=3&timezone=auto",
+      "cacheSeconds": 600
+    }
+  },
+  "lookups": {
+    "wmo": {
+      "0": "Clear sky",
+      "1": "Mainly clear",
+      "2": "Partly cloudy",
+      "3": "Overcast",
+      "45": "Fog",
+      "61": "Rain",
+      "71": "Snow",
+      "95": "Thunderstorm",
+      "*": "Changing weather"
+    }
+  },
+  "components": [
+    {
+      "type": "text",
+      "text": "Now",
+      "style": "caption"
+    },
+    {
+      "type": "text",
+      "text": "{{meteo.current.temperature_2m | round}}{{meteo.current_units.temperature_2m}}",
+      "style": "h1"
+    },
+    {
+      "type": "text",
+      "text": "{{meteo.current.weather_code | lookup:wmo}}"
+    },
+    {
+      "type": "spacer",
+      "height": 16
+    },
+    {
+      "type": "text",
+      "text": "Next days",
+      "style": "caption"
+    },
+    {
+      "type": "repeat",
+      "items": {
+        "day": "meteo.daily.time",
+        "max": "meteo.daily.temperature_2m_max",
+        "min": "meteo.daily.temperature_2m_min"
+      },
+      "as": "d",
+      "template": [
+        {
+          "type": "text",
+          "text": "{{d.day | date:'EEEE'}}: {{d.max | round}}° / {{d.min | round}}°"
+        }
+      ],
+      "empty": [
+        {
+          "type": "text",
+          "text": "No forecast"
+        }
+      ]
+    },
+    {
+      "type": "spacer",
+      "height": 16
+    },
+    {
+      "type": "button",
+      "label": "Warsaw",
+      "action": {
+        "type": "navigate",
+        "screen": "data",
+        "params": {
+          "lat": "52.23",
+          "lon": "21.01",
+          "city": "Warsaw"
+        }
+      }
+    }
+  ],
+  "error": [
+    {
+      "type": "text",
+      "text": "No data for {{params.city}}",
+      "style": "h3"
+    },
+    {
+      "type": "text",
+      "text": "The data source did not answer. Try again in a moment."
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "button",
+      "label": "Retry",
+      "action": {
+        "type": "reload"
+      }
+    }
+  ]
+}

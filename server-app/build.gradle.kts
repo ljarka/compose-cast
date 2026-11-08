@@ -32,4 +32,9 @@ tasks.named<JavaExec>("run") {
 tasks.test {
     // JsonScreensTest loads examples/demo as a data directory.
     systemProperty("composecast.examples", rootProject.projectDir.resolve("examples").path)
+    // ./gradlew :server-app:test -Pcomposecast.writeExamples=true rewrites examples/demo from the DSL.
+    systemProperty(
+        "composecast.writeExamples",
+        providers.gradleProperty("composecast.writeExamples").getOrElse("false"),
+    )
 }

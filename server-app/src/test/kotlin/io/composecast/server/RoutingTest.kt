@@ -1,6 +1,7 @@
 package io.composecast.server
 
 import io.composecast.protocol.Headers
+import io.composecast.server.sdk.DataLoader
 import io.composecast.server.sdk.ImageLoader
 import io.composecast.server.sdk.composeCast
 import io.ktor.client.request.get
@@ -90,6 +91,34 @@ class RoutingTest {
             }.awaitAll()
         }
         assertEquals(List(50) { HttpStatusCode.OK }, statuses)
+    }
+
+    @Test
+    fun `bound screen - data and params in the document, 502 when the source fails, 400 for a missing param`() = test {
+        var failing = false
+        val api = DataLoader { request ->
+            check(!failing) { "HTTP 500" }
+            """{"name":"${request.url.substringAfter("q=")}"}"""
+        }
+        screens.replace(
+            composeCast(fakeImages, api) {
+                screen("search") {
+                    param("q")
+                    data("api", url = "https://api.dev/search?q={{params.q}}", cacheSeconds = 0)
+                    text("Found {{api.name}}")
+                }
+            },
+        )
+        val ok = client.get("/screens/search") { parameter("q", "dune") }
+        assertEquals(HttpStatusCode.OK, ok.status)
+        assertTrue("Found dune" in String(ok.readRawBytes(), Charsets.UTF_8))
+
+        assertEquals(HttpStatusCode.BadRequest, client.get("/screens/search").status)
+
+        failing = true
+        val down = client.get("/screens/search") { parameter("q", "dune") }
+        assertEquals(HttpStatusCode.BadGateway, down.status)
+        assertTrue("data source 'api' failed: HTTP 500" in down.bodyAsText(), down.bodyAsText())
     }
 
     @Test

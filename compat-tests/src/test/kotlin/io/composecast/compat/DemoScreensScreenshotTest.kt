@@ -17,8 +17,11 @@ import com.github.takahirom.roborazzi.captureRoboImage
 import io.composecast.android.ComposeCastScreen
 import io.composecast.android.ScreenDocument
 import io.composecast.server.demoScreens
+import io.composecast.server.sdk.DataLoader
+import io.composecast.server.sdk.DataRequest
 import io.composecast.server.sdk.ImageLoader
 import io.composecast.server.sdk.RenderContext
+import io.composecast.server.sdk.ScreenRegistry
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -44,7 +47,7 @@ class DemoScreensScreenshotTest {
     @get:Rule
     val compose = createComposeRule()
 
-    private val registry = demoScreens(imageLoader = GeneratedImage)
+    private val registry = demoScreens(imageLoader = GeneratedImage, dataLoader = FixtureForecast)
 
     @Test
     fun main() = capture("main")
@@ -59,8 +62,25 @@ class DemoScreensScreenshotTest {
     @Test
     fun echo() = capture("echo", mapOf("word" to "zażółć gęślą jaźń"))
 
+    /** Data sources and bindings (T-006) with fixture data: current conditions + a zipped repeat. */
+    @Test
+    fun data() = capture("data")
+
+    /** The same screen when its data source fails: the screen's `error` components. */
+    @Test
+    fun dataError() = capture(
+        "data",
+        file = "data-error",
+        registry = demoScreens(imageLoader = GeneratedImage, dataLoader = { error("HTTP 503") }),
+    )
+
     @OptIn(ExperimentalMaterial3Api::class)
-    private fun capture(id: String, params: Map<String, String> = emptyMap()) {
+    private fun capture(
+        id: String,
+        params: Map<String, String> = emptyMap(),
+        file: String = id,
+        registry: ScreenRegistry = this.registry,
+    ) {
         val screen = requireNotNull(registry.render(id, RenderContext(params))) { "no demo screen '$id'" }
         val document = ScreenDocument.fromBytes(screen.id, screen.title, screen.document)
         compose.setContent {
@@ -71,7 +91,7 @@ class DemoScreensScreenshotTest {
                 }
             }
         }
-        compose.onRoot().captureRoboImage("src/test/screenshots/$id.png", roborazziOptions = OPTIONS)
+        compose.onRoot().captureRoboImage("src/test/screenshots/$file.png", roborazziOptions = OPTIONS)
     }
 
     private companion object {
@@ -82,6 +102,16 @@ class DemoScreensScreenshotTest {
         val OPTIONS = RoborazziOptions(
             compareOptions = RoborazziOptions.CompareOptions(changeThreshold = 0.0002f),
         )
+    }
+
+    /** An Open-Meteo-shaped response, so the screenshot never depends on the network or the weather. */
+    private object FixtureForecast : DataLoader {
+        override fun load(request: DataRequest): String = """
+            {"current":{"temperature_2m":21.4,"weather_code":2},
+             "current_units":{"temperature_2m":"°C"},
+             "daily":{"time":["2026-11-08","2026-11-09","2026-11-10"],
+                      "temperature_2m_max":[22.1,18.5,16.0],"temperature_2m_min":[11.2,9.6,7.0]}}
+        """.trimIndent()
     }
 
     /** Deterministic stand-in for remote images: a gradient in the demo brand colors. */

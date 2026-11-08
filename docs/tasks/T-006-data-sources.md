@@ -1,6 +1,22 @@
 # T-006 — Data sources (external APIs) and bindings
 
-Status: ready · Roadmap: Etap 4 · Depends on: T-002 (screen model), T-003 (per-request rendering)
+Status: in progress · Roadmap: Etap 4 · Depends on: T-002 (screen model), T-003 (per-request rendering)
+
+## Progress (2026-11-08)
+Implemented and pushed (verify.sh green): `protocol/Binding.kt` (template parser, `ParamSpec`,
+`DataSource`, `RepeatItems`), model fields + `Component.Repeat` + validation in `Screen.kt`;
+`sdk-server/DataLoader.kt` (`DataLoader`, `HttpDataLoader`, `DataSourceException`), `Binder.kt`
+(`DataFetcher`, `DataCache`, `BoundScreen`, filters), registry/DSL integration; server-app
+`Dispatchers.IO` + 502; demo screen `data` (+ JSON, linked from `main`); tests `BindingTest`,
+`DataBindingTest`, `RoutingTest`; goldens `data.png`, `data-error.png`, `main.png` (reviewed).
+Checked by curl against Docker + live Open-Meteo (Berlin 5°C Overcast; bad lat → error state).
+Implementation notes: filter args may also be bare names (`lookup:wmo`); an image whose URL binds
+empty is skipped; `ScreenRegistry.definitions()` / `isBound()` added; `JsonScreensTest` can rewrite
+examples (`-Pcomposecast.writeExamples=true`).
+
+**Remaining:** emulator check (step 5, owner stopped it once — ask before running), docs (ADR 0008
+check, `protocol/AGENTS.md`, `sdk-server/AGENTS.md`, `server-app/AGENTS.md`, README "Defining
+screens" + Etap 4 boxes, `docs/history.md`), then mark done.
 
 ## Goal
 A JSON screen (no Kotlin) declares HTTP data sources and binds component fields to the responses;

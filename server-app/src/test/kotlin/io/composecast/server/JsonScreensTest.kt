@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream
 import java.nio.file.Path
 import javax.imageio.ImageIO
 import kotlin.io.path.readText
+import kotlin.io.path.writeText
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -33,9 +34,10 @@ class JsonScreensTest {
 
     @Test
     fun `JSON files define the same screens as the DSL`() {
-        // Dynamic DSL screens (echo) have no JSON form; compare the static ones.
-        assertEquals(fromDsl.all().keys.sorted(), fromJson.ids().sorted())
-        fromDsl.all().values.forEach { assertEquals(it.definition, fromJson.get(it.id)!!.definition) }
+        // Dynamic DSL screens (echo) have no JSON form; compare static and bound ones.
+        assertEquals(fromDsl.definitions().keys.sorted(), fromJson.ids().sorted())
+        fromDsl.definitions().forEach { (id, definition) -> assertEquals(definition, fromJson.definitions()[id]) }
+        assertEquals(fromDsl.definitions().keys.filter(fromDsl::isBound), fromJson.ids().filter(fromJson::isBound))
     }
 
     @Test
@@ -48,9 +50,13 @@ class JsonScreensTest {
     @Test
     fun `JSON files are in canonical form (encode of DSL screen == file)`() {
         // Fails when a file is edited by hand in a non-canonical way, or the DSL changed without
-        // the JSON copy; the message shows the expected file content.
-        fromDsl.all().values.forEach {
-            assertEquals(ScreenJson.encode(it.definition), dir.resolve("${it.id}.json").readText().trimEnd())
+        // the JSON copy; the message shows the expected file content. Set
+        // -Dcomposecast.writeExamples=true to rewrite the files from the DSL (then review the diff).
+        val write = System.getProperty("composecast.writeExamples") == "true"
+        fromDsl.definitions().forEach { (id, definition) ->
+            val file = dir.resolve("$id.json")
+            if (write) file.writeText(ScreenJson.encode(definition) + "\n")
+            assertEquals(ScreenJson.encode(definition), file.readText().trimEnd())
         }
     }
 }

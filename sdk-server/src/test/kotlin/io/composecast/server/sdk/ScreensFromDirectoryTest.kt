@@ -24,7 +24,10 @@ class ScreensFromDirectoryTest {
             screensFrom(dir)
         }
         assertEquals(listOf("dsl", "a", "b"), registry.ids())
-        assertEquals(ScreenDefinition("b", "b", listOf(Component.Text("B"))), registry.get("b")!!.definition)
+        assertEquals(
+            ScreenDefinition("b", "b", components = listOf(Component.Text("B"))),
+            registry.get("b")!!.definition,
+        )
         assertTrue("B" in String(registry.get("b")!!.document, Charsets.ISO_8859_1))
     }
 
