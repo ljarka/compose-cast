@@ -27,7 +27,7 @@ copy of `demoScreens()`. `./gradlew :server-app:run` runs from the repo root, so
 
 | File | Purpose |
 |---|---|
-| `Dockerfile` | Multi-stage: Gradle `installDist` with `-Pcomposecast.serverOnly=true` (no Android SDK) on `$BUILDPLATFORM` → `eclipse-temurin:21.0.13_9-jre-alpine`, non-root `composecast`, `COMPOSECAST_DATA_DIR=/data` (no demo fallback), healthcheck = busybox `wget /health` |
+| `Dockerfile` | Multi-stage: `gradle:9.6.0-jdk21-noble` (Gradle preinstalled — **not** the wrapper, whose download from GitHub Releases failed with 504 on 2026-11-08; version must equal the wrapper's, checked by `verify-docker.sh`) runs `installDist` with `-Pcomposecast.serverOnly=true` (no Android SDK) on `$BUILDPLATFORM` → `eclipse-temurin:21.0.13_9-jre-alpine`, non-root `composecast`, `COMPOSECAST_DATA_DIR=/data` (no demo fallback), healthcheck = busybox `wget /health` |
 | `/docker-compose.yml` (root) | Dev/demo: builds the image, mounts `${COMPOSECAST_SCREENS:-./examples/demo}:/data:ro`, optional `.env` |
 | `/.dockerignore` (root) | Context = repo root; excludes Android modules, docs, build output, PNGs |
 | `/scripts/verify-docker.sh` | `verify.sh --docker`: build, healthy < 30 s, `/screens`, size < 250 MB |

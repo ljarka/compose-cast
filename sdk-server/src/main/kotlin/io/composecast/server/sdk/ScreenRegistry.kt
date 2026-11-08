@@ -125,17 +125,20 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader)
     /**
      * Adds every `*.json` file in [directory] (not recursive, in file-name order) as a screen
      * ([ScreenJson] format). Each file must be named `<id>.json` (ADR 0011). Errors name the file
-     * and the JSON path.
+     * and the JSON path. Hidden files (`.x.json`, macOS `._x.json` copied by tar/scp) are skipped.
      */
     fun screensFrom(directory: Path) {
         require(directory.isDirectory()) { "Screens directory '$directory' does not exist" }
-        directory.listDirectoryEntries("*.json").sortedBy { it.fileName.toString() }.forEach { file ->
-            val definition = ScreenJson.decode(file.readText(), source = file.toString())
-            require(definition.id == file.nameWithoutExtension) {
-                "$file: declares id '${definition.id}', but the file must be named '${definition.id}.json'"
+        directory.listDirectoryEntries("*.json")
+            .filterNot { it.fileName.toString().startsWith(".") }
+            .sortedBy { it.fileName.toString() }
+            .forEach { file ->
+                val definition = ScreenJson.decode(file.readText(), source = file.toString())
+                require(definition.id == file.nameWithoutExtension) {
+                    "$file: declares id '${definition.id}', but the file must be named '${definition.id}.json'"
+                }
+                screen(definition)
             }
-            screen(definition)
-        }
     }
 
     fun brand(

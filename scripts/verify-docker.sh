@@ -19,6 +19,12 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# The build stage uses the gradle image instead of the wrapper (see server-app/Dockerfile): keep
+# its version equal to the wrapper's.
+wrapper=$(sed -n 's/.*gradle-\([0-9.]*\)-bin.zip/\1/p' gradle/wrapper/gradle-wrapper.properties)
+grep -q "^FROM .*gradle:${wrapper}-jdk21" server-app/Dockerfile || {
+  echo "server-app/Dockerfile: build image must be gradle:${wrapper}-jdk21-… (wrapper is ${wrapper})"; exit 1; }
+
 echo "Building $IMAGE"
 docker build -q -f server-app/Dockerfile -t "$IMAGE" . >/dev/null
 

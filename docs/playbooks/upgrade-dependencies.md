@@ -13,7 +13,9 @@ Remote Compose has its own playbook ([upgrade-remote-compose.md](upgrade-remote-
    latest $M/io/ktor/ktor-server-core/maven-metadata.xml
    ```
 2. **AGP**: read its release notes for the minimum Gradle/KGP/JDK and max API level; update the
-   wrapper twice (`./gradlew wrapper --gradle-version X`, then again so scripts and jar update).
+   wrapper twice (`./gradlew wrapper --gradle-version X`, then again so scripts and jar update),
+   and bump the `gradle:X-jdk21-noble` build image in `server-app/Dockerfile` to the same version
+   (`verify.sh --docker` fails on a mismatch).
 3. Bump in `gradle/libs.versions.toml` only (rules R6/R7 enforce catalog + Compose BOM).
    New libraries may require a higher `compileSdk`.
 4. `./scripts/verify.sh`. If lint got quieter, prove checks still run: add a deliberately wrong

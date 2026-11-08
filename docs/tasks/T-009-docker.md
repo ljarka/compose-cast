@@ -12,7 +12,9 @@ and reads `PORT`; only packaging is missing. Docker is installed on the dev mach
 (`~/.docker/bin/docker`); CI (ubuntu-latest) has Docker too.
 
 ## Result (2026-11-08)
-- `server-app/Dockerfile`: build stage `eclipse-temurin:21.0.13_9-jdk` on `$BUILDPLATFORM`
+- `server-app/Dockerfile`: build stage `gradle:9.6.0-jdk21-noble` on `$BUILDPLATFORM` (first
+  `eclipse-temurin` JDK + `./gradlew`; changed after the CI `docker` job failed: the wrapper downloads
+  Gradle from GitHub Releases, which returned 504 for every release asset on 2026-11-08)
   (jars are platform-independent, so `buildx --platform linux/amd64,linux/arm64` takes ~10 s
   extra, no Gradle under emulation); runtime `eclipse-temurin:21.0.13_9-jre-alpine`, user
   `composecast`, `JAVA_OPTS=-XX:MaxRAMPercentage=75`.
@@ -31,6 +33,8 @@ and reads `PORT`; only packaging is missing. Docker is installed on the dev mach
   T-007, will need a writable volume for SQLite, ADR 0016).
 - `./scripts/verify.sh --docker` (= `scripts/verify-docker.sh`, CI job `docker`): build, healthy
   within 30 s, `/screens`, `/screens/main`, size < 250 MB.
+- Hidden `._x.json` files (macOS AppleDouble, created by `tar`/`scp` from a Mac) crashed startup
+  as invalid JSON; `screensFrom` now skips hidden files.
 - Emulator: edited `screens/main.json` + `docker compose restart` → app shows the new text.
 - Owner direction (same day): apps live in their own repositories and pull the published image —
   [ADR 0017](../decisions/0017-apps-in-own-repositories.md), T-023 (GHCR publishing).

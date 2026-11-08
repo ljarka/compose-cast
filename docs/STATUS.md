@@ -65,9 +65,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- CI `docker` job fixed
 - Self-hosted Maven repository
 - T-006 designed
 - Distribution like Immich
 - T-009 Docker
 - Component coverage plan
-- Review of STATUS.md / T-010 / Etap 8–9

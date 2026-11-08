@@ -17,6 +17,8 @@ class ScreensFromDirectoryTest {
         dir.resolve("b.json").writeText("""{"id":"b","components":[{"type":"text","text":"B"}]}""")
         dir.resolve("a.json").writeText("""{"id":"a","title":"A"}""")
         dir.resolve("notes.txt").writeText("ignored")
+        // macOS AppleDouble file (tar/scp from a Mac to the server): binary, hidden, must be skipped.
+        dir.resolve("._a.json").writeText("\u0000\u0005\u0016\u0007 Mac OS X")
         val registry = composeCast(imageLoader = { error("no images") }) {
             screen("dsl") { text("D") }
             screensFrom(dir)

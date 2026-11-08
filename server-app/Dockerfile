@@ -7,18 +7,22 @@
 # --- build: Gradle installDist of :server-app (JVM modules only, no Android SDK) ---------------
 # The build output (jars) is platform-independent: build once on the host platform, also for
 # multi-arch images (docker buildx build --platform linux/amd64,linux/arm64).
-FROM --platform=$BUILDPLATFORM eclipse-temurin:21.0.13_9-jdk AS build
+#
+# Gradle comes from the official image, not from the wrapper: the wrapper downloads its distribution
+# from GitHub Releases, and an outage there (HTTP 504, 2026-11-08) broke every fresh image build.
+# The tag must match gradle/wrapper/gradle-wrapper.properties (checked by scripts/verify-docker.sh).
+FROM --platform=$BUILDPLATFORM gradle:9.6.0-jdk21-noble AS build
 WORKDIR /src
-# Wrapper + build scripts first: the Gradle distribution and dependency downloads are cached
-# across source changes (BuildKit cache mount).
-COPY gradlew settings.gradle.kts build.gradle.kts gradle.properties ./
+ENV GRADLE_USER_HOME=/cache/gradle
+COPY settings.gradle.kts build.gradle.kts gradle.properties ./
 COPY gradle gradle
 COPY protocol protocol
 COPY sdk-server sdk-server
 COPY server-scripting server-scripting
 COPY server-app server-app
-RUN --mount=type=cache,target=/root/.gradle \
-    ./gradlew --no-daemon --console=plain -Pcomposecast.serverOnly=true :server-app:installDist \
+# Dependency downloads are cached across builds (BuildKit cache mount).
+RUN --mount=type=cache,target=/cache/gradle \
+    gradle --no-daemon --console=plain -Pcomposecast.serverOnly=true :server-app:installDist \
     # Jars from the Gradle cache are 0600: make them readable by the non-root runtime user.
     && chmod -R a+rX server-app/build/install
 

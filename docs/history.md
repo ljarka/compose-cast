@@ -117,3 +117,9 @@ README roadmap's "Etap" numbers.
     Cloudflare Tunnel instead of Maven Central → [ADR 0019](decisions/0019-self-hosted-maven-reposilite.md)
     (supersedes that part of 0018), playbook `maven-repository.md`, T-024 updated. T-012's planned
     ADR renumbered again → 0020.
+31. **CI `docker` job fixed** (2026-11-08): the first two runs failed because the Gradle wrapper
+    inside the image build downloads Gradle from GitHub Releases, which returned 504 for every
+    release asset (the `build` job passed thanks to the Actions cache). Reproduced in Linux
+    Docker-in-Docker; the build stage now uses the `gradle:9.6.0-jdk21-noble` image (version checked
+    against the wrapper). Found on the way: macOS `._*.json` files in a screens folder crashed
+    startup → `screensFrom` skips hidden files.
