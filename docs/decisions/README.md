@@ -22,7 +22,8 @@ one (never silently contradict an accepted ADR).
 | [0014](0014-admin-change-history.md) | Admin panel: append-only JSON snapshot log for change history | Superseded by 0016 (rollback semantics kept) |
 | [0015](0015-screen-model-is-the-product.md) | The serializable screen model (`ScreenDefinition`) is the product | Accepted |
 | [0016](0016-admin-storage-sqlite.md) | Admin panel storage: SQLite, accounts, two deployment modes | Accepted |
-| [0017](0017-apps-in-own-repositories.md) | Apps live in their own repositories, built without framework code changes | Accepted (SDK distribution open: T-023) |
+| [0017](0017-apps-in-own-repositories.md) | Apps live in their own repositories, built without framework code changes | Accepted (distribution: 0018) |
+| [0018](0018-distribution-like-immich.md) | Distribution like Immich: release assets + GHCR image + Maven Central SDK | Accepted |
 
 ## Template
 

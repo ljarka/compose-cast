@@ -1,6 +1,6 @@
 # 0017 — Apps live in their own repositories, built without framework code changes
 
-- Status: Accepted (owner, 2026-11-08); the SDK distribution question below is still open (T-023)
+- Status: Accepted (owner, 2026-11-08); open question resolved by [ADR 0018](0018-distribution-like-immich.md): option (a)
 - Date: 2026-11-08
 
 ## Context
@@ -23,15 +23,15 @@ gets compose-cast, deploys it, configures an app — no Kotlin.
    - the server data directory: `screens/<id>.json`, `brand.json`, data-source definitions (T-006);
    - deployment for a VPS: a `docker-compose.yml` that **pulls the published server image** (it does
      not build compose-cast), `.env.example` for secrets, HTTPS reverse proxy;
-   - the Android app: a project created from `app-template` whose **code is unchanged** — only
-     `compose-cast.properties` (T-011) and the icon differ.
+   - the Android app: Gradle files applying the published `io.composecast.app` plugin,
+     `compose-cast.properties` (T-011) and the icon — **no Kotlin** (ADR 0018, T-024).
 3. **A missing feature is a framework feature, never app code.** If the weather app needs
    something (a component, a binding, a list), it is added here, generically, with a task, a
    screenshot test and docs — then used from the app repository as configuration.
 4. The app repository pins a framework version (image tag, SDK version), so framework changes
    reach an app only when it upgrades.
 
-## Open question (decide in T-023, before Milestone 1)
+## Open question (resolved 2026-11-08: (a), see ADR 0018)
 
 How does an app repository get the Android shell and SDK?
 

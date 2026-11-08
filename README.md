@@ -278,8 +278,11 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 
 - [ ] Weather app on [Open-Meteo](https://open-meteo.com) (no API key): current conditions,
   hourly/daily forecast, city list — screens as JSON, data via data sources — in its own repository
-- [ ] App repositories without framework code: server image on GHCR (amd64 + arm64), Android
-  shell/SDK distribution, HTTPS on the VPS — T-023
+- [ ] Server install like [Immich](https://immich.app/docs/install/docker-compose): `docker-compose.yml`
+  + `example.env` from GitHub Releases, image on GHCR (amd64 + arm64), optional HTTPS (Caddy) — T-023
+  ([ADR 0018](docs/decisions/0018-distribution-like-immich.md))
+- [ ] Android app without Kotlin: `sdk-android`, `app-shell` and the `io.composecast.app` Gradle
+  plugin on Maven Central — T-024
 - [x] Server serves JSON screens from a directory (`COMPOSECAST_DATA_DIR`, `PORT`), request logging
 - [x] Backend in one command: Docker image (amd64 + arm64) + `docker-compose.yml`, screens on a
   volume, secrets in `.env`, healthcheck — T-009
@@ -340,7 +343,7 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 ### Etap 11 — Release 0.1.0-alpha
 - [ ] Docs: quick start, components reference, data sources, action protocol, compatibility policy
 - [ ] Publish SDKs (Maven/JitPack, SwiftPM) + server image (GHCR); tag, CHANGELOG, GitHub Release
-  (Android SDK + image are pulled forward into Milestone 1 by T-023)
+  (server image and Android SDK are pulled forward into Milestone 1: T-023, T-024)
 
 ### Etap 12 — Experimentation & feature flags
 Production SDUI systems (Nubank, Yelp, RevenueCat) treat server-driven screens as an

@@ -16,7 +16,9 @@ of T-010 (2026-11-07 review): it does not need the admin panel and README Etap 7
 ## Note (2026-11-08, [ADR 0017](../decisions/0017-apps-in-own-repositories.md))
 The configured app lives in **another repository** (first: weather app). Keep everything app-specific
 in `compose-cast.properties` + icon so the template code never differs between apps; how the other
-repository gets the template/SDK is T-023.
+repository gets the template/SDK is decided ([ADR 0018](../decisions/0018-distribution-like-immich.md)):
+T-024 moves this properties logic into the published Gradle plugin `io.composecast.app`, so write it
+as a self-contained function/class (no `app-template`-specific paths) that can move unchanged.
 
 ## Design
 ```properties

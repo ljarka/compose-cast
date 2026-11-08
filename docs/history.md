@@ -99,3 +99,10 @@ README roadmap's "Etap" numbers.
     non-root user. Verified on the emulator (JSON edit + restart). Owner direction: apps live in their
     own repositories with no framework code changes →
     [ADR 0017](decisions/0017-apps-in-own-repositories.md), T-023; T-006 must be declarative.
+    Committed `7405b52`.
+28. **Distribution like Immich** (2026-11-08, owner: option (a), "similar like Immich"):
+    [ADR 0018](decisions/0018-distribution-like-immich.md) — server installed from GitHub Release
+    assets (`docker-compose.yml` + `example.env`), image on GHCR with `release`/`vX.Y.Z`/`main` tags,
+    optional Caddy HTTPS profile; Android `protocol`/`sdk-android`/`app-shell` + Gradle plugin
+    `io.composecast.app` on Maven Central so app repositories have no Kotlin. T-023 (server) and
+    T-024 (Android) specified; T-010 export simplified.
