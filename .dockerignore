@@ -1,0 +1,14 @@
+# Build context = repository root; the Dockerfile copies only the JVM modules it needs.
+**/build/
+**/.gradle/
+.gradle/
+**/.kotlin/
+.idea/
+.git/
+local.properties
+*.iml
+**/*.png
+app-template/
+sdk-android/
+compat-tests/
+docs/

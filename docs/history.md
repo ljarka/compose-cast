@@ -92,3 +92,10 @@ README roadmap's "Etap" numbers.
     View player `setCustomSupport`) recorded in `docs/remote-compose.md`; found no text-input op
     (→ native views via `Custom`, T-021). Tasks T-012…T-022 added; T-012/T-013 queued before
     Milestone 1, the rest after T-004; README Etap 5/10 boxes reference them.
+27. **T-009 Docker** (2026-11-08): `server-app/Dockerfile` (temurin 21 JRE Alpine, non-root, busybox
+    `wget` healthcheck, multi-arch with the build stage on `$BUILDPLATFORM`, 236 MB),
+    `docker-compose.yml`, `verify.sh --docker` + CI job; server-only Gradle build
+    (`-Pcomposecast.serverOnly=true`). Gotcha: Gradle-cache jars are 0600 → unreadable for the
+    non-root user. Verified on the emulator (JSON edit + restart). Owner direction: apps live in their
+    own repositories with no framework code changes →
+    [ADR 0017](decisions/0017-apps-in-own-repositories.md), T-023; T-006 must be declarative.

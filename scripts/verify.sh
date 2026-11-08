@@ -5,6 +5,8 @@
 #                                 screenshot verification
 #   ./scripts/verify.sh --quick   docs, architecture, formatting, JVM build + tests (no Android SDK needed);
 #                                 enough as a baseline only for server-only work
+#   ./scripts/verify.sh --docker  only the server Docker image smoke test (scripts/verify-docker.sh;
+#                                 needs Docker, separate CI job)
 #
 # Exits non-zero on the first failing step and says what to look at.
 set -euo pipefail
@@ -12,6 +14,7 @@ cd "$(dirname "$0")/.."
 
 QUICK=false
 [[ "${1:-}" == "--quick" ]] && QUICK=true
+[[ "${1:-}" == "--docker" ]] && exec ./scripts/verify-docker.sh
 
 # Agent shells do not load ~/.zshrc; find JDK 21 if JAVA_HOME is not set (CI sets it).
 if [[ -z "${JAVA_HOME:-}" ]]; then

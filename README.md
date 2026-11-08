@@ -171,7 +171,20 @@ Format reference: [protocol/AGENTS.md](protocol/AGENTS.md#screen-json-format).
 
 ## Quick start
 
-Server (built-in demo screens from `Screens.kt`):
+Server with Docker — no JDK, Gradle or Kotlin needed (serves the JSON screens in `examples/demo`):
+
+```bash
+docker compose up -d
+curl http://localhost:8080/screens                 # ["actions","main","onboarding"]
+COMPOSECAST_SCREENS=/path/to/data docker compose up -d   # your own screens/<id>.json + brand.json
+docker compose restart                             # after editing a screen file
+docker compose logs server                         # an invalid file is reported here (file + JSON path)
+```
+
+The image (`server-app/Dockerfile`) is multi-arch: `docker buildx build --platform
+linux/amd64,linux/arm64 -f server-app/Dockerfile .`
+
+Server from source (built-in demo screens from `Screens.kt`):
 
 ```bash
 ./gradlew :server-app:run
@@ -257,11 +270,19 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 - [ ] Tabs / bottom navigation defined by the server (app structure, not only screens)
 
 ### Etap 6 — Milestone 1: Weather app on Android
+
+> **Zero framework code** ([ADR 0017](docs/decisions/0017-apps-in-own-repositories.md)): the weather
+> app lives in its own repository — screens JSON + data sources + `docker-compose.yml` for a VPS
+> (published image, HTTPS) + the Android app configured from `app-template`. Anything missing is
+> added to the framework generically, never as weather code.
+
 - [ ] Weather app on [Open-Meteo](https://open-meteo.com) (no API key): current conditions,
-  hourly/daily forecast, city list — screens as JSON, data via data sources
+  hourly/daily forecast, city list — screens as JSON, data via data sources — in its own repository
+- [ ] App repositories without framework code: server image on GHCR (amd64 + arm64), Android
+  shell/SDK distribution, HTTPS on the VPS — T-023
 - [x] Server serves JSON screens from a directory (`COMPOSECAST_DATA_DIR`, `PORT`), request logging
-- [ ] Backend in one command: Docker image (amd64 + arm64) + `docker-compose.yml`, screens on a
-  volume, secrets in `.env`, healthcheck — T-009 (right after per-request rendering)
+- [x] Backend in one command: Docker image (amd64 + arm64) + `docker-compose.yml`, screens on a
+  volume, secrets in `.env`, healthcheck — T-009
 - [ ] Screenshots in this README; RAM/latency measured with per-request rendering
 
 ### Etap 7 — App shells & SDKs
@@ -319,6 +340,7 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 ### Etap 11 — Release 0.1.0-alpha
 - [ ] Docs: quick start, components reference, data sources, action protocol, compatibility policy
 - [ ] Publish SDKs (Maven/JitPack, SwiftPM) + server image (GHCR); tag, CHANGELOG, GitHub Release
+  (Android SDK + image are pulled forward into Milestone 1 by T-023)
 
 ### Etap 12 — Experimentation & feature flags
 Production SDUI systems (Nubank, Yelp, RevenueCat) treat server-driven screens as an

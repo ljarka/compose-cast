@@ -9,10 +9,11 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-001 Typed actions](T-001-typed-actions.md) | Etap 2 | done (`8c8dabb`) |
 | [T-002 Serializable screen model + JSON screens](T-002-screen-model-json.md) | Etap 2 | done (`8e3e935`) |
 | [T-003 Per-request rendering, route params, ETag](T-003-per-request-rendering.md) | Etap 2 | done (`d2c4de6`) |
-| [T-009 Backend in one command (Docker)](T-009-docker.md) | Etap 6 | ready |
-| [T-006 Data sources](T-006-data-sources.md) | Etap 4 | needs design detail — design it right after T-009 (critical path to Milestone 1) |
+| [T-009 Backend in one command (Docker)](T-009-docker.md) | Etap 6 | done (not committed yet) |
+| [T-006 Data sources](T-006-data-sources.md) | Etap 4 | needs design detail — **design it now** (critical path to Milestone 1; declarative only, ADR 0017) |
 | [T-008 Local state spike](T-008-local-state-spike.md) | Etap 5/10 | queued (after T-006); RC API verified, PoC remains |
 | [T-011 `app-template` configurable without code](T-011-app-template-config.md) | Etap 7 | queued (after T-008, before Milestone 1) |
+| [T-023 App repositories: published server image + app shell](T-023-app-repositories.md) | Etap 6 | needs design detail (owner: SDK distribution, ADR 0017) — before Milestone 1 |
 | [T-012 Layout containers and common modifiers](T-012-layout-containers.md) | Etap 5 | queued (after T-011) — the weather app needs rows/columns |
 | [T-013 Text/image options, Icon, Divider, Card, button variants](T-013-text-image-styling.md) | Etap 5 | queued (after T-012) |
 | [T-004 Version negotiation](T-004-version-negotiation.md) | Etap 7 | queued (after Milestone 1, Etap 6) — no installed apps before that; the app already sends its player version |
@@ -30,6 +31,9 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-010 White-label app export](T-010-app-export.md) | Etap 9 | needs design detail (after T-007, T-011; SDK distribution decision) |
 
 Rows are in priority order (owner, 2026-11-07): fastest path to Milestone 1 (weather app).
+Owner, 2026-11-08 ([ADR 0017](../decisions/0017-apps-in-own-repositories.md)): the weather app
+lives in **its own repository** and needs no framework code changes — server from the published
+image on a VPS, app = `app-template` configured; missing features are added here, generically.
 T-012…T-022 (owner, 2026-11-07: support every component Remote Compose can express) cover the
 catalog in [docs/remote-compose.md → Procedural catalog](../remote-compose.md).
 

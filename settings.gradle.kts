@@ -20,6 +20,11 @@ include(":protocol")
 include(":sdk-server")
 include(":server-scripting")
 include(":server-app")
-include(":sdk-android")
-include(":app-template")
-include(":compat-tests")
+
+// `-Pcomposecast.serverOnly=true` (server-app/Dockerfile): JVM modules only, so the server image
+// builds without an Android SDK.
+if (providers.gradleProperty("composecast.serverOnly").orNull != "true") {
+    include(":sdk-android")
+    include(":app-template")
+    include(":compat-tests")
+}

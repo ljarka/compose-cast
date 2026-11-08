@@ -23,6 +23,18 @@ Do NOT load `sdk-android` or `app-template` unless cross-cutting.
 copy of `demoScreens()`. `./gradlew :server-app:run` runs from the repo root, so relative
 `COMPOSECAST_DATA_DIR` paths work.
 
+## Docker (T-009)
+
+| File | Purpose |
+|---|---|
+| `Dockerfile` | Multi-stage: Gradle `installDist` with `-Pcomposecast.serverOnly=true` (no Android SDK) on `$BUILDPLATFORM` → `eclipse-temurin:21.0.13_9-jre-alpine`, non-root `composecast`, `COMPOSECAST_DATA_DIR=/data` (no demo fallback), healthcheck = busybox `wget /health` |
+| `/docker-compose.yml` (root) | Dev/demo: builds the image, mounts `${COMPOSECAST_SCREENS:-./examples/demo}:/data:ro`, optional `.env` |
+| `/.dockerignore` (root) | Context = repo root; excludes Android modules, docs, build output, PNGs |
+| `/scripts/verify-docker.sh` | `verify.sh --docker`: build, healthy < 30 s, `/screens`, size < 250 MB |
+
+- The build stage must `chmod -R a+rX` the install: Gradle-cache jars are 0600 → `NoClassDefFoundError` as non-root.
+- Pin base image tags (`21.0.13_9-…`); bump them with the JDK. Apps pull the published image (T-023, ADR 0017).
+
 ## Endpoints
 
 | Method | Path | Response |
@@ -60,4 +72,6 @@ COMPOSECAST_DATA_DIR=examples/demo PORT=8080 ./gradlew :server-app:run   # JSON 
 curl http://localhost:8080/health
 curl http://localhost:8080/screens
 ./gradlew :server-app:test          # JsonScreensTest
+docker compose up -d                # the image on examples/demo (COMPOSECAST_SCREENS=… for others)
+./scripts/verify.sh --docker        # image smoke test
 ```

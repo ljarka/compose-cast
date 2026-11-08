@@ -13,6 +13,11 @@ Today `SERVER_URL` is a constant in `MainActivity`, `applicationId`/name are in 
 of T-010 (2026-11-07 review): it does not need the admin panel and README Etap 7 already asked for a
 "white-label shell".
 
+## Note (2026-11-08, [ADR 0017](../decisions/0017-apps-in-own-repositories.md))
+The configured app lives in **another repository** (first: weather app). Keep everything app-specific
+in `compose-cast.properties` + icon so the template code never differs between apps; how the other
+repository gets the template/SDK is T-023.
+
 ## Design
 ```properties
 app.name=ComposeCast Demo

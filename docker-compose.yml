@@ -1,0 +1,20 @@
+# Backend in one command (T-009): `docker compose up -d`, then `curl localhost:8080/screens`.
+# Serves the JSON screens in ./examples/demo, or your own data directory (`screens/<id>.json`,
+# optional `brand.json`): COMPOSECAST_SCREENS=/path/to/data docker compose up -d
+# Edited files take effect after `docker compose restart`; an invalid file stops the container
+# with the file and JSON path in `docker compose logs`.
+services:
+  server:
+    build:
+      context: .
+      dockerfile: server-app/Dockerfile
+    image: compose-cast-server:local
+    ports:
+      - "8080:8080"
+    volumes:
+      - ${COMPOSECAST_SCREENS:-./examples/demo}:/data:ro
+    # Optional: secrets for data sources (T-006), e.g. API keys. Copy .env.example to .env.
+    env_file:
+      - path: .env
+        required: false
+    restart: unless-stopped

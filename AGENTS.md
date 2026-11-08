@@ -90,10 +90,12 @@ Do not load the whole project.
 ```bash
 ./scripts/verify.sh                               # = CI (.github/workflows/ci.yml)
 ./scripts/verify.sh --quick                       # docs + architecture + formatting + JVM build/tests
+./scripts/verify.sh --docker                      # server image smoke test only (CI job `docker`)
 ./gradlew spotlessApply                           # fix formatting (ktlint, rules in .editorconfig)
 ./gradlew :compat-tests:recordRoborazziDebug      # accept intended visual changes (look at PNGs!)
 
 # Server + debugging (endpoints: server-app/AGENTS.md)
+docker compose up -d                              # image from server-app/Dockerfile, examples/demo
 ./gradlew :server-app:run
 curl localhost:8080/screens/main/debug            # decoded RC document tree
 
@@ -102,6 +104,7 @@ curl localhost:8080/screens/main/debug            # decoded RC document tree
 
 ## Current focus
 
-[Task queue](docs/tasks/README.md) (priority order): T-001…T-003 done → **T-009 Docker** → T-006 data sources (design first) → T-008 local state PoC → T-011 →
-T-012/T-013 layouts and styling → weather app (Milestone 1) → T-004 version negotiation. T-005 iOS spike is
+[Task queue](docs/tasks/README.md) (priority order): T-001…T-003, T-009 done → **T-006 data sources (design first)** → T-008 local state PoC → T-011 →
+T-023 app repositories → T-012/T-013 layouts and styling → weather app in its own repo, zero
+framework code ([ADR 0017](docs/decisions/0017-apps-in-own-repositories.md), Milestone 1) → T-004 version negotiation. T-005 iOS spike is
 blocked until Xcode is installed.

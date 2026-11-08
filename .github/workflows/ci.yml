@@ -27,3 +27,12 @@ jobs:
         with:
           name: screenshot-diffs
           path: compat-tests/build/outputs/roborazzi/
+
+  # Server image smoke test (T-009): build server-app/Dockerfile, run it on examples/demo,
+  # healthcheck + /screens. Same command locally: ./scripts/verify.sh --docker
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Docker image
+        run: ./scripts/verify.sh --docker
