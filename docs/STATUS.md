@@ -33,7 +33,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-021 Native components via RC `Custom` (text input)](tasks/T-021-native-components.md) | Etap 10 | needs design detail (spike first) |
 | [T-022 Advanced RC features (templates, drag, sensors)](tasks/T-022-advanced-rc-features.md) | Etap 10 | needs design detail (pick by real use case) |
 | [T-005 iOS spike](tasks/T-005-ios-spike.md) | Etap 3 | blocked: needs Xcode on the dev machine |
-| [T-007 Admin panel](tasks/T-007-admin-panel.md) | Etap 8 | needs design detail (storage/auth decided: ADR 0016; open review notes inside) |
+| [T-007 Admin panel](tasks/T-007-admin-panel.md) | Etap 8 | ready (review notes resolved; steps filled) |
 | [T-010 White-label app export](tasks/T-010-app-export.md) | Etap 9 | needs design detail (after T-007, T-011; SDK distribution decision) |
 
 ## Roadmap
