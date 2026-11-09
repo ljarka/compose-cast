@@ -1,5 +1,6 @@
 package io.composecast.server
 
+import io.composecast.protocol.ErrorResponse
 import io.composecast.protocol.Headers
 import io.composecast.server.sdk.RemoteScreen
 import io.composecast.server.sdk.RenderContext
@@ -47,7 +48,7 @@ fun Application.configureRouting(screens: LiveScreens) {
         }
         get("/brand") {
             val brand = screens.current.brand
-                ?: return@get call.respond(HttpStatusCode.NotFound, mapOf("error" to "No brand configured"))
+                ?: return@get call.respond(HttpStatusCode.NotFound, ErrorResponse("brand_not_configured", "No brand configured"))
             call.respond(brand)
         }
         get("/screens") {
@@ -63,7 +64,7 @@ private suspend fun ApplicationCall.renderScreen(screens: LiveScreens): RemoteSc
     // Bound screens block on data sources (T-006): keep them off the request threads.
     val registry = screens.current
     val screen = withContext(Dispatchers.IO) { registry.render(id, RenderContext(params)) }
-    if (screen == null) respond(HttpStatusCode.NotFound, mapOf("error" to "Screen '$id' not found"))
+    if (screen == null) respond(HttpStatusCode.NotFound, ErrorResponse("screen_not_found", "Screen '$id' not found"))
     return screen
 }
 
