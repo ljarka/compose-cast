@@ -23,6 +23,11 @@ component over an array or over **zipped parallel arrays**; `{{secret.NAME}}` =
 `COMPOSECAST_SECRET_NAME`, only in source URLs/headers. Binding is a model-to-model transform
 before rendering, so renderers never see templates.
 
+Implemented as designed (`c6b0b3a`, 2026-11-08; device-checked 2026-11-11). Differences from the
+design text: filter args may also be bare names (`lookup:wmo` = `lookup:'wmo'`); an `image` whose
+URL binds to an empty string is dropped instead of failing; a `date` pattern needing fields the
+value lacks (`HH` on a date) binds as missing.
+
 ## Consequences
 - API keys never reach the app; works identically for any client renderer (RC, DivKit).
 - Every screen render may call external APIs → per-request rendering, caching per source,

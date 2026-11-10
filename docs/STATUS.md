@@ -15,8 +15,8 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-002 Serializable screen model + JSON screens](tasks/T-002-screen-model-json.md) | Etap 2 | done (`8e3e935`) |
 | [T-003 Per-request rendering, route params, ETag](tasks/T-003-per-request-rendering.md) | Etap 2 | done (`d2c4de6`) |
 | [T-009 Backend in one command (Docker)](tasks/T-009-docker.md) | Etap 6 | done (`7405b52`) |
-| [T-006 Data sources](tasks/T-006-data-sources.md) | Etap 4 | in progress |
-| [T-008 Local state spike](tasks/T-008-local-state-spike.md) | Etap 5/10 | queued (after T-006); RC API verified, PoC remains |
+| [T-006 Data sources](tasks/T-006-data-sources.md) | Etap 4 | done (`c6b0b3a`) |
+| [T-008 Local state spike](tasks/T-008-local-state-spike.md) | Etap 5/10 | ready — RC API verified, PoC remains |
 | [T-011 `app-template` configurable without code](tasks/T-011-app-template-config.md) | Etap 7 | queued (after T-008, before Milestone 1) |
 | [T-023 Server distribution like Immich (GHCR + release assets)](tasks/T-023-app-repositories.md) | Etap 6 | queued (after T-011) — ADR 0018 |
 | [T-024 Android artifacts on Reposilite + `io.composecast.app` plugin](tasks/T-024-android-artifacts.md) | Etap 6 | queued (after T-023; owner: Reposilite on the VPS, ADR 0019) |
@@ -44,7 +44,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | Etap 1 — Repository, CI, Tests & Docs ✅ | 5/5 |
 | Etap 2 — Foundations ✅ | 5/5 |
 | Etap 3 — iOS spike (parallel to 2–5; needs Xcode) | 0/3 |
-| Etap 4 — Data sources (APIs) — ADR 0008 | 0/3 |
+| Etap 4 — Data sources (APIs) — ADR 0008 | 3/3 |
 | Etap 5 — Components for real apps | 1/10 |
 | Etap 6 — Milestone 1: Weather app on Android | 2/6 |
 | Etap 7 — App shells & SDKs | 1/8 |
@@ -65,9 +65,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- T-006 data sources
 - CI `docker` job fixed
 - Self-hosted Maven repository
 - T-006 designed
 - Distribution like Immich
 - T-009 Docker
-- Component coverage plan

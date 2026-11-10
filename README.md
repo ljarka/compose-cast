@@ -64,7 +64,7 @@ Principles:
 | Light/dark, theming | Themed colors in the document | ⏳ Etap 7 |
 | Custom elements / extensions | `Custom` component + player custom support | ⏳ later |
 | Loading new markup without release | Whole document per request; player `updateDocument` | ✅ per screen; partial updates ⏳ investigate |
-| Data from APIs | — (server-side) | data sources ⏳ Etap 4 |
+| Data from APIs | — (server-side) | data sources ✅ (Etap 4) |
 | Visibility actions (analytics) | no equivalent found | ⏳ SDK-side, Etap 7 |
 | Platforms: Android, iOS, web, KMP | official player: Android only | Android ✅; iOS ⏳ spike (Etap 3) |
 | Playground / editor | — | `/debug` dump ✅; admin panel with preview ⏳ Etap 8 |
@@ -81,6 +81,10 @@ rendered to Remote Compose documents by the server SDK and played by the Android
     <td align="center"><img src="compat-tests/src/test/screenshots/onboarding.png" width="270" alt="Get Started screen"><br><code>onboarding</code></td>
     <td align="center"><img src="compat-tests/src/test/screenshots/actions.png" width="270" alt="Actions screen"><br><code>actions</code></td>
     <td align="center"><img src="compat-tests/src/test/screenshots/echo.png" width="270" alt="Echo screen rendered from a query parameter"><br><code>echo?word=…</code></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="compat-tests/src/test/screenshots/data.png" width="270" alt="Weather from a data source"><br><code>data</code> (fixture data)</td>
+    <td align="center"><img src="compat-tests/src/test/screenshots/data-error.png" width="270" alt="Error components of a failed data source"><br><code>data</code>, source down</td>
   </tr>
 </table>
 
@@ -160,6 +164,36 @@ The DSL builds a serializable `ScreenDefinition`; the same screens can be JSON f
 Both paths render byte-identical documents (`JsonScreensTest`). JSON errors name the file and the
 JSON path, e.g. `main.json: … subclass 'carousel' is not found … at path: $.components[1]`.
 Format reference: [protocol/AGENTS.md](protocol/AGENTS.md#screen-json-format).
+
+### Data from external APIs
+
+A screen can declare HTTP **data sources** and bind fields to the JSON responses — no Kotlin, so
+the same works from a JSON file or (later) the admin panel. The server fetches (in parallel, with
+per-source timeout and cache), binds and renders per request; API keys never reach the app
+([ADR 0008](docs/decisions/0008-server-side-data-sources.md)):
+
+```json
+{
+  "id": "weather",
+  "title": "{{params.city}}",
+  "params": { "lat": { "default": "52.52" }, "lon": { "default": "13.41" }, "city": { "default": "Berlin" } },
+  "data": { "meteo": { "url": "https://api.open-meteo.com/v1/forecast?latitude={{params.lat}}&longitude={{params.lon}}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=auto", "cacheSeconds": 600 } },
+  "lookups": { "wmo": { "0": "Clear sky", "3": "Overcast", "*": "Changing weather" } },
+  "components": [
+    { "type": "text", "style": "h1", "text": "{{meteo.current.temperature_2m | round}}{{meteo.current_units.temperature_2m}}" },
+    { "type": "text", "text": "{{meteo.current.weather_code | lookup:wmo}}" },
+    { "type": "repeat", "as": "d", "limit": 3,
+      "items": { "day": "meteo.daily.time", "max": "meteo.daily.temperature_2m_max" },
+      "template": [ { "type": "text", "text": "{{d.day | date:'EEEE'}}: {{d.max | round}}°" } ] }
+  ],
+  "error": [ { "type": "button", "label": "Retry", "action": { "type": "reload" } } ]
+}
+```
+
+`GET /screens/weather?lat=52.23&lon=21.01&city=Warsaw` changes the data. Filters: `round`, `date`,
+`lookup`, `default`, `upper`, `lower`; secrets as `{{secret.KEY}}` from `COMPOSECAST_SECRET_KEY`
+(source URLs/headers only). Full grammar: [protocol/AGENTS.md](protocol/AGENTS.md#data-sources-and-bindings-t-006);
+live demo: `examples/demo/screens/data.json` ("Live data" on the home screen).
 
 ## Modules
 
@@ -257,9 +291,9 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 - [ ] Compare against Android screenshots; decide; supersede [ADR 0007](docs/decisions/0007-ios-strategy-spike.md)
 
 ### Etap 4 — Data sources (APIs) — [ADR 0008](docs/decisions/0008-server-side-data-sources.md)
-- [ ] HTTP data sources: URL templates with route/query params, secrets from env — T-006
-- [ ] Bind JSON fields to components (`{{weather.current.temperature}}`); repeat over arrays — T-006
-- [ ] Loading / error / empty states; per-source timeouts and caching — T-006
+- [x] HTTP data sources: URL templates with route/query params, secrets from env — T-006
+- [x] Bind JSON fields to components (`{{weather.current.temperature}}`); repeat over arrays — T-006
+- [x] Loading / error / empty states; per-source timeouts and caching — T-006
 
 ### Etap 5 — Components for real apps
 - [x] Text, Image, Button, Spacer

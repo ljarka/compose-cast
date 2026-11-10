@@ -1,6 +1,6 @@
 # T-006 — Data sources (external APIs) and bindings
 
-Status: in progress · Roadmap: Etap 4 · Depends on: T-002 (screen model), T-003 (per-request rendering)
+Status: done (`c6b0b3a` + docs) · Roadmap: Etap 4 · Depends on: T-002 (screen model), T-003 (per-request rendering)
 
 ## Progress (2026-11-08)
 Implemented and pushed (verify.sh green): `protocol/Binding.kt` (template parser, `ParamSpec`,
@@ -11,12 +11,16 @@ Implemented and pushed (verify.sh green): `protocol/Binding.kt` (template parser
 `DataBindingTest`, `RoutingTest`; goldens `data.png`, `data-error.png`, `main.png` (reviewed).
 Checked by curl against Docker + live Open-Meteo (Berlin 5°C Overcast; bad lat → error state).
 Implementation notes: filter args may also be bare names (`lookup:wmo`); an image whose URL binds
-empty is skipped; `ScreenRegistry.definitions()` / `isBound()` added; `JsonScreensTest` can rewrite
+empty is skipped; the DSL is `repeat(path)` / `repeat(zip = mapOf(…), alias = "d")` (`as` is a
+Kotlin keyword; JSON keeps `items`/`as`); `ScreenRegistry.definitions()` / `isBound()` added; `JsonScreensTest` can rewrite
 examples (`-Pcomposecast.writeExamples=true`).
 
-**Remaining:** emulator check (step 5, owner stopped it once — ask before running), docs (ADR 0008
-check, `protocol/AGENTS.md`, `sdk-server/AGENTS.md`, `server-app/AGENTS.md`, README "Defining
-screens" + Etap 4 boxes, `docs/history.md`), then mark done.
+**Emulator check (2026-11-11, step 5):** image rebuilt from `c6b0b3a`, `docker compose up`, app on
+`Medium_Phone_API_37.0`: Home → "Live data" shows live Open-Meteo (Berlin 3°C Overcast, 3-day
+repeat over zipped parallel arrays); "Warsaw" navigates with params (1°C, title Warsaw); back pops
+Warsaw → Berlin → Home; second request 4 ms (source cache), then `304`; `?lat=999` → `error`
+components with Retry; no `FATAL EXCEPTION`. Docs updated (ADR 0008, module AGENTS.md, README,
+history). **Done.**
 
 ## Goal
 A JSON screen (no Kotlin) declares HTTP data sources and binds component fields to the responses;

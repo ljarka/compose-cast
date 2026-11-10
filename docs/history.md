@@ -123,3 +123,11 @@ README roadmap's "Etap" numbers.
     Docker-in-Docker; the build stage now uses the `gradle:9.6.0-jdk21-noble` image (version checked
     against the wrapper). Found on the way: macOS `._*.json` files in a screens folder crashed
     startup → `screensFrom` skips hidden files.
+32. **T-006 data sources** ([task](tasks/T-006-data-sources.md), [ADR 0008](decisions/0008-server-side-data-sources.md)):
+    `params`, `data`, `lookups`, `error`, `repeat` (arrays or zipped parallel arrays) and
+    `{{path | filter}}` templates in the screen model; `sdk-server` fetches in parallel with a
+    per-URL cache (failures 10 s), binds model-to-model (renderer unchanged), 502 or `error`
+    components on failure, secrets only from `COMPOSECAST_SECRET_*` and masked in logs. Demo `data`
+    screen on live Open-Meteo, goldens with fixtures (`c6b0b3a`). Device check 2026-11-11 against the
+    Docker image: live data, params navigation, back stack, cache + 304, error state. Etap 4 done;
+    T-008 local state PoC is next.

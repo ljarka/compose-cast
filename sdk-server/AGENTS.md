@@ -11,7 +11,9 @@ Do NOT load `server-app`, `sdk-android`, or other modules unless cross-cutting.
 
 | File | Purpose |
 |---|---|
-| `ScreenDsl.kt` | `ScreenBuilder` (`text`, `image`, `button`, `spacer`) → `ScreenDefinition` |
+| `ScreenDsl.kt` | `ScreenBuilder` (`text`, `image`, `button`, `spacer`, `repeat`, `param`, `data`, `lookup`, `error`) → `ScreenDefinition` |
+| `DataLoader.kt` | `DataLoader` fun interface (`DataRequest` → body), `HttpDataLoader` (http/https, ≤ 2 MB, redirects), `DataSourceException` (→ 502) |
+| `Binder.kt` | T-006 execution: `DataFetcher` (parallel fetch, secrets from env), `DataCache` (LRU 256 per URL + headers, TTL `cacheSeconds`, failures 10 s), `BoundScreen` (params → fetch → model-to-model bind → `validate()`), filter implementations, secret masking in logs |
 | `ScreenRegistry.kt` | `composeCast {}` builder (`screen {}`, `dynamicScreen {}`, `screen(definition)`, `screensFrom(dir)`, `brand`), `ScreenRegistry` (`render(id, RenderContext)`), `RenderContext`, `ScreenParameterException`, `RemoteScreen` (definition, bytes, `etag`) |
 | `ImageCache.kt` | Thread-safe LRU (256) of fetched images; failures cached 60 s only |
 | `RemoteComposeRenderer.kt` | **Only** file using the Remote Compose creation API; `ScreenDefinition` → RC bytes |
@@ -40,7 +42,18 @@ composeCast { brand(myBrand); screensFrom(Path.of("data/screens")) }
 // Rendered per request from query params (/screens/movie?id=42); ctx.param() missing → 400:
 composeCast { dynamicScreen("movie") { ctx -> text("Movie ${ctx.param("id")}") } }
 
-registry.render("movie", RenderContext(mapOf("id" to "42"))) // static: cached doc; dynamic: fresh render
+// Bound screen (T-006): params + HTTP data sources + {{bindings}}, rendered per request:
+composeCast(dataLoader = HttpDataLoader) {   // inject a fake DataLoader in tests
+    screen("weather") {
+        param("lat", default = "52.52")
+        data("meteo", url = "https://api.open-meteo.com/v1/forecast?latitude={{params.lat}}&current=temperature_2m", cacheSeconds = 600)
+        text("{{meteo.current.temperature_2m | round}}°", style = "h1")
+        repeat(zip = mapOf("day" to "meteo.daily.time"), alias = "d") {  // or repeat("path.to.array") text("{{d.day | date:'EEE'}}") }
+        error { text("Weather unavailable"); button("Retry", Action.Reload) }
+    }
+}
+
+registry.render("movie", RenderContext(mapOf("id" to "42"))) // static: cached doc; bound/dynamic: fresh render
 registry.get("home")?.document  // ByteArray, pre-rendered static screens only
 registry.get("home")?.definition // ScreenDefinition; ScreenJson.encode(it) exports DSL screens to JSON
 registry.get("home")?.describe() // decoded operation tree, for debugging
@@ -64,10 +77,16 @@ file and the JSON path; a file must be named `<id>.json`.
 - Static screens (DSL `screen`, JSON) are rendered once in `composeCast {}` (validation = fail
   fast) and ignore params; `dynamicScreen` is built, validated and rendered on every `render`.
   Params are query parameters, ids stay single path segments (they name `<id>.json` files) — T-003.
+- Data sources (T-006, [ADR 0008](../docs/decisions/0008-server-side-data-sources.md)): a screen with
+  `params`, `data` or `{{ }}` is **bound** — validated (incl. secrets present in env, date patterns)
+  at build, then per request fetched in parallel, bound model-to-model and rendered by the
+  unchanged renderer. `render()` blocks on fetches: call it off request threads. A failing
+  non-optional source → `error` components, else `DataSourceException`. Secret values are replaced
+  by `***` in logs; they never enter a document (secrets only allowed in source URLs/headers).
 - `RemoteScreen.etag` = SHA-256 of the bytes (first 16 bytes, hex): covers everything rendering
   read, so no cache key needs maintaining when `RenderContext` grows (Etap 12 targeting).
 - Rendering is thread-safe: one `RemoteComposeRenderer` per registry; `createRcBuffer` per call;
-  shared state only in `ImageCache` (verified by a 50-thread test).
+  shared state only in `ImageCache` and `DataCache` (verified by a 50-thread test).
 
 ## Dependencies
 
