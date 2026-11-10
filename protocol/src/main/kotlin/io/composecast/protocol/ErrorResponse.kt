@@ -9,7 +9,4 @@ import kotlinx.serialization.Serializable
  * @param message Human-readable description of what went wrong.
  */
 @Serializable
-data class ErrorResponse(
-    val code: String,
-    val message: String,
-)
+data class ErrorResponse(val code: String, val message: String)

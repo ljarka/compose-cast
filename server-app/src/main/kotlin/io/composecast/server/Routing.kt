@@ -48,7 +48,10 @@ fun Application.configureRouting(screens: LiveScreens) {
         }
         get("/brand") {
             val brand = screens.current.brand
-                ?: return@get call.respond(HttpStatusCode.NotFound, ErrorResponse("brand_not_configured", "No brand configured"))
+                ?: return@get call.respond(
+                    HttpStatusCode.NotFound,
+                    ErrorResponse("brand_not_configured", "No brand configured"),
+                )
             call.respond(brand)
         }
         get("/screens") {

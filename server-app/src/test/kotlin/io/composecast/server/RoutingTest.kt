@@ -74,7 +74,8 @@ class RoutingTest {
         assertTrue("word" in missing.bodyAsText())
         val unknown = client.get("/screens/nope")
         assertEquals(HttpStatusCode.NotFound, unknown.status)
-        assertTrue("\"error\"" in unknown.bodyAsText())
+        // 404s use protocol ErrorResponse (7e4d643); 400/502/500 still answer {"error": …}.
+        assertTrue("\"code\":\"screen_not_found\"" in unknown.bodyAsText().replace(" ", ""))
     }
 
     @Test
