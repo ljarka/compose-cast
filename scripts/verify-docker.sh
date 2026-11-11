@@ -40,7 +40,7 @@ done
 [[ "$status" == healthy ]] || { echo "Container not healthy after 30 s (status: $status)"; exit 1; }
 
 screens=$(curl -fsS "http://127.0.0.1:$PORT/screens" | tr -d ' \n')
-[[ "$screens" == '["actions","main","onboarding"]' ]] || { echo "Unexpected /screens: $screens"; exit 1; }
+[[ "$screens" == '["actions","data","main","onboarding"]' ]] || { echo "Unexpected /screens: $screens"; exit 1; }
 curl -fsS -o /dev/null "http://127.0.0.1:$PORT/screens/main"
 
 size_mb=$(( $(docker run --rm --user root --entrypoint sh "$IMAGE" -c 'du -sxk /' | cut -f1) / 1024 ))
