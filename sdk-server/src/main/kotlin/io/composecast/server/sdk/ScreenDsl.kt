@@ -51,6 +51,11 @@ open class ComponentsBuilder internal constructor(private val context: String) {
         components += Component.Spacer(height)
     }
 
+    /** A section that expands and collapses locally on the device without a server request (T-008). */
+    fun expandable(title: String, expanded: Boolean = false, content: ComponentsBuilder.() -> Unit) {
+        components += Component.Expandable(title = title, content = nested(content), expanded = expanded)
+    }
+
     /** [template] for each element of the array at [path], bound as `{{<alias>}}` and `{{$index}}`. */
     fun repeat(
         path: String,

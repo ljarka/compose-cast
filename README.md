@@ -59,7 +59,7 @@ Principles:
 | Templates | Server-side Kotlin functions; RC macros (`defineMacro`/`inflate`) | ⏳ Etap 10 |
 | Variables | Named variables, set by the host (`setUserLocal*` on the player) | ⏳ Etap 10 |
 | Expressions | On-device float/text expressions, conditional operations | used internally for dp/sp; DSL ⏳ Etap 10 |
-| States | `StateLayout` + local value-change actions | ⏳ Etap 10 |
+| States | `StateLayout` + local value-change actions | `expandable` (T-008 PoC) ✅; general states & tabs ⏳ Etap 10 (T-017) |
 | Actions | Host actions (named) + local value changes | typed `Action` (navigate with params, open_url, reload, track, custom) ✅ |
 | Light/dark, theming | Themed colors in the document | ⏳ Etap 7 |
 | Custom elements / extensions | `Custom` component + player custom support | ⏳ later |
@@ -124,6 +124,7 @@ val registry = composeCast {
         title = "Home"
         text("Welcome to ComposeCast", style = "h1")   // h1 | h2 | h3 | body | caption
         image("https://picsum.photos/400/200", alt = "Hero image")
+        expandable("How it works") { text("Toggled locally on the device — no server request.") }
         button("Get started", action = "navigate:onboarding")
     }
 }
@@ -262,7 +263,8 @@ Cleartext HTTP is allowed only in debug builds and only for local addresses.
 
 ## Roadmap
 
-Ordered for the fastest path to real use: two milestones are complete apps (weather, TV shows)
+Ordered for the fastest path to real use: two milestones validate the framework by building
+external example apps (weather, TV shows — each in its own repository, not part of this project)
 that force every layer to work end to end. Details and reasoning: [docs/decisions](docs/decisions/README.md).
 
 ### Etap 0 — Technical Spike ✅
@@ -296,7 +298,7 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 - [x] Loading / error / empty states; per-source timeouts and caching — T-006
 
 ### Etap 5 — Components for real apps
-- [x] Text, Image, Button, Spacer
+- [x] Text, Image, Button, Spacer, Expandable (local state PoC — T-008)
 - [ ] Row, Column, Box; size, weight, alignment, padding, background, border, rounded clip, click on anything — T-012
 - [ ] Text color/weight/align/lines/ellipsis/marquee; Icon, Divider, Card, button variants — T-013
 - [ ] Image sizing (aspect, crop, rounded) — T-013; large/many images loaded by the SDK as named bitmaps
@@ -307,15 +309,17 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 - [ ] Long-press, double-tap, ripple, haptics; alpha/scale/rotation/offset/z-order — T-019
 - [ ] Tabs / bottom navigation defined by the server (app structure, not only screens)
 
-### Etap 6 — Milestone 1: Weather app on Android
+### Etap 6 — Milestone 1: Example weather app (external project)
 
-> **Zero framework code** ([ADR 0017](docs/decisions/0017-apps-in-own-repositories.md)): the weather
-> app lives in its own repository — screens JSON + data sources + `docker-compose.yml` for a VPS
-> (published image, HTTPS) + the Android app configured from `app-template`. Anything missing is
-> added to the framework generically, never as weather code.
+> **External example, not part of this repository** ([ADR 0017](docs/decisions/0017-apps-in-own-repositories.md)):
+> the weather app is an example of using compose-cast in its own separate repository — screens JSON
+> + data sources + `docker-compose.yml` for a VPS (published image, HTTPS) + the Android app
+> configured from `app-template`. Anything missing is added to the framework generically, never as
+> weather-specific code in this project.
 
-- [ ] Weather app on [Open-Meteo](https://open-meteo.com) (no API key): current conditions,
-  hourly/daily forecast, city list — screens as JSON, data via data sources — in its own repository
+- [ ] Example weather app on [Open-Meteo](https://open-meteo.com) (no API key): current conditions,
+  hourly/daily forecast, city list — screens as JSON, data via data sources — built as a separate
+  example repository using the published compose-cast artifacts
 - [ ] Server install like [Immich](https://immich.app/docs/install/docker-compose): `docker-compose.yml`
   + `example.env` from GitHub Releases, image on GHCR (amd64 + arm64), optional HTTPS (Caddy) — T-023
   ([ADR 0018](docs/decisions/0018-distribution-like-immich.md))
@@ -372,7 +376,8 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 - [ ] Same server, both Android and iOS (Etap 3); screenshots of both in this README
 
 ### Etap 10 — Interactivity (DivKit core)
-- [ ] Host → document variables (RC named variables); local state (`StateLayout`): toggles, tabs — T-008, T-017
+- [x] Local state PoC in procedural RC API (`StateLayout` + `setValue` on tap: `Component.Expandable`) — T-008
+- [ ] Host → document variables (RC named variables); general local state (`StateLayout`): toggles, tabs — T-017
 - [ ] Device-side values: live clock, formatted numbers, light/dark colors, conditions — T-020
 - [ ] Text input / search (native views via RC `Custom`) — T-021; expressions (conditional visibility, computed text) — T-017, T-020
 - [ ] Templates: reusable components; RC macros to shrink documents — T-022

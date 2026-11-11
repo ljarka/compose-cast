@@ -12,6 +12,38 @@
       "text": "The server defines your UI. The app renders it."
     },
     {
+      "type": "spacer",
+      "height": 16
+    },
+    {
+      "type": "expandable",
+      "title": "Local state on device",
+      "content": [
+        {
+          "type": "text",
+          "text": "Both states are in the document. Tap the header to collapse or expand without a server request."
+        }
+      ],
+      "expanded": true
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "expandable",
+      "title": "Wire format",
+      "content": [
+        {
+          "type": "text",
+          "text": "The server compiles screens to binary Remote Compose documents played natively on Android."
+        }
+      ]
+    },
+    {
+      "type": "spacer",
+      "height": 16
+    },
+    {
       "type": "button",
       "label": "Continue",
       "action": {

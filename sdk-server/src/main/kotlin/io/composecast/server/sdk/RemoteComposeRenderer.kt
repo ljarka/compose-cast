@@ -110,8 +110,84 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
 
             is Component.Spacer -> Spacer(Modifier.height(node.height.toFloat()))
 
+            is Component.Expandable -> renderExpandable(node)
+
             // BoundScreen expands repeats before rendering (T-006).
             is Component.Repeat -> error("repeat must be expanded before rendering")
+        }
+    }
+
+    private fun RcScope.renderExpandable(node: Component.Expandable) {
+        // StateLayout always measures and paints child 0 on the first pass (it reads its state id
+        // only in paint()), and does not run ComponentData children placed directly inside it.
+        // Allocate the state integer in the enclosing scope initialized to 0, and emit the initial
+        // branch as child 0 and the toggled branch as child 1.
+        val state = remoteInteger(0)
+
+        fun RcScope.collapsedBranch(nextState: Int) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedRectShape(BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS))
+                    .background(SURFACE_COLOR)
+                    .onClick { setValue(state, nextState) }
+                    .padding(14f),
+                vertical = RcVerticalPositioning.Center,
+            ) {
+                Text(
+                    node.title,
+                    modifier = Modifier.weight(1f),
+                    color = TEXT_COLOR,
+                    fontSize = sp(16),
+                    fontWeight = RcFontWeight.W500,
+                )
+                Text("+", color = primary, fontSize = sp(18), fontWeight = RcFontWeight.W700)
+            }
+        }
+
+        fun RcScope.expandedBranch(nextState: Int) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedRectShape(BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS))
+                    .background(SURFACE_COLOR),
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onClick { setValue(state, nextState) }
+                        .padding(14f),
+                    vertical = RcVerticalPositioning.Center,
+                ) {
+                    Text(
+                        node.title,
+                        modifier = Modifier.weight(1f),
+                        color = TEXT_COLOR,
+                        fontSize = sp(16),
+                        fontWeight = RcFontWeight.W500,
+                    )
+                    Text("−", color = primary, fontSize = sp(18), fontWeight = RcFontWeight.W700)
+                }
+                Column(modifier = Modifier.fillMaxWidth().padding(start = 14f, end = 14f, bottom = 14f)) {
+                    node.content.forEach { child -> renderNode(child) }
+                }
+            }
+        }
+
+        // StateLayout.paint() in alpha23 overrides Component.paint() without translating by its
+        // own (mX, mY), so a StateLayout placed directly in a Column paints at (0, 0) of the
+        // Column. Wrapping it in a Box puts the vertical offset on the Box (which translates
+        // properly) while StateLayout sits at (0, 0) inside the Box.
+        Box(modifier = Modifier.fillMaxWidth()) {
+            StateLayout(state, modifier = Modifier.fillMaxWidth()) {
+                if (node.expanded) {
+                    expandedBranch(nextState = 1)
+                    collapsedBranch(nextState = 0)
+                } else {
+                    collapsedBranch(nextState = 1)
+                    expandedBranch(nextState = 0)
+                }
+            }
         }
     }
 
@@ -164,6 +240,7 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
         private const val DEFAULT_PRIMARY = "#6200EE"
         private const val DEFAULT_BACKGROUND = "#FFFFFF"
         private const val TEXT_COLOR = 0xFF1C1B1F.toInt()
+        private const val SURFACE_COLOR = 0xFFF3EDF7.toInt()
         private const val PLACEHOLDER_COLOR = 0xFF79747E.toInt()
         private const val ON_PRIMARY = 0xFFFFFFFF.toInt()
         private const val BUTTON_RADIUS = 12f

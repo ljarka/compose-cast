@@ -131,3 +131,16 @@ README roadmap's "Etap" numbers.
     screen on live Open-Meteo, goldens with fixtures (`c6b0b3a`). Device check 2026-11-11 against the
     Docker image: live data, params navigation, back stack, cache + 304, error state. Etap 4 done;
     T-008 local state PoC is next.
+33. **T-008 local state PoC (`Component.Expandable`)** ([task](tasks/T-008-local-state-spike.md)):
+    `Component.Expandable(title, content, expanded = false)` in `protocol` (`@SerialName("expandable")`,
+    validation, template bindings), `expandable(title, expanded) { … }` in `ScreenDsl`, rendered in
+    `RemoteComposeRenderer` with `remoteInteger(0)` + `Box`-wrapped `StateLayout` + `Modifier.onClick { setValue(state, next) }`.
+    Verified three alpha23 `StateLayout` behaviors in `remote-core` sources and on the emulator
+    (recorded in `docs/remote-compose.md`): (1) `StateLayout` reads its state id only in `paint()`,
+    so child `0` is always measured/painted on frame 1 (emit the initial branch at index `0`);
+    (2) `StateLayout.paint()` does not execute direct `ComponentData` children (declare
+    `remoteInteger(0)` before `StateLayout`); (3) `StateLayout.paint()` forgets `context.translate(mX, mY)`
+    (wrap `StateLayout` in a `Box`). Added to the `onboarding` demo screen (both expanded and
+    collapsed instances), golden re-recorded and emulator-verified (toggles locally with zero HTTP
+    requests). Clarified in README/queue that the Milestone 1 weather app is an external example in
+    its own repository, not part of this project. T-011 is next.

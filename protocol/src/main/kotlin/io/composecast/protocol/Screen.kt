@@ -75,6 +75,11 @@ data class ScreenDefinition(
                     addAll(componentProblems(component.template, "$at.template"))
                     addAll(componentProblems(component.empty, "$at.empty"))
                 }
+                is Component.Expandable -> {
+                    if (component.title.isBlank()) add("$at.title: must not be blank")
+                    if (component.content.isEmpty()) add("$at.content: must not be empty")
+                    addAll(componentProblems(component.content, "$at.content"))
+                }
             }
         }
     }
@@ -141,6 +146,9 @@ data class ScreenDefinition(
                     }
                     addAll(componentBindingProblems(component.template, "$at.template", roots + alias + Roots.INDEX))
                     addAll(componentBindingProblems(component.empty, "$at.empty", roots))
+                }
+                if (component is Component.Expandable) {
+                    addAll(componentBindingProblems(component.content, "$at.content", roots))
                 }
             }
         }
@@ -236,16 +244,26 @@ sealed interface Component {
         val empty: List<Component> = emptyList(),
     ) : Component
 
+    /**
+     * A section whose header toggles [content] locally on the device (`StateLayout`, no server
+     * round-trip — T-008). Starts open when [expanded] is true.
+     */
+    @Serializable
+    @SerialName("expandable")
+    data class Expandable(val title: String, val content: List<Component>, val expanded: Boolean = false) : Component
+
     /** The bindable string fields of this component (not of nested ones), by field path. */
     fun strings(): List<Pair<String, String>> = when (this) {
         is Text -> listOf("text" to text)
         is Image -> listOf("url" to url, "alt" to alt)
         is Button -> listOf("label" to label) + action.strings().map { (field, value) -> "action.$field" to value }
+        is Expandable -> listOf("title" to title)
         is Spacer, is Repeat -> emptyList()
     }
 
     /** Whether this component or a nested one contains `{{`, or it is a [Repeat]. */
-    fun hasBindings(): Boolean = this is Repeat || strings().any { Template.hasBindings(it.second) }
+    fun hasBindings(): Boolean = this is Repeat || strings().any { Template.hasBindings(it.second) } ||
+        (this is Expandable && content.any { it.hasBindings() })
 }
 
 /** The bindable string fields of an action, by field path. */

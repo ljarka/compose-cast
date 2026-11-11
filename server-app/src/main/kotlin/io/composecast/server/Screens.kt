@@ -126,6 +126,15 @@ fun demoScreens(imageLoader: ImageLoader = HttpImageLoader, dataLoader: DataLoad
             title = "Get Started"
             text("How it works", style = "h2")
             text("The server defines your UI. The app renders it.", style = "body")
+            spacer(16)
+            expandable("Local state on device", expanded = true) {
+                text("Both states are in the document. Tap the header to collapse or expand without a server request.")
+            }
+            spacer(8)
+            expandable("Wire format") {
+                text("The server compiles screens to binary Remote Compose documents played natively on Android.")
+            }
+            spacer(16)
             button("Continue", action = "navigate:main")
             spacer(8)
             button("Actions demo", Action.Navigate("actions"))

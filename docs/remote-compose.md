@@ -58,9 +58,31 @@ use on the JVM** — no Compose runtime needed (answers T-008 questions 1–4):
 | Adaptive layout | `CollapsibleColumn` / `CollapsibleRow` + `Modifier.vertical/horizontalCollapsiblePriority(p)` |
 | Other | `runAction { }`, `impulse(…)`, `skip(…)` (conditional segments), `timeAttribute(…)` |
 
-Not verified yet (T-008 PoC): player behavior of `StateLayout` (which child shows for each value,
-whether non-selected children are measured), and that a state change re-renders without any host
-callback. Also present but `@RestrictTo`: `creation/json/RemoteComposeJsonParser` — a low-level
+**Verified player behavior (T-008 PoC, alpha23 `StateLayout.java` + `ValueIntegerChangeActionOperation.java`):**
+- Every direct child of `StateLayout` **must** be a `LayoutManager` (`Column`, `Row`, `Box`, …);
+  `getLayout(idx)` throws `RuntimeException("Child is not a LayoutManager")` otherwise.
+- Non-selected children have `mVisibility = Visibility.GONE` (`inflate()` calls
+  `hideLayoutsOtherThan(currentLayoutIndex)`). `measure()`, `computeWrapSize()`, `layout()` and
+  `onClick()` only delegate to `getLayout(currentLayoutIndex)` — collapsed/hidden branches take
+  zero space and do not receive clicks.
+- `StateLayout` does **not** implement `VariableSupport`: it reads
+  `mRemoteComposeState.getInteger(mIndexId)` only inside `paint()`. On the first measure/layout/paint
+  pass `currentLayoutIndex` and `measuredLayoutIndex` are `0` regardless of the initial integer
+  value. Always initialize `remoteInteger(0)` and emit the initial state as child `0` and the
+  toggled state as child `1` so frame 1 renders without a flash or second pass.
+- `StateLayout.paint()` overrides `Component.paint()` without calling `super.paint()` /
+  `paintingComponent()`, so: (a) it does **not** run `ComponentData` operations (`IntegerConstant`,
+  `IntegerExpression`) placed directly inside `StateLayout` — declare `remoteInteger(0)` in the
+  enclosing layout before `StateLayout`; and (b) it forgets `context.translate(mX, mY)`, painting at
+  `(0, 0)` of its parent — always wrap `StateLayout` in a `Box(Modifier.fillMaxWidth())` so the `Box`
+  carries the parent offset and `StateLayout` sits at `(0, 0)` inside the `Box`.
+- `setValue(state, next)` emits `ValueIntegerChangeActionOperation(id, next)`, whose `runAction`
+  calls `context.overrideInteger(id, next)` (`mIntegerOverride[id] = true`, so later
+  `IntegerConstant.apply` calls on repaint do not reset it) and `RemoteComposeView.performClick()`
+  calls `invalidate()`, triggering `StateLayout.paint()` → `invalidateMeasure()` locally on the
+  device with zero host callbacks or network requests.
+
+Also present but `@RestrictTo`: `creation/json/RemoteComposeJsonParser` — a low-level
 JSON form of RC operations (resources, expressions, modifiers); not a replacement for the semantic
 `ScreenDefinition` model ([ADR 0015](decisions/0015-screen-model-is-the-product.md)).
 
@@ -85,7 +107,7 @@ compose-cast tasks that expose each group: T-012…T-021 ([queue](tasks/README.m
 | Containers | `Box(h, v)`, `Column(h, vArrangement)`, `Row(hArrangement, v)`, `Spacer` | T-012 |
 | Flow | `Flow(h, v, maxItemsInEachRow, maxLines)` (wrapping row; `weight` in scope) | T-014 |
 | Adaptive | `FitBox`, `CollapsibleRow/Column` + `horizontal/verticalCollapsiblePriority` | T-015 |
-| State | `StateLayout(stateIndex)`, `remoteInteger/Bool/Float/NamedX`, `Modifier.visibility(RcInteger)`, `animationSpec`, `defineVisibilityAnimation` | T-008, T-017 |
+| State | `StateLayout(stateIndex)`, `remoteInteger/Bool/Float/NamedX`, `Modifier.visibility(RcInteger)`, `animationSpec`, `defineVisibilityAnimation` | done (`expandable`, T-008) / T-017 |
 | Text | `Text(text \| RcText, color, fontSize, fontWeight, textAlign, overflow: Clip/Visible/Ellipsis/StartEllipsis/MiddleEllipsis, maxLines)`, `remoteTextStyle`, `Modifier.marquee`, `alignByBaseline` | T-013 |
 | Image | `Image(image, contentDescription, contentScale: Fit/Crop/FillBounds/FillWidth/FillHeight/Inside/None, alpha)`, `Icon` (= Image, Fit) | T-013 |
 | Size / layout modifiers | `padding`, `size`, `width/height` (Float, RcFloat, dp), `fillMaxWidth/Height/Size(fraction)`, `fillParentMax*`, `wrapContent*`, `widthIn/heightIn`, `requiredWidthIn/HeightIn`, `weight` (Row/Column/Flow scopes), `offset`, `zIndex` | T-012, T-015, T-019 |
@@ -225,6 +247,11 @@ All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alph
 7. **`fontSize()`** — `FontTextSize.fontSize()` returns 14.0; use `fontSize() * value / 14` as a
    scale factor to approximate `sp` units. Verify this constant on every RC upgrade (silent failure
    risk: wrong text sizes without any error).
+8. **`StateLayout` missing `(mX, mY)` translation & first-frame index 0** — `StateLayout.paint()`
+   overrides `Component.paint()` without translating by `(mX, mY)` and without executing direct
+   `ComponentData` children, and reads its state integer only in `paint()` (so frame 1 always
+   measures/paints child `0`). Declare `remoteInteger(0)` before `StateLayout`, wrap `StateLayout`
+   in a `Box`, and order children so child `0` is the initial state. Verified alpha23 (T-008).
 
 ---
 

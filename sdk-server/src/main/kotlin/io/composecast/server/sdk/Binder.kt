@@ -182,6 +182,8 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
         }
         is Component.Button -> listOf(Component.Button(render(c.label, roots), bindAction(c.action, roots)))
         is Component.Spacer -> listOf(c)
+        is Component.Expandable ->
+            listOf(c.copy(title = render(c.title, roots), content = bindComponents(c.content, roots)))
         is Component.Repeat -> {
             val items = items(c.items, roots).let { all -> c.limit?.let { all.take(it) } ?: all }
             if (items.isEmpty()) {
@@ -340,7 +342,11 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
 
         private fun allTemplates(definition: ScreenDefinition): List<String> {
             fun components(list: List<Component>): List<String> = list.flatMap { c ->
-                val nested = if (c is Component.Repeat) components(c.template) + components(c.empty) else emptyList()
+                val nested = when (c) {
+                    is Component.Repeat -> components(c.template) + components(c.empty)
+                    is Component.Expandable -> components(c.content)
+                    else -> emptyList()
+                }
                 c.strings().map { it.second } + nested
             }
             return listOf(definition.title) + components(definition.components) + components(definition.error) +

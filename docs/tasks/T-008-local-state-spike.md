@@ -1,14 +1,22 @@
 # T-008 — Spike: local state in procedural RC API
 
-Status: ready · Roadmap: Etap 5 / Etap 10 · Depends on: none (independent spike)
+Status: done · Roadmap: Etap 5 / Etap 10 · Depends on: none (independent spike)
 
-## Research result (2026-11-07) — questions 1–4 answered from sources
-**Yes, accessible.** The procedural `RcScope` DSL in `remote-creation-core` alpha23 has mutable
-variables (`remoteInteger`, `remoteNamedInteger`, `remoteBool`), `setValue` inside
-`Modifier.onClick { }`, `StateLayout(stateIndex)` and `CollapsibleRow/Column` — details and file
-locations in [docs/remote-compose.md → State API — procedural](../remote-compose.md#state-api--procedural-verified-in-remote-creation-core-100-alpha23-sources).
-What remains is the **proof of concept** (steps 3 below), which needs device verification.
-Steps 1–2 and the "not accessible" branch (step 4) are obsolete.
+## Result (2026-11-11) — PoC implemented & verified on device
+**Confirmed and shipped (`Component.Expandable`).** The procedural `RcScope` DSL in
+`remote-creation-core` alpha23 supports local state (`remoteInteger(0)`, `StateLayout(state)` and
+`Modifier.onClick { setValue(state, next) }`). Verified in `remote-core` / `remote-player-view`
+sources, Robolectric screenshot tests and on the Android emulator (`onboarding` screen): tapping the
+header expands/collapses locally on the device with zero network requests. Three alpha23 player
+gotchas were uncovered and documented in [docs/remote-compose.md](../remote-compose.md#state-api--procedural-verified-in-remote-creation-core-100-alpha23-sources):
+1. `StateLayout` reads its state id only in `paint()` (never before frame 1 `measure()`/`layout()`),
+   so child `0` is always measured/painted first — emit the initial branch at index `0` and the
+   toggled branch at index `1`.
+2. `StateLayout.paint()` overrides `Component.paint()` without executing direct `ComponentData`
+   children — declare `remoteInteger(0)` in the enclosing container before `StateLayout`.
+3. `StateLayout.paint()` does not call `context.translate(mX, mY)`, so a `StateLayout` placed
+   directly in a `Column` paints at `(0, 0)` of the `Column` — wrap `StateLayout` in a
+   `Box(Modifier.fillMaxWidth())`.
 
 ## Goal
 

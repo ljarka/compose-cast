@@ -242,6 +242,6 @@ curl http://localhost:8080/screens/hello | xxd | head   # must be .rc binary
 
 - OAuth / SSO authentication
 - Multi-tenant / per-organization screens
-- Component drag-and-drop visual editor (plain JSON textarea is sufficient for v1)
-- Stateful / interactive components in the editor (T-008 PoC first)
+- Component drag-and-drop visual editor (plain JSON textarea is sufficient for v1; JSON supports all `Component` types including `expandable` from T-008)
+- General multi-state / tab editor UI (T-017)
 - Experiment / A/B flag management (Etap 12)

@@ -113,10 +113,31 @@ class RemoteComposeRendererTest {
     }
 
     @Test
+    fun `expandable emits StateLayout and local integer state toggle`() {
+        val reg = composeCast(fakeImages) {
+            screen("faq") {
+                expandable("How does it work?") {
+                    text("The server renders both branches into one StateLayout.")
+                }
+            }
+        }
+        val screen = assertNotNull(reg.get("faq"))
+        val dump = screen.describe()
+        assertTrue("STATE_LAYOUT" in dump, "no STATE_LAYOUT in:\n$dump")
+        assertTrue("VALUE_INTEGER_CHANGE" in dump || "ValueIntegerChange" in dump, "no state change op in:\n$dump")
+        assertTrue("Height(EXACT, 0.0)" !in dump, "a height collapsed to 0:\n$dump")
+        val bytes = String(screen.document, Charsets.UTF_8)
+        assertTrue("How does it work?" in bytes, "title missing from document")
+        assertTrue("The server renders both branches into one StateLayout." in bytes, "body missing from document")
+    }
+
+    @Test
     fun `invalid definitions fail at build time`() {
         assertFailsWith<IllegalArgumentException> { composeCast { screen("a") { text("x", style = "huge") } } }
         assertFailsWith<IllegalArgumentException> { composeCast { screen("a") { button("x", action = "goto:b") } } }
         assertFailsWith<IllegalArgumentException> { composeCast { screen("a") { button("x", action = "navigate:") } } }
+        assertFailsWith<IllegalArgumentException> { composeCast { screen("a") { expandable(" ") { text("x") } } } }
+        assertFailsWith<IllegalArgumentException> { composeCast { screen("a") { expandable("Title") {} } } }
         assertFailsWith<IllegalArgumentException> {
             composeCast { screen("a") { button("x", Action.Custom("x".repeat(ActionCodec.MAX_ENCODED_LENGTH))) } }
         }

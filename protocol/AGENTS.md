@@ -13,7 +13,7 @@ This module only. **Do not** import `sdk-server`, `server-app`, or `sdk-android`
 
 | File | Purpose |
 |---|---|
-| `Screen.kt` | `ScreenDefinition` (+ `params`, `data`, `lookups`, `error`), `Component` (Text, Image, Button, Spacer, Repeat), `TextStyle`, validation (`problems()`/`validate()`, incl. bindings), `ScreenJson` |
+| `Screen.kt` | `ScreenDefinition` (+ `params`, `data`, `lookups`, `error`), `Component` (Text, Image, Button, Spacer, Repeat, Expandable), `TextStyle`, validation (`problems()`/`validate()`, incl. bindings), `ScreenJson` |
 | `Binding.kt` | Data sources (T-006, [ADR 0008](../docs/decisions/0008-server-side-data-sources.md)): `ParamSpec`, `DataSource`, `RepeatItems` (path or zipped parallel arrays), `Template` parser for `{{path \| filter:arg}}`, `Filters` (names/arity), allowed roots |
 | `Action.kt` | `Action` (Navigate, OpenUrl, Reload, Track, Custom) + `ActionCodec` (wire form) |
 | `Actions.kt` | `Actions` (wire type names, used only by the codec), `Headers` (HTTP headers) |
@@ -31,7 +31,7 @@ Details and test cases: `ActionCodecTest`.
 ## Screen JSON format
 
 One screen per file, named `<id>.json`. Discriminator `"type"`; defaults (`title` = id,
-`style` = `body`, `spacer.height` = 8, empty `params`) may be omitted and are not encoded.
+`style` = `body`, `spacer.height` = 8, `expandable.expanded` = false, empty `params`) may be omitted and are not encoded.
 Strict: unknown keys/types fail with the source and the JSON path.
 
 ```json
@@ -39,6 +39,7 @@ Strict: unknown keys/types fail with the source and the JSON path.
     { "type": "text", "text": "Welcome", "style": "h1" },
     { "type": "image", "url": "https://picsum.photos/400/200", "alt": "Hero" },
     { "type": "spacer", "height": 16 },
+    { "type": "expandable", "title": "Details", "content": [{ "type": "text", "text": "More info" }] },
     { "type": "button", "label": "Open", "action": { "type": "navigate", "screen": "movie", "params": { "id": "42" } } }
 ] }
 ```

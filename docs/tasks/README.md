@@ -11,8 +11,8 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-003 Per-request rendering, route params, ETag](T-003-per-request-rendering.md) | Etap 2 | done (`d2c4de6`) |
 | [T-009 Backend in one command (Docker)](T-009-docker.md) | Etap 6 | done (`7405b52`) |
 | [T-006 Data sources](T-006-data-sources.md) | Etap 4 | done (`c6b0b3a`) |
-| [T-008 Local state spike](T-008-local-state-spike.md) | Etap 5/10 | ready — RC API verified, PoC remains |
-| [T-011 `app-template` configurable without code](T-011-app-template-config.md) | Etap 7 | queued (after T-008, before Milestone 1) |
+| [T-008 Local state spike](T-008-local-state-spike.md) | Etap 5/10 | done |
+| [T-011 `app-template` configurable without code](T-011-app-template-config.md) | Etap 7 | ready |
 | [T-023 Server distribution like Immich (GHCR + release assets)](T-023-app-repositories.md) | Etap 6 | queued (after T-011) — ADR 0018 |
 | [T-024 Android artifacts on Reposilite + `io.composecast.app` plugin](T-024-android-artifacts.md) | Etap 6 | queued (after T-023; owner: Reposilite on the VPS, ADR 0019) |
 | [T-012 Layout containers and common modifiers](T-012-layout-containers.md) | Etap 5 | queued (after T-011) — the weather app needs rows/columns |
@@ -31,9 +31,10 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-007 Admin panel](T-007-admin-panel.md) | Etap 8 | needs design detail (storage/auth decided: ADR 0016; open review notes inside) |
 | [T-010 White-label app export](T-010-app-export.md) | Etap 9 | needs design detail (after T-007, T-011; SDK distribution decision) |
 
-Rows are in priority order (owner, 2026-11-07): fastest path to Milestone 1 (weather app).
-Owner, 2026-11-08 ([ADR 0017](../decisions/0017-apps-in-own-repositories.md)): the weather app
-lives in **its own repository** and needs no framework code changes — server from the published
+Rows are in priority order (owner, 2026-11-07): fastest path to Milestone 1 (example weather app).
+Owner, 2026-11-08 / 2026-11-11 ([ADR 0017](../decisions/0017-apps-in-own-repositories.md)): the
+weather app is an **external example of using compose-cast** (in its own separate repository, not
+part of this project) and needs no framework code changes — server from the published
 image on a VPS, app = `app-template` configured; missing features are added here, generically.
 **Everything app-specific must be editable in the admin panel** (T-007) — never backend code.
 Distribution like Immich ([ADR 0018](../decisions/0018-distribution-like-immich.md)): compose file +

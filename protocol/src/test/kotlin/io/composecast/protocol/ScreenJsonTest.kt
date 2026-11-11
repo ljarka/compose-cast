@@ -17,6 +17,7 @@ class ScreenJsonTest {
             Component.Button("Similar", Action.Navigate("movie", linkedMapOf("id" to "42", "lang" to "pl"))),
             Component.Button("Reload", Action.Reload),
             Component.Button("Site", Action.OpenUrl("https://x.dev/p?a=b&c=d")),
+            Component.Expandable("Cast", listOf(Component.Text("Actor")), expanded = true),
         ),
     )
 
@@ -31,15 +32,30 @@ class ScreenJsonTest {
     @Test
     fun `defaults are optional and omitted`() {
         val minimal = ScreenJson.decode(
-            """{"id":"a","components":[{"type":"text","text":"x"},{"type":"spacer"}]}""",
+            """{"id":"a","components":[{"type":"text","text":"x"},{"type":"spacer"},{"type":"expandable","title":"More","content":[{"type":"text","text":"y"}]}]}""",
             "a.json",
         )
         assertEquals(
-            ScreenDefinition("a", "a", components = listOf(Component.Text("x", TextStyle.Body), Component.Spacer(8))),
+            ScreenDefinition(
+                "a",
+                "a",
+                components = listOf(
+                    Component.Text("x", TextStyle.Body),
+                    Component.Spacer(8),
+                    Component.Expandable("More", listOf(Component.Text("y", TextStyle.Body)), expanded = false),
+                ),
+            ),
             minimal,
         )
         val json = ScreenJson.encode(minimal)
-        listOf("title", "style", "height").forEach { assertTrue("\"$it\"" !in json, "default '$it' encoded:\n$json") }
+        listOf("title\"", "style", "height", "expanded").forEach {
+            // Note: expandable has a required "title" field, so check root title is omitted on first line
+            if (it == "title\"") {
+                assertTrue("\"id\": \"a\",\n  \"components\"" in json, "default screen 'title' encoded:\n$json")
+            } else {
+                assertTrue("\"$it\"" !in json, "default '$it' encoded:\n$json")
+            }
+        }
     }
 
     private fun error(json: String): String =
@@ -92,6 +108,15 @@ class ScreenJsonTest {
         assertError(
             """{"id":"a","components":[{"type":"button","label":"x","action":{"type":"custom","payload":"$long"}}]}""",
             "4000",
+        )
+        assertError(
+            """{"id":"a","components":[{"type":"expandable","title":" ","content":[]}]}""",
+            "components[0].title",
+            "components[0].content",
+        )
+        assertError(
+            """{"id":"a","components":[{"type":"expandable","title":"More","content":[{"type":"spacer","height":-1}]}]}""",
+            "components[0].content[0].height",
         )
         assertError("""{"id":"a",""", "screens/a.json")
     }
