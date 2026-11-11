@@ -143,4 +143,4 @@ README roadmap's "Etap" numbers.
     (wrap `StateLayout` in a `Box`). Added to the `onboarding` demo screen (both expanded and
     collapsed instances), golden re-recorded and emulator-verified (toggles locally with zero HTTP
     requests). Clarified in README/queue that the Milestone 1 weather app is an external example in
-    its own repository, not part of this project. T-011 is next.
+    its own repository, not part of this project (`0cc6cae`). T-011 is next.

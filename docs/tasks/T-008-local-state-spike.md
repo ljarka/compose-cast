@@ -1,6 +1,6 @@
 # T-008 — Spike: local state in procedural RC API
 
-Status: done · Roadmap: Etap 5 / Etap 10 · Depends on: none (independent spike)
+Status: done (`0cc6cae`) · Roadmap: Etap 5 / Etap 10 · Depends on: none (independent spike)
 
 ## Result (2026-11-11) — PoC implemented & verified on device
 **Confirmed and shipped (`Component.Expandable`).** The procedural `RcScope` DSL in
