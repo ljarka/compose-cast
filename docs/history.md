@@ -146,7 +146,7 @@ README roadmap's "Etap" numbers.
     its own repository, not part of this project (`0cc6cae`). T-011 is next.
 34. **T-011 `app-template` configurable without code** ([task](tasks/T-011-app-template-config.md)).
     First version `ba52457` (properties → `BuildConfig`/`app_name`, release https check by task name),
-    completed in NEWHASH (two sessions worked T-011 in parallel; the second replaced the first):
+    completed in `dc64663` (two sessions worked T-011 in parallel; the second replaced the first):
     `app-template/compose-cast.properties` (or `-Pcomposecast.appConfig=<path>`) sets name,
     `applicationId`, server URL, frame colors and an optional launcher icon; `build.gradle.kts`
     reads it with a self-contained `ComposeCastAppConfig` (missing/invalid key → build error naming
@@ -159,5 +159,5 @@ README roadmap's "Etap" numbers.
     side. T-023 is next.
 35. **Maestro for UI clicking** (owner, 2026-11-12): emulator interaction uses Maestro (2.12.1)
     instead of hand-rolled `adb` taps; RC-rendered buttons are found by text. First flow
-    `app-template/maestro/smoke.yaml` (launch → "Get started" → back) passes on the emulator (NEWHASH);
+    `app-template/maestro/smoke.yaml` (launch → "Get started" → back) passes on the emulator (`dc64663`);
     [playbook](playbooks/verify-on-emulator.md) updated.
