@@ -9,11 +9,14 @@ Example: `divider(thickness = 1)`. Read first: [ADR 0002](../decisions/0002-conf
    behavior you rely on in `docs/remote-compose.md`.
 2. **Model** — `protocol/.../Screen.kt`: add a `Component` subtype with `@SerialName("<json
    name>")`; new fields need defaults where sensible (stored JSON, [ADR 0015](../decisions/0015-screen-model-is-the-product.md)).
+   Give it `override val modifier: Modifier = Modifier.NONE` (ADR 0020) and, if it has children,
+   return them from `childLists()` (validation, bindings and `Binder` walk them).
    Validate content in `ScreenDefinition.problems()` (message with the `components[i].field` path)
    so mistakes fail at server start, not on devices; test it in `ScreenJsonTest`.
    **DSL** — `sdk-server/.../ScreenDsl.kt`: add the `ScreenBuilder` function that appends it.
 3. **Renderer** — `sdk-server/.../RemoteComposeRenderer.kt` (the only file allowed to use the RC
-   creation API): add the `renderNode` branch. Units per ADR 0004: sizes as dp constants, fonts via
+   creation API): add the `renderNode(node, slot)` branch and pass `boxModel(node.modifier, slot, …)` as its RC
+   modifier (own styling via `decorate`, defaults via `defaultWidth`/`defaultPadding`). Units per ADR 0004: sizes as dp constants, fonts via
    `sp()`, height expressions wrapped in `written(...)`.
 4. **Unit tests** — `RemoteComposeRendererTest`: the `describe()` dump contains the expected
    operations; invalid input throws `IllegalArgumentException`; no `Height(EXACT, 0.0)`.

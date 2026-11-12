@@ -42,6 +42,17 @@
         "type": "navigate",
         "screen": "data"
       }
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "button",
+      "label": "Layouts",
+      "action": {
+        "type": "navigate",
+        "screen": "layouts"
+      }
     }
   ]
 }

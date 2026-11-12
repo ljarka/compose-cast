@@ -2,6 +2,7 @@ package io.composecast.server.sdk
 
 import io.composecast.protocol.Action
 import io.composecast.protocol.Component
+import io.composecast.protocol.Modifier
 import io.composecast.protocol.PathStep
 import io.composecast.protocol.RepeatItems
 import io.composecast.protocol.ScreenDefinition
@@ -170,20 +171,37 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
         list.flatMap { c -> bindComponent(c, roots) }
 
     private fun bindComponent(c: Component, roots: Map<String, JsonElement>): List<Component> = when (c) {
-        is Component.Text -> listOf(c.copy(text = render(c.text, roots)))
+        is Component.Text -> listOf(c.copy(text = render(c.text, roots), modifier = bindModifier(c.modifier, roots)))
         is Component.Image -> {
             val url = render(c.url, roots)
             if (url.isBlank()) {
                 warnOnce("image:${c.url}") { "Screen '$id': image url '${c.url}' is empty after binding; skipped" }
                 emptyList()
             } else {
-                listOf(Component.Image(url, render(c.alt, roots)))
+                listOf(c.copy(url = url, alt = render(c.alt, roots), modifier = bindModifier(c.modifier, roots)))
             }
         }
-        is Component.Button -> listOf(Component.Button(render(c.label, roots), bindAction(c.action, roots)))
-        is Component.Spacer -> listOf(c)
-        is Component.Expandable ->
-            listOf(c.copy(title = render(c.title, roots), content = bindComponents(c.content, roots)))
+        is Component.Button -> listOf(
+            c.copy(
+                label = render(c.label, roots),
+                action = bindAction(c.action, roots),
+                modifier = bindModifier(c.modifier, roots),
+            ),
+        )
+        is Component.Spacer -> listOf(c.copy(modifier = bindModifier(c.modifier, roots)))
+        is Component.Expandable -> listOf(
+            c.copy(
+                title = render(c.title, roots),
+                content = bindComponents(c.content, roots),
+                modifier = bindModifier(c.modifier, roots),
+            ),
+        )
+        is Component.Column ->
+            listOf(c.copy(children = bindComponents(c.children, roots), modifier = bindModifier(c.modifier, roots)))
+        is Component.Row ->
+            listOf(c.copy(children = bindComponents(c.children, roots), modifier = bindModifier(c.modifier, roots)))
+        is Component.Box ->
+            listOf(c.copy(children = bindComponents(c.children, roots), modifier = bindModifier(c.modifier, roots)))
         is Component.Repeat -> {
             val items = items(c.items, roots).let { all -> c.limit?.let { all.take(it) } ?: all }
             if (items.isEmpty()) {
@@ -208,6 +226,10 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
             }
         }
     }
+
+    /** Only the action is bindable (colors and sizes are not data). */
+    private fun bindModifier(m: Modifier, roots: Map<String, JsonElement>): Modifier =
+        m.action?.let { m.copy(action = bindAction(it, roots)) } ?: m
 
     private fun bindAction(action: Action, roots: Map<String, JsonElement>): Action = when (action) {
         is Action.Navigate ->
@@ -342,11 +364,7 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
 
         private fun allTemplates(definition: ScreenDefinition): List<String> {
             fun components(list: List<Component>): List<String> = list.flatMap { c ->
-                val nested = when (c) {
-                    is Component.Repeat -> components(c.template) + components(c.empty)
-                    is Component.Expandable -> components(c.content)
-                    else -> emptyList()
-                }
+                val nested = c.childLists().flatMap { (_, children) -> components(children) }
                 c.strings().map { it.second } + nested
             }
             return listOf(definition.title) + components(definition.components) + components(definition.error) +

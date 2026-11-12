@@ -55,7 +55,7 @@ Principles:
 
 | DivKit concept | Remote Compose primitive (alpha) | compose-cast |
 |---|---|---|
-| Element tree (containers, text, image) | `Column`/`Row`/`Box`/`Flow`, `Text`, `Image`, `Canvas` | Text, Image, Button, Spacer ✅; containers ⏳ Etap 5 |
+| Element tree (containers, text, image) | `Column`/`Row`/`Box`/`Flow`, `Text`, `Image`, `Canvas` | Text, Image, Button, Spacer, Column/Row/Box + modifiers ✅; Flow, Canvas ⏳ Etap 5 |
 | Templates | Server-side Kotlin functions; RC macros (`defineMacro`/`inflate`) | ⏳ Etap 10 |
 | Variables | Named variables, set by the host (`setUserLocal*` on the player) | ⏳ Etap 10 |
 | Expressions | On-device float/text expressions, conditional operations | used internally for dp/sp; DSL ⏳ Etap 10 |
@@ -85,6 +85,7 @@ rendered to Remote Compose documents by the server SDK and played by the Android
   <tr>
     <td align="center"><img src="compat-tests/src/test/screenshots/data.png" width="270" alt="Weather from a data source"><br><code>data</code> (fixture data)</td>
     <td align="center"><img src="compat-tests/src/test/screenshots/data-error.png" width="270" alt="Error components of a failed data source"><br><code>data</code>, source down</td>
+    <td align="center"><img src="compat-tests/src/test/screenshots/layouts.png" width="270" alt="Rows, columns, boxes and modifiers"><br><code>layouts</code></td>
   </tr>
 </table>
 
@@ -126,6 +127,12 @@ val registry = composeCast {
         image("https://picsum.photos/400/200", alt = "Hero image")
         expandable("How it works") { text("Toggled locally on the device — no server request.") }
         button("Get started", action = "navigate:onboarding")
+        row(spacing = 12) {                                // column | row | box (ADR 0020)
+            column(modifier = Modifier(weight = 1f, padding = Padding(12), background = "#FFFFFF",
+                cornerRadius = 16, border = Border(1, "#D0C8DC"), action = Action.Navigate("detail"))) {
+                text("Card", style = "h3")
+            }
+        }
     }
 }
 ```
@@ -133,7 +140,11 @@ val registry = composeCast {
 Actions are typed (`io.composecast.protocol.Action`): `Action.Navigate("movie", mapOf("id" to "42"))`,
 `OpenUrl`, `Reload`, `Track`, `Custom`. The wire form also works as a string:
 `navigate:<screen>`, `open_url:<url>`, `reload:`, `track:<event>`, `custom:<payload>`.
-Invalid definitions (unknown style or action, duplicate id, bad color) fail at server start.
+Containers (`column`, `row`, `box`) and one `modifier` on every component — size, weight, padding,
+background, rounded/circle clip, border, tap action — follow a fixed box model
+([ADR 0020](docs/decisions/0020-component-tree-and-modifiers.md); JSON form in `protocol/AGENTS.md`).
+Invalid definitions (unknown style or action, duplicate id, bad color, `weight` outside a row or
+column, nesting deeper than 32) fail at server start with the JSON path.
 
 Screens can depend on the request: `dynamicScreen` is rendered per request from the query
 parameters that `Action.Navigate` params become (`GET /screens/echo?word=hi`):
@@ -221,7 +232,7 @@ Server with Docker — no JDK, Gradle or Kotlin needed (serves the JSON screens 
 
 ```bash
 docker compose up -d
-curl http://localhost:8080/screens                 # ["actions","main","onboarding"]
+curl http://localhost:8080/screens                 # ["actions","data","layouts","main","onboarding"]
 COMPOSECAST_SCREENS=/path/to/data docker compose up -d   # your own screens/<id>.json + brand.json
 docker compose restart                             # after editing a screen file
 docker compose logs server                         # an invalid file is reported here (file + JSON path)
@@ -323,7 +334,7 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 
 ### Etap 5 — Components for real apps
 - [x] Text, Image, Button, Spacer, Expandable (local state PoC — T-008)
-- [ ] Row, Column, Box; size, weight, alignment, padding, background, border, rounded clip, click on anything — T-012
+- [x] Row, Column, Box; size, weight, alignment, padding, background, border, rounded clip, click on anything — T-012
 - [ ] Text color/weight/align/lines/ellipsis/marquee; Icon, Divider, Card, button variants — T-013
 - [ ] Image sizing (aspect, crop, rounded) — T-013; large/many images loaded by the SDK as named bitmaps
 - [ ] Horizontal gallery, Flow (chips), grids, scroll on any container — T-014; lists from data — T-006

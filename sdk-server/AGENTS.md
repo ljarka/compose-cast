@@ -11,7 +11,7 @@ Do NOT load `server-app`, `sdk-android`, or other modules unless cross-cutting.
 
 | File | Purpose |
 |---|---|
-| `ScreenDsl.kt` | `ScreenBuilder` (`text`, `image`, `button`, `spacer`, `expandable`, `repeat`, `param`, `data`, `lookup`, `error`) → `ScreenDefinition` |
+| `ScreenDsl.kt` | `ScreenBuilder` (`text`, `image`, `button`, `spacer`, `expandable`, `column`, `row`, `box`, `repeat`, `param`, `data`, `lookup`, `error`) → `ScreenDefinition` |
 | `DataLoader.kt` | `DataLoader` fun interface (`DataRequest` → body), `HttpDataLoader` (http/https, ≤ 2 MB, redirects), `DataSourceException` (→ 502) |
 | `Binder.kt` | T-006 execution: `DataFetcher` (parallel fetch, secrets from env), `DataCache` (LRU 256 per URL + headers, TTL `cacheSeconds`, failures 10 s), `BoundScreen` (params → fetch → model-to-model bind → `validate()`), filter implementations, secret masking in logs |
 | `ScreenRegistry.kt` | `composeCast {}` builder (`screen {}`, `dynamicScreen {}`, `screen(definition)`, `screensFrom(dir)`, `brand`), `ScreenRegistry` (`render(id, RenderContext)`), `RenderContext`, `ScreenParameterException`, `RemoteScreen` (definition, bytes, `etag`) |
@@ -34,6 +34,14 @@ val registry = composeCast {
         expandable("More info", expanded = false) { text("Toggled locally on the device") }
         button("Go", Action.Navigate("detail", mapOf("id" to "42"))) // RC hostAction("navigate:detail?id=42")
         button("Docs", action = "open_url:https://example.com")     // wire form, validated at build
+        row(spacing = 12, verticalAlignment = Alignment.Center) {     // T-012, ADR 0020
+            column(modifier = Modifier(weight = 1f, padding = Padding(12), background = "#FFFFFF",
+                cornerRadius = 16, border = Border(1, "#D0C8DC"), action = Action.Navigate("detail"))) {
+                text("Card", style = "h3")
+            }
+            box(modifier = Modifier(width = Dimension.Dp(48), height = Dimension.Dp(48), shape = Shape.Circle))
+            { text("CC", modifier = Modifier(width = Dimension.Wrap)) }
+        }
     }
 }
 
@@ -70,6 +78,12 @@ file and the JSON path; a file must be named `<id>.json`.
 
 - RC creation API is confined to `RemoteComposeRenderer` ([ADR 0002](../docs/decisions/0002-confine-restricted-remote-compose-api.md)).
 - Buttons are a clickable `Box` with brand `primaryColor` background; click = `hostAction(action)`.
+- Containers/modifiers (T-012, [ADR 0020](../docs/decisions/0020-component-tree-and-modifiers.md)):
+  `renderChildren(list, Slot, spacing)` — the `Slot` carries the parent's axis (default width: fill
+  in columns, wrap in rows) and a `weigh` lambda captured in the Row/Column scope (RC's `weight` is
+  scope-only); `boxModel()` emits weight → width → height → clip → background → border → click →
+  component styling → padding. `spacing` = spacers between children. `shape: circle` = rounded clip
+  with `CIRCLE_RADIUS` (alpha23 drops `CircleShape`, docs/remote-compose.md #10).
 - `Component.Expandable` (T-008) renders a `remoteInteger(0)` state and a `Box`-wrapped
   `StateLayout` with two branches (initial state at index 0, toggled state at index 1) whose headers
   call `setValue(state, nextState)` — expanding/collapsing happens entirely on the device.

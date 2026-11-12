@@ -25,6 +25,7 @@ one (never silently contradict an accepted ADR).
 | [0017](0017-apps-in-own-repositories.md) | Apps live in their own repositories, built without framework code changes | Accepted (distribution: 0018) |
 | [0018](0018-distribution-like-immich.md) | Distribution like Immich: release assets + GHCR image + Maven Central SDK | Accepted; Maven Central part superseded by 0019 |
 | [0019](0019-self-hosted-maven-reposilite.md) | Android artifacts on a self-hosted Maven repository (Reposilite on the VPS) | Accepted |
+| [0020](0020-component-tree-and-modifiers.md) | Component tree (column/row/box) and a fixed box-model modifier | Accepted |
 
 ## Template
 

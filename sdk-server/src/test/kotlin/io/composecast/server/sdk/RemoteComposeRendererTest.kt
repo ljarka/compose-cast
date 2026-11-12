@@ -2,6 +2,13 @@ package io.composecast.server.sdk
 
 import io.composecast.protocol.Action
 import io.composecast.protocol.ActionCodec
+import io.composecast.protocol.Alignment
+import io.composecast.protocol.Arrangement
+import io.composecast.protocol.Border
+import io.composecast.protocol.Dimension
+import io.composecast.protocol.Modifier
+import io.composecast.protocol.Padding
+import io.composecast.protocol.Shape
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
@@ -159,5 +166,43 @@ class RemoteComposeRendererTest {
     fun `parses colors`() {
         assertEquals(0xFF6200EE.toInt(), RemoteComposeRenderer.parseColor("#6200EE"))
         assertEquals(0x806200EE.toInt(), RemoteComposeRenderer.parseColor("#806200EE"))
+    }
+
+    @Test
+    fun `containers and modifiers become RC layouts and modifier operations`() {
+        val layouts = composeCast(fakeImages) {
+            screen("layouts") {
+                row(
+                    spacing = 8,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Center,
+                ) {
+                    column(
+                        modifier = Modifier(
+                            weight = 1f,
+                            padding = Padding(12),
+                            background = "#FFFFFF",
+                            cornerRadius = 16,
+                            border = Border(1, "#D0C8DC"),
+                            action = Action.Navigate("detail", mapOf("id" to "7")),
+                        ),
+                    ) { text("Card") }
+                    box(
+                        modifier = Modifier(width = Dimension.Dp(48), height = Dimension.Dp(48), shape = Shape.Circle),
+                    ) {
+                        text("CC")
+                    }
+                }
+            }
+        }
+        val document = assertNotNull(layouts.get("layouts"))
+        val dump = document.describe()
+        listOf(
+            "ROW", "COLUMN", "BOX", "PaddingModifierOperation", "BackgroundModifierOperation",
+            "RoundedClipRectModifierOperation", "BorderModifierOperation", "ClickModifier", "HostNamedActionOperation",
+        ).forEach { assertTrue(it in dump, "no $it in:\n$dump") }
+        assertTrue(Regex("Width.*WEIGHT", RegexOption.IGNORE_CASE).containsMatchIn(dump), "no weight in:\n$dump")
+        val bytes = String(document.document, Charsets.ISO_8859_1)
+        assertTrue(ActionCodec.encode(Action.Navigate("detail", mapOf("id" to "7"))) in bytes)
     }
 }

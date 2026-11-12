@@ -1,0 +1,220 @@
+{
+  "id": "layouts",
+  "title": "Layouts",
+  "components": [
+    {
+      "type": "text",
+      "text": "Rows, columns and boxes",
+      "style": "h2"
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "row",
+      "children": [
+        {
+          "type": "column",
+          "children": [
+            {
+              "type": "image",
+              "url": "https://picsum.photos/400/200",
+              "alt": "Mountains",
+              "modifier": {
+                "height": 88,
+                "cornerRadius": 8
+              }
+            },
+            {
+              "type": "text",
+              "text": "Mountains",
+              "style": "h3"
+            },
+            {
+              "type": "text",
+              "text": "Tap the card",
+              "style": "caption"
+            }
+          ],
+          "spacing": 8,
+          "modifier": {
+            "padding": 12,
+            "weight": 1.0,
+            "background": "#FFFFFF",
+            "cornerRadius": 16,
+            "border": {
+              "color": "#D0C8DC"
+            },
+            "action": {
+              "type": "navigate",
+              "screen": "onboarding"
+            }
+          }
+        },
+        {
+          "type": "column",
+          "children": [
+            {
+              "type": "image",
+              "url": "https://picsum.photos/400/200",
+              "alt": "Lakes",
+              "modifier": {
+                "height": 88,
+                "cornerRadius": 8
+              }
+            },
+            {
+              "type": "text",
+              "text": "Lakes",
+              "style": "h3"
+            },
+            {
+              "type": "text",
+              "text": "Weight 1 each",
+              "style": "caption"
+            }
+          ],
+          "spacing": 8,
+          "modifier": {
+            "padding": 12,
+            "weight": 1.0,
+            "background": "#FFFFFF",
+            "cornerRadius": 16,
+            "border": {
+              "color": "#D0C8DC"
+            },
+            "action": {
+              "type": "custom",
+              "payload": "lakes"
+            }
+          }
+        }
+      ],
+      "spacing": 12
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "row",
+      "children": [
+        {
+          "type": "text",
+          "text": "spaceBetween",
+          "style": "h3"
+        },
+        {
+          "type": "text",
+          "text": "end",
+          "style": "caption"
+        }
+      ],
+      "horizontalArrangement": "spaceBetween",
+      "verticalAlignment": "center",
+      "modifier": {
+        "padding": 12,
+        "background": "#F3EDF7",
+        "cornerRadius": 12
+      }
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "row",
+      "children": [
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "text",
+              "text": "CC",
+              "style": "h3",
+              "modifier": {
+                "width": "wrap"
+              }
+            }
+          ],
+          "horizontalAlignment": "center",
+          "verticalAlignment": "center",
+          "modifier": {
+            "width": 48,
+            "height": 48,
+            "background": "#03DAC6",
+            "shape": "circle"
+          }
+        },
+        {
+          "type": "column",
+          "children": [
+            {
+              "type": "text",
+              "text": "Circle + weighted column",
+              "style": "h3"
+            },
+            {
+              "type": "text",
+              "text": "Text fills the rest of the row",
+              "style": "caption"
+            }
+          ],
+          "modifier": {
+            "weight": 1.0
+          }
+        }
+      ],
+      "verticalAlignment": "center",
+      "spacing": 12
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "box",
+      "children": [
+        {
+          "type": "text",
+          "text": "Centered in a bordered box",
+          "modifier": {
+            "width": "wrap"
+          }
+        }
+      ],
+      "horizontalAlignment": "center",
+      "verticalAlignment": "center",
+      "modifier": {
+        "height": 96,
+        "cornerRadius": 16,
+        "border": {
+          "width": 2,
+          "color": "#6200EE"
+        }
+      }
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "row",
+      "children": [
+        {
+          "type": "button",
+          "label": "Back home",
+          "action": {
+            "type": "navigate",
+            "screen": "main"
+          },
+          "modifier": {
+            "width": "wrap"
+          }
+        }
+      ],
+      "horizontalArrangement": "end"
+    }
+  ]
+}

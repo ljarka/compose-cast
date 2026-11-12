@@ -58,9 +58,22 @@ data class ScreenDefinition(
         require(problems.isEmpty()) { "Screen '$id': ${problems.joinToString("; ")}" }
     }
 
-    private fun componentProblems(list: List<Component>, path: String): List<String> = buildList {
+    /** Where a component list sits: decides whether `weight` is allowed. */
+    private enum class Parent { Screen, Column, Row, Other }
+
+    private fun componentProblems(
+        list: List<Component>,
+        path: String,
+        parent: Parent = Parent.Screen,
+        depth: Int = 1,
+    ): List<String> = buildList {
+        if (depth > MAX_DEPTH) {
+            add("$path: nested deeper than $MAX_DEPTH levels")
+            return@buildList
+        }
         list.forEachIndexed { i, component ->
             val at = "$path[$i]"
+            if (component !is Component.Repeat) addAll(modifierProblems(component.modifier, "$at.modifier", parent))
             when (component) {
                 is Component.Text -> Unit
                 is Component.Image -> if (component.url.isBlank()) add("$at.url: must not be blank")
@@ -72,17 +85,59 @@ data class ScreenDefinition(
                     if (component.items is RepeatItems.Zip && component.items.arrays.isEmpty()) {
                         add("$at.items: must name at least one array")
                     }
-                    addAll(componentProblems(component.template, "$at.template"))
-                    addAll(componentProblems(component.empty, "$at.empty"))
+                    // Expanded in place: its components are children of this repeat's parent.
+                    addAll(componentProblems(component.template, "$at.template", parent, depth))
+                    addAll(componentProblems(component.empty, "$at.empty", parent, depth))
                 }
                 is Component.Expandable -> {
                     if (component.title.isBlank()) add("$at.title: must not be blank")
                     if (component.content.isEmpty()) add("$at.content: must not be empty")
-                    addAll(componentProblems(component.content, "$at.content"))
+                    addAll(componentProblems(component.content, "$at.content", Parent.Column, depth + 1))
                 }
+                is Component.Column -> {
+                    if (component.spacing < 0) add("$at.spacing: must be >= 0, was ${component.spacing}")
+                    addAll(componentProblems(component.children, "$at.children", Parent.Column, depth + 1))
+                }
+                is Component.Row -> {
+                    if (component.spacing < 0) add("$at.spacing: must be >= 0, was ${component.spacing}")
+                    addAll(componentProblems(component.children, "$at.children", Parent.Row, depth + 1))
+                }
+                is Component.Box -> addAll(
+                    componentProblems(component.children, "$at.children", Parent.Other, depth + 1),
+                )
             }
         }
     }
+
+    private fun modifierProblems(m: Modifier, at: String, parent: Parent): List<String> = buildList {
+        m.padding?.let { p ->
+            if (listOf(p.start, p.top, p.end, p.bottom).any { it < 0 }) add("$at.padding: must be >= 0, was $p")
+        }
+        listOf("width" to m.width, "height" to m.height).forEach { (field, dimension) ->
+            if (dimension is Dimension.Dp &&
+                dimension.value < 0
+            ) {
+                add("$at.$field: must be >= 0, was ${dimension.value}")
+            }
+        }
+        m.weight?.let { weight ->
+            if (!(weight > 0f) || weight.isInfinite()) add("$at.weight: must be > 0, was $weight")
+            if (parent != Parent.Column && parent != Parent.Row) {
+                add("$at.weight: only allowed for direct children of a row or column")
+            }
+        }
+        m.background?.let { colorProblem(it)?.let { problem -> add("$at.background: $problem") } }
+        m.cornerRadius?.let { if (it < 0) add("$at.cornerRadius: must be >= 0, was $it") }
+        if (m.cornerRadius != null && m.shape != null) add("$at: set either cornerRadius or shape, not both")
+        m.border?.let { border ->
+            if (border.width <= 0) add("$at.border.width: must be > 0, was ${border.width}")
+            colorProblem(border.color)?.let { add("$at.border.color: $it") }
+        }
+        m.action?.let { action -> actionProblem(action)?.let { add("$at.action: $it") } }
+    }
+
+    private fun colorProblem(color: String): String? =
+        if (COLOR.matches(color)) null else "expected #RRGGBB or #AARRGGBB, was '$color'"
 
     private fun actionProblem(action: Action): String? {
         val encoded = ActionCodec.encode(action)
@@ -147,8 +202,10 @@ data class ScreenDefinition(
                     addAll(componentBindingProblems(component.template, "$at.template", roots + alias + Roots.INDEX))
                     addAll(componentBindingProblems(component.empty, "$at.empty", roots))
                 }
-                if (component is Component.Expandable) {
-                    addAll(componentBindingProblems(component.content, "$at.content", roots))
+                if (component !is Component.Repeat) {
+                    component.childLists().forEach { (field, children) ->
+                        addAll(componentBindingProblems(children, "$at.$field", roots))
+                    }
                 }
             }
         }
@@ -211,23 +268,67 @@ data class ScreenDefinition(
 /** A building block of a screen. New components: docs/playbooks/add-component.md. */
 @Serializable
 sealed interface Component {
+    /** Layout and decoration (T-012); every component except [Repeat] has one. */
+    val modifier: Modifier get() = Modifier.NONE
+
     @Serializable
     @SerialName("text")
-    data class Text(val text: String, val style: TextStyle = TextStyle.Body) : Component
+    data class Text(
+        val text: String,
+        val style: TextStyle = TextStyle.Body,
+        override val modifier: Modifier = Modifier.NONE,
+    ) : Component
 
-    /** Fetched by the server and embedded in the document (ADR 0003). */
+    /**
+     * Fetched by the server and embedded in the document (ADR 0003). Without a `modifier.height`
+     * its height follows the aspect ratio at the screen's full width — inside rows give it a height.
+     */
     @Serializable
     @SerialName("image")
-    data class Image(val url: String, val alt: String = "") : Component
+    data class Image(val url: String, val alt: String = "", override val modifier: Modifier = Modifier.NONE) :
+        Component
 
     @Serializable
     @SerialName("button")
-    data class Button(val label: String, val action: Action) : Component
+    data class Button(val label: String, val action: Action, override val modifier: Modifier = Modifier.NONE) :
+        Component
 
-    /** Vertical space in dp. */
+    /** Empty space of [height] dp along the parent's direction (a width inside a row). */
     @Serializable
     @SerialName("spacer")
-    data class Spacer(val height: Int = 8) : Component
+    data class Spacer(val height: Int = 8, override val modifier: Modifier = Modifier.NONE) : Component
+
+    /** Children stacked vertically, [spacing] dp apart (T-012). */
+    @Serializable
+    @SerialName("column")
+    data class Column(
+        val children: List<Component>,
+        val horizontalAlignment: Alignment = Alignment.Start,
+        val verticalArrangement: Arrangement = Arrangement.Start,
+        val spacing: Int = 0,
+        override val modifier: Modifier = Modifier.NONE,
+    ) : Component
+
+    /** Children side by side, [spacing] dp apart (T-012). */
+    @Serializable
+    @SerialName("row")
+    data class Row(
+        val children: List<Component>,
+        val horizontalArrangement: Arrangement = Arrangement.Start,
+        val verticalAlignment: Alignment = Alignment.Start,
+        val spacing: Int = 0,
+        override val modifier: Modifier = Modifier.NONE,
+    ) : Component
+
+    /** Children stacked on top of each other (later ones above), aligned in the box (T-012). */
+    @Serializable
+    @SerialName("box")
+    data class Box(
+        val children: List<Component>,
+        val horizontalAlignment: Alignment = Alignment.Start,
+        val verticalAlignment: Alignment = Alignment.Start,
+        override val modifier: Modifier = Modifier.NONE,
+    ) : Component
 
     /**
      * [template] once per element of [items] (at most [limit]), each bound with the element as
@@ -250,7 +351,12 @@ sealed interface Component {
      */
     @Serializable
     @SerialName("expandable")
-    data class Expandable(val title: String, val content: List<Component>, val expanded: Boolean = false) : Component
+    data class Expandable(
+        val title: String,
+        val content: List<Component>,
+        val expanded: Boolean = false,
+        override val modifier: Modifier = Modifier.NONE,
+    ) : Component
 
     /** The bindable string fields of this component (not of nested ones), by field path. */
     fun strings(): List<Pair<String, String>> = when (this) {
@@ -258,12 +364,22 @@ sealed interface Component {
         is Image -> listOf("url" to url, "alt" to alt)
         is Button -> listOf("label" to label) + action.strings().map { (field, value) -> "action.$field" to value }
         is Expandable -> listOf("title" to title)
-        is Spacer, is Repeat -> emptyList()
+        is Spacer, is Repeat, is Column, is Row, is Box -> emptyList()
+    } + modifier.action?.strings().orEmpty().map { (field, value) -> "modifier.action.$field" to value }
+
+    /** Nested component lists by field name (`children`, `content`, `template`, `empty`). */
+    fun childLists(): List<Pair<String, List<Component>>> = when (this) {
+        is Column -> listOf("children" to children)
+        is Row -> listOf("children" to children)
+        is Box -> listOf("children" to children)
+        is Expandable -> listOf("content" to content)
+        is Repeat -> listOf("template" to template, "empty" to empty)
+        is Text, is Image, is Button, is Spacer -> emptyList()
     }
 
     /** Whether this component or a nested one contains `{{`, or it is a [Repeat]. */
     fun hasBindings(): Boolean = this is Repeat || strings().any { Template.hasBindings(it.second) } ||
-        (this is Expandable && content.any { it.hasBindings() })
+        childLists().any { (_, list) -> list.any { it.hasBindings() } }
 }
 
 /** The bindable string fields of an action, by field path. */
@@ -329,3 +445,8 @@ object ScreenJson {
         return screen
     }
 }
+
+/** Deepest allowed nesting of component lists (containers, expandables) — keeps documents sane. */
+private const val MAX_DEPTH = 32
+
+private val COLOR = Regex("#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})")

@@ -110,7 +110,7 @@ maestro test app-template/maestro/smoke.yaml      # click through the demo app (
 
 ## Current focus
 
-[Task queue](docs/tasks/README.md) (priority order): T-001…T-003, T-006, T-008, T-009, T-011, T-023, T-024 done →
-**T-012 layouts (ready)** → T-013 layouts and styling → example weather app in its own separate repo,
+[Task queue](docs/tasks/README.md) (priority order): T-001…T-003, T-006, T-008, T-009, T-011, T-012, T-023, T-024 done →
+**T-013 text/image styling (ready)** layouts and styling → example weather app in its own separate repo,
 not part of this project ([ADR 0017](docs/decisions/0017-apps-in-own-repositories.md), Milestone 1) → T-004 version negotiation. T-005 iOS spike is
 blocked until Xcode is installed.

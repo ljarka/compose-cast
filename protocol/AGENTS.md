@@ -13,7 +13,8 @@ This module only. **Do not** import `sdk-server`, `server-app`, or `sdk-android`
 
 | File | Purpose |
 |---|---|
-| `Screen.kt` | `ScreenDefinition` (+ `params`, `data`, `lookups`, `error`), `Component` (Text, Image, Button, Spacer, Repeat, Expandable), `TextStyle`, validation (`problems()`/`validate()`, incl. bindings), `ScreenJson` |
+| `Layout.kt` | `Modifier` (box model, ADR 0020), `Padding` (number or sides), `Dimension` (dp / `fill` / `wrap`), `Border`, `Shape`, `Alignment`, `Arrangement` + their JSON serializers |
+| `Screen.kt` | `ScreenDefinition` (+ `params`, `data`, `lookups`, `error`), `Component` (Text, Image, Button, Spacer, Repeat, Expandable, Column, Row, Box), `TextStyle`, validation (`problems()`/`validate()`, incl. bindings), `ScreenJson` |
 | `Binding.kt` | Data sources (T-006, [ADR 0008](../docs/decisions/0008-server-side-data-sources.md)): `ParamSpec`, `DataSource`, `RepeatItems` (path or zipped parallel arrays), `Template` parser for `{{path \| filter:arg}}`, `Filters` (names/arity), allowed roots |
 | `Action.kt` | `Action` (Navigate, OpenUrl, Reload, Track, Custom) + `ActionCodec` (wire form) |
 | `Actions.kt` | `Actions` (wire type names, used only by the codec), `Headers` (HTTP headers) |
@@ -46,13 +47,35 @@ Strict: unknown keys/types fail with the source and the JSON path.
 Actions: `navigate` (screen, params), `open_url` (url), `reload`, `track` (event, params),
 `custom` (payload). Full examples: `examples/demo/screens/`; cases: `ScreenJsonTest`.
 
+### Containers and modifiers (T-012, [ADR 0020](../docs/decisions/0020-component-tree-and-modifiers.md))
+
+```json
+{ "type": "row", "spacing": 12, "horizontalArrangement": "spaceBetween", "verticalAlignment": "center",
+  "children": [
+    { "type": "column", "spacing": 8, "children": [ … ],
+      "modifier": { "weight": 1, "padding": 12, "background": "#FFFFFF", "cornerRadius": 16,
+                    "border": { "width": 1, "color": "#D0C8DC" }, "action": { "type": "navigate", "screen": "detail" } } },
+    { "type": "box", "horizontalAlignment": "center", "verticalAlignment": "center", "children": [ … ],
+      "modifier": { "width": 48, "height": 48, "shape": "circle", "background": "#03DAC6" } }
+] }
+```
+- `column` (`horizontalAlignment`, `verticalArrangement`, `spacing`), `row` (`horizontalArrangement`,
+  `verticalAlignment`, `spacing`), `box` (`horizontalAlignment`, `verticalAlignment`); alignment
+  `start|center|end`, arrangement also `spaceBetween|spaceAround|spaceEvenly` (`start` = top).
+- `modifier` on every component except `repeat`: `padding` (number or `{start,top,end,bottom}`),
+  `width`/`height` (dp, `"fill"`, `"wrap"`), `weight` (direct children of row/column only),
+  `background`, `cornerRadius` **or** `shape: "circle"`, `border {width=1, color}`, `action`.
+  Unordered box model: size includes padding; background/border/clip cover the whole size; no margin.
+- Defaults: children of a column/the screen fill the width, children of a row wrap; `spacer.height`
+  is space along the parent's direction. Max nesting depth 32. Cases: `LayoutTest`.
+
 ### Data sources and bindings (T-006)
 
 A screen may declare `params` (`{"lat": {"default": "52.52"}}`; no default = required → 400),
 `data` (name → `{url, headers, timeoutMs=5000, cacheSeconds=60, optional=false}`, GET + JSON only),
 `lookups` (name → value table, `"*"` = fallback) and `error` (components shown when a non-optional
 source fails; without them the server answers 502). String fields (`title`, `text.text`,
-`image.url/alt`, `button.label`, action strings) may contain `{{path | filter:arg}}`:
+`image.url/alt`, `button.label`, action strings incl. `modifier.action`) may contain `{{path | filter:arg}}`:
 - roots: `params`, a source name, a repeat `as` name, `$index`; steps `.key`, `[n]`;
 - filters: `round[:digits]`, `date:'EEE'`, `lookup:table`, `default:'text'`, `upper`, `lower`;
 - missing value → empty string; integral numbers print without `.0`;

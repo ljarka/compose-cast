@@ -58,6 +58,10 @@ class DemoScreensScreenshotTest {
     @Test
     fun actions() = capture("actions")
 
+    /** Containers and modifiers (T-012): weighted cards, spaceBetween, circle, bordered box. */
+    @Test
+    fun layouts() = capture("layouts")
+
     /** A dynamic screen, rendered from query parameters (T-003). */
     @Test
     fun echo() = capture("echo", mapOf("word" to "zażółć gęślą jaźń"))

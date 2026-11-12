@@ -188,3 +188,17 @@ README roadmap's "Etap" numbers.
     job `maven` (skipped until `COMPOSECAST_MAVEN_URL` is set). Verified: demo and the template app
     installed side by side, Maestro smoke on both; local Reposilite 3.6.6 accepted every artifact.
     T-012 is next (`51aa515`).
+38. **T-012 layout containers and modifiers** ([task](tasks/T-012-layout-containers.md),
+    [ADR 0020](decisions/0020-component-tree-and-modifiers.md)): `Component.Column/Row/Box`
+    (alignment, arrangement incl. spaceBetween/Around/Evenly, `spacing`) and a `modifier` on every
+    component (`padding`, `width`/`height` dp|fill|wrap, `weight`, `background`, `cornerRadius` or
+    `shape: circle`, `border`, `action`) as an unordered box model; validation with JSON paths
+    (weight placement, depth 32, colors, sizes); bindings walk containers and `modifier.action`.
+    Renderer: `renderChildren` + `Slot` (parent axis, scope-captured `weight`), `boxModel()` chain.
+    RC alpha23 facts recorded (docs/remote-compose.md #9–12): paddings summed + inside the size,
+    `CircleShape` clip dropped (oversized rounded radius instead), clickable containers merge their
+    texts for accessibility, `Fit` images letterbox. Demo screen `layouts` (DSL + JSON, byte-identical),
+    golden reviewed, `main` golden re-recorded (new button); emulator: Maestro `layouts.yaml` taps a
+    whole card (navigate) and another (custom → snackbar). Found during a picsum.photos outage:
+    images are fetched one by one at startup (15 s timeout each), so every extra image URL can delay
+    the healthcheck — the demo reuses one URL; parallel prefetch is a possible follow-up. T-013 is next.

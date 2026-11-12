@@ -1,0 +1,18 @@
+# Containers and modifiers (T-012): a tap on a whole card (modifier.action) reaches the app's
+# action router. Run against the demo server: maestro test app-template/maestro/layouts.yaml
+appId: ${APP_ID}
+env:
+    APP_ID: io.composecast.demo
+---
+- launchApp:
+    stopApp: true
+- tapOn: "Layouts"
+- assertVisible: "Rows, columns and boxes"
+# A tappable container merges its children's texts into one node: match a part of it.
+- tapOn: ".*Tap the card.*"        # Mountains card: the card's action navigates
+- assertVisible: "Continue"
+- back
+- tapOn: ".*Weight 1 each.*"       # Lakes card: custom action → snackbar
+- assertVisible: "Custom: lakes"
+- back
+- assertVisible: "Welcome to ComposeCast"

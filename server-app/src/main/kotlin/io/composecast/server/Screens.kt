@@ -1,7 +1,15 @@
 package io.composecast.server
 
 import io.composecast.protocol.Action
+import io.composecast.protocol.Alignment
+import io.composecast.protocol.Arrangement
+import io.composecast.protocol.Border
 import io.composecast.protocol.BrandConfig
+import io.composecast.protocol.Dimension
+import io.composecast.protocol.Modifier
+import io.composecast.protocol.Padding
+import io.composecast.protocol.Shape
+import io.composecast.server.sdk.ComponentsBuilder
 import io.composecast.server.sdk.DataLoader
 import io.composecast.server.sdk.HttpDataLoader
 import io.composecast.server.sdk.HttpImageLoader
@@ -65,6 +73,65 @@ fun demoScreens(imageLoader: ImageLoader = HttpImageLoader, dataLoader: DataLoad
             button("Get started", action = "navigate:onboarding")
             spacer(8)
             button("Live data", Action.Navigate("data"))
+            spacer(8)
+            button("Layouts", Action.Navigate("layouts"))
+        }
+
+        // Containers and modifiers (T-012, ADR 0020): rows, columns, boxes; weight, padding,
+        // background, rounded/circle clip, border, alignment, tap on any component.
+        screen("layouts") {
+            title = "Layouts"
+            text("Rows, columns and boxes", style = "h2")
+            spacer(12)
+            row(spacing = 12) {
+                card(
+                    "Mountains",
+                    "Tap the card",
+                    HERO_IMAGE,
+                    Action.Navigate("onboarding"),
+                )
+                card("Lakes", "Weight 1 each", HERO_IMAGE, Action.Custom("lakes"))
+            }
+            spacer(12)
+            row(
+                modifier = Modifier(background = SURFACE, cornerRadius = 12, padding = Padding(12)),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Center,
+            ) {
+                text("spaceBetween", style = "h3")
+                text("end", style = "caption")
+            }
+            spacer(12)
+            row(spacing = 12, verticalAlignment = Alignment.Center) {
+                box(
+                    modifier = Modifier(
+                        width = Dimension.Dp(48),
+                        height = Dimension.Dp(48),
+                        shape = Shape.Circle,
+                        background = "#03DAC6",
+                    ),
+                    horizontalAlignment = Alignment.Center,
+                    verticalAlignment = Alignment.Center,
+                ) {
+                    text("CC", style = "h3", modifier = Modifier(width = Dimension.Wrap))
+                }
+                column(modifier = Modifier(weight = 1f)) {
+                    text("Circle + weighted column", style = "h3")
+                    text("Text fills the rest of the row", style = "caption")
+                }
+            }
+            spacer(12)
+            box(
+                modifier = Modifier(height = Dimension.Dp(96), cornerRadius = 16, border = Border(2, "#6200EE")),
+                horizontalAlignment = Alignment.Center,
+                verticalAlignment = Alignment.Center,
+            ) {
+                text("Centered in a bordered box", modifier = Modifier(width = Dimension.Wrap))
+            }
+            spacer(12)
+            row(horizontalArrangement = Arrangement.End) {
+                button("Back home", Action.Navigate("main"), modifier = Modifier(width = Dimension.Wrap))
+            }
         }
 
         // Data sources and bindings (T-006): live data from Open-Meteo (keyless), rendered per request;
@@ -168,3 +235,28 @@ fun demoScreens(imageLoader: ImageLoader = HttpImageLoader, dataLoader: DataLoad
             button("Again, louder", Action.Navigate("echo", mapOf("word" to "$word!")))
         }
     }
+
+private const val SURFACE = "#F3EDF7"
+
+/**
+ * The demo reuses one image URL: images are fetched one by one while the server starts, so every
+ * extra URL adds up to 15 s to startup when the image host is down (picsum.photos, 2026-11-12).
+ */
+private const val HERO_IMAGE = "https://picsum.photos/400/200"
+
+/** A tappable card: image on top, title and subtitle below; half of a row (weight 1). */
+private fun ComponentsBuilder.card(title: String, subtitle: String, image: String, action: Action) = column(
+    modifier = Modifier(
+        weight = 1f,
+        background = "#FFFFFF",
+        cornerRadius = 16,
+        border = Border(1, "#D0C8DC"),
+        padding = Padding(12),
+        action = action,
+    ),
+    spacing = 8,
+) {
+    image(image, alt = title, modifier = Modifier(height = Dimension.Dp(88), cornerRadius = 8))
+    text(title, style = "h3")
+    text(subtitle, style = "caption")
+}

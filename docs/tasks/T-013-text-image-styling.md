@@ -1,6 +1,6 @@
 # T-013 — Text and image options, Icon, Divider, Card, button variants
 
-Status: queued (after T-012) · Roadmap: Etap 5 · Depends on: T-012
+Status: ready · Roadmap: Etap 5 · Depends on: T-012
 
 ## Goal
 
@@ -21,6 +21,10 @@ supports much more (`docs/remote-compose.md` → Procedural catalog, rows Text /
 - **Image**: `contentScale` (`fit|crop|fillBounds|fillWidth|fillHeight|inside|none`), `alpha`,
   `aspectRatio` (compute height from width server-side or via expression — verify), sizing through
   the T-012 modifier, rounded/circle via `modifier.cornerRadius`/`shape`.
+  *Found in T-012:* an image without `modifier.height` is sized for the screen's full width
+  (wrong inside rows/cards), and `Fit` letterboxes inside a box of another aspect, so rounded
+  corners do not show (docs/remote-compose.md #12) — `aspectRatio` and `crop` fix both; update the
+  `layouts` demo cards to use them.
 - **Icon** (`"type": "icon"`): image URL rendered with `Icon` (Fit), default size 24 dp, optional
   tint only if RC supports it (check; otherwise document "no tint").
 - **Divider**: `thickness` (dp, default 1), `color`; = `Box(fillMaxWidth, height, background)`.

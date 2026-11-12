@@ -252,6 +252,23 @@ All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alph
    `ComponentData` children, and reads its state integer only in `paint()` (so frame 1 always
    measures/paints child `0`). Declare `remoteInteger(0)` before `StateLayout`, wrap `StateLayout`
    in a `Box`, and order children so child `0` is the initial state. Verified alpha23 (T-008).
+9. **Modifier order / box model** (`LayoutComponent`, `BaseModernMeasurePolicy`,
+   `ComponentModifiers` in `remote-core`): every `PaddingModifierOperation` is **summed** into the
+   content inset regardless of position; the **first** `Width`/`Height` modifier wins; exact sizes
+   include the padding, wrap = content + padding. Painting walks the modifier list in order and each
+   padding translates the decorators after it, so clip/background/border **before** the padding cover
+   the whole size. `weight` is a member of `RcRowScope`/`RcColumnScope` only (`Width(WEIGHT, w)`).
+   Verified alpha23 (T-012, ADR 0020).
+10. **`CircleShape` clip is silently dropped**: `ClipModifier.write` encodes only `RectShape` and
+    `RoundedRectShape`. Use `RoundedRectShape` with a radius larger than half the size (the canvas
+    clamps it into a circle/pill) — screenshot-verified. Verified alpha23 (T-012).
+11. **Clickable containers merge their texts for accessibility**: a component with `onClick`
+    exposes one node whose text is all descendant texts (and image descriptions) joined with spaces
+    (`"Mountains Mountains Tap the card"`); children are not separate nodes. UI tests match a part
+    (`tapOn: ".*Tap the card.*"` in Maestro). Verified alpha23 on the emulator (T-012).
+12. `ImageLayout` wraps to the bitmap's pixel size and draws with `contentScale` inside its own
+    clip; with `Fit` and a box of another aspect the image is letterboxed, so rounded corners show
+    only where the image reaches them. Verified alpha23 (T-012).
 
 ---
 
