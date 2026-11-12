@@ -12,8 +12,8 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-009 Backend in one command (Docker)](T-009-docker.md) | Etap 6 | done (`7405b52`) |
 | [T-006 Data sources](T-006-data-sources.md) | Etap 4 | done (`c6b0b3a`) |
 | [T-008 Local state spike](T-008-local-state-spike.md) | Etap 5/10 | done (`0cc6cae`) |
-| [T-011 `app-template` configurable without code](T-011-app-template-config.md) | Etap 7 | done (`ba52457`) |
-| [T-023 Server distribution like Immich (GHCR + release assets)](T-023-app-repositories.md) | Etap 6 | ready |
+| [T-011 `app-template` configurable without code](T-011-app-template-config.md) | Etap 7 | done (`ba52457`, completed in NEWHASH) |
+| [T-023 Server distribution like Immich (GHCR + release assets)](T-023-app-repositories.md) | Etap 6 | ready — ADR 0018 |
 | [T-024 Android artifacts on Reposilite + `io.composecast.app` plugin](T-024-android-artifacts.md) | Etap 6 | queued (after T-023; owner: Reposilite on the VPS, ADR 0019) |
 | [T-012 Layout containers and common modifiers](T-012-layout-containers.md) | Etap 5 | queued (after T-011) — the weather app needs rows/columns |
 | [T-013 Text/image options, Icon, Divider, Card, button variants](T-013-text-image-styling.md) | Etap 5 | queued (after T-012) |

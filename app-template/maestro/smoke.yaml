@@ -1,0 +1,14 @@
+# Smoke flow for the demo app against the demo server (docs/playbooks/verify-on-emulator.md).
+# Run: maestro test app-template/maestro/smoke.yaml
+# Another app id (compose-cast.properties): maestro test -e APP_ID=<id> app-template/maestro/smoke.yaml
+appId: ${APP_ID}
+env:
+    APP_ID: io.composecast.demo
+---
+- launchApp:
+    stopApp: true
+- assertVisible: "Welcome to ComposeCast"
+- tapOn: "Get started"
+- assertVisible: "Continue"
+- back
+- assertVisible: "Welcome to ComposeCast"

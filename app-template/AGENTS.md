@@ -31,13 +31,15 @@ MainActivity
 |---|---|
 | `MainActivity.kt` | Entry point; creates `ComposeCastClient`; hosts `ComposeCastApp` composable |
 | `ComposeCastApp` (in MainActivity) | Back stack (`rememberSaveable`), loading/error states, action routing |
+| `maestro/smoke.yaml` | Maestro UI flow: launch, tap "Get started", back (`-e APP_ID=<id>` for other configs) |
+| `compose-cast.properties` | Per-app configuration (T-011): name, `applicationId`, server URL, frame colors, icon |
+| `build.gradle.kts` | Reads the properties (`ComposeCastAppConfig`), icon task (`GenerateLauncherIconTask`), release https check |
+| `res/mipmap-anydpi/ic_launcher.xml`, `res/drawable/ic_launcher_foreground.xml` | Default adaptive icon (cast glyph on `app.frame.primaryColor`) |
 
 ## Usage
 
-The app connects to the URL in `compose-cast.properties` (`app.serverUrl`; default
-`http://10.0.2.2:8080` = emulator alias for host `localhost`). For a real device or remote
-server change that value; cleartext HTTP is allowed only in debug builds and only for local
-addresses.
+The app connects to `app.serverUrl` from `compose-cast.properties` (demo: `http://10.0.2.2:8080`,
+the emulator alias for host `localhost`).
 
 ## Back stack
 
@@ -62,26 +64,28 @@ Exhaustive `when (action)` over `io.composecast.protocol.Action` (a new subtype 
 
 Unknown actions never reach the app: `sdk-android` logs and drops them.
 
-## Configuration
+## Configuration (T-011)
 
-All app-specific values live in `compose-cast.properties` (project root of this module).
-`build.gradle.kts` reads it at build time and exposes them as `BuildConfig` fields; a missing
-key is a build error that names the key.
+One file, `compose-cast.properties` (or `-Pcomposecast.appConfig=<path>`, relative to the root
+project), makes a new app without code changes:
 
-```properties
-app.name=ComposeCast Demo
-app.applicationId=io.composecast.demo
-app.serverUrl=http://10.0.2.2:8080
-# native frame colors (top app bar, status bar) before the first document arrives
-app.frame.primaryColor=#6200EE
-app.frame.backgroundColor=#FAFAFA
-# optional PNG/JPG path for the launcher icon; empty = keep the default icon
-app.icon=
-```
+| Key | Becomes |
+|---|---|
+| `app.name` | `resValue string app_name` (launcher label) |
+| `app.applicationId` | `applicationId` (`namespace` stays `io.composecast.demo`) |
+| `app.serverUrl` | `BuildConfig.SERVER_URL`; release variants: `check<Variant>ComposeCastConfig` before `pre<Variant>Build` fails unless `https://` |
+| `app.frame.primaryColor` | `BuildConfig.FRAME_PRIMARY_COLOR` → top app bar, status bar icon style; `@color/composecast_frame_primary` (default icon background) |
+| `app.frame.backgroundColor` | `BuildConfig.FRAME_BACKGROUND_COLOR` → loading/error background; `@color/composecast_frame_background` → window/splash |
+| `app.icon` (optional) | `generateComposeCastLauncherIcon` → `@mipmap/ic_launcher_custom` (foreground fit into the 72dp safe zone, PNG per density); manifest placeholder `appIcon` |
+| `app.icon.backgroundColor` (optional) | Custom icon background, default `app.frame.primaryColor` |
 
-`MainActivity` reads `BuildConfig.SERVER_URL`, `BuildConfig.FRAME_PRIMARY_COLOR`, and
-`BuildConfig.FRAME_BACKGROUND_COLOR`; it never hard-codes these values.
-Release builds reject `http://` server URLs with a clear Gradle error.
+Decisions:
+- Validation happens at configuration time (missing key → `Missing key 'app.name' in …`), except
+  the https rule, which only runs for release variants so debug builds keep a local http server.
+- The config code at the bottom of `build.gradle.kts` uses no `app-template` paths: T-024 moves it
+  unchanged into the `io.composecast.app` plugin.
+- Content colors are not configured here (server `BrandConfig`); the RC document paints over the
+  frame background once loaded.
 
 ## Build
 

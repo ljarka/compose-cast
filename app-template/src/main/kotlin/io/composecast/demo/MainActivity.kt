@@ -5,8 +5,10 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -21,6 +24,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.composecast.android.ComposeCastClient
@@ -48,6 +53,7 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
+    // Server URL and frame colors come from compose-cast.properties (BuildConfig, T-011).
     private val client = ComposeCastClient(
         ComposeCastConfig(
             serverUrl = BuildConfig.SERVER_URL,
@@ -57,19 +63,21 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Status bar sits on the top app bar (frame primary color): light or dark icons to match.
+        val statusBar = Color(BuildConfig.FRAME_PRIMARY_COLOR).let {
+            if (it.luminance() > 0.5f) {
+                SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
+            } else {
+                SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+            }
+        }
+        enableEdgeToEdge(statusBarStyle = statusBar)
         setContent {
-            val primaryColor = Color(android.graphics.Color.parseColor(BuildConfig.FRAME_PRIMARY_COLOR))
-            val backgroundColor = Color(android.graphics.Color.parseColor(BuildConfig.FRAME_BACKGROUND_COLOR))
-            MaterialTheme(
-                colorScheme = lightColorScheme(
-                    primary = primaryColor,
-                    background = backgroundColor,
-                    surface = backgroundColor,
-                ),
-            ) {
+            MaterialTheme(colorScheme = frameColorScheme()) {
                 ComposeCastApp(
                     client = client,
                     onOpenUrl = { url ->
+                        // false = no app can open it (would otherwise crash with ActivityNotFoundException).
                         try {
                             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                             true
@@ -88,9 +96,30 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Colors of the native frame around the server documents (top app bar, loading/error states) from
+ * `app.frame.*`. Content colors are the server's brand, rendered into the documents.
+ */
+private fun frameColorScheme(): ColorScheme {
+    val primary = Color(BuildConfig.FRAME_PRIMARY_COLOR)
+    val background = Color(BuildConfig.FRAME_BACKGROUND_COLOR)
+    return lightColorScheme(
+        primary = primary,
+        onPrimary = contentColorFor(primary),
+        background = background,
+        onBackground = contentColorFor(background),
+        surface = background,
+        onSurface = contentColorFor(background),
+    )
+}
+
+/** Black or white, whichever reads better on [color]. */
+private fun contentColorFor(color: Color): Color = if (color.luminance() > 0.5f) Color.Black else Color.White
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ComposeCastApp(client: ComposeCastClient, onOpenUrl: (String) -> Boolean) {
+    // Back stack of (screen, params) entries; survives rotation. System back pops it.
     var backStack by rememberSaveable(stateSaver = BackStackSaver) {
         mutableStateOf(listOf(Action.Navigate("main")))
     }
@@ -109,6 +138,10 @@ private fun ComposeCastApp(client: ComposeCastClient, onOpenUrl: (String) -> Boo
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
                 title = {
                     val title = screenState?.getOrNull()?.title ?: screenId
                     Text(title)
@@ -116,6 +149,7 @@ private fun ComposeCastApp(client: ComposeCastClient, onOpenUrl: (String) -> Boo
             )
         },
         snackbarHost = { SnackbarHost(snackbar) },
+        containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
         Box(
             modifier = Modifier
@@ -134,9 +168,10 @@ private fun ComposeCastApp(client: ComposeCastClient, onOpenUrl: (String) -> Boo
                     val error = screenState!!.exceptionOrNull()
                     Text(
                         text = if (error is ComposeCastHttpException) {
+                            // The server answered (e.g. 404 unknown screen): not a connectivity problem.
                             "Server error ${error.status} for screen '$screenId'."
                         } else {
-                            "Cannot reach server.\nCheck app.serverUrl in compose-cast.properties.\n\n${error?.message}"
+                            "Cannot reach ${BuildConfig.SERVER_URL}.\nCheck app.serverUrl in compose-cast.properties.\n\n${error?.message}"
                         },
                         textAlign = TextAlign.Center,
                     )

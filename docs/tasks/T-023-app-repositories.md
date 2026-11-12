@@ -1,6 +1,6 @@
 # T-023 — Server distribution like Immich (GHCR image + release assets)
 
-Status: queued (after T-011, by priority only) · Roadmap: Etap 6 · Depends on: T-009 (image)
+Status: ready · Roadmap: Etap 6 · Depends on: T-009 (image)
 
 ## Goal
 An app repository (first: the weather app) runs its backend on a VPS the way Immich users install

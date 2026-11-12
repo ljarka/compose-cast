@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Default launcher foreground: a "cast" glyph (screen + broadcast arcs) inside the 72dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:translateX="30"
+        android:translateY="30">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M42,6L6,6C3.8,6 2,7.8 2,10v6h4v-6h36v28L28,38v4h14c2.2,0 4,-1.8 4,-4L46,10c0,-2.2 -1.8,-4 -4,-4zM2,36v6h6c0,-3.3 -2.7,-6 -6,-6zM2,28v4c5.5,0 10,4.5 10,10h4c0,-7.7 -6.3,-14 -14,-14zM2,20v4c9.9,0 18,8.1 18,18h4C24,29.8 14.2,20 2,20z" />
+    </group>
+</vector>

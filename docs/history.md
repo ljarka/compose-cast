@@ -131,15 +131,6 @@ README roadmap's "Etap" numbers.
     screen on live Open-Meteo, goldens with fixtures (`c6b0b3a`). Device check 2026-11-11 against the
     Docker image: live data, params navigation, back stack, cache + 304, error state. Etap 4 done;
     T-008 local state PoC is next.
-34. **T-011 `app-template` configurable via `compose-cast.properties`** ([task](tasks/T-011-app-template-config.md)):
-    `compose-cast.properties` at the module root sets `app.name`, `app.applicationId`,
-    `app.serverUrl`, `app.frame.primaryColor`, `app.frame.backgroundColor`, and `app.icon`.
-    `build.gradle.kts` reads it with `appProp()` (missing key = build error); exposes values as
-    `BuildConfig` fields (`SERVER_URL`, `FRAME_PRIMARY_COLOR`, `FRAME_BACKGROUND_COLOR`),
-    `applicationId`, and `resValue app_name`. `MainActivity` reads `BuildConfig.SERVER_URL` and
-    the frame colors to configure `MaterialTheme`. Release builds with `http://` URL fail with a
-    clear error naming `app.serverUrl`. The error message for unreachable servers now points to
-    `compose-cast.properties` instead of `MainActivity`.
 33. **T-008 local state PoC (`Component.Expandable`)** ([task](tasks/T-008-local-state-spike.md)):
     `Component.Expandable(title, content, expanded = false)` in `protocol` (`@SerialName("expandable")`,
     validation, template bindings), `expandable(title, expanded) { … }` in `ScreenDsl`, rendered in
@@ -153,3 +144,20 @@ README roadmap's "Etap" numbers.
     collapsed instances), golden re-recorded and emulator-verified (toggles locally with zero HTTP
     requests). Clarified in README/queue that the Milestone 1 weather app is an external example in
     its own repository, not part of this project (`0cc6cae`). T-011 is next.
+34. **T-011 `app-template` configurable without code** ([task](tasks/T-011-app-template-config.md)).
+    First version `ba52457` (properties → `BuildConfig`/`app_name`, release https check by task name),
+    completed in NEWHASH (two sessions worked T-011 in parallel; the second replaced the first):
+    `app-template/compose-cast.properties` (or `-Pcomposecast.appConfig=<path>`) sets name,
+    `applicationId`, server URL, frame colors and an optional launcher icon; `build.gradle.kts`
+    reads it with a self-contained `ComposeCastAppConfig` (missing/invalid key → build error naming
+    it) and `GenerateLauncherIconTask` (adaptive icon, PNG per density, via
+    `variant.sources.res.addGeneratedSourceDirectory`), both meant to move unchanged into the T-024
+    plugin. Release variants fail before `pre<Variant>Build` unless `app.serverUrl` is `https://`.
+    `MainActivity` uses `BuildConfig.SERVER_URL` and a frame color scheme (top app bar, status bar
+    icon style via `enableEdgeToEdge`, window/splash background). New default adaptive icon. Verified
+    on the emulator: demo and a second config (other id, amber frame, custom icon) installed side by
+    side. T-023 is next.
+35. **Maestro for UI clicking** (owner, 2026-11-12): emulator interaction uses Maestro (2.12.1)
+    instead of hand-rolled `adb` taps; RC-rendered buttons are found by text. First flow
+    `app-template/maestro/smoke.yaml` (launch → "Get started" → back) passes on the emulator (NEWHASH);
+    [playbook](playbooks/verify-on-emulator.md) updated.

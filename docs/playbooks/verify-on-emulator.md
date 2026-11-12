@@ -22,11 +22,19 @@ until curl -s localhost:8080/health >/dev/null; do sleep 1; done
 #    right after install Android may show a system "Updating..." screen for a while: wait
 $ADB shell am force-stop io.composecast.demo
 $ADB shell am start -W -n io.composecast.demo/.MainActivity     # TotalTime ≈ 0.4 s with -gpu host
+#    a second app side by side: another properties file (other app.applicationId), e.g.
+#    ./gradlew :app-template:installDebug -Pcomposecast.appConfig=/tmp/other/compose-cast.properties
+#    $ADB shell am start -n <that id>/io.composecast.demo.MainActivity   (activity class keeps the code package)
 
-# 4. Look and interact
+# 4. Click with Maestro (the project's UI automation tool; flows in app-template/maestro/)
+maestro test app-template/maestro/smoke.yaml                     # launch, tap "Get started", back
+maestro test -e APP_ID=<id> app-template/maestro/smoke.yaml      # an app built from another properties file
+#    One-off taps: write a scratch flow (tapOn: "<text>", back, assertVisible: ...) and run it the same way.
+
+# 5. Look
 $ADB exec-out screencap -p > screen.png                          # open it
 $ADB shell uiautomator dump /sdcard/u.xml && $ADB shell cat /sdcard/u.xml | grep -o 'text="[^"]*"'
-# tap a button by its text: center of its bounds from the dump
+# fallback without Maestro — tap a button by its text: center of its bounds from the dump
 tap_text() {
   $ADB shell uiautomator dump /sdcard/u.xml >/dev/null
   set -- $($ADB shell cat /sdcard/u.xml | grep -o "text=\"$1\"[^>]*bounds=\"[^\"]*\"" \
@@ -39,6 +47,13 @@ $ADB logcat -d | grep 'FATAL EXCEPTION'                          # must be empty
 $ADB logcat -d -s ComposeCast | grep REQUEST                     # app's HTTP requests (count reloads)
 grep 'GET - /screens' server.log                                 # the same requests, server side
 ```
+
+Clicking: **use Maestro** (`brew install maestro`, verified with 2.12.1). Buttons rendered by Remote
+Compose are in the accessibility tree with their text, so `tapOn: "<label>"` and `assertVisible` work
+on them. A run that ends right after "Flow …" with `DeviceServerDiedException` in
+`~/.maestro/tests/<run>/maestro.log` is Maestro losing its device connection, not a failing
+flow: rerun it. Add a flow to `app-template/maestro/` when a check is worth repeating. The `tap_text` adb
+helper above is only a fallback.
 
 Snippets are bash (`bash -c` from zsh: zsh does not word-split `$var`). Buttons rendered by Remote Compose appear in the dump with their text and bounds; re-dump after
 each navigation. If the first screen shows only the loading spinner, take the screenshot a few seconds later
