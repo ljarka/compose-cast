@@ -15,7 +15,7 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-011 `app-template` configurable without code](T-011-app-template-config.md) | Etap 7 | done (`ba52457`, completed in `dc64663`) |
 | [T-023 Server distribution like Immich (GHCR + release assets)](T-023-app-repositories.md) | Etap 6 | done (`2df0dc0`; owner: make the GHCR package public, first GitHub Release, HTTPS check on the VPS) — ADR 0018 |
 | [T-024 Android artifacts on Reposilite + `io.composecast.app` plugin](T-024-android-artifacts.md) | Etap 6 | done (`51aa515`; owner: Reposilite on the VPS + GitHub secrets, then a release publishes) |
-| [T-012 Layout containers and common modifiers](T-012-layout-containers.md) | Etap 5 | done — the weather app needs rows/columns |
+| [T-012 Layout containers and common modifiers](T-012-layout-containers.md) | Etap 5 | done (`a444bf4`) — the weather app needs rows/columns |
 | [T-013 Text/image options, Icon, Divider, Card, button variants](T-013-text-image-styling.md) | Etap 5 | ready |
 | [T-004 Version negotiation](T-004-version-negotiation.md) | Etap 7 | queued (after Milestone 1, Etap 6) — no installed apps before that; the app already sends its player version |
 | [T-014 Scrolling, Flow, galleries, grids](T-014-scroll-flow-gallery.md) | Etap 5 | queued (after T-004) |

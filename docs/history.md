@@ -201,4 +201,5 @@ README roadmap's "Etap" numbers.
     golden reviewed, `main` golden re-recorded (new button); emulator: Maestro `layouts.yaml` taps a
     whole card (navigate) and another (custom → snackbar). Found during a picsum.photos outage:
     images are fetched one by one at startup (15 s timeout each), so every extra image URL can delay
-    the healthcheck — the demo reuses one URL; parallel prefetch is a possible follow-up. T-013 is next.
+    the healthcheck — the demo reuses one URL; parallel prefetch is a possible follow-up. T-013 is next
+    (`a444bf4`).
