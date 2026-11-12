@@ -12,7 +12,7 @@ AndroidX Remote Compose player (`remote-player-view`).
 | `ScreenDocument` | Decoded RC document + `id`, `title` (from `X-Composecast-Screen-Title`), `sizeBytes` |
 | `ComposeCastScreen` | Composable: `AndroidView` hosting `RemoteComposePlayer`; `onAction(Action)` |
 
-## Usage Pattern (app-template)
+## Usage Pattern (app-shell)
 
 ```kotlin
 val client = ComposeCastClient(ComposeCastConfig(serverUrl = "http://10.0.2.2:8080"))
@@ -61,3 +61,9 @@ installs an `android.util.Log` logger.
   (any other exception) without depending on Ktor types (Ktor is `implementation`).
 - Images are embedded by the server; the player never fetches URLs.
 - `minSdk = 26` (required by `remote-player-*`).
+
+## Publishing (T-024)
+
+Published as `io.composecast:sdk-android:<version>` (`maven-publish`; repository setup in the root
+`build.gradle.kts`: dry run into `build/maven-dry-run`, Reposilite in the release workflow). Its
+public API is used by published apps: a breaking change needs a new compose-cast version.

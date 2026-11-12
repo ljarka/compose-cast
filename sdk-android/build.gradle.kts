@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.kotlin.compose)
+    `maven-publish`
 }
 
 android {
@@ -22,6 +23,17 @@ android {
         // @RestrictTo(LIBRARY_GROUP). Using it is a deliberate decision confined to this module
         // (see AGENTS.md), so it is a warning here and stays an error everywhere else.
         warning += "RestrictedApi"
+    }
+    publishing {
+        singleVariant("release") { withSourcesJar() }
+    }
+}
+
+publishing {
+    publications {
+        register<MavenPublication>("release") {
+            afterEvaluate { from(components["release"]) }
+        }
     }
 }
 

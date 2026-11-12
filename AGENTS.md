@@ -43,7 +43,9 @@ Do not load the whole project.
 | `server-scripting` | `.screen.kts` hot reload | empty |
 | `server-app` | Ktor server; demo screens in `Screens.kt` (`demoScreens()`) | done |
 | `sdk-android` | Fetch RC documents, play with `remote-player-view` (`ComposeCastScreen`) | done |
-| `app-template` | Demo Android app: navigation, back stack, error state | done |
+| `app-shell` | The Android app itself (activity, back stack, states, action routing), configured via resources | done |
+| `app-template` | Demo app built like an app repository: `io.composecast.app` + `compose-cast.properties` | done |
+| `gradle-plugins` (included build) | `io.composecast.app` Gradle plugin: properties → branded app + shell | done |
 | `compat-tests` | Screenshot tests server → player; goldens = README images | done |
 
 ## Rules
@@ -95,6 +97,7 @@ Do not load the whole project.
 ./scripts/verify.sh --docker                      # server image + distribution/ install smoke test (CI job `docker`)
 ./gradlew spotlessApply                           # fix formatting (ktlint, rules in .editorconfig)
 ./gradlew :compat-tests:recordRoborazziDebug      # accept intended visual changes (look at PNGs!)
+./scripts/verify-app-repository.sh [--install]    # publish dry run + build distribution/android-app (no Kotlin)
 
 # Server + debugging (endpoints: server-app/AGENTS.md)
 docker compose up -d                              # image from server-app/Dockerfile, examples/demo
@@ -107,7 +110,7 @@ maestro test app-template/maestro/smoke.yaml      # click through the demo app (
 
 ## Current focus
 
-[Task queue](docs/tasks/README.md) (priority order): T-001…T-003, T-006, T-008, T-009, T-011, T-023 done →
-**T-024 Android artifacts on Reposilite (ready)** → T-012/T-013 layouts and styling → example weather app in its own separate repo,
+[Task queue](docs/tasks/README.md) (priority order): T-001…T-003, T-006, T-008, T-009, T-011, T-023, T-024 done →
+**T-012 layouts (ready)** → T-013 layouts and styling → example weather app in its own separate repo,
 not part of this project ([ADR 0017](docs/decisions/0017-apps-in-own-repositories.md), Milestone 1) → T-004 version negotiation. T-005 iOS spike is
 blocked until Xcode is installed.

@@ -172,3 +172,19 @@ README roadmap's "Etap" numbers.
     (`COMPOSECAST_DOMAIN=localhost`: certificate obtained, http → 308 https, server on 127.0.0.1
     only). Open owner actions: make the GHCR package public, first (non-pre-)release, VPS check.
     T-024 is next (`2df0dc0`).
+37. **T-024 Android artifacts + `io.composecast.app` plugin** ([task](tasks/T-024-android-artifacts.md),
+    [playbook](playbooks/new-app-repository.md)): new library `app-shell` (the former `MainActivity`
+    as `io.composecast.shell.ComposeCastActivity`, manifest, theme, default icon; per-app values are
+    resources the app overrides: `composecast_server_url`, `composecast_frame_*`, `app_name`);
+    included build `gradle-plugins/` with `io.composecast.app` (T-011 config code moved there; applies
+    AGP, sets ids/versions/`resValue`s, placeholder manifest, icon, debug-only cleartext network
+    config, non-debug https check, adds the shell: project in this repo, else
+    `io.composecast:app-shell:<plugin version>`). `app-template` = `build.gradle.kts` with only the
+    plugin + `compose-cast.properties`. `protocol`, `sdk-android`, `app-shell` and the plugin publish
+    with `maven-publish` (group `io.composecast`, `-PcomposecastVersion`, dry run to
+    `build/maven-dry-run`, Reposilite via `-PcomposecastMavenUrl` + credentials; http only for
+    localhost). `distribution/android-app/` is the app repository template;
+    `scripts/verify-app-repository.sh` (in `verify.sh`) builds it from the dry run. Release workflow
+    job `maven` (skipped until `COMPOSECAST_MAVEN_URL` is set). Verified: demo and the template app
+    installed side by side, Maestro smoke on both; local Reposilite 3.6.6 accepted every artifact.
+    T-012 is next.

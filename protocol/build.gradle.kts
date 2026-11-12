@@ -1,6 +1,15 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)
+    `maven-publish`
+}
+
+java { withSourcesJar() }
+
+publishing {
+    publications {
+        register<MavenPublication>("maven") { from(components["java"]) }
+    }
 }
 
 dependencies {

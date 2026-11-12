@@ -85,3 +85,9 @@ None (pure Kotlin + kotlinx.serialization).
 ```bash
 ./gradlew :protocol:test   # ActionCodecTest, ScreenJsonTest
 ```
+
+## Publishing (T-024)
+
+Published as `io.composecast:protocol:<version>` (`maven-publish`; repository setup in the root
+`build.gradle.kts`: dry run into `build/maven-dry-run`, Reposilite in the release workflow). Its
+public API is used by published apps: a breaking change needs a new compose-cast version.

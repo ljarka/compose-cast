@@ -1,6 +1,6 @@
 # T-012 — Layout containers and common modifiers
 
-Status: queued (after T-011) · Roadmap: Etap 5 · Depends on: T-002 (screen model)
+Status: ready · Roadmap: Etap 5 · Depends on: T-002 (screen model)
 
 ## Goal
 

@@ -1,4 +1,4 @@
-package io.composecast.demo
+package io.composecast.shell
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -51,20 +51,26 @@ import io.composecast.protocol.Action
 import io.composecast.protocol.ActionCodec
 import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity() {
+/**
+ * The whole app of a compose-cast Android app: fetches the server's screens and plays them, with a
+ * back stack, loading/error states and action routing. Configured only through resources that the
+ * `io.composecast.app` Gradle plugin sets from `compose-cast.properties` (T-011, T-024):
+ * `composecast_server_url`, `composecast_frame_primary`, `composecast_frame_background`, `app_name`.
+ */
+class ComposeCastActivity : ComponentActivity() {
 
-    // Server URL and frame colors come from compose-cast.properties (BuildConfig, T-011).
-    private val client = ComposeCastClient(
-        ComposeCastConfig(
-            serverUrl = BuildConfig.SERVER_URL,
-            logEnabled = true,
-        ),
-    )
+    private val serverUrl by lazy { getString(R.string.composecast_server_url) }
+    private val framePrimary by lazy { Color(getColor(R.color.composecast_frame_primary)) }
+    private val frameBackground by lazy { Color(getColor(R.color.composecast_frame_background)) }
+
+    private val client by lazy {
+        ComposeCastClient(ComposeCastConfig(serverUrl = serverUrl, logEnabled = true))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Status bar sits on the top app bar (frame primary color): light or dark icons to match.
-        val statusBar = Color(BuildConfig.FRAME_PRIMARY_COLOR).let {
+        val statusBar = framePrimary.let {
             if (it.luminance() > 0.5f) {
                 SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
             } else {
@@ -73,9 +79,10 @@ class MainActivity : ComponentActivity() {
         }
         enableEdgeToEdge(statusBarStyle = statusBar)
         setContent {
-            MaterialTheme(colorScheme = frameColorScheme()) {
+            MaterialTheme(colorScheme = frameColorScheme(framePrimary, frameBackground)) {
                 ComposeCastApp(
                     client = client,
+                    serverUrl = serverUrl,
                     onOpenUrl = { url ->
                         // false = no app can open it (would otherwise crash with ActivityNotFoundException).
                         try {
@@ -100,25 +107,21 @@ class MainActivity : ComponentActivity() {
  * Colors of the native frame around the server documents (top app bar, loading/error states) from
  * `app.frame.*`. Content colors are the server's brand, rendered into the documents.
  */
-private fun frameColorScheme(): ColorScheme {
-    val primary = Color(BuildConfig.FRAME_PRIMARY_COLOR)
-    val background = Color(BuildConfig.FRAME_BACKGROUND_COLOR)
-    return lightColorScheme(
-        primary = primary,
-        onPrimary = contentColorFor(primary),
-        background = background,
-        onBackground = contentColorFor(background),
-        surface = background,
-        onSurface = contentColorFor(background),
-    )
-}
+private fun frameColorScheme(primary: Color, background: Color): ColorScheme = lightColorScheme(
+    primary = primary,
+    onPrimary = contentColorFor(primary),
+    background = background,
+    onBackground = contentColorFor(background),
+    surface = background,
+    onSurface = contentColorFor(background),
+)
 
 /** Black or white, whichever reads better on [color]. */
 private fun contentColorFor(color: Color): Color = if (color.luminance() > 0.5f) Color.Black else Color.White
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ComposeCastApp(client: ComposeCastClient, onOpenUrl: (String) -> Boolean) {
+private fun ComposeCastApp(client: ComposeCastClient, serverUrl: String, onOpenUrl: (String) -> Boolean) {
     // Back stack of (screen, params) entries; survives rotation. System back pops it.
     var backStack by rememberSaveable(stateSaver = BackStackSaver) {
         mutableStateOf(listOf(Action.Navigate("main")))
@@ -171,7 +174,7 @@ private fun ComposeCastApp(client: ComposeCastClient, onOpenUrl: (String) -> Boo
                             // The server answered (e.g. 404 unknown screen): not a connectivity problem.
                             "Server error ${error.status} for screen '$screenId'."
                         } else {
-                            "Cannot reach ${BuildConfig.SERVER_URL}.\nCheck app.serverUrl in compose-cast.properties.\n\n${error?.message}"
+                            "Cannot reach $serverUrl.\nCheck app.serverUrl in compose-cast.properties.\n\n${error?.message}"
                         },
                         textAlign = TextAlign.Center,
                     )

@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Merged into every compose-cast app. Label, icon, colors and the server URL are resources the
+     io.composecast.app Gradle plugin overrides from compose-cast.properties. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:icon="${appIcon}"
-        android:roundIcon="${appIcon}"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/Theme.ComposeCastDemo"
+        android:theme="@style/Theme.ComposeCast"
+        android:networkSecurityConfig="@xml/composecast_network_security_config"
         android:supportsRtl="true">
 
         <activity
-            android:name=".MainActivity"
+            android:name="io.composecast.shell.ComposeCastActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

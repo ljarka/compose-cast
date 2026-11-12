@@ -2,7 +2,7 @@
 # The single verification entry point. CI runs exactly this, so "green locally" == "green in CI".
 #
 #   ./scripts/verify.sh           full: docs, architecture, formatting, JVM build + tests, Android build + lint,
-#                                 screenshot verification
+#                                 app repository build from published artifacts, screenshot verification
 #   ./scripts/verify.sh --quick   docs, architecture, formatting, JVM build + tests (no Android SDK needed);
 #                                 enough as a baseline only for server-only work
 #   ./scripts/verify.sh --docker  only the server Docker image smoke test (scripts/verify-docker.sh;
@@ -55,7 +55,11 @@ if $QUICK; then
 fi
 
 step "Android modules: build + lint"
-gradle :sdk-android:assembleDebug :sdk-android:lintDebug :app-template:assembleDebug :app-template:lintDebug
+gradle :sdk-android:assembleDebug :sdk-android:lintDebug :app-shell:assembleDebug :app-shell:lintDebug \
+  :app-template:assembleDebug :app-template:lintDebug
+
+step "App repository without Kotlin: publish dry run + build (T-024)"
+./scripts/verify-app-repository.sh
 
 step "Screenshot verification (ADR 0006)"
 if ! gradle :compat-tests:verifyRoborazziDebug; then

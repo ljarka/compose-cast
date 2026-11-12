@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Defaults only: the io.composecast.app Gradle plugin overrides every value from
+     compose-cast.properties (resValue in the app wins over library resources). -->
+<resources>
+    <string name="app_name">compose-cast</string>
+    <string name="composecast_server_url" translatable="false">http://10.0.2.2:8080</string>
+    <color name="composecast_frame_primary">#6200EE</color>
+    <color name="composecast_frame_background">#FAFAFA</color>
+</resources>

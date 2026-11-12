@@ -21,10 +21,12 @@ until curl -s localhost:8080/health >/dev/null; do sleep 1; done
 ./gradlew :app-template:installDebug
 #    right after install Android may show a system "Updating..." screen for a while: wait
 $ADB shell am force-stop io.composecast.demo
-$ADB shell am start -W -n io.composecast.demo/.MainActivity     # TotalTime ≈ 0.4 s with -gpu host
+$ADB shell am start -W -n io.composecast.demo/io.composecast.shell.ComposeCastActivity   # ≈ 0.4 s with -gpu host
 #    a second app side by side: another properties file (other app.applicationId), e.g.
 #    ./gradlew :app-template:installDebug -Pcomposecast.appConfig=/tmp/other/compose-cast.properties
-#    $ADB shell am start -n <that id>/io.composecast.demo.MainActivity   (activity class keeps the code package)
+#    $ADB shell am start -n <that id>/io.composecast.shell.ComposeCastActivity
+#    the app repository template (distribution/android-app) from a publish dry run:
+#    ./scripts/verify-app-repository.sh --install           (id io.composecast.apprepository)
 
 # 4. Click with Maestro (the project's UI automation tool; flows in app-template/maestro/)
 maestro test app-template/maestro/smoke.yaml                     # launch, tap "Get started", back

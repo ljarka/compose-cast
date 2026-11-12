@@ -1,6 +1,6 @@
 # T-024 — Android artifacts on Reposilite + `io.composecast.app` Gradle plugin
 
-Status: ready · Roadmap: Etap 6 · Depends on: T-011 (`compose-cast.properties`), owner: Reposilite on the VPS ([playbook](../playbooks/maven-repository.md))
+Status: done (owner actions below still open) · Roadmap: Etap 6 · Depends on: T-011 (`compose-cast.properties`), owner: Reposilite on the VPS ([playbook](../playbooks/maven-repository.md))
 
 ## Goal
 An app repository builds a branded Android app with **no Kotlin sources** — only Gradle files,
@@ -35,6 +35,14 @@ plugins { id("io.composecast.app") version "0.1.0" }
    `COMPOSECAST_MAVEN_PASSWORD` and variable `COMPOSECAST_MAVEN_URL`.
 5. `docs/playbooks/new-app-repository.md`: the whole path (server from T-023 + Android from here),
    with the four Android files spelled out.
+
+## Outcome (2026-11-12)
+Done as designed, with these differences: the dry run publishes into `build/maven-dry-run` (not
+`mavenLocal()`, so `~/.m2` stays clean) and `scripts/verify-app-repository.sh` builds the template
+`distribution/android-app/` from it inside `verify.sh`; the plugin artifact is
+`io.composecast:gradle-plugins`; the shell package is `io.composecast.shell`; the release `maven`
+job is skipped until `COMPOSECAST_MAVEN_URL` is set. Details: `gradle-plugins/AGENTS.md`,
+`app-shell/AGENTS.md`.
 
 ## Owner actions (cannot be done by an agent)
 - Reposilite + Cloudflare Tunnel on the VPS, `ci` token, GitHub secrets/variable:

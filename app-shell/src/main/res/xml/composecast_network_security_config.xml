@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Release: https only. Debug builds get a generated override from the io.composecast.app plugin
+     that also allows plain HTTP to local dev hosts (10.0.2.2, localhost, 127.0.0.1). -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+</network-security-config>

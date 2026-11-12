@@ -149,8 +149,9 @@ If a desktop renderer is not available in `server-app`, return the raw `.rc` bin
 `Content-Type: application/octet-stream` and add a "Preview on device" QR code path instead
 (show QR in the editor UI pointing to `composecast://screen/__preview?server=…&id=…`).
 
-### Step 5 — Preview on device (app-template)
-In `app-template/src/main/AndroidManifest.xml`, add intent filter to `MainActivity`:
+### Step 5 — Preview on device (app-shell)
+(T-024: the app code is `app-shell`; `app-template` has no sources.)
+In `app-shell/src/main/AndroidManifest.xml`, add intent filter to `ComposeCastActivity`:
 ```xml
 <intent-filter android:autoVerify="false">
     <action android:name="android.intent.action.VIEW" />
@@ -159,7 +160,7 @@ In `app-template/src/main/AndroidManifest.xml`, add intent filter to `MainActivi
     <data android:scheme="composecast" android:host="screen" />
 </intent-filter>
 ```
-In `MainActivity`, handle `intent.data.path == "/__preview"`: read `server` + `id` query params,
+In `ComposeCastActivity`, handle `intent.data.path == "/__preview"`: read `server` + `id` query params,
 load `GET {server}/screens/{id}` and render with `RemoteComposePlayer`.
 
 ### Step 6 — SSRF protection

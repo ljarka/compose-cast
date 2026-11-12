@@ -59,6 +59,7 @@ After the first release:
 `curl -fsS https://maven.<domain>/releases/io/composecast/sdk-android/maven-metadata.xml`.
 
 ## Consumers (app repositories)
+Template with these blocks: `distribution/android-app/` ([new-app-repository.md](new-app-repository.md)).
 ```kotlin
 // settings.gradle.kts
 pluginManagement {

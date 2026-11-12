@@ -19,8 +19,8 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-008 Local state spike](tasks/T-008-local-state-spike.md) | Etap 5/10 | done (`0cc6cae`) |
 | [T-011 `app-template` configurable without code](tasks/T-011-app-template-config.md) | Etap 7 | done (`ba52457`, completed in `dc64663`) |
 | [T-023 Server distribution like Immich (GHCR + release assets)](tasks/T-023-app-repositories.md) | Etap 6 | done (`2df0dc0`; owner: make the GHCR package public, first GitHub Release, HTTPS check on the VPS) — ADR 0018 |
-| [T-024 Android artifacts on Reposilite + `io.composecast.app` plugin](tasks/T-024-android-artifacts.md) | Etap 6 | ready (owner: Reposilite on the VPS for the final publish, ADR 0019) |
-| [T-012 Layout containers and common modifiers](tasks/T-012-layout-containers.md) | Etap 5 | queued (after T-011) — the weather app needs rows/columns |
+| [T-024 Android artifacts on Reposilite + `io.composecast.app` plugin](tasks/T-024-android-artifacts.md) | Etap 6 | done (owner: Reposilite on the VPS + GitHub secrets, then a release publishes) |
+| [T-012 Layout containers and common modifiers](tasks/T-012-layout-containers.md) | Etap 5 | ready — the weather app needs rows/columns |
 | [T-013 Text/image options, Icon, Divider, Card, button variants](tasks/T-013-text-image-styling.md) | Etap 5 | queued (after T-012) |
 | [T-004 Version negotiation](tasks/T-004-version-negotiation.md) | Etap 7 | queued (after Milestone 1, Etap 6) — no installed apps before that; the app already sends its player version |
 | [T-014 Scrolling, Flow, galleries, grids](tasks/T-014-scroll-flow-gallery.md) | Etap 5 | queued (after T-004) |
@@ -65,9 +65,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- T-024 Android artifacts + `io.composecast.app` plugin
 - T-023 server distribution like Immich
 - Maestro for UI clicking
 - T-011 `app-template` configurable without code
 - T-008 local state PoC (`Component.Expandable`)
 - T-006 data sources
-- CI `docker` job fixed

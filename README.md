@@ -263,10 +263,13 @@ Cleartext HTTP is allowed only in debug builds and only for local addresses.
 
 ### Make your own app
 
-Everything that differs between apps is in one file,
-[`app-template/compose-cast.properties`](app-template/compose-cast.properties): name,
-`applicationId`, server URL, native frame colors and an optional launcher icon. No Kotlin or
-Gradle edits are needed. Keep your own file anywhere and point the build at it:
+An Android app is **one Gradle plugin and one properties file — no Kotlin**: copy
+[`distribution/android-app/`](distribution/android-app) into your app's repository and follow the
+[new app repository playbook](docs/playbooks/new-app-repository.md). `compose-cast.properties`
+holds everything that differs between apps: name, `applicationId`, server URL, native frame colors
+and an optional launcher icon; the `io.composecast.app` plugin adds the app shell
+(`io.composecast:app-shell`). Inside this repository the demo app is built the same way, and any
+other properties file can be pointed at it:
 
 ```bash
 ./gradlew :app-template:installDebug -Pcomposecast.appConfig=../my-app/compose-cast.properties
@@ -346,7 +349,9 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
   ([ADR 0018](docs/decisions/0018-distribution-like-immich.md)); files and workflow done, ticked
   after the first GitHub Release is installed on a VPS
 - [ ] Android app without Kotlin: `sdk-android`, `app-shell` and the `io.composecast.app` Gradle
-  plugin on a self-hosted Maven repository (Reposilite, [ADR 0019](docs/decisions/0019-self-hosted-maven-reposilite.md)) — T-024
+  plugin on a self-hosted Maven repository (Reposilite, [ADR 0019](docs/decisions/0019-self-hosted-maven-reposilite.md)) — T-024;
+  plugin, shell and publishing done (verified with a local Reposilite), ticked after the first
+  release is on the owner's Reposilite
 - [x] Server serves JSON screens from a directory (`COMPOSECAST_DATA_DIR`, `PORT`), request logging
 - [x] Backend in one command: Docker image (amd64 + arm64) + `docker-compose.yml`, screens on a
   volume, secrets in `.env`, healthcheck — T-009
