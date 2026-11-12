@@ -154,8 +154,8 @@ README roadmap's "Etap" numbers.
     `MainActivity` uses `BuildConfig.SERVER_URL` and a frame color scheme (top app bar, status bar
     icon style via `enableEdgeToEdge`, window/splash background). New default adaptive icon. Verified
     on the emulator: demo and a second config (other id, amber frame, custom icon) installed side by
-    side. T-023 is next.
+    side. T-023 is next (`e8587a3`).
 35. **Maestro for UI clicking** (owner, 2026-11-12): emulator interaction uses Maestro (2.12.1)
     instead of hand-rolled `adb` taps; RC-rendered buttons are found by text. First flow
-    `app-template/maestro/smoke.yaml` (launch → "Get started" → back) passes on the emulator;
+    `app-template/maestro/smoke.yaml` (launch → "Get started" → back) passes on the emulator (`e8587a3`);
     [playbook](playbooks/verify-on-emulator.md) updated.
