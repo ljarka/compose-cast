@@ -79,6 +79,8 @@ Do not load the whole project.
 - Android SDK `~/Library/Android/sdk` (`local.properties` is gitignored; `verify.sh` falls back to
   `~/Library/Android/sdk` or `~/Android/Sdk`); AVD `Medium_Phone_API_37.0`, start it with
   `-gpu host` (≈20x faster). On Linux `verify.sh` also probes `/usr/lib/jvm/*21*`.
+- UI clicking on the emulator: **Maestro** (`/opt/homebrew/bin/maestro`, 2.12.1), flows in
+  `app-template/maestro/` ([playbook](docs/playbooks/verify-on-emulator.md)).
 - No Xcode on the dev machine yet (needed for iOS); no `gh` CLI — CI:
   https://github.com/ljarka/compose-cast/actions (public API, rate-limited).
 - Toolchain: AGP 9.5.1 (built-in Kotlin: never apply `org.jetbrains.kotlin.android`), Gradle 9.6.0,
@@ -100,11 +102,12 @@ docker compose up -d                              # image from server-app/Docker
 curl localhost:8080/screens/main/debug            # decoded RC document tree
 
 # Android end to end: docs/playbooks/verify-on-emulator.md
+maestro test app-template/maestro/smoke.yaml      # click through the demo app (emulator + server running)
 ```
 
 ## Current focus
 
-[Task queue](docs/tasks/README.md) (priority order): T-001…T-003, T-006, T-008, T-009 done → **T-011 `app-template` config (ready)** →
-T-023/T-024 distribution like Immich ([ADR 0018](docs/decisions/0018-distribution-like-immich.md)) → T-012/T-013 layouts and styling → example weather app in its own separate repo,
+[Task queue](docs/tasks/README.md) (priority order): T-001…T-003, T-006, T-008, T-009, T-011 done →
+**T-023 (ready)**/T-024 distribution like Immich ([ADR 0018](docs/decisions/0018-distribution-like-immich.md)) → T-012/T-013 layouts and styling → example weather app in its own separate repo,
 not part of this project ([ADR 0017](docs/decisions/0017-apps-in-own-repositories.md), Milestone 1) → T-004 version negotiation. T-005 iOS spike is
 blocked until Xcode is installed.

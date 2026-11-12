@@ -144,3 +144,18 @@ README roadmap's "Etap" numbers.
     collapsed instances), golden re-recorded and emulator-verified (toggles locally with zero HTTP
     requests). Clarified in README/queue that the Milestone 1 weather app is an external example in
     its own repository, not part of this project (`0cc6cae`). T-011 is next.
+34. **T-011 `app-template` configurable without code** ([task](tasks/T-011-app-template-config.md)):
+    `app-template/compose-cast.properties` (or `-Pcomposecast.appConfig=<path>`) sets name,
+    `applicationId`, server URL, frame colors and an optional launcher icon; `build.gradle.kts`
+    reads it with a self-contained `ComposeCastAppConfig` (missing/invalid key → build error naming
+    it) and `GenerateLauncherIconTask` (adaptive icon, PNG per density, via
+    `variant.sources.res.addGeneratedSourceDirectory`), both meant to move unchanged into the T-024
+    plugin. Release variants fail before `pre<Variant>Build` unless `app.serverUrl` is `https://`.
+    `MainActivity` uses `BuildConfig.SERVER_URL` and a frame color scheme (top app bar, status bar
+    icon style via `enableEdgeToEdge`, window/splash background). New default adaptive icon. Verified
+    on the emulator: demo and a second config (other id, amber frame, custom icon) installed side by
+    side. T-023 is next.
+35. **Maestro for UI clicking** (owner, 2026-11-12): emulator interaction uses Maestro (2.12.1)
+    instead of hand-rolled `adb` taps; RC-rendered buttons are found by text. First flow
+    `app-template/maestro/smoke.yaml` (launch → "Get started" → back) passes on the emulator;
+    [playbook](playbooks/verify-on-emulator.md) updated.

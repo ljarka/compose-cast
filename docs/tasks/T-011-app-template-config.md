@@ -1,6 +1,6 @@
 # T-011 — `app-template` configurable without code (`compose-cast.properties`)
 
-Status: ready · Roadmap: Etap 7 · Depends on: —
+Status: done · Roadmap: Etap 7 · Depends on: —
 
 ## Goal
 One file, `app-template/compose-cast.properties`, sets everything that differs between apps built
