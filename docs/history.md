@@ -187,4 +187,4 @@ README roadmap's "Etap" numbers.
     `scripts/verify-app-repository.sh` (in `verify.sh`) builds it from the dry run. Release workflow
     job `maven` (skipped until `COMPOSECAST_MAVEN_URL` is set). Verified: demo and the template app
     installed side by side, Maestro smoke on both; local Reposilite 3.6.6 accepted every artifact.
-    T-012 is next.
+    T-012 is next (`51aa515`).
