@@ -73,5 +73,7 @@ with its own `COMPOSECAST_PORT`; with HTTPS, put one Caddy in front of all of th
   would 404.
 - `./scripts/verify.sh --docker` installs `distribution/docker-compose.yml` into an empty directory
   against the locally built image and validates the `https` profile.
-- One-time (owner): after the first run of the workflow, GitHub → Packages →
-  `compose-cast-server` → Package settings → Change visibility → Public (otherwise pulls need a login).
+- Visibility: the package `compose-cast-server` inherits the public repository's visibility (no
+  setting needed; anonymous pull verified 2026-11-12). Check with
+  `curl -s "https://ghcr.io/token?scope=repository:ljarka/compose-cast-server:pull"` + the manifest
+  URL, or `docker logout ghcr.io && docker pull ghcr.io/ljarka/compose-cast-server:main`.

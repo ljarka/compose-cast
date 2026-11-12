@@ -20,7 +20,7 @@ rm -rf "$REPO"
 ./gradlew --console=plain -q -PcomposecastVersion=$VERSION publish :gradle-plugins:publish
 
 cp -R distribution/android-app/. "$APP/"
-sed -i.bak "s|https://maven.example.com/releases|file://$REPO|g" "$APP/settings.gradle.kts"
+sed -i.bak "s|https://maven.jarka.club/releases|file://$REPO|g" "$APP/settings.gradle.kts"
 sed -i.bak "s|version \"0.1.0\"|version \"$VERSION\"|" "$APP/build.gradle.kts"
 # Debug build against the local dev server; a distinct id so it installs next to the demo.
 sed -i.bak -e "s|^app.serverUrl=.*|app.serverUrl=http://10.0.2.2:8080|" \

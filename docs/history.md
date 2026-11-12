@@ -203,3 +203,8 @@ README roadmap's "Etap" numbers.
     images are fetched one by one at startup (15 s timeout each), so every extra image URL can delay
     the healthcheck — the demo reuses one URL; parallel prefetch is a possible follow-up. T-013 is next
     (`a444bf4`).
+39. **Owner infrastructure** (2026-11-12): GHCR package `compose-cast-server` is public by inheriting the
+    repository's visibility (no manual step; docs corrected). Reposilite at `https://maven.jarka.club`
+    (`releases` public, redeployment off, `snapshots`/`private` private, `ci` token with `/releases rw`,
+    bootstrap token removed), GitHub secrets + `COMPOSECAST_MAVEN_URL` set; `distribution/android-app`
+    points at it. Playbook gained the Configuration-tab/Submit, re-`route-add` and security notes.

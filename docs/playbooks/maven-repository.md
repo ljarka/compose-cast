@@ -1,5 +1,9 @@
 # Playbook — Maven repository (Reposilite on the VPS)
 
+**Current instance: `https://maven.jarka.club`** (repository `releases`), set up 2026-11-12; it runs on
+the owner's machine for now (`~/maven`, port `127.0.0.1:8090`, reached through a Cloudflare tunnel
+run outside Docker) — publishing works only while that machine is on; moving it to the VPS is planned.
+
 Hosts `io.composecast:*` artifacts and the `io.composecast.app` Gradle plugin
 ([ADR 0019](../decisions/0019-self-hosted-maven-reposilite.md)). Done once by the owner on the VPS;
 agents only change this file when the setup changes. Commands verified against the Reposilite docs
@@ -43,13 +47,32 @@ token-generate admin-<you> m                 # your permanent manager token (not
 token-generate ci                            # publisher token for GitHub Actions (note the secret)
 route-add ci /releases rw
 ```
-Then remove `REPOSILITE_OPTS` from the compose file and `docker compose up -d`. In the settings,
-keep the `releases` repository **public** (anonymous read) and redeployment **off** (a released
-version can never change).
+Then remove `REPOSILITE_OPTS` from the compose file and `docker compose up -d` (the bootstrap
+`admin` token stops working: check it answers 401).
+
+Repository settings are in the **Configuration** tab (shared configuration, not the local
+`configuration.cdn`) → Maven → Repositories, and are stored only after **Submit**:
+- `releases`: visibility **PUBLIC** (anonymous read), redeployment **off** (a released version can
+  never change), no proxied repositories;
+- `snapshots`, `private`: **PRIVATE** (or delete them).
+
+Pitfalls (2026-11-12):
+- Route permissions belong to the token **record**: after `token-revoke` + `token-generate` of the
+  same name, run `route-add` again (a re-created `ci` had no route and could not publish).
+- The secret is shown once; the bot token is `ci` (route `/releases rw` only), never the manager token.
+- Checking without secrets: the SQLite file in the volume (`docker cp <container>:/app/data/reposilite.db`,
+  open read-only) has tables `access_token`, `permission_route`, `permission_access_token` (names and
+  routes, secrets are hashed) and `settings` (`remote-shared-configuration` JSON, `maven.repositories`).
+
+Security checklist: redeployment off; only `releases` public; `ci` has only `/releases rw`; bootstrap
+token removed; anonymous `PUT` → 401; optional Cloudflare Access on the whole host with a **Bypass**
+application for `/releases` (Gradle reads and publishes only under `/releases/…`); keep the image
+updated (https://github.com/dzikoysk/reposilite/releases).
 
 ## 4. GitHub
 Repository → Settings → Secrets → Actions: `COMPOSECAST_MAVEN_USERNAME=ci`,
-`COMPOSECAST_MAVEN_PASSWORD=<ci secret>`; variable `COMPOSECAST_MAVEN_URL=https://maven.<domain>/releases`.
+`COMPOSECAST_MAVEN_PASSWORD=<ci secret>`; variable `COMPOSECAST_MAVEN_URL=https://maven.<domain>/releases`
+(current: `https://maven.jarka.club/releases`, set 2026-11-12).
 
 ## 5. Check
 ```bash

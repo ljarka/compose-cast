@@ -30,8 +30,8 @@ Pin `COMPOSECAST_VERSION` to the same release as the Android plugin version.
 ## Android
 
 1. Copy [`distribution/android-app/`](../../distribution/android-app) to `android/`.
-2. `settings.gradle.kts`: replace `https://maven.example.com/releases` (both places) with the
-   compose-cast Maven repository ([maven-repository.md](maven-repository.md)).
+2. `settings.gradle.kts` already points at compose-cast's repository `https://maven.jarka.club/releases`
+   ([maven-repository.md](maven-repository.md)); change it only for a self-hosted mirror.
 3. `build.gradle.kts`: plugin version = the compose-cast release (e.g. `0.1.0` for tag `v0.1.0`).
 4. `compose-cast.properties`: `app.name`, `app.applicationId` (unique, never change after
    publishing), `app.serverUrl` (https for release; `http://10.0.2.2:8080` while developing against

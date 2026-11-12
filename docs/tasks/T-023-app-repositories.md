@@ -44,7 +44,8 @@ The Android half (artifacts on Reposilite + Gradle plugin) is T-024.
    linked from README Quick start.
 
 ## Owner actions (cannot be done by an agent)
-- After the first `main` push of the workflow: GitHub → Packages → `compose-cast-server` → make public.
+- ~~Make the GHCR package public~~ — not needed: it inherited the public repository's visibility
+  (anonymous pull of `:main` verified 2026-11-12).
 - Create the first GitHub Release (`v0.1.0-alpha01` or similar) to produce `release` + assets.
   **Not marked as pre-release**: `releases/latest/download/…` ignores pre-releases (install would 404).
 

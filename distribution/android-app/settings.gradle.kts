@@ -1,10 +1,9 @@
-// compose-cast Android app repository (T-024): copy this directory, replace the Maven URL with your
-// compose-cast Maven repository (both places; docs/playbooks/new-app-repository.md), edit
-// compose-cast.properties.
+// compose-cast Android app repository (T-024): copy this directory and edit compose-cast.properties
+// (docs/playbooks/new-app-repository.md). maven.jarka.club hosts compose-cast's artifacts.
 
 pluginManagement {
     repositories {
-        maven("https://maven.example.com/releases")
+        maven("https://maven.jarka.club/releases")
         google()
         mavenCentral()
         gradlePluginPortal()
@@ -14,7 +13,7 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        maven("https://maven.example.com/releases")
+        maven("https://maven.jarka.club/releases")
         google()
         mavenCentral()
     }
