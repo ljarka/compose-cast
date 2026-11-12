@@ -171,4 +171,4 @@ README roadmap's "Etap" numbers.
     directory against the built image. HTTPS verified locally with Caddy's internal CA
     (`COMPOSECAST_DOMAIN=localhost`: certificate obtained, http → 308 https, server on 127.0.0.1
     only). Open owner actions: make the GHCR package public, first (non-pre-)release, VPS check.
-    T-024 is next.
+    T-024 is next (`2df0dc0`).

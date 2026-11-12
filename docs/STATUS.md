@@ -18,7 +18,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-006 Data sources](tasks/T-006-data-sources.md) | Etap 4 | done (`c6b0b3a`) |
 | [T-008 Local state spike](tasks/T-008-local-state-spike.md) | Etap 5/10 | done (`0cc6cae`) |
 | [T-011 `app-template` configurable without code](tasks/T-011-app-template-config.md) | Etap 7 | done (`ba52457`, completed in `dc64663`) |
-| [T-023 Server distribution like Immich (GHCR + release assets)](tasks/T-023-app-repositories.md) | Etap 6 | done (owner: make the GHCR package public, first GitHub Release, HTTPS check on the VPS) — ADR 0018 |
+| [T-023 Server distribution like Immich (GHCR + release assets)](tasks/T-023-app-repositories.md) | Etap 6 | done (`2df0dc0`; owner: make the GHCR package public, first GitHub Release, HTTPS check on the VPS) — ADR 0018 |
 | [T-024 Android artifacts on Reposilite + `io.composecast.app` plugin](tasks/T-024-android-artifacts.md) | Etap 6 | ready (owner: Reposilite on the VPS for the final publish, ADR 0019) |
 | [T-012 Layout containers and common modifiers](tasks/T-012-layout-containers.md) | Etap 5 | queued (after T-011) — the weather app needs rows/columns |
 | [T-013 Text/image options, Icon, Divider, Card, button variants](tasks/T-013-text-image-styling.md) | Etap 5 | queued (after T-012) |
