@@ -161,3 +161,14 @@ README roadmap's "Etap" numbers.
     instead of hand-rolled `adb` taps; RC-rendered buttons are found by text. First flow
     `app-template/maestro/smoke.yaml` (launch → "Get started" → back) passes on the emulator (`dc64663`);
     [playbook](playbooks/verify-on-emulator.md) updated.
+36. **T-023 server distribution like Immich** ([task](tasks/T-023-app-repositories.md),
+    [playbook](playbooks/install-server.md)): `distribution/docker-compose.yml` (published image
+    `ghcr.io/ljarka/compose-cast-server:${COMPOSECAST_VERSION:-release}`, read-only data dir, `.env`
+    into the container for `COMPOSECAST_SECRET_*`, `https` profile = Caddy 2.10.2 `reverse-proxy`)
+    and `distribution/example.env`; `.github/workflows/release.yml` (main → `:main`, release →
+    `:<tag>` + `:release` + both files as release assets). No fixed project/container names, so
+    several apps fit on one host. `verify.sh --docker` installs the distribution files into an empty
+    directory against the built image. HTTPS verified locally with Caddy's internal CA
+    (`COMPOSECAST_DOMAIN=localhost`: certificate obtained, http → 308 https, server on 127.0.0.1
+    only). Open owner actions: make the GHCR package public, first (non-pre-)release, VPS check.
+    T-024 is next.

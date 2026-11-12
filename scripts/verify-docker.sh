@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Docker smoke test of the server image (T-009); run via `./scripts/verify.sh --docker` (CI job `docker`).
 # Builds server-app/Dockerfile, starts it on examples/demo, waits for the healthcheck and checks
-# /screens and /screens/main. Not part of the default verify run (keeps it fast and Docker-free).
+# /screens and /screens/main; then installs distribution/docker-compose.yml (T-023) the way users do
+# against that image. Not part of the default verify run (keeps it fast and Docker-free).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -46,5 +47,36 @@ curl -fsS -o /dev/null "http://127.0.0.1:$PORT/screens/main"
 size_mb=$(( $(docker run --rm --user root --entrypoint sh "$IMAGE" -c 'du -sxk /' | cut -f1) / 1024 ))
 echo "Image filesystem: ${size_mb} MB (limit 250)"
 (( size_mb < 250 )) || { echo "Image too large"; exit 1; }
+
+# --- distribution/docker-compose.yml (T-023): the install users run, against the image just built ---
+# Installed like a user would (compose file + example.env as .env in an empty directory); the
+# published image name is pointed at the local build with a tag no registry has.
+docker compose version >/dev/null 2>&1 || { echo "docker compose (v2) not found"; exit 1; }
+INSTALL=$(mktemp -d)
+COMPOSE=(docker compose --progress quiet --project-directory "$INSTALL" -f "$INSTALL/docker-compose.yml" -p "compose-cast-verify-$$")
+cleanup_install() {
+  if [[ $? -ne 0 ]]; then echo "--- install logs"; "${COMPOSE[@]}" logs --tail 40 2>&1 || true; fi
+  "${COMPOSE[@]}" down -v >/dev/null 2>&1 || true
+  rm -rf "$INSTALL"
+  cleanup
+}
+trap cleanup_install EXIT
+docker rm -f "$NAME" >/dev/null 2>&1 || true
+
+cp distribution/docker-compose.yml "$INSTALL/docker-compose.yml"
+cp distribution/example.env "$INSTALL/.env"
+cp -R examples/demo "$INSTALL/data"
+docker tag "$IMAGE" "ghcr.io/ljarka/compose-cast-server:verify"
+INSTALL_PORT="${VERIFY_DOCKER_INSTALL_PORT:-18081}"
+
+# The HTTPS profile must at least be a valid configuration (certificates need a real domain).
+COMPOSE_PROFILES=https COMPOSECAST_DOMAIN=app.example.com "${COMPOSE[@]}" config --quiet
+
+echo "Starting distribution/docker-compose.yml"
+COMPOSECAST_VERSION=verify COMPOSECAST_PORT="127.0.0.1:$INSTALL_PORT" \
+  "${COMPOSE[@]}" up -d --wait --wait-timeout 60 --pull never >/dev/null
+screens=$(curl -fsS "http://127.0.0.1:$INSTALL_PORT/screens" | tr -d ' \n')
+[[ "$screens" == '["actions","data","main","onboarding"]' ]] || { echo "Unexpected /screens (install): $screens"; exit 1; }
+docker rmi "ghcr.io/ljarka/compose-cast-server:verify" >/dev/null
 
 echo "verify --docker: OK"

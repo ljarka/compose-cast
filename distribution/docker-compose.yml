@@ -1,0 +1,51 @@
+# compose-cast server — production install (T-023, ADR 0018). Do not build from source here:
+# this file pulls the published image. Install (docs/playbooks/install-server.md):
+#
+#   mkdir my-app && cd my-app
+#   wget -O docker-compose.yml https://github.com/ljarka/compose-cast/releases/latest/download/docker-compose.yml
+#   wget -O .env https://github.com/ljarka/compose-cast/releases/latest/download/example.env
+#   # put screens/<id>.json (+ brand.json) into ./data, edit .env
+#   docker compose up -d
+#
+# Update: docker compose pull && docker compose up -d
+# All settings live in .env; you should not need to edit this file.
+# No fixed project or container names: the directory name is the project, so several apps can run
+# on one machine side by side (each in its own directory, with its own COMPOSECAST_PORT).
+
+services:
+  server:
+    image: ghcr.io/ljarka/compose-cast-server:${COMPOSECAST_VERSION:-release}
+    volumes:
+      # Screens, brand and data sources (ADR 0011). Read-only: the server never writes to it.
+      - ${COMPOSECAST_DATA_LOCATION:-./data}:/data:ro
+    env_file:
+      - .env
+    ports:
+      # With HTTPS (COMPOSE_PROFILES=https) set COMPOSECAST_PORT=127.0.0.1:8080 in .env so only
+      # Caddy is reachable from outside.
+      - "${COMPOSECAST_PORT:-8080}:8080"
+    restart: always
+    # Healthcheck: built into the image (GET /health).
+
+  # HTTPS reverse proxy with automatic Let's Encrypt certificates. Enabled by COMPOSE_PROFILES=https
+  # and COMPOSECAST_DOMAIN in .env; the domain's DNS A/AAAA record must point to this machine and
+  # ports 80 and 443 must be free and reachable.
+  caddy:
+    image: caddy:2.10.2
+    profiles: ["https"]
+    command: caddy reverse-proxy --from ${COMPOSECAST_DOMAIN:-localhost} --to server:8080
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      server:
+        condition: service_healthy
+    restart: always
+
+volumes:
+  caddy-data:
+  caddy-config:

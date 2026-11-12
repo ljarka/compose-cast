@@ -1,6 +1,6 @@
 # T-023 — Server distribution like Immich (GHCR image + release assets)
 
-Status: ready · Roadmap: Etap 6 · Depends on: T-009 (image)
+Status: done (owner actions below still open) · Roadmap: Etap 6 · Depends on: T-009 (image)
 
 ## Goal
 An app repository (first: the weather app) runs its backend on a VPS the way Immich users install
@@ -46,6 +46,7 @@ The Android half (artifacts on Reposilite + Gradle plugin) is T-024.
 ## Owner actions (cannot be done by an agent)
 - After the first `main` push of the workflow: GitHub → Packages → `compose-cast-server` → make public.
 - Create the first GitHub Release (`v0.1.0-alpha01` or similar) to produce `release` + assets.
+  **Not marked as pre-release**: `releases/latest/download/…` ignores pre-releases (install would 404).
 
 ## Acceptance criteria
 - On a clean machine/VPS with only Docker: the commands in Goal serve `/health`, and with

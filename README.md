@@ -210,6 +210,13 @@ live demo: `examples/demo/screens/data.json` ("Live data" on the home screen).
 
 ## Quick start
 
+**Deploying an app's backend** (VPS, no clone or build — like Immich): see the
+[install playbook](docs/playbooks/install-server.md):
+`docker-compose.yml` + `.env` from GitHub Releases, image `ghcr.io/ljarka/compose-cast-server`,
+optional HTTPS with Caddy.
+
+Developing compose-cast itself:
+
 Server with Docker — no JDK, Gradle or Kotlin needed (serves the JSON screens in `examples/demo`):
 
 ```bash
@@ -336,7 +343,8 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
   example repository using the published compose-cast artifacts
 - [ ] Server install like [Immich](https://immich.app/docs/install/docker-compose): `docker-compose.yml`
   + `example.env` from GitHub Releases, image on GHCR (amd64 + arm64), optional HTTPS (Caddy) — T-023
-  ([ADR 0018](docs/decisions/0018-distribution-like-immich.md))
+  ([ADR 0018](docs/decisions/0018-distribution-like-immich.md)); files and workflow done, ticked
+  after the first GitHub Release is installed on a VPS
 - [ ] Android app without Kotlin: `sdk-android`, `app-shell` and the `io.composecast.app` Gradle
   plugin on a self-hosted Maven repository (Reposilite, [ADR 0019](docs/decisions/0019-self-hosted-maven-reposilite.md)) — T-024
 - [x] Server serves JSON screens from a directory (`COMPOSECAST_DATA_DIR`, `PORT`), request logging
@@ -381,7 +389,7 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 
 - [ ] Export writes `compose-cast.properties` (T-011) from App Settings — T-010
 - [ ] SDK distribution for exported apps: publish `sdk-android` (Etap 11) or vendor it into the export (T-010 review)
-- [ ] HTTPS for the VPS: reverse proxy with automatic certificates in `docker-compose.yml` (store builds are https-only)
+- [x] HTTPS for the VPS: reverse proxy with automatic certificates in `docker-compose.yml` (store builds are https-only) — Caddy profile, T-023
 - [ ] Admin panel “Export project” endpoint: generates a ZIP of the configured template
 - [ ] **AI brand setup (optional):** user describes their brand in a text field (“dark blue,
   minimalist, fintech”); AI generates a `BrandConfig` colour palette suggestion

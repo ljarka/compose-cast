@@ -92,7 +92,7 @@ Do not load the whole project.
 ```bash
 ./scripts/verify.sh                               # = CI (.github/workflows/ci.yml)
 ./scripts/verify.sh --quick                       # docs + architecture + formatting + JVM build/tests
-./scripts/verify.sh --docker                      # server image smoke test only (CI job `docker`)
+./scripts/verify.sh --docker                      # server image + distribution/ install smoke test (CI job `docker`)
 ./gradlew spotlessApply                           # fix formatting (ktlint, rules in .editorconfig)
 ./gradlew :compat-tests:recordRoborazziDebug      # accept intended visual changes (look at PNGs!)
 
@@ -107,7 +107,7 @@ maestro test app-template/maestro/smoke.yaml      # click through the demo app (
 
 ## Current focus
 
-[Task queue](docs/tasks/README.md) (priority order): T-001…T-003, T-006, T-008, T-009, T-011 done → **T-023 server distribution like Immich (ready)** →
-T-024 Android artifacts on Reposilite → T-012/T-013 layouts and styling → example weather app in its own separate repo,
+[Task queue](docs/tasks/README.md) (priority order): T-001…T-003, T-006, T-008, T-009, T-011, T-023 done →
+**T-024 Android artifacts on Reposilite (ready)** → T-012/T-013 layouts and styling → example weather app in its own separate repo,
 not part of this project ([ADR 0017](docs/decisions/0017-apps-in-own-repositories.md), Milestone 1) → T-004 version negotiation. T-005 iOS spike is
 blocked until Xcode is installed.

@@ -1,0 +1,76 @@
+name: Release
+
+# Server image on GHCR (T-023, ADR 0018):
+# - push to main      → ghcr.io/ljarka/compose-cast-server:main
+# - release published → :<tag> (e.g. v0.1.0) and :release, plus distribution/docker-compose.yml and
+#                       distribution/example.env as release assets (the install downloads them from
+#                       releases/latest, so do not mark a release as pre-release).
+# T-024 adds the Maven publish of the Android artifacts to this workflow.
+
+on:
+  push:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/ljarka/compose-cast-server
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      # The runtime stage runs commands (adduser) for arm64 too: needs QEMU. The Gradle stage runs
+      # once on the build platform (server-app/Dockerfile).
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # Tags and OCI labels (org.opencontainers.image.source links the package to this repository).
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=raw,value=main,enable=${{ github.event_name == 'push' }}
+            type=raw,value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' }}
+            type=raw,value=release,enable=${{ github.event_name == 'release' }}
+          labels: |
+            org.opencontainers.image.title=compose-cast-server
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: server-app/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  assets:
+    if: github.event_name == 'release'
+    needs: image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upload install files
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            distribution/docker-compose.yml distribution/example.env --clobber

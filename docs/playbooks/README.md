@@ -9,5 +9,6 @@ wrong or missing, fix the playbook in the same change.
 | [upgrade-remote-compose.md](upgrade-remote-compose.md) | Bumping `androidx.compose.remote` |
 | [upgrade-dependencies.md](upgrade-dependencies.md) | Bumping Compose, Kotlin, Ktor, AGP, … |
 | [verify-on-emulator.md](verify-on-emulator.md) | Checking a change in the real app (clicking: Maestro flows in `app-template/maestro/`) |
+| [install-server.md](install-server.md) | Installing the server on a VPS from the published image (users), release mechanics (maintainers) |
 | [maven-repository.md](maven-repository.md) | Setting up / maintaining the Reposilite Maven repository on the VPS (owner) |
 | [cold-read-test.md](cold-read-test.md) | Checking that a fresh agent can continue from the docs alone |

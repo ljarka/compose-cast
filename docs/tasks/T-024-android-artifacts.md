@@ -1,6 +1,6 @@
 # T-024 — Android artifacts on Reposilite + `io.composecast.app` Gradle plugin
 
-Status: queued (after T-023) · Roadmap: Etap 6 · Depends on: T-011 (`compose-cast.properties`), owner: Reposilite on the VPS ([playbook](../playbooks/maven-repository.md))
+Status: ready · Roadmap: Etap 6 · Depends on: T-011 (`compose-cast.properties`), owner: Reposilite on the VPS ([playbook](../playbooks/maven-repository.md))
 
 ## Goal
 An app repository builds a branded Android app with **no Kotlin sources** — only Gradle files,
