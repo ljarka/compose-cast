@@ -252,7 +252,8 @@ Android (emulator; it reaches the server at `http://10.0.2.2:8080`):
 2. Open the project root in Android Studio and run the **app-template** configuration,
    or `./gradlew :app-template:installDebug`.
 
-For a physical device change `SERVER_URL` in `app-template/.../MainActivity.kt`.
+For a physical device or remote server change `app.serverUrl` in
+`app-template/compose-cast.properties`.
 Cleartext HTTP is allowed only in debug builds and only for local addresses.
 
 ## Requirements
@@ -332,7 +333,7 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 
 ### Etap 7 — App shells & SDKs
 - [x] Android SDK: `RemoteComposePlayer` in `AndroidView`, Ktor fetch, loading/error, action router
-- [ ] `app-template` configured by one `compose-cast.properties` (name, `applicationId`, server URL,
+- [x] `app-template` configured by one `compose-cast.properties` (name, `applicationId`, server URL,
   frame colors, icon; release = https only) — T-011
 - [ ] Navigation/tabs from the server, deep links
 - [ ] Disk HTTP cache, offline last-known screen, prefetch; analytics hooks (actions, visibility)

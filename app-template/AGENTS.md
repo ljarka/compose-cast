@@ -34,8 +34,10 @@ MainActivity
 
 ## Usage
 
-The app connects to `http://10.0.2.2:8080` (emulator alias for host `localhost`).
-For a real device or remote server, change `SERVER_URL` in `MainActivity`.
+The app connects to the URL in `compose-cast.properties` (`app.serverUrl`; default
+`http://10.0.2.2:8080` = emulator alias for host `localhost`). For a real device or remote
+server change that value; cleartext HTTP is allowed only in debug builds and only for local
+addresses.
 
 ## Back stack
 
@@ -62,11 +64,24 @@ Unknown actions never reach the app: `sdk-android` logs and drops them.
 
 ## Configuration
 
-```kotlin
-companion object {
-    const val SERVER_URL = "http://10.0.2.2:8080"  // change for real device
-}
+All app-specific values live in `compose-cast.properties` (project root of this module).
+`build.gradle.kts` reads it at build time and exposes them as `BuildConfig` fields; a missing
+key is a build error that names the key.
+
+```properties
+app.name=ComposeCast Demo
+app.applicationId=io.composecast.demo
+app.serverUrl=http://10.0.2.2:8080
+# native frame colors (top app bar, status bar) before the first document arrives
+app.frame.primaryColor=#6200EE
+app.frame.backgroundColor=#FAFAFA
+# optional PNG/JPG path for the launcher icon; empty = keep the default icon
+app.icon=
 ```
+
+`MainActivity` reads `BuildConfig.SERVER_URL`, `BuildConfig.FRAME_PRIMARY_COLOR`, and
+`BuildConfig.FRAME_BACKGROUND_COLOR`; it never hard-codes these values.
+Release builds reject `http://` server URLs with a clear Gradle error.
 
 ## Build
 

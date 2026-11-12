@@ -21,6 +21,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -33,6 +34,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.composecast.android.ComposeCastClient
@@ -46,11 +48,9 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
-    // 10.0.2.2 is the Android emulator's alias for the host machine's localhost.
-    // Change SERVER_URL for a real device or remote server.
     private val client = ComposeCastClient(
         ComposeCastConfig(
-            serverUrl = SERVER_URL,
+            serverUrl = BuildConfig.SERVER_URL,
             logEnabled = true,
         ),
     )
@@ -58,11 +58,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
+            val primaryColor = Color(android.graphics.Color.parseColor(BuildConfig.FRAME_PRIMARY_COLOR))
+            val backgroundColor = Color(android.graphics.Color.parseColor(BuildConfig.FRAME_BACKGROUND_COLOR))
+            MaterialTheme(
+                colorScheme = lightColorScheme(
+                    primary = primaryColor,
+                    background = backgroundColor,
+                    surface = backgroundColor,
+                ),
+            ) {
                 ComposeCastApp(
                     client = client,
                     onOpenUrl = { url ->
-                        // false = no app can open it (would otherwise crash with ActivityNotFoundException).
                         try {
                             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                             true
@@ -79,16 +86,11 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
         client.close()
     }
-
-    companion object {
-        const val SERVER_URL = "http://10.0.2.2:8080"
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ComposeCastApp(client: ComposeCastClient, onOpenUrl: (String) -> Boolean) {
-    // Back stack of (screen, params) entries; survives rotation. System back pops it.
     var backStack by rememberSaveable(stateSaver = BackStackSaver) {
         mutableStateOf(listOf(Action.Navigate("main")))
     }
@@ -132,10 +134,9 @@ private fun ComposeCastApp(client: ComposeCastClient, onOpenUrl: (String) -> Boo
                     val error = screenState!!.exceptionOrNull()
                     Text(
                         text = if (error is ComposeCastHttpException) {
-                            // The server answered (e.g. 404 unknown screen): not a connectivity problem.
                             "Server error ${error.status} for screen '$screenId'."
                         } else {
-                            "Cannot reach server.\nCheck SERVER_URL in MainActivity.\n\n${error?.message}"
+                            "Cannot reach server.\nCheck app.serverUrl in compose-cast.properties.\n\n${error?.message}"
                         },
                         textAlign = TextAlign.Center,
                     )
