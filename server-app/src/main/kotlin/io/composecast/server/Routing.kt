@@ -1,6 +1,7 @@
 package io.composecast.server
 
 import io.composecast.protocol.ErrorResponse
+import io.composecast.protocol.VersionInfo
 import io.composecast.protocol.Headers
 import io.composecast.server.sdk.RemoteScreen
 import io.composecast.server.sdk.RenderContext
@@ -23,6 +24,9 @@ fun Application.configureRouting(screens: LiveScreens) {
     routing {
         get("/health") {
             call.respondText("ok")
+        }
+        get("/version") {
+            call.respond(VersionInfo(serverVersion = "1.0.0", protocolVersion = "1.0"))
         }
         // Remote Compose binary document, rendered by the RC player in sdk-android.
         // Query parameters are the screen's RenderContext.params (dynamic screens use them).
