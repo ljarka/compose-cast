@@ -1,0 +1,729 @@
+{
+  "id": "collections",
+  "title": "Collections",
+  "components": [
+    {
+      "type": "text",
+      "text": "Gallery",
+      "style": "h3"
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "row",
+      "children": [
+        {
+          "type": "image",
+          "url": "https://picsum.photos/400/200",
+          "alt": "Photo 1",
+          "contentScale": "crop",
+          "modifier": {
+            "width": 120,
+            "height": 80,
+            "cornerRadius": 8
+          }
+        },
+        {
+          "type": "image",
+          "url": "https://picsum.photos/400/200",
+          "alt": "Photo 2",
+          "contentScale": "crop",
+          "modifier": {
+            "width": 120,
+            "height": 80,
+            "cornerRadius": 8
+          }
+        },
+        {
+          "type": "image",
+          "url": "https://picsum.photos/400/200",
+          "alt": "Photo 3",
+          "contentScale": "crop",
+          "modifier": {
+            "width": 120,
+            "height": 80,
+            "cornerRadius": 8
+          }
+        },
+        {
+          "type": "image",
+          "url": "https://picsum.photos/400/200",
+          "alt": "Photo 4",
+          "contentScale": "crop",
+          "modifier": {
+            "width": 120,
+            "height": 80,
+            "cornerRadius": 8
+          }
+        },
+        {
+          "type": "image",
+          "url": "https://picsum.photos/400/200",
+          "alt": "Photo 5",
+          "contentScale": "crop",
+          "modifier": {
+            "width": 120,
+            "height": 80,
+            "cornerRadius": 8
+          }
+        },
+        {
+          "type": "image",
+          "url": "https://picsum.photos/400/200",
+          "alt": "Photo 6",
+          "contentScale": "crop",
+          "modifier": {
+            "width": 120,
+            "height": 80,
+            "cornerRadius": 8
+          }
+        },
+        {
+          "type": "image",
+          "url": "https://picsum.photos/400/200",
+          "alt": "Photo 7",
+          "contentScale": "crop",
+          "modifier": {
+            "width": 120,
+            "height": 80,
+            "cornerRadius": 8
+          }
+        },
+        {
+          "type": "image",
+          "url": "https://picsum.photos/400/200",
+          "alt": "Photo 8",
+          "contentScale": "crop",
+          "modifier": {
+            "width": 120,
+            "height": 80,
+            "cornerRadius": 8
+          }
+        },
+        {
+          "type": "image",
+          "url": "https://picsum.photos/400/200",
+          "alt": "Photo 9",
+          "contentScale": "crop",
+          "modifier": {
+            "width": 120,
+            "height": 80,
+            "cornerRadius": 8
+          }
+        },
+        {
+          "type": "image",
+          "url": "https://picsum.photos/400/200",
+          "alt": "Photo 10",
+          "contentScale": "crop",
+          "modifier": {
+            "width": 120,
+            "height": 80,
+            "cornerRadius": 8
+          }
+        }
+      ],
+      "spacing": 8,
+      "modifier": {
+        "scroll": "horizontal"
+      }
+    },
+    {
+      "type": "spacer",
+      "height": 16
+    },
+    {
+      "type": "text",
+      "text": "Flow chips",
+      "style": "h3"
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "flow",
+      "children": [
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "box",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Weather",
+                  "style": "caption",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ],
+              "modifier": {
+                "padding": {
+                  "start": 12,
+                  "top": 6,
+                  "end": 12,
+                  "bottom": 6
+                },
+                "width": "wrap",
+                "background": "#F3EDF7",
+                "cornerRadius": 16
+              }
+            }
+          ],
+          "modifier": {
+            "padding": 4
+          }
+        },
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "box",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Forecast",
+                  "style": "caption",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ],
+              "modifier": {
+                "padding": {
+                  "start": 12,
+                  "top": 6,
+                  "end": 12,
+                  "bottom": 6
+                },
+                "width": "wrap",
+                "background": "#F3EDF7",
+                "cornerRadius": 16
+              }
+            }
+          ],
+          "modifier": {
+            "padding": 4
+          }
+        },
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "box",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Wind",
+                  "style": "caption",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ],
+              "modifier": {
+                "padding": {
+                  "start": 12,
+                  "top": 6,
+                  "end": 12,
+                  "bottom": 6
+                },
+                "width": "wrap",
+                "background": "#F3EDF7",
+                "cornerRadius": 16
+              }
+            }
+          ],
+          "modifier": {
+            "padding": 4
+          }
+        },
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "box",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Rain",
+                  "style": "caption",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ],
+              "modifier": {
+                "padding": {
+                  "start": 12,
+                  "top": 6,
+                  "end": 12,
+                  "bottom": 6
+                },
+                "width": "wrap",
+                "background": "#F3EDF7",
+                "cornerRadius": 16
+              }
+            }
+          ],
+          "modifier": {
+            "padding": 4
+          }
+        },
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "box",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "UV",
+                  "style": "caption",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ],
+              "modifier": {
+                "padding": {
+                  "start": 12,
+                  "top": 6,
+                  "end": 12,
+                  "bottom": 6
+                },
+                "width": "wrap",
+                "background": "#F3EDF7",
+                "cornerRadius": 16
+              }
+            }
+          ],
+          "modifier": {
+            "padding": 4
+          }
+        },
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "box",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Humidity",
+                  "style": "caption",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ],
+              "modifier": {
+                "padding": {
+                  "start": 12,
+                  "top": 6,
+                  "end": 12,
+                  "bottom": 6
+                },
+                "width": "wrap",
+                "background": "#F3EDF7",
+                "cornerRadius": 16
+              }
+            }
+          ],
+          "modifier": {
+            "padding": 4
+          }
+        },
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "box",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Radar",
+                  "style": "caption",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ],
+              "modifier": {
+                "padding": {
+                  "start": 12,
+                  "top": 6,
+                  "end": 12,
+                  "bottom": 6
+                },
+                "width": "wrap",
+                "background": "#F3EDF7",
+                "cornerRadius": 16
+              }
+            }
+          ],
+          "modifier": {
+            "padding": 4
+          }
+        },
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "box",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Alerts",
+                  "style": "caption",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ],
+              "modifier": {
+                "padding": {
+                  "start": 12,
+                  "top": 6,
+                  "end": 12,
+                  "bottom": 6
+                },
+                "width": "wrap",
+                "background": "#F3EDF7",
+                "cornerRadius": 16
+              }
+            }
+          ],
+          "modifier": {
+            "padding": 4
+          }
+        },
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "box",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Sun",
+                  "style": "caption",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ],
+              "modifier": {
+                "padding": {
+                  "start": 12,
+                  "top": 6,
+                  "end": 12,
+                  "bottom": 6
+                },
+                "width": "wrap",
+                "background": "#F3EDF7",
+                "cornerRadius": 16
+              }
+            }
+          ],
+          "modifier": {
+            "padding": 4
+          }
+        },
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "box",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Moon",
+                  "style": "caption",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ],
+              "modifier": {
+                "padding": {
+                  "start": 12,
+                  "top": 6,
+                  "end": 12,
+                  "bottom": 6
+                },
+                "width": "wrap",
+                "background": "#F3EDF7",
+                "cornerRadius": 16
+              }
+            }
+          ],
+          "modifier": {
+            "padding": 4
+          }
+        },
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "box",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Air",
+                  "style": "caption",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ],
+              "modifier": {
+                "padding": {
+                  "start": 12,
+                  "top": 6,
+                  "end": 12,
+                  "bottom": 6
+                },
+                "width": "wrap",
+                "background": "#F3EDF7",
+                "cornerRadius": 16
+              }
+            }
+          ],
+          "modifier": {
+            "padding": 4
+          }
+        },
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "box",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Pollen",
+                  "style": "caption",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ],
+              "modifier": {
+                "padding": {
+                  "start": 12,
+                  "top": 6,
+                  "end": 12,
+                  "bottom": 6
+                },
+                "width": "wrap",
+                "background": "#F3EDF7",
+                "cornerRadius": 16
+              }
+            }
+          ],
+          "modifier": {
+            "padding": 4
+          }
+        }
+      ],
+      "maxItemsInEachRow": 4
+    },
+    {
+      "type": "spacer",
+      "height": 16
+    },
+    {
+      "type": "text",
+      "text": "2-column grid",
+      "style": "h3"
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "grid",
+      "columns": 2,
+      "children": [
+        {
+          "type": "card",
+          "children": [
+            {
+              "type": "text",
+              "text": "Tile 1",
+              "style": "h3"
+            },
+            {
+              "type": "text",
+              "text": "Equal width",
+              "style": "caption"
+            }
+          ],
+          "spacing": 4
+        },
+        {
+          "type": "card",
+          "children": [
+            {
+              "type": "text",
+              "text": "Tile 2",
+              "style": "h3"
+            },
+            {
+              "type": "text",
+              "text": "Equal width",
+              "style": "caption"
+            }
+          ],
+          "spacing": 4
+        },
+        {
+          "type": "card",
+          "children": [
+            {
+              "type": "text",
+              "text": "Tile 3",
+              "style": "h3"
+            },
+            {
+              "type": "text",
+              "text": "Equal width",
+              "style": "caption"
+            }
+          ],
+          "spacing": 4
+        }
+      ],
+      "spacing": 8
+    },
+    {
+      "type": "spacer",
+      "height": 16
+    },
+    {
+      "type": "text",
+      "text": "3-column grid",
+      "style": "h3"
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "grid",
+      "columns": 3,
+      "children": [
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "text",
+              "text": "#1",
+              "modifier": {
+                "width": "wrap"
+              }
+            }
+          ],
+          "horizontalAlignment": "center",
+          "modifier": {
+            "padding": 10,
+            "background": "#F3EDF7",
+            "cornerRadius": 8
+          }
+        },
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "text",
+              "text": "#2",
+              "modifier": {
+                "width": "wrap"
+              }
+            }
+          ],
+          "horizontalAlignment": "center",
+          "modifier": {
+            "padding": 10,
+            "background": "#F3EDF7",
+            "cornerRadius": 8
+          }
+        },
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "text",
+              "text": "#3",
+              "modifier": {
+                "width": "wrap"
+              }
+            }
+          ],
+          "horizontalAlignment": "center",
+          "modifier": {
+            "padding": 10,
+            "background": "#F3EDF7",
+            "cornerRadius": 8
+          }
+        },
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "text",
+              "text": "#4",
+              "modifier": {
+                "width": "wrap"
+              }
+            }
+          ],
+          "horizontalAlignment": "center",
+          "modifier": {
+            "padding": 10,
+            "background": "#F3EDF7",
+            "cornerRadius": 8
+          }
+        },
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "text",
+              "text": "#5",
+              "modifier": {
+                "width": "wrap"
+              }
+            }
+          ],
+          "horizontalAlignment": "center",
+          "modifier": {
+            "padding": 10,
+            "background": "#F3EDF7",
+            "cornerRadius": 8
+          }
+        },
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "text",
+              "text": "#6",
+              "modifier": {
+                "width": "wrap"
+              }
+            }
+          ],
+          "horizontalAlignment": "center",
+          "modifier": {
+            "padding": 10,
+            "background": "#F3EDF7",
+            "cornerRadius": 8
+          }
+        }
+      ],
+      "spacing": 8
+    }
+  ]
+}

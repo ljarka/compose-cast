@@ -267,4 +267,34 @@ class RemoteComposeRendererTest {
             assertEquals(8, ex.minApiLevel)
         }
     }
+
+    @Test
+    fun `gallery, flow and grid emit scroll, FLOW and equal-weight grid rows`() {
+        val registry = composeCast(fakeImages) {
+            screen("collections") {
+                gallery {
+                    repeat(3) { i ->
+                        image(
+                            "https://example.com/$i.png",
+                            modifier = Modifier(width = Dimension.Dp(120), height = Dimension.Dp(80)),
+                        )
+                    }
+                }
+                flow(maxItemsInEachRow = 3, maxLines = 2) {
+                    repeat(4) { i ->
+                        text("Chip $i", modifier = Modifier(width = Dimension.Wrap))
+                    }
+                }
+                grid(columns = 2, spacing = 8) {
+                    repeat(3) { i ->
+                        text("Cell $i")
+                    }
+                }
+            }
+        }
+        val dump = registry.get("collections")!!.describe()
+        assertTrue("ScrollModifierOperation" in dump, "no ScrollModifierOperation in:\n$dump")
+        assertTrue("FLOW" in dump, "no FLOW in:\n$dump")
+        assertTrue(Regex("Width.*WEIGHT", RegexOption.IGNORE_CASE).containsMatchIn(dump), "no weight in:\n$dump")
+    }
 }

@@ -13,6 +13,7 @@ import io.composecast.protocol.Modifier
 import io.composecast.protocol.ParamSpec
 import io.composecast.protocol.RepeatItems
 import io.composecast.protocol.ScreenDefinition
+import io.composecast.protocol.ScrollDirection
 import io.composecast.protocol.TextAlign
 import io.composecast.protocol.TextOverflow
 import io.composecast.protocol.TextStyle
@@ -156,6 +157,48 @@ open class ComponentsBuilder internal constructor(private val context: String) {
     ) {
         components += Component.Box(nested(children), horizontalAlignment, verticalAlignment, modifier)
     }
+
+    /** Children laid out horizontally and wrapped onto new lines (T-014). */
+    fun flow(
+        modifier: Modifier = Modifier.NONE,
+        horizontalAlignment: Alignment = Alignment.Start,
+        verticalAlignment: Alignment = Alignment.Start,
+        maxItemsInEachRow: Int? = null,
+        maxLines: Int? = null,
+        children: ComponentsBuilder.() -> Unit,
+    ) {
+        components += Component.Flow(
+            nested(children),
+            horizontalAlignment,
+            verticalAlignment,
+            maxItemsInEachRow,
+            maxLines,
+            modifier,
+        )
+    }
+
+    /** Equal-width grid of [columns] columns, [spacing] dp apart (T-014). */
+    fun grid(
+        columns: Int,
+        modifier: Modifier = Modifier.NONE,
+        spacing: Int = 0,
+        children: ComponentsBuilder.() -> Unit,
+    ) {
+        components += Component.Grid(columns, nested(children), spacing, modifier)
+    }
+
+    /** Horizontally scrolling row (T-014). */
+    fun gallery(
+        modifier: Modifier = Modifier.NONE,
+        verticalAlignment: Alignment = Alignment.Start,
+        spacing: Int = 8,
+        children: ComponentsBuilder.() -> Unit,
+    ) = row(
+        modifier = modifier.copy(scroll = ScrollDirection.Horizontal),
+        verticalAlignment = verticalAlignment,
+        spacing = spacing,
+        children = children,
+    )
 
     /** [template] for each element of the array at [path], bound as `{{<alias>}}` and `{{$index}}`. */
     fun repeat(

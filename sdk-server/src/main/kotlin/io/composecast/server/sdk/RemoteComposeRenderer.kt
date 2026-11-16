@@ -29,6 +29,7 @@ import androidx.compose.remote.creation.dsl.fillMaxHeight
 import androidx.compose.remote.creation.dsl.fillMaxSize
 import androidx.compose.remote.creation.dsl.fillMaxWidth
 import androidx.compose.remote.creation.dsl.height
+import androidx.compose.remote.creation.dsl.horizontalScroll
 import androidx.compose.remote.creation.dsl.marquee
 import androidx.compose.remote.creation.dsl.onClick
 import androidx.compose.remote.creation.dsl.padding
@@ -47,6 +48,7 @@ import io.composecast.protocol.Dimension
 import io.composecast.protocol.FontWeight
 import io.composecast.protocol.Padding
 import io.composecast.protocol.ScreenDefinition
+import io.composecast.protocol.ScrollDirection
 import io.composecast.protocol.Shape
 import io.composecast.protocol.TextAlign
 import io.composecast.protocol.TextOverflow
@@ -163,6 +165,11 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
         }
         m.action?.let { action -> r = r.onClick { hostAction(ActionCodec.encode(action)) } }
         r = decorate(r)
+        when (m.scroll) {
+            ScrollDirection.Vertical -> r = r.verticalScroll()
+            ScrollDirection.Horizontal -> r = r.horizontalScroll()
+            null -> Unit
+        }
         (m.padding ?: defaultPadding)?.let { p ->
             r =
                 r.padding(
@@ -320,6 +327,41 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
                 vertical = node.verticalAlignment.vertical(),
             ) {
                 renderChildren(node.children, Slot(Axis.Stack))
+            }
+
+            is Component.Flow -> Flow(
+                modifier = boxModel(node.modifier, slot),
+                horizontal = node.horizontalAlignment.horizontal(),
+                vertical = node.verticalAlignment.vertical(),
+                maxItemsInEachRow = node.maxItemsInEachRow ?: Int.MAX_VALUE,
+                maxLines = node.maxLines ?: Int.MAX_VALUE,
+            ) {
+                renderChildren(node.children, Slot(Axis.Horizontal) { m, w -> m.weight(w) })
+            }
+
+            is Component.Grid -> Column(
+                modifier = boxModel(node.modifier, slot),
+            ) {
+                val rows = node.children.chunked(node.columns)
+                rows.forEachIndexed { rowIndex, rowItems ->
+                    if (rowIndex > 0 && node.spacing > 0) {
+                        Spacer(Modifier.height(node.spacing.toFloat()))
+                    }
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        for (col in 0 until node.columns) {
+                            if (col > 0 && node.spacing > 0) {
+                                Spacer(Modifier.width(node.spacing.toFloat()))
+                            }
+                            if (col < rowItems.size) {
+                                Box(modifier = Modifier.weight(1f)) {
+                                    renderNode(rowItems[col], Slot(Axis.Vertical))
+                                }
+                            } else {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
+                    }
+                }
             }
 
             // BoundScreen expands repeats before rendering (T-006).
@@ -628,7 +670,7 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
          */
         const val MIN_API_LEVEL = 8
         const val MAX_API_LEVEL = CoreDocument.DOCUMENT_API_LEVEL
-        const val DEFAULT_PROFILES = RcProfiles.PROFILE_ANDROIDX
+        const val DEFAULT_PROFILES = RcProfiles.PROFILE_ANDROIDX or RcProfiles.PROFILE_EXPERIMENTAL
 
         /** All sizes in the document are dp/sp; without this the player mixes pixels and dp. */
         private val HEADER_TAGS = arrayOf(

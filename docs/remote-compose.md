@@ -277,6 +277,11 @@ All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alph
     produces `Infinity` / `NaN`. Pass a positive velocity in dp/s (e.g. `30f`). Verified alpha23 (T-013).
 14. **`RcScope.Icon` has no tint**: `Icon(image, modifier, contentDescription)` delegates directly to
     `Image(..., contentScale = RcContentScale.Fit, alpha = 1f)`. Verified alpha23 (T-013).
+15. **`Flow` (`LAYOUT_FLOW = 240`) requires `PROFILE_EXPERIMENTAL`**: `Operations.java` registers
+    `LAYOUT_FLOW` (along with `LAYOUT_CUSTOM`, `MODIFIER_DIMENSION_CONSTRAINTS`, `MODIFIER_MULTI_CLICK`)
+    in `createMapV7_Androidx_Experimental()`, not in `PROFILE_ANDROIDX` (`512`). Both
+    `RemoteComposeRenderer.DEFAULT_PROFILES` and `ComposeCastClient` use
+    `PROFILE_ANDROIDX or PROFILE_EXPERIMENTAL` (`513`). Verified alpha23 (T-014).
 
 ---
 

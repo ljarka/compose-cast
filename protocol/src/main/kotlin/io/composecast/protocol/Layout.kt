@@ -43,6 +43,8 @@ data class Modifier(
     val border: Border? = null,
     /** Makes the component tappable; same actions as buttons. */
     val action: Action? = null,
+    /** Enables scrolling on a container (`"vertical"` or `"horizontal"`, T-014). */
+    val scroll: ScrollDirection? = null,
 ) {
     val isEmpty: Boolean get() = this == NONE
 
@@ -109,6 +111,15 @@ enum class Arrangement {
 
     @SerialName("spaceEvenly")
     SpaceEvenly,
+}
+
+@Serializable
+enum class ScrollDirection {
+    @SerialName("vertical")
+    Vertical,
+
+    @SerialName("horizontal")
+    Horizontal,
 }
 
 internal object PaddingSerializer : KSerializer<Padding> {

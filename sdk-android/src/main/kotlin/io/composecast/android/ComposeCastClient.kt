@@ -75,7 +75,7 @@ class ComposeCastClient(private val config: ComposeCastConfig) {
             }
             header(Headers.PLAYER_VERSION, config.playerVersion)
             header(Headers.RC_API_LEVEL, CoreDocument.DOCUMENT_API_LEVEL)
-            header(Headers.RC_PROFILES, RcProfiles.PROFILE_ANDROIDX)
+            header(Headers.RC_PROFILES, RcProfiles.PROFILE_ANDROIDX or RcProfiles.PROFILE_EXPERIMENTAL)
             cached?.let { header(HttpHeaders.IfNoneMatch, it.etag) }
             expectSuccess = false // 304 is not an error here
         }

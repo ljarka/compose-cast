@@ -11,7 +11,7 @@ Do NOT load `server-app`, `sdk-android`, or other modules unless cross-cutting.
 
 | File | Purpose |
 |---|---|
-| `ScreenDsl.kt` | `ScreenBuilder` (`text`, `image`, `icon`, `divider`, `card`, `button`, `spacer`, `expandable`, `column`, `row`, `box`, `repeat`, `param`, `data`, `lookup`, `error`) → `ScreenDefinition` |
+| `ScreenDsl.kt` | `ScreenBuilder` (`text`, `image`, `icon`, `divider`, `card`, `button`, `spacer`, `expandable`, `column`, `row`, `box`, `flow`, `grid`, `gallery`, `repeat`, `param`, `data`, `lookup`, `error`) → `ScreenDefinition` |
 | `DataLoader.kt` | `DataLoader` fun interface (`DataRequest` → body), `HttpDataLoader` (http/https, ≤ 2 MB, redirects), `DataSourceException` (→ 502) |
 | `Binder.kt` | T-006 execution: `DataFetcher` (parallel fetch, secrets from env), `DataCache` (LRU 256 per URL + headers, TTL `cacheSeconds`, failures 10 s), `BoundScreen` (params → fetch → model-to-model bind → `validate()`), filter implementations, secret masking in logs |
 | `ScreenRegistry.kt` | `composeCast {}` builder (`screen {}`, `dynamicScreen {}`, `screen(definition)`, `screensFrom(dir)`, `brand`), `ScreenRegistry` (`render(id, RenderContext)`), `RenderContext`, `ScreenParameterException`, `RemoteScreen` (definition, bytes, `etag`) |

@@ -13,8 +13,8 @@ This module only. **Do not** import `sdk-server`, `server-app`, or `sdk-android`
 
 | File | Purpose |
 |---|---|
-| `Layout.kt` | `Modifier` (box model, ADR 0020), `Padding` (number or sides), `Dimension` (dp / `fill` / `wrap`), `Border`, `Shape`, `Alignment`, `Arrangement` + their JSON serializers |
-| `Screen.kt` | `ScreenDefinition` (+ `params`, `data`, `lookups`, `error`), `Component` (Text, Image, Icon, Divider, Card, Button, Spacer, Repeat, Expandable, Column, Row, Box), `TextStyle`, `FontWeight`, `TextAlign`, `TextOverflow`, `ContentScale`, `ButtonVariant`, validation (`problems()`/`validate()`, incl. bindings), `ScreenJson` |
+| `Layout.kt` | `Modifier` (box model, ADR 0020, incl. `scroll`), `Padding` (number or sides), `Dimension` (dp / `fill` / `wrap`), `Border`, `Shape`, `Alignment`, `Arrangement`, `ScrollDirection` + their JSON serializers |
+| `Screen.kt` | `ScreenDefinition` (+ `params`, `data`, `lookups`, `error`), `Component` (Text, Image, Icon, Divider, Card, Button, Spacer, Repeat, Expandable, Column, Row, Box, Flow, Grid), `TextStyle`, `FontWeight`, `TextAlign`, `TextOverflow`, `ContentScale`, `ButtonVariant`, validation (`problems()`/`validate()`, incl. bindings), `ScreenJson` |
 | `Binding.kt` | Data sources (T-006, [ADR 0008](../docs/decisions/0008-server-side-data-sources.md)): `ParamSpec`, `DataSource`, `RepeatItems` (path or zipped parallel arrays), `Template` parser for `{{path \| filter:arg}}`, `Filters` (names/arity), allowed roots |
 | `Action.kt` | `Action` (Navigate, OpenUrl, Reload, Track, Custom) + `ActionCodec` (wire form) |
 | `Actions.kt` | `Actions` (wire type names, used only by the codec), `Headers` (HTTP headers) |
@@ -74,6 +74,10 @@ Actions: `navigate` (screen, params), `open_url` (url), `reload`, `track` (event
   - `icon`: `url`, `alt`, `size` (dp, default 24); `divider`: `thickness` (dp, default 1), `color`.
   - `card`: `children`, `spacing` (default 0); defaults to 16 dp padding, 12 dp corner radius, surface background.
   - `button`: `variant` (`filled|outlined|text`), optional leading `icon` URL.
+- Collections & scroll (T-014):
+  - `modifier.scroll`: `"vertical"` | `"horizontal"` on containers.
+  - `flow`: `children`, `horizontalAlignment`, `verticalAlignment`, `maxItemsInEachRow`, `maxLines`.
+  - `grid`: `columns` (1..12), `children`, `spacing` (equal-width cells).
 
 ### Data sources and bindings (T-006)
 

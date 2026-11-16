@@ -225,4 +225,12 @@ README roadmap's "Etap" numbers.
     continue."`). `RemoteComposeRenderer` and `ScreenRegistry` render at `min(client, server)` and
     cache static screens per `(id, level, profiles)`; verified in alpha23 that `DOC_DENSITY_BEHAVIOR`
     requires API level 8+, so `MIN_API_LEVEL = 8` and levels < 8 (or unsupported ops) return `426`
-    with `minApiLevel`. T-014 is next.
+    with `minApiLevel` (`da06bdd`). T-014 is next.
+42. **T-014 scrolling, Flow, galleries, grids** ([task](tasks/T-014-scroll-flow-gallery.md)):
+    added `Modifier.scroll` (`ScrollDirection.Vertical | Horizontal`), `Component.Flow`
+    (`maxItemsInEachRow`, `maxLines`), `Component.Grid` (equal-width `weight(1f)` rows with
+    trailing `Spacer` padding on partial rows), and `gallery` DSL helper (`row` + horizontal
+    scroll). Discovered that `LAYOUT_FLOW` (240) in RC alpha23 requires
+    `PROFILE_ANDROIDX or PROFILE_EXPERIMENTAL` (`513`) in both renderer and client
+    (`docs/remote-compose.md` #15). Added `collections` demo screen (DSL + JSON, byte-identical)
+    and `collections.png` golden screenshot. T-015 is next.

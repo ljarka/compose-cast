@@ -66,6 +66,10 @@ class DemoScreensScreenshotTest {
     @Test
     fun components() = capture("components")
 
+    /** Scrolling gallery, Flow chips, 2- and 3-column grids (T-014). */
+    @Test
+    fun collections() = capture("collections")
+
     /** A dynamic screen, rendered from query parameters (T-003). */
     @Test
     fun echo() = capture("echo", mapOf("word" to "zażółć gęślą jaźń"))

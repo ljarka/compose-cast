@@ -5,7 +5,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Next
 
-- **[T-014 Scrolling, Flow, galleries, grids](tasks/T-014-scroll-flow-gallery.md)** (Etap 5) — the `ready` task.
+- **[T-015 Adaptive layouts (FitBox, collapsible)](tasks/T-015-adaptive-layouts.md)** (Etap 5) — the `ready` task.
 
 ## Task queue (priority order)
 
@@ -22,9 +22,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-024 Android artifacts on Reposilite + `io.composecast.app` plugin](tasks/T-024-android-artifacts.md) | Etap 6 | done (`51aa515`; owner: Reposilite on the VPS + GitHub secrets, then a release publishes) |
 | [T-012 Layout containers and common modifiers](tasks/T-012-layout-containers.md) | Etap 5 | done (`a444bf4`) — the weather app needs rows/columns |
 | [T-013 Text/image options, Icon, Divider, Card, button variants](tasks/T-013-text-image-styling.md) | Etap 5 | done (`b75647f`) |
-| [T-004 Version negotiation](tasks/T-004-version-negotiation.md) | Etap 7 | done |
-| [T-014 Scrolling, Flow, galleries, grids](tasks/T-014-scroll-flow-gallery.md) | Etap 5 | ready |
-| [T-015 Adaptive layouts (FitBox, collapsible)](tasks/T-015-adaptive-layouts.md) | Etap 5 | queued (after T-014) |
+| [T-004 Version negotiation](tasks/T-004-version-negotiation.md) | Etap 7 | done (`da06bdd`) |
+| [T-014 Scrolling, Flow, galleries, grids](tasks/T-014-scroll-flow-gallery.md) | Etap 5 | done |
+| [T-015 Adaptive layouts (FitBox, collapsible)](tasks/T-015-adaptive-layouts.md) | Etap 5 | ready |
 | [T-016 Accessibility semantics](tasks/T-016-accessibility.md) | Etap 5 | queued (after T-015) |
 | [T-018 Canvas: progress, charts, gradients](tasks/T-018-canvas-charts.md) | Etap 5 | queued (after T-016) |
 | [T-019 Gestures and visual effects](tasks/T-019-gestures-effects.md) | Etap 5 | queued (after T-018) |
@@ -45,7 +45,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | Etap 2 — Foundations ✅ | 5/5 |
 | Etap 3 — iOS spike (parallel to 2–5; needs Xcode) | 0/3 |
 | Etap 4 — Data sources (APIs) — ADR 0008 | 3/3 |
-| Etap 5 — Components for real apps | 3/10 |
+| Etap 5 — Components for real apps | 4/10 |
 | Etap 6 — Milestone 1: Example weather app (external project) | 2/6 |
 | Etap 7 — App shells & SDKs | 2/8 |
 | Etap 8 — Admin panel MVP | 0/6 |
@@ -65,9 +65,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- T-014 scrolling, Flow, galleries, grids
 - T-004 version negotiation
 - T-013 text/image options, Icon, Divider, Card, button variants
 - Owner infrastructure
 - T-012 layout containers and modifiers
 - T-024 Android artifacts + `io.composecast.app` plugin
-- T-023 server distribution like Immich

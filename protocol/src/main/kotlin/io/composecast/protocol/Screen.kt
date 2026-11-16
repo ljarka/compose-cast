@@ -130,6 +130,20 @@ data class ScreenDefinition(
                 is Component.Box -> addAll(
                     componentProblems(component.children, "$at.children", Parent.Other, depth + 1),
                 )
+                is Component.Flow -> {
+                    component.maxItemsInEachRow?.let {
+                        if (it < 1) add("$at.maxItemsInEachRow: must be >= 1, was $it")
+                    }
+                    component.maxLines?.let { if (it < 1) add("$at.maxLines: must be >= 1, was $it") }
+                    addAll(componentProblems(component.children, "$at.children", Parent.Row, depth + 1))
+                }
+                is Component.Grid -> {
+                    if (component.columns !in 1..12) {
+                        add("$at.columns: must be 1..12, was ${component.columns}")
+                    }
+                    if (component.spacing < 0) add("$at.spacing: must be >= 0, was ${component.spacing}")
+                    addAll(componentProblems(component.children, "$at.children", Parent.Other, depth + 1))
+                }
             }
         }
     }
@@ -402,6 +416,28 @@ sealed interface Component {
         override val modifier: Modifier = Modifier.NONE,
     ) : Component
 
+    /** Children laid out horizontally and wrapped onto new lines (T-014). */
+    @Serializable
+    @SerialName("flow")
+    data class Flow(
+        val children: List<Component>,
+        val horizontalAlignment: Alignment = Alignment.Start,
+        val verticalAlignment: Alignment = Alignment.Start,
+        val maxItemsInEachRow: Int? = null,
+        val maxLines: Int? = null,
+        override val modifier: Modifier = Modifier.NONE,
+    ) : Component
+
+    /** Equal-width grid of [columns] columns, [spacing] dp apart (T-014). */
+    @Serializable
+    @SerialName("grid")
+    data class Grid(
+        val columns: Int,
+        val children: List<Component>,
+        val spacing: Int = 0,
+        override val modifier: Modifier = Modifier.NONE,
+    ) : Component
+
     /**
      * [template] once per element of [items] (at most [limit]), each bound with the element as
      * `{{<alias>}}` and its position as `{{$index}}`; [empty] when there are none. Expanded on the
@@ -439,7 +475,7 @@ sealed interface Component {
             listOfNotNull(icon?.let { "icon" to it }) +
             action.strings().map { (field, value) -> "action.$field" to value }
         is Expandable -> listOf("title" to title)
-        is Divider, is Card, is Spacer, is Repeat, is Column, is Row, is Box -> emptyList()
+        is Divider, is Card, is Spacer, is Repeat, is Column, is Row, is Box, is Flow, is Grid -> emptyList()
     } + modifier.action?.strings().orEmpty().map { (field, value) -> "modifier.action.$field" to value }
 
     /** Nested component lists by field name (`children`, `content`, `template`, `empty`). */
@@ -448,6 +484,8 @@ sealed interface Component {
         is Row -> listOf("children" to children)
         is Box -> listOf("children" to children)
         is Card -> listOf("children" to children)
+        is Flow -> listOf("children" to children)
+        is Grid -> listOf("children" to children)
         is Expandable -> listOf("content" to content)
         is Repeat -> listOf("template" to template, "empty" to empty)
         is Text, is Image, is Icon, is Divider, is Button, is Spacer -> emptyList()

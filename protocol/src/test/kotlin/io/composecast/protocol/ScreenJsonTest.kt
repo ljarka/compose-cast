@@ -188,4 +188,59 @@ class ScreenJsonTest {
             "components[0].icon",
         )
     }
+
+    @Test
+    fun `flow, grid and modifier scroll roundtrip and validate`() {
+        val raw = """
+            {
+              "id": "collections",
+              "components": [
+                {
+                  "type": "row",
+                  "spacing": 8,
+                  "modifier": { "scroll": "horizontal" },
+                  "children": [
+                    { "type": "text", "text": "Item 1" },
+                    { "type": "text", "text": "Item 2" }
+                  ]
+                },
+                {
+                  "type": "flow",
+                  "maxItemsInEachRow": 3,
+                  "maxLines": 2,
+                  "children": [
+                    { "type": "text", "text": "Tag A" },
+                    { "type": "text", "text": "Tag B" }
+                  ]
+                },
+                {
+                  "type": "grid",
+                  "columns": 2,
+                  "spacing": 8,
+                  "children": [
+                    { "type": "text", "text": "Cell 1" },
+                    { "type": "text", "text": "Cell 2" }
+                  ]
+                }
+              ]
+            }
+        """.trimIndent()
+        val decoded = ScreenJson.decode(raw, "collections.json")
+        assertEquals(decoded, ScreenJson.decode(ScreenJson.encode(decoded), "collections.json"))
+
+        assertError(
+            """{"id":"a","components":[{"type":"flow","maxItemsInEachRow":0,"children":[]}]}""",
+            "components[0].maxItemsInEachRow",
+        )
+        assertError(
+            """{"id":"a","components":[{"type":"flow","maxLines":0,"children":[]}]}""",
+            "components[0].maxLines",
+        )
+        assertError("""{"id":"a","components":[{"type":"grid","columns":0,"children":[]}]}""", "components[0].columns")
+        assertError("""{"id":"a","components":[{"type":"grid","columns":13,"children":[]}]}""", "components[0].columns")
+        assertError(
+            """{"id":"a","components":[{"type":"grid","columns":2,"spacing":-1,"children":[]}]}""",
+            "components[0].spacing",
+        )
+    }
 }
