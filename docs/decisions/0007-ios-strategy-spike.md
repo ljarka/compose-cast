@@ -1,6 +1,6 @@
 # 0007 — iOS: decide by spike between RC player and DivKit
 
-- Status: Proposed (spike pending)
+- Status: Superseded by [0022](0022-android-only.md) (Android only; spike not run)
 - Date: 2026-11-07
 
 ## Context

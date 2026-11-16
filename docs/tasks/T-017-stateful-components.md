@@ -1,6 +1,6 @@
 # T-017 — Stateful components: tabs, toggles, expandable, visibility, animations
 
-Status: queued (after T-019) · Roadmap: Etap 10 · Depends on: T-008 (local state PoC), T-012
+Status: queued (after T-021) · Roadmap: Etap 10 · Depends on: T-008 (local state PoC), T-012
 
 ## Goal
 

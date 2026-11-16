@@ -2,8 +2,8 @@
 
 Server-driven UI framework: the **whole app UI is defined on the server** (Kotlin DSL now, admin
 panel later), data comes from external HTTP APIs bound on the server, and apps play the result
-natively. Android: **Remote Compose** documents played by the RC player. iOS: being decided
-([ADR 0007](docs/decisions/0007-ios-strategy-spike.md)). Plan and vision: [README](README.md#vision).
+natively. **Android only** ([ADR 0022](docs/decisions/0022-android-only.md)): **Remote Compose**
+documents played by the RC player. Plan and vision: [README](README.md#vision).
 
 This file is the index. Keep it short (< 150 lines); details live where the table below says.
 
@@ -62,8 +62,9 @@ Do not load the whole project.
    rendering bug so far.
 6. Changing an accepted decision = new ADR that supersedes it. Architecture rules are enforced by
    `scripts/check-architecture.sh` ([0010](docs/decisions/0010-executable-rules-verify-tasks.md)).
-7. Git: work on `main` (or the branch/worktree you were given). **Commit/push only when the owner
-   asks** — finishing a task does not imply a commit.
+7. Git: work on `main` (or the branch/worktree you were given). **Commit** finished, verified work
+   (`verify.sh` green) without asking: small commits, conventional messages (`feat:`, `docs:`,
+   `fix:`). **Push only when the owner asks** (owner, 2026-11-16).
 
 ## Definition of Done (every task)
 
@@ -71,7 +72,7 @@ Do not load the whole project.
 - [ ] Module `AGENTS.md` updated (files, decisions) for every module touched.
 - [ ] New decision → ADR; new RC fact → `docs/remote-compose.md`; entry in `docs/history.md`.
 - [ ] README roadmap boxes ticked / adjusted; README screenshots current.
-- [ ] Task queue updated (then `./scripts/gen-status.sh`): task `done` (add the commit hash once the owner had it committed), next
+- [ ] Task queue updated (then `./scripts/gen-status.sh`): task `done` (add the commit hash after committing), next
   task specified enough to start.
 
 ## Environment
@@ -83,7 +84,7 @@ Do not load the whole project.
   `-gpu host` (≈20x faster). On Linux `verify.sh` also probes `/usr/lib/jvm/*21*`.
 - UI clicking on the emulator: **Maestro** (`/opt/homebrew/bin/maestro`, 2.12.1), flows in
   `app-template/maestro/` ([playbook](docs/playbooks/verify-on-emulator.md)).
-- No Xcode on the dev machine yet (needed for iOS); no `gh` CLI — CI:
+- No `gh` CLI — CI:
   https://github.com/ljarka/compose-cast/actions (public API, rate-limited).
 - Toolchain: AGP 9.5.1 (built-in Kotlin: never apply `org.jetbrains.kotlin.android`), Gradle 9.6.0,
   Kotlin 2.4.21, Compose BOM (`platform(libs.compose.bom)`), compileSdk 37 / targetSdk 36,
@@ -110,7 +111,9 @@ maestro test app-template/maestro/smoke.yaml      # click through the demo app (
 
 ## Current focus
 
-[Task queue](docs/tasks/README.md) (priority order): T-001…T-003, T-006, T-008, T-009, T-011, T-012, T-023, T-024 done →
-**T-013 text/image styling (ready)** layouts and styling → example weather app in its own separate repo,
-not part of this project ([ADR 0017](docs/decisions/0017-apps-in-own-repositories.md), Milestone 1) → T-004 version negotiation. T-005 iOS spike is
-blocked until Xcode is installed.
+[Task queue](docs/tasks/README.md) (priority order, re-prioritized 2026-11-16): **T-026 image fetch
+hardening (ready)** → T-025 Milestone 1 weather app in its own repo + measurements (owner steps:
+release, Reposilite) → **T-007 admin panel MVP → T-029 visual editor (the core of the product:
+anyone builds app screens in the admin panel)** → T-027 SDK-loaded images → T-028 offline cache → T-018 → T-021 → T-017.
+Real apps decide the catalog; T-019/T-020/T-022 are `later`. Android only
+([ADR 0022](docs/decisions/0022-android-only.md)).

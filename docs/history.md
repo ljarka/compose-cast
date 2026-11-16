@@ -249,3 +249,13 @@ README roadmap's "Etap" numbers.
     automatically for buttons (`Role.BUTTON`, `clickable = true`) and clickable containers, respects
     `hidden = true` via `Mode.CLEAR_AND_SET` and `contentDescription = null`, and records alpha23
     `AccessibleComponent.Role` values (`docs/remote-compose.md` #17) (`bd3cd2c`). T-018 is next.
+45. **iOS dropped** (owner, 2026-11-16): compose-cast is Android only; ADR 0007 superseded by
+    [0022](decisions/0022-android-only.md), T-005 dropped, iOS removed from the README roadmap.
+46. **Project review, re-prioritization** (owner, 2026-11-16): new tasks T-025 (Milestone 1
+    weather app + measurements), T-026 (image SSRF hardening), T-027 (SDK-loaded images), T-028
+    (offline disk cache). Queue reordered (real apps first; T-019/T-020/T-022 `later`), MVP cut
+    note in T-007, reduced scope note in T-010, risk note in ADR 0002, README fixes (modules,
+    version negotiation done, Etap 12 → Later).
+47. **Admin panel is the product core** (owner, 2026-11-16): T-007 MVP moved right after Milestone 1,
+    new T-029 visual editor for non-developers; README vision updated.
+48. **Git rule changed** (owner, 2026-11-16): agents commit verified work themselves; push only on request.

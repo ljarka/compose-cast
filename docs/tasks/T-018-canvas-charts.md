@@ -1,6 +1,6 @@
 # T-018 — Canvas: shapes, progress indicators, charts, gradients
 
-Status: queued (after T-016) · Roadmap: Etap 5 · Depends on: T-012
+Status: queued (after T-028) · Roadmap: Etap 5 · Depends on: T-012
 
 ## Goal
 

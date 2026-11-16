@@ -21,17 +21,27 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-014 Scrolling, Flow, galleries, grids](T-014-scroll-flow-gallery.md) | Etap 5 | done (`70e3329`) |
 | [T-015 Adaptive layouts (FitBox, collapsible)](T-015-adaptive-layouts.md) | Etap 5 | done (`532da5c`) |
 | [T-016 Accessibility semantics](T-016-accessibility.md) | Etap 5 | done (`bd3cd2c`) |
-| [T-018 Canvas: progress, charts, gradients](T-018-canvas-charts.md) | Etap 5 | ready |
-| [T-019 Gestures and visual effects](T-019-gestures-effects.md) | Etap 5 | queued (after T-018) |
-| [T-017 Stateful components (tabs, toggles, visibility)](T-017-stateful-components.md) | Etap 10 | queued (after T-019) |
-| [T-020 Dynamic values (clock, light/dark, conditions)](T-020-dynamic-values.md) | Etap 7/10 | queued (after T-017) |
-| [T-021 Native components via RC `Custom` (text input)](T-021-native-components.md) | Etap 10 | needs design detail (spike first) |
-| [T-022 Advanced RC features (templates, drag, sensors)](T-022-advanced-rc-features.md) | Etap 10 | needs design detail (pick by real use case) |
-| [T-005 iOS spike](T-005-ios-spike.md) | Etap 3 | blocked: needs Xcode on the dev machine |
-| [T-007 Admin panel](T-007-admin-panel.md) | Etap 8 | needs design detail (storage/auth decided: ADR 0016; open review notes inside) |
-| [T-010 White-label app export](T-010-app-export.md) | Etap 9 | needs design detail (after T-007, T-011; SDK distribution decision) |
+| [T-026 Image fetch hardening (no private addresses)](T-026-image-fetch-hardening.md) | Etap 6 | ready — small security fix before Milestone 1 |
+| [T-025 Milestone 1: weather app in its own repo + measurements](T-025-weather-app-milestone.md) | Etap 6 | queued (after T-026); owner steps: first release, Reposilite, domain |
+| [T-007 Admin panel MVP](T-007-admin-panel.md) | Etap 8 | queued (after T-025); **core of the product**; first step: write the MVP cut into the task file |
+| [T-029 Visual screen editor (no JSON)](T-029-visual-screen-editor.md) | Etap 8 | queued (after T-007) |
+| [T-027 Images loaded by the SDK (lists)](T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-029); blocks the TV shows milestone |
+| [T-028 Offline: disk cache of the last screen](T-028-offline-disk-cache.md) | Etap 7 | queued (after T-027) |
+| [T-018 Canvas: progress, charts, gradients](T-018-canvas-charts.md) | Etap 5 | queued (after T-028; pull it forward if T-025 needs an hourly chart) |
+| [T-021 Native components via RC `Custom` (text input)](T-021-native-components.md) | Etap 10 | queued (after T-018); spike first; needed for TV shows search |
+| [T-017 Stateful components (tabs, toggles, visibility)](T-017-stateful-components.md) | Etap 10 | queued (after T-021) |
+| [T-010 Settings export (properties + icon)](T-010-app-export.md) | Etap 9 | needs design detail (after T-007; much smaller since the plugin, see the note in the task file) |
+| [T-019 Gestures and visual effects](T-019-gestures-effects.md) | Etap 5 | later (only when a real app needs it) |
+| [T-020 Dynamic values (clock, light/dark, conditions)](T-020-dynamic-values.md) | Etap 7/10 | later (light/dark may be pulled forward by a real app) |
+| [T-022 Advanced RC features (templates, drag, sensors)](T-022-advanced-rc-features.md) | Etap 10 | later (pick by real use case) |
+| [T-005 iOS spike](T-005-ios-spike.md) | Etap 3 | dropped (Android only, ADR 0022) |
 
-Rows are in priority order (owner, 2026-11-07): fastest path to Milestone 1 (example weather app).
+Rows are in priority order. **Re-prioritized 2026-11-16 (owner):** real apps before catalog
+breadth. **The admin panel is the core of the product** (owner: anyone can create the screens
+of their mobile app in the admin panel). Order: Milestone 1 (T-025) proves the runtime → admin panel MVP
+(T-007) → visual editor (T-029). The gap lists and its gap list decides what follows. Catalog tasks
+without a real use case (T-019, T-020, T-022) are `later`. Statuses `later` and `dropped` are never
+picked automatically.
 Owner, 2026-11-08 / 2026-11-11 ([ADR 0017](../decisions/0017-apps-in-own-repositories.md)): the
 weather app is an **external example of using compose-cast** (in its own separate repository, not
 part of this project) and needs no framework code changes — server from the published
@@ -44,7 +54,7 @@ T-012…T-022 (owner, 2026-11-07: support every component Remote Compose can exp
 catalog in [docs/remote-compose.md → Procedural catalog](../remote-compose.md).
 
 Statuses: `ready` (start now; only one task at a time) · `queued (after T-xxx)` · `in progress` ·
-`blocked: reason` · `needs design detail` · `done` (+ commit hash once committed).
+`blocked: reason` · `needs design detail` · `later` · `dropped` · `done` (+ commit hash once committed).
 When a task is done, the next `queued` task becomes `ready`.
 
 ## Working a task
@@ -55,7 +65,7 @@ When a task is done, the next `queued` task becomes `ready`.
    `./scripts/verify.sh`.
 4. Mark it `done`, set the next task to `ready`, tick the README roadmap boxes, and make sure the
    next task is specified well enough to start (files, acceptance criteria) — a fresh agent must be
-   able to continue without asking. Commit only when the owner asks (AGENTS.md rule 7).
+   able to continue without asking. Commit the finished work (AGENTS.md rule 7); push only when the owner asks.
 
 ## Task file template
 

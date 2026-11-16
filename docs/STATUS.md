@@ -5,7 +5,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Next
 
-- **[T-018 Canvas: progress, charts, gradients](tasks/T-018-canvas-charts.md)** (Etap 5) — the `ready` task.
+- No `ready` task: specify one.
 
 ## Task queue (priority order)
 
@@ -26,15 +26,20 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-014 Scrolling, Flow, galleries, grids](tasks/T-014-scroll-flow-gallery.md) | Etap 5 | done (`70e3329`) |
 | [T-015 Adaptive layouts (FitBox, collapsible)](tasks/T-015-adaptive-layouts.md) | Etap 5 | done (`532da5c`) |
 | [T-016 Accessibility semantics](tasks/T-016-accessibility.md) | Etap 5 | done (`bd3cd2c`) |
-| [T-018 Canvas: progress, charts, gradients](tasks/T-018-canvas-charts.md) | Etap 5 | ready |
-| [T-019 Gestures and visual effects](tasks/T-019-gestures-effects.md) | Etap 5 | queued (after T-018) |
-| [T-017 Stateful components (tabs, toggles, visibility)](tasks/T-017-stateful-components.md) | Etap 10 | queued (after T-019) |
-| [T-020 Dynamic values (clock, light/dark, conditions)](tasks/T-020-dynamic-values.md) | Etap 7/10 | queued (after T-017) |
-| [T-021 Native components via RC `Custom` (text input)](tasks/T-021-native-components.md) | Etap 10 | needs design detail (spike first) |
-| [T-022 Advanced RC features (templates, drag, sensors)](tasks/T-022-advanced-rc-features.md) | Etap 10 | needs design detail (pick by real use case) |
-| [T-005 iOS spike](tasks/T-005-ios-spike.md) | Etap 3 | blocked: needs Xcode on the dev machine |
-| [T-007 Admin panel](tasks/T-007-admin-panel.md) | Etap 8 | needs design detail (storage/auth decided: ADR 0016; open review notes inside) |
-| [T-010 White-label app export](tasks/T-010-app-export.md) | Etap 9 | needs design detail (after T-007, T-011; SDK distribution decision) |
+| [T-026 Image fetch hardening (no private addresses)](tasks/T-026-image-fetch-hardening.md) | Etap 6 | ready — small security fix before Milestone 1 |
+| [T-025 Milestone 1: weather app in its own repo + measurements](tasks/T-025-weather-app-milestone.md) | Etap 6 | queued (after T-026); owner steps: first release, Reposilite, domain |
+| [T-007 Admin panel MVP](tasks/T-007-admin-panel.md) | Etap 8 | queued (after T-025); **core of the product**; first step: write the MVP cut into the task file |
+| [T-029 Visual screen editor (no JSON)](tasks/T-029-visual-screen-editor.md) | Etap 8 | queued (after T-007) |
+| [T-027 Images loaded by the SDK (lists)](tasks/T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-029); blocks the TV shows milestone |
+| [T-028 Offline: disk cache of the last screen](tasks/T-028-offline-disk-cache.md) | Etap 7 | queued (after T-027) |
+| [T-018 Canvas: progress, charts, gradients](tasks/T-018-canvas-charts.md) | Etap 5 | queued (after T-028; pull it forward if T-025 needs an hourly chart) |
+| [T-021 Native components via RC `Custom` (text input)](tasks/T-021-native-components.md) | Etap 10 | queued (after T-018); spike first; needed for TV shows search |
+| [T-017 Stateful components (tabs, toggles, visibility)](tasks/T-017-stateful-components.md) | Etap 10 | queued (after T-021) |
+| [T-010 Settings export (properties + icon)](tasks/T-010-app-export.md) | Etap 9 | needs design detail (after T-007; much smaller since the plugin, see the note in the task file) |
+| [T-019 Gestures and visual effects](tasks/T-019-gestures-effects.md) | Etap 5 | later (only when a real app needs it) |
+| [T-020 Dynamic values (clock, light/dark, conditions)](tasks/T-020-dynamic-values.md) | Etap 7/10 | later (light/dark may be pulled forward by a real app) |
+| [T-022 Advanced RC features (templates, drag, sensors)](tasks/T-022-advanced-rc-features.md) | Etap 10 | later (pick by real use case) |
+| [T-005 iOS spike](tasks/T-005-ios-spike.md) | Etap 3 | dropped (Android only, ADR 0022) |
 
 ## Roadmap
 
@@ -43,31 +48,25 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | Etap 0 — Technical Spike ✅ | 3/3 |
 | Etap 1 — Repository, CI, Tests & Docs ✅ | 5/5 |
 | Etap 2 — Foundations ✅ | 5/5 |
-| Etap 3 — iOS spike (parallel to 2–5; needs Xcode) | 0/3 |
+| Etap 3 — iOS spike: dropped | 0/0 |
 | Etap 4 — Data sources (APIs) — ADR 0008 | 3/3 |
-| Etap 5 — Components for real apps | 6/10 |
-| Etap 6 — Milestone 1: Example weather app (external project) | 2/6 |
-| Etap 7 — App shells & SDKs | 2/8 |
-| Etap 8 — Admin panel MVP | 0/6 |
-| Etap 9 — White-label app export + TV shows milestone | 1/7 |
+| Etap 5 — Components for real apps | 7/11 |
+| Etap 6 — Milestone 1: Example weather app (external project) | 2/7 |
+| Etap 7 — App shells & SDKs | 3/7 |
+| Etap 8 — Admin panel MVP | 0/7 |
+| Etap 9 — White-label app export + TV shows milestone | 1/6 |
 | Etap 10 — Interactivity (DivKit core) | 1/6 |
-| Etap 11 — Release 0.1.0-alpha | 0/2 |
-| Etap 12 — Experimentation & feature flags | 0/7 |
+| Etap 11 — Release 0.1.0-alpha | 0/10 |
 
 ## Waiting for a decision or design
 
-- [T-021 Native components via RC `Custom` (text input)](tasks/T-021-native-components.md): needs design detail (spike first)
-- [T-022 Advanced RC features (templates, drag, sensors)](tasks/T-022-advanced-rc-features.md): needs design detail (pick by real use case)
-- [T-005 iOS spike](tasks/T-005-ios-spike.md): blocked: needs Xcode on the dev machine
-- [T-007 Admin panel](tasks/T-007-admin-panel.md): needs design detail (storage/auth decided: ADR 0016; open review notes inside)
-- [T-010 White-label app export](tasks/T-010-app-export.md): needs design detail (after T-007, T-011; SDK distribution decision)
-- ADR [0007](decisions/0007-ios-strategy-spike.md): iOS: decide by spike between RC player and DivKit (Proposed)
+- [T-010 Settings export (properties + icon)](tasks/T-010-app-export.md): needs design detail (after T-007; much smaller since the plugin, see the note in the task file)
 
 ## Recent work (docs/history.md)
 
+- Git rule changed
+- Admin panel is the product core
+- Project review, re-prioritization
+- iOS dropped
 - T-016 accessibility semantics
 - T-015 adaptive layouts
-- T-014 scrolling, Flow, galleries, grids
-- T-004 version negotiation
-- T-013 text/image options, Icon, Divider, Card, button variants
-- Owner infrastructure

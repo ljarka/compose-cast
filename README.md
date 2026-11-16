@@ -10,20 +10,22 @@ and played natively on Android by the Remote Compose player — no app update ne
 screen.
 
 > **Status: experimental.** Built on `androidx.compose.remote` **1.0.0-alpha23**, whose creation
-> and player APIs are marked `@RestrictTo(LIBRARY_GROUP)` and may change between alphas.
+> and player APIs are marked `@RestrictTo(LIBRARY_GROUP)` and may change between alphas. The
+> whole project depends on that API staying usable; see the risk note in
+> [ADR 0002](docs/decisions/0002-confine-restricted-remote-compose-api.md).
 
 ## Vision
 
-**A DivKit-style framework for apps whose entire UI is controlled by the server** — screens,
+**A self-hosted platform where anyone builds the screens of their Android app in an admin panel** —
+a DivKit-style framework for apps whose entire UI is controlled by the server — screens,
 navigation and content are defined on the server (Kotlin DSL, later an admin panel), data comes
-from any HTTP API bound on the server, and Android/iOS apps render it natively.
+from any HTTP API bound on the server, and Android apps render it natively.
 
 [DivKit](https://divkit.tech) defines its own JSON format and ships a renderer per platform.
 compose-cast builds on **AndroidX Remote Compose** instead: on Android the server sends RC binary
 documents and the official RC player renders them, including the runtime primitives DivKit is
-known for (variables, expressions, states, local actions, animation). Remote Compose has no
-official iOS player yet, so the iOS renderer is being decided by a spike
-([ADR 0007](docs/decisions/0007-ios-strategy-spike.md)).
+known for (variables, expressions, states, local actions, animation). compose-cast targets
+**Android only** ([ADR 0022](docs/decisions/0022-android-only.md)).
 
 compose-cast is the product layer around the renderers:
 
@@ -33,7 +35,7 @@ compose-cast is the product layer around the renderers:
   part of the project and their keys never reach the app
   ([ADR 0008](docs/decisions/0008-server-side-data-sources.md)).
 - **Delivery** — server renders per request and per client capability; starts with one command.
-- **Apps** — thin shells (Android now, iOS next) whose UI is entirely server-driven.
+- **Apps** — thin Android shells whose UI is entirely server-driven.
 - **Tooling** — debug dump, screenshot tests, preview, dev loop.
 
 Principles:
@@ -55,7 +57,7 @@ Principles:
 
 | DivKit concept | Remote Compose primitive (alpha) | compose-cast |
 |---|---|---|
-| Element tree (containers, text, image) | `Column`/`Row`/`Box`/`Flow`, `Text`, `Image`, `Canvas` | Text, Image, Button, Spacer, Column/Row/Box + modifiers ✅; Flow, Canvas ⏳ Etap 5 |
+| Element tree (containers, text, image) | `Column`/`Row`/`Box`/`Flow`, `Text`, `Image`, `Canvas` | Text, Image, Button, Icon, Divider, Card, Column/Row/Box, Flow, grids, galleries + modifiers ✅; Canvas ⏳ T-018 |
 | Templates | Server-side Kotlin functions; RC macros (`defineMacro`/`inflate`) | ⏳ Etap 10 |
 | Variables | Named variables, set by the host (`setUserLocal*` on the player) | ⏳ Etap 10 |
 | Expressions | On-device float/text expressions, conditional operations | used internally for dp/sp; DSL ⏳ Etap 10 |
@@ -66,7 +68,7 @@ Principles:
 | Loading new markup without release | Whole document per request; player `updateDocument` | ✅ per screen; partial updates ⏳ investigate |
 | Data from APIs | — (server-side) | data sources ✅ (Etap 4) |
 | Visibility actions (analytics) | no equivalent found | ⏳ SDK-side, Etap 7 |
-| Platforms: Android, iOS, web, KMP | official player: Android only | Android ✅; iOS ⏳ spike (Etap 3) |
+| Platforms: Android, iOS, web, KMP | official player: Android only | Android ✅ (only target, ADR 0022) |
 | Playground / editor | — | `/debug` dump ✅; admin panel with preview ⏳ Etap 8 |
 
 ## Screenshots
@@ -216,7 +218,9 @@ live demo: `examples/demo/screens/data.json` ("Live data" on the home screen).
 | `server-scripting` | `.screen.kts` script host for hot-reloadable screens (planned) |
 | `server-app` | Ktor HTTP server |
 | `sdk-android` | Fetches documents and plays them with the Remote Compose player |
-| `app-template` | Demo Android app with navigation and back stack |
+| `app-shell` | The Android app itself (activity, back stack, states, action routing) as a library |
+| `gradle-plugins` | `io.composecast.app` Gradle plugin: `compose-cast.properties` → branded app |
+| `app-template` | Demo Android app built like an app repository (plugin + properties) |
 | `compat-tests` | Screenshot tests: server document → Android player, golden PNGs used in this README |
 
 ## Quick start
@@ -232,7 +236,7 @@ Server with Docker — no JDK, Gradle or Kotlin needed (serves the JSON screens 
 
 ```bash
 docker compose up -d
-curl http://localhost:8080/screens                 # ["actions","data","layouts","main","onboarding"]
+curl http://localhost:8080/screens                 # ["actions","adaptive","collections","components","data","layouts","main","onboarding"]
 COMPOSECAST_SCREENS=/path/to/data docker compose up -d   # your own screens/<id>.json + brand.json
 docker compose restart                             # after editing a screen file
 docker compose logs server                         # an invalid file is reported here (file + JSON path)
@@ -245,7 +249,7 @@ Server from source (built-in demo screens from `Screens.kt`):
 
 ```bash
 ./gradlew :server-app:run
-curl http://localhost:8080/screens                 # ["main","onboarding","actions"]
+curl http://localhost:8080/screens                 # main, layouts, data, onboarding, actions, components, … (Screens.kt)
 curl http://localhost:8080/screens/main/debug      # human-readable document tree
 ```
 
@@ -322,10 +326,8 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
   screens pre-rendered and validated at start — T-003
 - [x] `ETag` / `If-None-Match` (`304`), in-memory revalidation cache in the Android SDK — T-003
 
-### Etap 3 — iOS spike (parallel to 2–5; needs Xcode)
-- [ ] (a) Community Remote Compose engine / SwiftUI viewer plays our documents
-- [ ] (b) DivKit iOS player renders the same screen model (second server renderer)
-- [ ] Compare against Android screenshots; decide; supersede [ADR 0007](docs/decisions/0007-ios-strategy-spike.md)
+### Etap 3 — iOS spike: dropped
+Android only ([ADR 0022](docs/decisions/0022-android-only.md), owner 2026-11-16).
 
 ### Etap 4 — Data sources (APIs) — [ADR 0008](docs/decisions/0008-server-side-data-sources.md)
 - [x] HTTP data sources: URL templates with route/query params, secrets from env — T-006
@@ -336,7 +338,8 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 - [x] Text, Image, Button, Spacer, Expandable (local state PoC — T-008)
 - [x] Row, Column, Box; size, weight, alignment, padding, background, border, rounded clip, click on anything — T-012
 - [x] Text color/weight/align/lines/ellipsis/marquee; Icon, Divider, Card, button variants — T-013
-- [ ] Image sizing (aspect, crop, rounded) ✅ T-013; large/many images loaded by the SDK as named bitmaps
+- [x] Image sizing (aspect, crop, rounded) — T-013
+- [ ] Large/many images loaded by the SDK as named bitmaps — T-027
 - [x] Horizontal gallery, Flow (chips), grids, scroll on any container — T-014; lists from data — T-006
 - [x] Adaptive layouts: FitBox, collapsible rows/columns, min/max sizes — T-015
 - [x] Accessibility: content descriptions, roles — T-016
@@ -352,6 +355,7 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 > configured from `app-template`. Anything missing is added to the framework generically, never as
 > weather-specific code in this project.
 
+- [ ] Image fetches never reach private/loopback addresses (SSRF) — T-026
 - [ ] Example weather app on [Open-Meteo](https://open-meteo.com) (no API key): current conditions,
   hourly/daily forecast, city list — screens as JSON, data via data sources — built as a separate
   example repository using the published compose-cast artifacts
@@ -366,19 +370,18 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 - [x] Server serves JSON screens from a directory (`COMPOSECAST_DATA_DIR`, `PORT`), request logging
 - [x] Backend in one command: Docker image (amd64 + arm64) + `docker-compose.yml`, screens on a
   volume, secrets in `.env`, healthcheck — T-009
-- [ ] Screenshots in this README; RAM/latency measured with per-request rendering
+- [ ] Weather app repository, screenshots in this README; RAM/latency measured with per-request rendering — T-025
 
 ### Etap 7 — App shells & SDKs
 - [x] Android SDK: `RemoteComposePlayer` in `AndroidView`, Ktor fetch, loading/error, action router
 - [x] `app-template` configured by one `compose-cast.properties` (name, `applicationId`, server URL,
   frame colors, icon; release = https only) — T-011
 - [ ] Navigation/tabs from the server, deep links
-- [ ] Disk HTTP cache, offline last-known screen, prefetch; analytics hooks (actions, visibility)
+- [ ] Disk cache, offline last-known screen — T-028; prefetch; analytics hooks (actions, visibility)
 - [ ] Locale: `Accept-Language` → `RenderContext`, localized screen texts
 - [ ] Brand tokens → document colors; light/dark via RC themed colors; native frame theming
-- [ ] iOS shell and SDK (renderer from Etap 3)
-- [ ] **Version negotiation** (T-004): client reports the RC document API level it plays (6–8
-  verified); server renders for it or answers "update required" — before apps reach users
+- [x] **Version negotiation** (T-004, [ADR 0021](docs/decisions/0021-version-negotiation.md)): client reports the RC document API level;
+  server renders for it or answers `426` "update required" (minimum level 8)
 
 ### Etap 8 — Admin panel MVP
 
@@ -389,7 +392,8 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
   draft/live status, full history; `<id>.json` import/export ([ADR 0016](docs/decisions/0016-admin-storage-sqlite.md))
 - [ ] User accounts (email + bcrypt password), roles: `admin` / `editor` / `viewer`; session cookie;
   first admin from `COMPOSECAST_ADMIN_EMAIL`/`_PASSWORD` env vars (no shared `ADMIN_PASSWORD`)
-- [ ] Component palette + property editor; data-source editor (Etap 4 bindings)
+- [ ] MVP: JSON editor with live validation, preview, publish, history — T-007
+- [ ] Visual editor for non-developers: component palette, schema-driven property forms, data-source editor with field picker, starter templates — T-029
 - [ ] Preview on a device: temporary `__preview` screen + QR code ([ADR 0013](docs/decisions/0013-admin-preview.md));
   in-browser RC player later, if one matures
 - [ ] Publish (screen goes live); change history per screen (who published, when); one-click rollback
@@ -403,15 +407,13 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 > launcher icon from the uploaded logo — screen colors come from the server's `BrandConfig`). User unzips, builds in Android Studio, submits to
 > Google Play. **No APK is generated server-side** — only a ready-to-build Gradle project.
 
-- [ ] Export writes `compose-cast.properties` (T-011) from App Settings — T-010
-- [ ] SDK distribution for exported apps: publish `sdk-android` (Etap 11) or vendor it into the export (T-010 review)
+- [ ] Export writes `compose-cast.properties` + icon from App Settings — T-010 (SDK comes from Reposilite, ADR 0019)
 - [x] HTTPS for the VPS: reverse proxy with automatic certificates in `docker-compose.yml` (store builds are https-only) — Caddy profile, T-023
 - [ ] Admin panel “Export project” endpoint: generates a ZIP of the configured template
-- [ ] **AI brand setup (optional):** user describes their brand in a text field (“dark blue,
-  minimalist, fintech”); AI generates a `BrandConfig` colour palette suggestion
+- [ ] Prerequisites: SDK-loaded images (T-027), text input for search (T-021)
 - [ ] TV shows app on [TVMaze](https://www.tvmaze.com/api) (no API key): search results, show
   detail, episodes — built **only** in the admin panel; exported as a branded app
-- [ ] Same server, both Android and iOS (Etap 3); screenshots of both in this README
+- [ ] Screenshots of the TV shows app in this README
 
 ### Etap 10 — Interactivity (DivKit core)
 - [x] Local state PoC in procedural RC API (`StateLayout` + `setValue` on tap: `Component.Expandable`) — T-008
@@ -423,10 +425,10 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 
 ### Etap 11 — Release 0.1.0-alpha
 - [ ] Docs: quick start, components reference, data sources, action protocol, compatibility policy
-- [ ] Publish SDKs (Maven/JitPack, SwiftPM) + server image (GHCR); tag, CHANGELOG, GitHub Release
+- [ ] Publish the Android SDK and plugin (Reposilite, ADR 0019) + server image (GHCR); tag, CHANGELOG, GitHub Release
   (server image and Android SDK are pulled forward into Milestone 1: T-023, T-024)
 
-### Etap 12 — Experimentation & feature flags
+### Later — Experimentation & feature flags (not planned; after 0.1.0 and real users)
 Production SDUI systems (Nubank, Yelp, RevenueCat) treat server-driven screens as an
 experimentation platform — no release needed to change what a user sees.
 
@@ -440,6 +442,7 @@ experimentation platform — no release needed to change what a user sees.
 - [ ] Experiment results dashboard (conversion per variant, action counts)
 
 ### Later / chores
+- [ ] AI brand setup: a brand description → `BrandConfig` palette suggestion (optional)
 - [ ] `.screen.kts` hot reload (`server-scripting`) + dev-loop push refresh
 - [ ] GIF for README; Gradle configuration cache
 

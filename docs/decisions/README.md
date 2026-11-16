@@ -12,7 +12,7 @@ one (never silently contradict an accepted ADR).
 | [0004](0004-units-dp-and-sp.md) | Units: DP density behavior + sp font expressions | Accepted |
 | [0005](0005-player-view-wrapper.md) | Wrap `remote-player-view` instead of `remote-player-compose` | Accepted |
 | [0006](0006-screenshot-tests-as-goldens.md) | Screenshot tests are the golden compatibility tests | Accepted |
-| [0007](0007-ios-strategy-spike.md) | iOS: decide by spike between RC player and DivKit | Proposed |
+| [0007](0007-ios-strategy-spike.md) | iOS: decide by spike between RC player and DivKit | Superseded by 0022 |
 | [0008](0008-server-side-data-sources.md) | External APIs are bound on the server (data sources) | Accepted |
 | [0009](0009-documentation-for-agents.md) | Documentation structure for AI agents | Accepted |
 | [0010](0010-executable-rules-verify-tasks.md) | Executable rules, one verify command, playbooks, task queue | Accepted |
@@ -27,6 +27,7 @@ one (never silently contradict an accepted ADR).
 | [0019](0019-self-hosted-maven-reposilite.md) | Android artifacts on a self-hosted Maven repository (Reposilite on the VPS) | Accepted |
 | [0020](0020-component-tree-and-modifiers.md) | Component tree (column/row/box) and a fixed box-model modifier | Accepted |
 | [0021](0021-version-negotiation.md) | Client–server version negotiation (compatibility policy) | Accepted |
+| [0022](0022-android-only.md) | Android only: iOS is out of scope | Accepted |
 
 ## Template
 

@@ -6,5 +6,5 @@ restarting the server (README roadmap, dev loop). **Empty module** — only `bui
 ## Constraints for whoever starts it
 
 - Scripts must produce the same internal screen model as the Kotlin DSL and the admin panel
-  ([ADR 0008](../docs/decisions/0008-server-side-data-sources.md), [ADR 0007](../docs/decisions/0007-ios-strategy-spike.md)).
+  ([ADR 0008](../docs/decisions/0008-server-side-data-sources.md), [ADR 0015](../docs/decisions/0015-screen-model-is-the-product.md)).
 - `server-app` depends on this module; keep it free of Ktor.

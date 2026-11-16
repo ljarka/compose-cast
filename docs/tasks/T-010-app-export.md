@@ -2,6 +2,13 @@
 
 Status: needs design detail (after T-007) · Roadmap: Etap 9 · Depends on: T-007 (admin panel + App Settings), T-011 (`compose-cast.properties`), SDK distribution (below)
 
+## Scope note (2026-11-16)
+
+Since T-024, an app repository is the `io.composecast.app` plugin, `compose-cast.properties` and an
+icon. "Export" is therefore only: generate `compose-cast.properties` and the icon set from App
+Settings and download them (or a ZIP of `distribution/android-app/` with both filled in). No vendored
+SDK and no template generation. Rewrite the Design below to this scope before starting.
+
 ## Update (2026-11-08)
 Review point 1 is decided: **(a) published artifacts** ([ADR 0018](../decisions/0018-distribution-like-immich.md),
 T-024). The export becomes the files of an app repository (Gradle files with the

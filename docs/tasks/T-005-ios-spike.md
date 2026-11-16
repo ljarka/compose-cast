@@ -1,6 +1,6 @@
 # T-005 — iOS spike
 
-Status: blocked: needs Xcode on the dev machine · Roadmap: Etap 3 · Depends on: — (T-002 helps for option b)
+Status: dropped (owner, 2026-11-16: Android only, [ADR 0022](../decisions/0022-android-only.md)) · Roadmap: Etap 3 · Depends on: — (T-002 helps for option b)
 
 ## Goal
 Decide the iOS renderer with evidence ([ADR 0007](../decisions/0007-ios-strategy-spike.md)).

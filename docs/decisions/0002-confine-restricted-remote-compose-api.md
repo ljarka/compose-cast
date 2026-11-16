@@ -18,6 +18,14 @@ is no public alternative. Signatures and semantics change between alphas (see 00
 ## Consequences
 An RC upgrade touches two places. Our DSL (`ScreenBuilder`) is the stable API for screen authors.
 
+### Risk note (2026-11-16)
+The project depends on an API Google does not promise to keep public-usable. If a release removes
+or hides the creation API: (1) stay pinned to the last working alpha (the player ships inside each
+app, so pinned apps keep working); (2) check whether a stable public API exists by then;
+(3) otherwise write a superseding ADR for ADR 0001. Containment: thanks to this ADR and ADR 0015,
+only `RemoteComposeRenderer.kt` and `sdk-android` would have to change. `./scripts/check-rc-release.sh`
+is the early warning.
+
 ## How to verify it still holds
 `grep -rl "androidx.compose.remote" --include=*.kt */src/main` lists only the renderer (server)
 and `sdk-android` files.

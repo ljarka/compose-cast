@@ -18,7 +18,7 @@ with the RC player. compose-cast never draws Android UI itself. The legacy JSON 
 - New visual capabilities are added on the server (renderer/DSL), not in the app.
 - RC is alpha (`1.0.0-alpha23` now); its behavior per version is tracked in
   [`docs/remote-compose.md`](../remote-compose.md).
-- iOS is not covered by RC (no official player) — see [0007](0007-ios-strategy-spike.md).
+- iOS is not covered by RC (no official player) — iOS is out of scope ([0022](0022-android-only.md)).
 
 ## How to verify it still holds
 `curl -s -D - -o /dev/null localhost:8080/screens/main` → `Content-Type: application/octet-stream`;

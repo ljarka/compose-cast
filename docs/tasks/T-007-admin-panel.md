@@ -1,6 +1,13 @@
 # T-007 — Admin panel (Etap 8)
 
-Status: ready · Roadmap: Etap 8 · Depends on: T-002 (JSON screen model), T-006 (data sources)
+Status: queued (after T-025); first step: write the MVP cut into Steps, then implement · Roadmap: Etap 8 · Depends on: T-002 (JSON screen model), T-006 (data sources)
+
+## MVP cut (2026-11-16, decide before step 1)
+
+The full design below is too big for one step. Cut the first delivery to: login (first admin from
+env), list of screens, **JSON editor with live `problems()` validation**, draft → preview (ADR 0013)
+→ publish, history with rollback, App Settings. The visual component palette and property editor
+are **T-029** (the target user is not a developer, so the JSON editor is only the first step). Write the cut into the Steps below, then set the status to `ready`.
 
 ## Goal
 
