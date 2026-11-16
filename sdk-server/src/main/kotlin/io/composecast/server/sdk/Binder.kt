@@ -181,10 +181,23 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
                 listOf(c.copy(url = url, alt = render(c.alt, roots), modifier = bindModifier(c.modifier, roots)))
             }
         }
+        is Component.Icon -> {
+            val url = render(c.url, roots)
+            if (url.isBlank()) {
+                warnOnce("icon:${c.url}") { "Screen '$id': icon url '${c.url}' is empty after binding; skipped" }
+                emptyList()
+            } else {
+                listOf(c.copy(url = url, alt = render(c.alt, roots), modifier = bindModifier(c.modifier, roots)))
+            }
+        }
+        is Component.Divider -> listOf(c.copy(modifier = bindModifier(c.modifier, roots)))
+        is Component.Card ->
+            listOf(c.copy(children = bindComponents(c.children, roots), modifier = bindModifier(c.modifier, roots)))
         is Component.Button -> listOf(
             c.copy(
                 label = render(c.label, roots),
                 action = bindAction(c.action, roots),
+                icon = c.icon?.let { render(it, roots).ifBlank { null } },
                 modifier = bindModifier(c.modifier, roots),
             ),
         )

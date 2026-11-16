@@ -208,3 +208,12 @@ README roadmap's "Etap" numbers.
     (`releases` public, redeployment off, `snapshots`/`private` private, `ci` token with `/releases rw`,
     bootstrap token removed), GitHub secrets + `COMPOSECAST_MAVEN_URL` set; `distribution/android-app`
     points at it. Playbook gained the Configuration-tab/Submit, re-`route-add` and security notes.
+40. **T-013 text/image options, Icon, Divider, Card, button variants** ([task](tasks/T-013-text-image-styling.md)):
+    `Component.Text` gained `color`, `fontWeight`, `fontSize`, `textAlign`, `maxLines`, `overflow`,
+    `marquee`; `Component.Image` gained `contentScale`, `alpha`, `aspectRatio`; added
+    `Component.Icon`, `Component.Divider`, `Component.Card` (16 dp padding, 12 dp corner radius,
+    surface background) and `Component.Button` `variant` (`filled | outlined | text`) + leading
+    `icon`. Validation + bindings updated across `protocol` and `sdk-server`. RC alpha23 facts
+    recorded (`docs/remote-compose.md` #13–14): `Modifier.marquee` needs `velocity > 0`, `Icon`
+    has no tint. Updated `layouts` cards to `ContentScale.Crop`, added `components` demo screen
+    (DSL + JSON, byte-identical) and `components.png` golden screenshot. T-004 is next.

@@ -205,4 +205,52 @@ class RemoteComposeRendererTest {
         val bytes = String(document.document, Charsets.ISO_8859_1)
         assertTrue(ActionCodec.encode(Action.Navigate("detail", mapOf("id" to "7"))) in bytes)
     }
+
+    @Test
+    fun `text options, image options, icon, divider, card and button variants emit expected ops`() {
+        val registry = composeCast(fakeImages) {
+            screen("styled") {
+                text(
+                    "Long headline with marquee",
+                    color = "#6200EE",
+                    fontWeight = io.composecast.protocol.FontWeight.Bold,
+                    fontSize = 20,
+                    textAlign = io.composecast.protocol.TextAlign.Center,
+                    maxLines = 1,
+                    overflow = io.composecast.protocol.TextOverflow.Ellipsis,
+                    marquee = true,
+                )
+                image(
+                    "https://example.com/photo.png",
+                    alt = "Photo",
+                    contentScale = io.composecast.protocol.ContentScale.Crop,
+                    alpha = 0.75f,
+                    aspectRatio = 16f / 9f,
+                    modifier = Modifier(cornerRadius = 12),
+                )
+                icon("https://example.com/star.png", alt = "Star", size = 20)
+                divider(thickness = 2, color = "#D0C8DC")
+                card(spacing = 8) {
+                    button(
+                        "Outlined",
+                        Action.Reload,
+                        variant = io.composecast.protocol.ButtonVariant.Outlined,
+                        icon = "https://example.com/star.png",
+                    )
+                    button("Text", Action.Reload, variant = io.composecast.protocol.ButtonVariant.Text)
+                }
+            }
+        }
+        val dump = registry.get("styled")!!.describe()
+        assertTrue("Height(EXACT, 0.0)" !in dump, "unexpected zero height in:\n$dump")
+        listOf(
+            "MarqueeModifierOperation",
+            "CORE_TEXT",
+            "IMAGE_LAYOUT",
+            "PaddingModifierOperation",
+            "BackgroundModifierOperation",
+            "RoundedClipRectModifierOperation",
+            "BorderModifierOperation",
+        ).forEach { assertTrue(it in dump, "no $it in:\n$dump") }
+    }
 }

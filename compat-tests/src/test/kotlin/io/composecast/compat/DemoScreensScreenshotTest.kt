@@ -62,6 +62,10 @@ class DemoScreensScreenshotTest {
     @Test
     fun layouts() = capture("layouts")
 
+    /** Text/image options, Icon, Divider, Card and button variants (T-013). */
+    @Test
+    fun components() = capture("components")
+
     /** A dynamic screen, rendered from query parameters (T-003). */
     @Test
     fun echo() = capture("echo", mapOf("word" to "zażółć gęślą jaźń"))

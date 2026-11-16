@@ -5,10 +5,15 @@ import io.composecast.protocol.Alignment
 import io.composecast.protocol.Arrangement
 import io.composecast.protocol.Border
 import io.composecast.protocol.BrandConfig
+import io.composecast.protocol.ButtonVariant
+import io.composecast.protocol.ContentScale
 import io.composecast.protocol.Dimension
+import io.composecast.protocol.FontWeight
 import io.composecast.protocol.Modifier
 import io.composecast.protocol.Padding
 import io.composecast.protocol.Shape
+import io.composecast.protocol.TextAlign
+import io.composecast.protocol.TextOverflow
 import io.composecast.server.sdk.ComponentsBuilder
 import io.composecast.server.sdk.DataLoader
 import io.composecast.server.sdk.HttpDataLoader
@@ -84,13 +89,13 @@ fun demoScreens(imageLoader: ImageLoader = HttpImageLoader, dataLoader: DataLoad
             text("Rows, columns and boxes", style = "h2")
             spacer(12)
             row(spacing = 12) {
-                card(
+                featureCard(
                     "Mountains",
                     "Tap the card",
                     HERO_IMAGE,
                     Action.Navigate("onboarding"),
                 )
-                card("Lakes", "Weight 1 each", HERO_IMAGE, Action.Custom("lakes"))
+                featureCard("Lakes", "Weight 1 each", HERO_IMAGE, Action.Custom("lakes"))
             }
             spacer(12)
             row(
@@ -234,6 +239,71 @@ fun demoScreens(imageLoader: ImageLoader = HttpImageLoader, dataLoader: DataLoad
             spacer(8)
             button("Again, louder", Action.Navigate("echo", mapOf("word" to "$word!")))
         }
+
+        // Text/image options, Icon, Divider, Card, button variants (T-013).
+        screen("components") {
+            title = "Components"
+            text(
+                "Styled & centered headline",
+                style = "h2",
+                color = "#6200EE",
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+            )
+            spacer(8)
+            text(
+                "A very long single-line caption that should truncate cleanly with an ellipsis at the end",
+                style = "caption",
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            spacer(4)
+            text(
+                "Marquee scrolling ticker text for narrow spaces or long announcements",
+                fontSize = 14,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                marquee = true,
+            )
+            spacer(12)
+            divider()
+            spacer(12)
+            card(spacing = 10) {
+                row(spacing = 8, verticalAlignment = Alignment.Center) {
+                    icon(HERO_IMAGE, alt = "Badge", size = 24, modifier = Modifier(shape = Shape.Circle))
+                    text("Card with Icon & Cropped Image", style = "h3", modifier = Modifier(weight = 1f))
+                }
+                image(
+                    HERO_IMAGE,
+                    alt = "Cropped 16:9 banner",
+                    contentScale = ContentScale.Crop,
+                    alpha = 0.85f,
+                    aspectRatio = 16f / 9f,
+                    modifier = Modifier(cornerRadius = 10),
+                )
+                divider(thickness = 2, color = "#6200EE")
+                row(spacing = 8) {
+                    button(
+                        "Filled",
+                        Action.Reload,
+                        variant = ButtonVariant.Filled,
+                        icon = HERO_IMAGE,
+                        modifier = Modifier(weight = 1f),
+                    )
+                    button(
+                        "Outlined",
+                        Action.Reload,
+                        variant = ButtonVariant.Outlined,
+                        modifier = Modifier(weight = 1f),
+                    )
+                    button(
+                        "Text",
+                        Action.Reload,
+                        variant = ButtonVariant.Text,
+                    )
+                }
+            }
+        }
     }
 
 private const val SURFACE = "#F3EDF7"
@@ -245,7 +315,7 @@ private const val SURFACE = "#F3EDF7"
 private const val HERO_IMAGE = "https://picsum.photos/400/200"
 
 /** A tappable card: image on top, title and subtitle below; half of a row (weight 1). */
-private fun ComponentsBuilder.card(title: String, subtitle: String, image: String, action: Action) = column(
+private fun ComponentsBuilder.featureCard(title: String, subtitle: String, image: String, action: Action) = column(
     modifier = Modifier(
         weight = 1f,
         background = "#FFFFFF",
@@ -256,7 +326,12 @@ private fun ComponentsBuilder.card(title: String, subtitle: String, image: Strin
     ),
     spacing = 8,
 ) {
-    image(image, alt = title, modifier = Modifier(height = Dimension.Dp(88), cornerRadius = 8))
+    image(
+        image,
+        alt = title,
+        contentScale = ContentScale.Crop,
+        modifier = Modifier(height = Dimension.Dp(88), cornerRadius = 8),
+    )
     text(title, style = "h3")
     text(subtitle, style = "caption")
 }

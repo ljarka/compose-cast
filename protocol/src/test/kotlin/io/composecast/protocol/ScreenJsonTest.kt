@@ -120,4 +120,72 @@ class ScreenJsonTest {
         )
         assertError("""{"id":"a",""", "screens/a.json")
     }
+
+    @Test
+    fun `text, image, icon, divider, card and button variants roundtrip`() {
+        val raw = """
+            {
+              "id": "components",
+              "components": [
+                {
+                  "type": "text",
+                  "text": "Styled",
+                  "color": "#6200EE",
+                  "fontWeight": "semiBold",
+                  "fontSize": 18,
+                  "textAlign": "center",
+                  "maxLines": 2,
+                  "overflow": "ellipsis",
+                  "marquee": true
+                },
+                {
+                  "type": "image",
+                  "url": "https://example.com/a.png",
+                  "contentScale": "crop",
+                  "alpha": 0.8,
+                  "aspectRatio": 1.5
+                },
+                { "type": "icon", "url": "https://example.com/ic.png", "alt": "Star", "size": 20 },
+                { "type": "divider", "thickness": 2, "color": "#CCCCCC" },
+                {
+                  "type": "card",
+                  "spacing": 8,
+                  "children": [
+                    { "type": "button", "label": "Outlined", "variant": "outlined", "icon": "https://example.com/ic.png", "action": { "type": "reload" } },
+                    { "type": "button", "label": "Text", "variant": "text", "action": { "type": "reload" } }
+                  ]
+                }
+              ]
+            }
+        """.trimIndent()
+        val decoded = ScreenJson.decode(raw, "components.json")
+        assertEquals(decoded, ScreenJson.decode(ScreenJson.encode(decoded), "components.json"))
+    }
+
+    @Test
+    fun `invalid styling and new component fields report path`() {
+        assertError("""{"id":"a","components":[{"type":"text","text":"x","color":"red"}]}""", "components[0].color")
+        assertError("""{"id":"a","components":[{"type":"text","text":"x","fontSize":0}]}""", "components[0].fontSize")
+        assertError("""{"id":"a","components":[{"type":"text","text":"x","maxLines":0}]}""", "components[0].maxLines")
+        assertError(
+            """{"id":"a","components":[{"type":"image","url":"https://a.com/x.png","alpha":1.5}]}""",
+            "components[0].alpha",
+        )
+        assertError(
+            """{"id":"a","components":[{"type":"image","url":"https://a.com/x.png","aspectRatio":0}]}""",
+            "components[0].aspectRatio",
+        )
+        assertError("""{"id":"a","components":[{"type":"icon","url":" "}]}""", "components[0].url")
+        assertError(
+            """{"id":"a","components":[{"type":"icon","url":"https://a.com/i.png","size":0}]}""",
+            "components[0].size",
+        )
+        assertError("""{"id":"a","components":[{"type":"divider","thickness":0}]}""", "components[0].thickness")
+        assertError("""{"id":"a","components":[{"type":"divider","color":"bad"}]}""", "components[0].color")
+        assertError("""{"id":"a","components":[{"type":"card","spacing":-1,"children":[]}]}""", "components[0].spacing")
+        assertError(
+            """{"id":"a","components":[{"type":"button","label":"x","icon":" ","action":{"type":"reload"}}]}""",
+            "components[0].icon",
+        )
+    }
 }

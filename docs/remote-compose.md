@@ -269,6 +269,11 @@ All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alph
 12. `ImageLayout` wraps to the bitmap's pixel size and draws with `contentScale` inside its own
     clip; with `Fit` and a box of another aspect the image is letterboxed, so rounded corners show
     only where the image reaches them. Verified alpha23 (T-012).
+13. **`Modifier.marquee` requires `velocity > 0`**: `MarqueeModifierOperation.paint()` computes
+    `duration = delta / (density * mVelocity)` — `velocity = 0f` (the default in `DefaultModifierParsers`)
+    produces `Infinity` / `NaN`. Pass a positive velocity in dp/s (e.g. `30f`). Verified alpha23 (T-013).
+14. **`RcScope.Icon` has no tint**: `Icon(image, modifier, contentDescription)` delegates directly to
+    `Image(..., contentScale = RcContentScale.Fit, alpha = 1f)`. Verified alpha23 (T-013).
 
 ---
 

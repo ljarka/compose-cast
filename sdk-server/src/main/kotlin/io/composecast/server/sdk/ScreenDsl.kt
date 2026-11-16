@@ -4,12 +4,17 @@ import io.composecast.protocol.Action
 import io.composecast.protocol.ActionCodec
 import io.composecast.protocol.Alignment
 import io.composecast.protocol.Arrangement
+import io.composecast.protocol.ButtonVariant
 import io.composecast.protocol.Component
+import io.composecast.protocol.ContentScale
 import io.composecast.protocol.DataSource
+import io.composecast.protocol.FontWeight
 import io.composecast.protocol.Modifier
 import io.composecast.protocol.ParamSpec
 import io.composecast.protocol.RepeatItems
 import io.composecast.protocol.ScreenDefinition
+import io.composecast.protocol.TextAlign
+import io.composecast.protocol.TextOverflow
 import io.composecast.protocol.TextStyle
 
 @DslMarker
@@ -24,29 +29,85 @@ open class ComponentsBuilder internal constructor(private val context: String) {
     internal val components = mutableListOf<Component>()
 
     /** [style]: `h1`, `h2`, `h3`, `body`, `caption` ([TextStyle]). */
-    fun text(text: String, style: String = "body", modifier: Modifier = Modifier.NONE) {
-        components += Component.Text(text, TextStyle.fromKey(style), modifier)
+    fun text(
+        text: String,
+        style: String = "body",
+        color: String? = null,
+        fontWeight: FontWeight? = null,
+        fontSize: Int? = null,
+        textAlign: TextAlign? = null,
+        maxLines: Int? = null,
+        overflow: TextOverflow? = null,
+        marquee: Boolean = false,
+        modifier: Modifier = Modifier.NONE,
+    ) {
+        components += Component.Text(
+            text = text,
+            style = TextStyle.fromKey(style),
+            color = color,
+            fontWeight = fontWeight,
+            fontSize = fontSize,
+            textAlign = textAlign,
+            maxLines = maxLines,
+            overflow = overflow,
+            marquee = marquee,
+            modifier = modifier,
+        )
     }
 
-    fun image(url: String, alt: String = "", modifier: Modifier = Modifier.NONE) {
-        components += Component.Image(url, alt, modifier)
+    fun image(
+        url: String,
+        alt: String = "",
+        contentScale: ContentScale? = null,
+        alpha: Float? = null,
+        aspectRatio: Float? = null,
+        modifier: Modifier = Modifier.NONE,
+    ) {
+        components += Component.Image(url, alt, contentScale, alpha, aspectRatio, modifier)
+    }
+
+    /** Small image rendered with `Fit` scaling at [size] dp (default 24). */
+    fun icon(url: String, alt: String = "", size: Int = 24, modifier: Modifier = Modifier.NONE) {
+        components += Component.Icon(url, alt, size, modifier)
+    }
+
+    /** Horizontal rule of [thickness] dp (default 1). */
+    fun divider(thickness: Int = 1, color: String? = null, modifier: Modifier = Modifier.NONE) {
+        components += Component.Divider(thickness, color, modifier)
+    }
+
+    /** Vertical container with card defaults (16 dp padding, 12 dp corner radius, surface background). */
+    fun card(modifier: Modifier = Modifier.NONE, spacing: Int = 0, children: ComponentsBuilder.() -> Unit) {
+        components += Component.Card(nested(children), spacing, modifier)
     }
 
     /** A tappable button; [action] is emitted as a Remote Compose host action ([ActionCodec]). */
-    fun button(label: String, action: Action, modifier: Modifier = Modifier.NONE) {
-        components += Component.Button(label, action, modifier)
+    fun button(
+        label: String,
+        action: Action,
+        variant: ButtonVariant = ButtonVariant.Filled,
+        icon: String? = null,
+        modifier: Modifier = Modifier.NONE,
+    ) {
+        components += Component.Button(label, action, variant, icon, modifier)
     }
 
     /**
      * Convenience for the wire form, e.g. `navigate:onboarding` or `open_url:https://example.com`
      * (grammar in [ActionCodec]). Unknown or malformed actions fail when the screen is built.
      */
-    fun button(label: String, action: String, modifier: Modifier = Modifier.NONE) {
+    fun button(
+        label: String,
+        action: String,
+        variant: ButtonVariant = ButtonVariant.Filled,
+        icon: String? = null,
+        modifier: Modifier = Modifier.NONE,
+    ) {
         val decoded = requireNotNull(ActionCodec.decode(action)) {
             "$context, button '$label': unknown or malformed action '$action'. " +
                 "Expected navigate:<screen>, open_url:<url>, reload:, track:<event> or custom:<payload>"
         }
-        button(label, decoded, modifier)
+        button(label, decoded, variant, icon, modifier)
     }
 
     /** Empty space of [height] dp along the parent's direction (a width inside a row). */

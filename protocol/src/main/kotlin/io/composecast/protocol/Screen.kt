@@ -75,9 +75,34 @@ data class ScreenDefinition(
             val at = "$path[$i]"
             if (component !is Component.Repeat) addAll(modifierProblems(component.modifier, "$at.modifier", parent))
             when (component) {
-                is Component.Text -> Unit
-                is Component.Image -> if (component.url.isBlank()) add("$at.url: must not be blank")
-                is Component.Button -> actionProblem(component.action)?.let { add("$at.action: $it") }
+                is Component.Text -> {
+                    component.color?.let { colorProblem(it)?.let { problem -> add("$at.color: $problem") } }
+                    component.fontSize?.let { if (it <= 0) add("$at.fontSize: must be > 0, was $it") }
+                    component.maxLines?.let { if (it <= 0) add("$at.maxLines: must be > 0, was $it") }
+                }
+                is Component.Image -> {
+                    if (component.url.isBlank()) add("$at.url: must not be blank")
+                    component.alpha?.let { if (it.isNaN() || it !in 0f..1f) add("$at.alpha: must be 0..1, was $it") }
+                    component.aspectRatio?.let {
+                        if (!(it > 0f) || it.isInfinite()) add("$at.aspectRatio: must be > 0, was $it")
+                    }
+                }
+                is Component.Icon -> {
+                    if (component.url.isBlank()) add("$at.url: must not be blank")
+                    if (component.size <= 0) add("$at.size: must be > 0, was ${component.size}")
+                }
+                is Component.Divider -> {
+                    if (component.thickness <= 0) add("$at.thickness: must be > 0, was ${component.thickness}")
+                    component.color?.let { colorProblem(it)?.let { problem -> add("$at.color: $problem") } }
+                }
+                is Component.Button -> {
+                    actionProblem(component.action)?.let { add("$at.action: $it") }
+                    if (component.icon != null && component.icon.isBlank()) add("$at.icon: must not be blank")
+                }
+                is Component.Card -> {
+                    if (component.spacing < 0) add("$at.spacing: must be >= 0, was ${component.spacing}")
+                    addAll(componentProblems(component.children, "$at.children", Parent.Column, depth + 1))
+                }
                 is Component.Spacer ->
                     if (component.height < 0) add("$at.height: must be >= 0, was ${component.height}")
                 is Component.Repeat -> {
@@ -276,22 +301,69 @@ sealed interface Component {
     data class Text(
         val text: String,
         val style: TextStyle = TextStyle.Body,
+        val color: String? = null,
+        val fontWeight: FontWeight? = null,
+        val fontSize: Int? = null,
+        val textAlign: TextAlign? = null,
+        val maxLines: Int? = null,
+        val overflow: TextOverflow? = null,
+        val marquee: Boolean = false,
         override val modifier: Modifier = Modifier.NONE,
     ) : Component
 
     /**
      * Fetched by the server and embedded in the document (ADR 0003). Without a `modifier.height`
-     * its height follows the aspect ratio at the screen's full width — inside rows give it a height.
+     * its height follows [aspectRatio] or the image's natural aspect ratio at the screen's full
+     * width — inside rows give it a height or [aspectRatio] with an explicit width.
      */
     @Serializable
     @SerialName("image")
-    data class Image(val url: String, val alt: String = "", override val modifier: Modifier = Modifier.NONE) :
-        Component
+    data class Image(
+        val url: String,
+        val alt: String = "",
+        val contentScale: ContentScale? = null,
+        val alpha: Float? = null,
+        val aspectRatio: Float? = null,
+        override val modifier: Modifier = Modifier.NONE,
+    ) : Component
+
+    /** Small image rendered with `Fit` scaling at [size] dp (default 24). */
+    @Serializable
+    @SerialName("icon")
+    data class Icon(
+        val url: String,
+        val alt: String = "",
+        val size: Int = 24,
+        override val modifier: Modifier = Modifier.NONE,
+    ) : Component
+
+    /** Horizontal rule of [thickness] dp (default 1). */
+    @Serializable
+    @SerialName("divider")
+    data class Divider(
+        val thickness: Int = 1,
+        val color: String? = null,
+        override val modifier: Modifier = Modifier.NONE,
+    ) : Component
+
+    /** Vertical container with card defaults (16 dp padding, 12 dp corner radius, surface background). */
+    @Serializable
+    @SerialName("card")
+    data class Card(
+        val children: List<Component>,
+        val spacing: Int = 0,
+        override val modifier: Modifier = Modifier.NONE,
+    ) : Component
 
     @Serializable
     @SerialName("button")
-    data class Button(val label: String, val action: Action, override val modifier: Modifier = Modifier.NONE) :
-        Component
+    data class Button(
+        val label: String,
+        val action: Action,
+        val variant: ButtonVariant = ButtonVariant.Filled,
+        val icon: String? = null,
+        override val modifier: Modifier = Modifier.NONE,
+    ) : Component
 
     /** Empty space of [height] dp along the parent's direction (a width inside a row). */
     @Serializable
@@ -362,9 +434,12 @@ sealed interface Component {
     fun strings(): List<Pair<String, String>> = when (this) {
         is Text -> listOf("text" to text)
         is Image -> listOf("url" to url, "alt" to alt)
-        is Button -> listOf("label" to label) + action.strings().map { (field, value) -> "action.$field" to value }
+        is Icon -> listOf("url" to url, "alt" to alt)
+        is Button -> listOf("label" to label) +
+            listOfNotNull(icon?.let { "icon" to it }) +
+            action.strings().map { (field, value) -> "action.$field" to value }
         is Expandable -> listOf("title" to title)
-        is Spacer, is Repeat, is Column, is Row, is Box -> emptyList()
+        is Divider, is Card, is Spacer, is Repeat, is Column, is Row, is Box -> emptyList()
     } + modifier.action?.strings().orEmpty().map { (field, value) -> "modifier.action.$field" to value }
 
     /** Nested component lists by field name (`children`, `content`, `template`, `empty`). */
@@ -372,9 +447,10 @@ sealed interface Component {
         is Column -> listOf("children" to children)
         is Row -> listOf("children" to children)
         is Box -> listOf("children" to children)
+        is Card -> listOf("children" to children)
         is Expandable -> listOf("content" to content)
         is Repeat -> listOf("template" to template, "empty" to empty)
-        is Text, is Image, is Button, is Spacer -> emptyList()
+        is Text, is Image, is Icon, is Divider, is Button, is Spacer -> emptyList()
     }
 
     /** Whether this component or a nested one contains `{{`, or it is a [Repeat]. */
@@ -417,6 +493,111 @@ enum class TextStyle(val key: String) {
                 ?: throw IllegalArgumentException("Unknown text style '$key'. Allowed: $allowed")
         }
     }
+}
+
+@Serializable
+enum class FontWeight {
+    @SerialName("thin")
+    Thin,
+
+    @SerialName("extraLight")
+    ExtraLight,
+
+    @SerialName("light")
+    Light,
+
+    @SerialName("normal")
+    Normal,
+
+    @SerialName("medium")
+    Medium,
+
+    @SerialName("semiBold")
+    SemiBold,
+
+    @SerialName("bold")
+    Bold,
+
+    @SerialName("extraBold")
+    ExtraBold,
+
+    @SerialName("black")
+    Black,
+}
+
+@Serializable
+enum class TextAlign {
+    @SerialName("start")
+    Start,
+
+    @SerialName("center")
+    Center,
+
+    @SerialName("end")
+    End,
+
+    @SerialName("left")
+    Left,
+
+    @SerialName("right")
+    Right,
+
+    @SerialName("justify")
+    Justify,
+}
+
+@Serializable
+enum class TextOverflow {
+    @SerialName("clip")
+    Clip,
+
+    @SerialName("visible")
+    Visible,
+
+    @SerialName("ellipsis")
+    Ellipsis,
+
+    @SerialName("startEllipsis")
+    StartEllipsis,
+
+    @SerialName("middleEllipsis")
+    MiddleEllipsis,
+}
+
+@Serializable
+enum class ContentScale {
+    @SerialName("fit")
+    Fit,
+
+    @SerialName("crop")
+    Crop,
+
+    @SerialName("fillBounds")
+    FillBounds,
+
+    @SerialName("fillWidth")
+    FillWidth,
+
+    @SerialName("fillHeight")
+    FillHeight,
+
+    @SerialName("inside")
+    Inside,
+
+    @SerialName("none")
+    None,
+}
+
+@Serializable
+enum class ButtonVariant {
+    @SerialName("filled")
+    Filled,
+
+    @SerialName("outlined")
+    Outlined,
+
+    @SerialName("text")
+    Text,
 }
 
 /** The JSON format of [ScreenDefinition]: strict (unknown keys are errors), defaults omitted. */

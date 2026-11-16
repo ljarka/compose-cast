@@ -18,6 +18,8 @@ import androidx.compose.remote.creation.dsl.RcProfile
 import androidx.compose.remote.creation.dsl.RcRowHorizontalPositioning
 import androidx.compose.remote.creation.dsl.RcScope
 import androidx.compose.remote.creation.dsl.RcSp
+import androidx.compose.remote.creation.dsl.RcTextAlign
+import androidx.compose.remote.creation.dsl.RcTextOverflow
 import androidx.compose.remote.creation.dsl.RcVerticalPositioning
 import androidx.compose.remote.creation.dsl.background
 import androidx.compose.remote.creation.dsl.border
@@ -27,6 +29,7 @@ import androidx.compose.remote.creation.dsl.fillMaxHeight
 import androidx.compose.remote.creation.dsl.fillMaxSize
 import androidx.compose.remote.creation.dsl.fillMaxWidth
 import androidx.compose.remote.creation.dsl.height
+import androidx.compose.remote.creation.dsl.marquee
 import androidx.compose.remote.creation.dsl.onClick
 import androidx.compose.remote.creation.dsl.padding
 import androidx.compose.remote.creation.dsl.verticalScroll
@@ -37,15 +40,21 @@ import io.composecast.protocol.ActionCodec
 import io.composecast.protocol.Alignment
 import io.composecast.protocol.Arrangement
 import io.composecast.protocol.BrandConfig
+import io.composecast.protocol.ButtonVariant
 import io.composecast.protocol.Component
+import io.composecast.protocol.ContentScale
 import io.composecast.protocol.Dimension
+import io.composecast.protocol.FontWeight
 import io.composecast.protocol.Padding
 import io.composecast.protocol.ScreenDefinition
 import io.composecast.protocol.Shape
+import io.composecast.protocol.TextAlign
+import io.composecast.protocol.TextOverflow
 import io.composecast.protocol.TextStyle
 import java.io.ByteArrayInputStream
 import java.util.logging.Logger
 import javax.imageio.ImageIO
+import kotlin.math.roundToInt
 import io.composecast.protocol.Modifier as CcModifier
 
 /**
@@ -98,13 +107,15 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
         defaultWidth: Dimension? = defaultWidth(slot),
         defaultHeight: Dimension? = null,
         defaultPadding: Padding? = null,
+        defaultBackground: Int? = null,
+        defaultCornerRadius: Float? = null,
         decorate: (Modifier) -> Modifier = { it },
     ): Modifier {
         var r: Modifier = Modifier
         m.weight?.let { weight -> r = slot.weigh?.invoke(r, weight) ?: r }
         r = r.dimension(m.width ?: defaultWidth, horizontal = true)
         r = r.dimension(m.height ?: defaultHeight, horizontal = false)
-        val radius = m.cornerRadius?.toFloat()
+        val radius = if (m.shape == Shape.Circle) null else m.cornerRadius?.toFloat() ?: defaultCornerRadius
         if (radius != null) {
             r = r.clip(RoundedRectShape(radius, radius, radius, radius))
         } else if (m.shape == Shape.Circle) {
@@ -112,7 +123,7 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
             // encoded); an oversized corner radius is clamped by the canvas into a circle/pill.
             r = r.clip(RoundedRectShape(CIRCLE_RADIUS, CIRCLE_RADIUS, CIRCLE_RADIUS, CIRCLE_RADIUS))
         }
-        m.background?.let { r = r.background(parseColor(it)) }
+        (m.background?.let(::parseColor) ?: defaultBackground)?.let { r = r.background(it) }
         m.border?.let { border ->
             val shape = when {
                 radius != null -> ShapeType.ROUNDED_RECTANGLE
@@ -153,7 +164,7 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
     private fun RcScope.renderNode(node: Component, slot: Slot) {
         when (node) {
             is Component.Text -> {
-                val (size, weight) = when (node.style) {
+                val (styleSize, styleWeight) = when (node.style) {
                     TextStyle.H1 -> 32 to RcFontWeight.W700
                     TextStyle.H2 -> 24 to RcFontWeight.W700
                     TextStyle.H3 -> 20 to RcFontWeight.W500
@@ -162,56 +173,74 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
                 }
                 Text(
                     node.text,
-                    modifier = boxModel(node.modifier, slot),
-                    color = TEXT_COLOR,
-                    fontSize = sp(size),
-                    fontWeight = weight,
+                    modifier = boxModel(node.modifier, slot) { m ->
+                        if (node.marquee) {
+                            m.marquee(
+                                iterations = Int.MAX_VALUE,
+                                animationMode = 0,
+                                repeatDelayMillis = MARQUEE_DELAY_MS,
+                                initialDelayMillis = MARQUEE_DELAY_MS,
+                                spacing = MARQUEE_SPACING_DP,
+                                velocity = MARQUEE_VELOCITY_DP_S,
+                            )
+                        } else {
+                            m
+                        }
+                    },
+                    color = node.color?.let(::parseColor) ?: TEXT_COLOR,
+                    fontSize = sp(node.fontSize ?: styleSize),
+                    fontWeight = node.fontWeight?.toRc() ?: styleWeight,
+                    textAlign = node.textAlign?.toRc() ?: RcTextAlign.Start,
+                    overflow = node.overflow?.toRc() ?: RcTextOverflow.Clip,
+                    maxLines = node.maxLines ?: Int.MAX_VALUE,
                 )
             }
 
-            is Component.Image -> {
+            is Component.Image -> renderImage(node, slot)
+
+            is Component.Icon -> {
                 val image = images.get(node.url, ::fetch)
+                val sizeDp = Dimension.Dp(node.size)
+                val modifier = boxModel(node.modifier, slot, defaultWidth = sizeDp, defaultHeight = sizeDp)
                 if (image != null) {
-                    // Without a height: the screen's content width, keeping aspect ratio, but never
-                    // upscaled past the natural size (pixels treated as dp). Height is a
-                    // device-side expression in dp (the player multiplies heights by density in
-                    // DP mode). Only right at full width — nested images should set a height.
-                    val ratio = image.height.toFloat() / image.width
-                    val contentWidthDp = windowWidth() / density() - 2 * SCREEN_PADDING
-                    val modifier = if (node.modifier.height != null) {
-                        boxModel(node.modifier, slot)
-                    } else {
-                        boxModel(node.modifier, slot)
-                            .height(written(min(contentWidthDp * ratio, image.height.toFloat())))
-                    }
-                    Image(
+                    Icon(
                         remoteNamedBitmap("$IMAGE_NAME_PREFIX${node.url}", image),
                         modifier = modifier,
                         contentDescription = node.alt.ifBlank { null },
-                        contentScale = RcContentScale.Fit,
                     )
                 } else {
-                    // Keep the screen usable when an image cannot be fetched.
                     Text(
                         node.alt.ifBlank { node.url },
-                        modifier = boxModel(node.modifier, slot),
+                        modifier = modifier,
                         color = PLACEHOLDER_COLOR,
                         fontSize = sp(12),
                     )
                 }
             }
 
-            is Component.Button -> Box(
-                modifier = boxModel(node.modifier, slot, defaultPadding = Padding(BUTTON_PADDING)) {
-                    it.clip(RoundedRectShape(BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS))
-                        .background(primary)
-                        .onClick { hostAction(ActionCodec.encode(node.action)) }
-                },
-                horizontal = RcHorizontalPositioning.Center,
-                vertical = RcVerticalPositioning.Center,
+            is Component.Divider -> Box(
+                modifier = boxModel(
+                    node.modifier,
+                    slot,
+                    defaultWidth = Dimension.Fill,
+                    defaultHeight = Dimension.Dp(node.thickness),
+                    defaultBackground = node.color?.let(::parseColor) ?: DIVIDER_COLOR,
+                ),
+            ) {}
+
+            is Component.Card -> Column(
+                modifier = boxModel(
+                    node.modifier,
+                    slot,
+                    defaultPadding = Padding(CARD_PADDING),
+                    defaultBackground = SURFACE_COLOR,
+                    defaultCornerRadius = CARD_RADIUS,
+                ),
             ) {
-                Text(node.label, color = ON_PRIMARY, fontSize = sp(16), fontWeight = RcFontWeight.W500)
+                renderChildren(node.children, Slot(Axis.Vertical) { m, w -> m.weight(w) }, node.spacing)
             }
+
+            is Component.Button -> renderButton(node, slot)
 
             is Component.Spacer -> {
                 val size = Dimension.Dp(node.height)
@@ -267,6 +296,147 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
             // BoundScreen expands repeats before rendering (T-006).
             is Component.Repeat -> error("repeat must be expanded before rendering")
         }
+    }
+
+    private fun RcScope.renderImage(node: Component.Image, slot: Slot) {
+        val image = images.get(node.url, ::fetch)
+        if (image == null) {
+            Text(
+                node.alt.ifBlank { node.url },
+                modifier = boxModel(node.modifier, slot),
+                color = PLACEHOLDER_COLOR,
+                fontSize = sp(12),
+            )
+            return
+        }
+        val aspectRatio = node.aspectRatio
+        val widthMod = node.modifier.width
+        val heightMod = node.modifier.height
+        val modifier = when {
+            heightMod != null -> {
+                val defaultWidth = if (widthMod == null && aspectRatio != null && heightMod is Dimension.Dp) {
+                    Dimension.Dp((heightMod.value * aspectRatio).roundToInt())
+                } else {
+                    defaultWidth(slot)
+                }
+                boxModel(node.modifier, slot, defaultWidth = defaultWidth)
+            }
+            aspectRatio != null -> when {
+                widthMod is Dimension.Dp -> boxModel(
+                    node.modifier,
+                    slot,
+                    defaultHeight = Dimension.Dp((widthMod.value / aspectRatio).roundToInt()),
+                )
+                widthMod == Dimension.Wrap ||
+                    (widthMod == null && slot.axis == Axis.Horizontal && node.modifier.weight == null) -> boxModel(
+                    node.modifier,
+                    slot,
+                    defaultHeight = Dimension.Dp((image.width / aspectRatio).roundToInt()),
+                )
+                else -> {
+                    val contentWidthDp = windowWidth() / density() - 2 * SCREEN_PADDING
+                    boxModel(node.modifier, slot).height(written(contentWidthDp / aspectRatio))
+                }
+            }
+            else -> {
+                val ratio = image.height.toFloat() / image.width
+                val contentWidthDp = windowWidth() / density() - 2 * SCREEN_PADDING
+                boxModel(node.modifier, slot)
+                    .height(written(min(contentWidthDp * ratio, image.height.toFloat())))
+            }
+        }
+        Image(
+            remoteNamedBitmap("$IMAGE_NAME_PREFIX${node.url}", image),
+            modifier = modifier,
+            contentDescription = node.alt.ifBlank { null },
+            contentScale = node.contentScale?.toRc() ?: RcContentScale.Fit,
+            alpha = node.alpha ?: 1f,
+        )
+    }
+
+    private fun RcScope.renderButton(node: Component.Button, slot: Slot) {
+        val (bg, contentColor, hasBorder) = when (node.variant) {
+            ButtonVariant.Filled -> Triple(primary, ON_PRIMARY, false)
+            ButtonVariant.Outlined -> Triple(null, primary, true)
+            ButtonVariant.Text -> Triple(null, primary, false)
+        }
+        val iconImage = node.icon?.let { images.get(it, ::fetch) }
+        Box(
+            modifier = boxModel(
+                node.modifier,
+                slot,
+                defaultPadding = Padding(BUTTON_PADDING),
+                defaultBackground = bg,
+                defaultCornerRadius = BUTTON_RADIUS,
+            ) {
+                var r = it
+                if (hasBorder && node.modifier.border == null) {
+                    r = r.border(1f, BUTTON_RADIUS, primary, ShapeType.ROUNDED_RECTANGLE)
+                }
+                if (node.modifier.action == null) {
+                    r = r.onClick { hostAction(ActionCodec.encode(node.action)) }
+                }
+                r
+            },
+            horizontal = RcHorizontalPositioning.Center,
+            vertical = RcVerticalPositioning.Center,
+        ) {
+            if (iconImage != null && node.icon != null) {
+                Row(
+                    horizontal = RcRowHorizontalPositioning.Center,
+                    vertical = RcVerticalPositioning.Center,
+                ) {
+                    Icon(
+                        remoteNamedBitmap("$IMAGE_NAME_PREFIX${node.icon}", iconImage),
+                        modifier = Modifier.width(BUTTON_ICON_SIZE).height(BUTTON_ICON_SIZE),
+                        contentDescription = null,
+                    )
+                    Spacer(Modifier.width(BUTTON_ICON_GAP))
+                    Text(node.label, color = contentColor, fontSize = sp(16), fontWeight = RcFontWeight.W500)
+                }
+            } else {
+                Text(node.label, color = contentColor, fontSize = sp(16), fontWeight = RcFontWeight.W500)
+            }
+        }
+    }
+
+    private fun FontWeight.toRc(): RcFontWeight = when (this) {
+        FontWeight.Thin -> RcFontWeight.Thin
+        FontWeight.ExtraLight -> RcFontWeight.ExtraLight
+        FontWeight.Light -> RcFontWeight.Light
+        FontWeight.Normal -> RcFontWeight.Normal
+        FontWeight.Medium -> RcFontWeight.Medium
+        FontWeight.SemiBold -> RcFontWeight.SemiBold
+        FontWeight.Bold -> RcFontWeight.Bold
+        FontWeight.ExtraBold -> RcFontWeight.ExtraBold
+        FontWeight.Black -> RcFontWeight.Black
+    }
+
+    private fun TextAlign.toRc(): RcTextAlign = when (this) {
+        TextAlign.Start -> RcTextAlign.Start
+        TextAlign.Center -> RcTextAlign.Center
+        TextAlign.End -> RcTextAlign.End
+        TextAlign.Left -> RcTextAlign.Left
+        TextAlign.Right -> RcTextAlign.Right
+        TextAlign.Justify -> RcTextAlign.Justify
+    }
+
+    private fun TextOverflow.toRc(): RcTextOverflow = when (this) {
+        TextOverflow.Clip -> RcTextOverflow.Clip
+        TextOverflow.Visible -> RcTextOverflow.Visible
+        TextOverflow.Ellipsis -> RcTextOverflow.Ellipsis
+        TextOverflow.StartEllipsis -> RcTextOverflow.StartEllipsis
+        TextOverflow.MiddleEllipsis -> RcTextOverflow.MiddleEllipsis
+    }
+
+    private fun ContentScale.toRc(): RcContentScale = when (this) {
+        ContentScale.Fit -> RcContentScale.Fit
+        ContentScale.Crop -> RcContentScale.Crop
+        ContentScale.FillBounds -> RcContentScale.FillBounds
+        ContentScale.FillWidth -> RcContentScale.FillWidth
+        ContentScale.FillHeight -> RcContentScale.FillHeight
+        ContentScale.Inside -> RcContentScale.Inside
+        ContentScale.None -> RcContentScale.None
     }
 
     private fun Alignment.horizontal(): RcHorizontalPositioning = when (this) {
@@ -405,10 +575,18 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
         private const val DEFAULT_BACKGROUND = "#FFFFFF"
         private const val TEXT_COLOR = 0xFF1C1B1F.toInt()
         private const val SURFACE_COLOR = 0xFFF3EDF7.toInt()
+        private const val DIVIDER_COLOR = 0xFFD0C8DC.toInt()
         private const val PLACEHOLDER_COLOR = 0xFF79747E.toInt()
         private const val ON_PRIMARY = 0xFFFFFFFF.toInt()
         private const val BUTTON_RADIUS = 12f
         private const val BUTTON_PADDING = 14
+        private const val BUTTON_ICON_SIZE = 18f
+        private const val BUTTON_ICON_GAP = 8f
+        private const val CARD_RADIUS = 12f
+        private const val CARD_PADDING = 16
+        private const val MARQUEE_DELAY_MS = 1200f
+        private const val MARQUEE_SPACING_DP = 24f
+        private const val MARQUEE_VELOCITY_DP_S = 30f
 
         /** dp; larger than half of any component, so the rounded clip becomes a circle/pill. */
         private const val CIRCLE_RADIUS = 10_000f

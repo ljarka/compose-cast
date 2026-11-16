@@ -21,6 +21,7 @@
               "type": "image",
               "url": "https://picsum.photos/400/200",
               "alt": "Mountains",
+              "contentScale": "crop",
               "modifier": {
                 "height": 88,
                 "cornerRadius": 8
@@ -59,6 +60,7 @@
               "type": "image",
               "url": "https://picsum.photos/400/200",
               "alt": "Lakes",
+              "contentScale": "crop",
               "modifier": {
                 "height": 88,
                 "cornerRadius": 8

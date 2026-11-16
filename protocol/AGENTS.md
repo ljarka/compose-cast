@@ -14,7 +14,7 @@ This module only. **Do not** import `sdk-server`, `server-app`, or `sdk-android`
 | File | Purpose |
 |---|---|
 | `Layout.kt` | `Modifier` (box model, ADR 0020), `Padding` (number or sides), `Dimension` (dp / `fill` / `wrap`), `Border`, `Shape`, `Alignment`, `Arrangement` + their JSON serializers |
-| `Screen.kt` | `ScreenDefinition` (+ `params`, `data`, `lookups`, `error`), `Component` (Text, Image, Button, Spacer, Repeat, Expandable, Column, Row, Box), `TextStyle`, validation (`problems()`/`validate()`, incl. bindings), `ScreenJson` |
+| `Screen.kt` | `ScreenDefinition` (+ `params`, `data`, `lookups`, `error`), `Component` (Text, Image, Icon, Divider, Card, Button, Spacer, Repeat, Expandable, Column, Row, Box), `TextStyle`, `FontWeight`, `TextAlign`, `TextOverflow`, `ContentScale`, `ButtonVariant`, validation (`problems()`/`validate()`, incl. bindings), `ScreenJson` |
 | `Binding.kt` | Data sources (T-006, [ADR 0008](../docs/decisions/0008-server-side-data-sources.md)): `ParamSpec`, `DataSource`, `RepeatItems` (path or zipped parallel arrays), `Template` parser for `{{path \| filter:arg}}`, `Filters` (names/arity), allowed roots |
 | `Action.kt` | `Action` (Navigate, OpenUrl, Reload, Track, Custom) + `ActionCodec` (wire form) |
 | `Actions.kt` | `Actions` (wire type names, used only by the codec), `Headers` (HTTP headers) |
@@ -68,6 +68,12 @@ Actions: `navigate` (screen, params), `open_url` (url), `reload`, `track` (event
   Unordered box model: size includes padding; background/border/clip cover the whole size; no margin.
 - Defaults: children of a column/the screen fill the width, children of a row wrap; `spacer.height`
   is space along the parent's direction. Max nesting depth 32. Cases: `LayoutTest`.
+- Styling & composite components (T-013):
+  - `text`: optional `color`, `fontWeight` (`thin`…`black`), `fontSize` (sp), `textAlign` (`start|center|end|left|right|justify`), `maxLines`, `overflow` (`clip|visible|ellipsis|startEllipsis|middleEllipsis`), `marquee` (`false`).
+  - `image`: optional `contentScale` (`fit|crop|fillBounds|fillWidth|fillHeight|inside|none`), `alpha` (`0..1`), `aspectRatio` (`width/height`).
+  - `icon`: `url`, `alt`, `size` (dp, default 24); `divider`: `thickness` (dp, default 1), `color`.
+  - `card`: `children`, `spacing` (default 0); defaults to 16 dp padding, 12 dp corner radius, surface background.
+  - `button`: `variant` (`filled|outlined|text`), optional leading `icon` URL.
 
 ### Data sources and bindings (T-006)
 

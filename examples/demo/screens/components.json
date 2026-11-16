@@ -1,0 +1,128 @@
+{
+  "id": "components",
+  "title": "Components",
+  "components": [
+    {
+      "type": "text",
+      "text": "Styled & centered headline",
+      "style": "h2",
+      "color": "#6200EE",
+      "fontWeight": "bold",
+      "textAlign": "center"
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "text",
+      "text": "A very long single-line caption that should truncate cleanly with an ellipsis at the end",
+      "style": "caption",
+      "maxLines": 1,
+      "overflow": "ellipsis"
+    },
+    {
+      "type": "spacer",
+      "height": 4
+    },
+    {
+      "type": "text",
+      "text": "Marquee scrolling ticker text for narrow spaces or long announcements",
+      "fontWeight": "medium",
+      "fontSize": 14,
+      "maxLines": 1,
+      "marquee": true
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "card",
+      "children": [
+        {
+          "type": "row",
+          "children": [
+            {
+              "type": "icon",
+              "url": "https://picsum.photos/400/200",
+              "alt": "Badge",
+              "modifier": {
+                "shape": "circle"
+              }
+            },
+            {
+              "type": "text",
+              "text": "Card with Icon & Cropped Image",
+              "style": "h3",
+              "modifier": {
+                "weight": 1.0
+              }
+            }
+          ],
+          "verticalAlignment": "center",
+          "spacing": 8
+        },
+        {
+          "type": "image",
+          "url": "https://picsum.photos/400/200",
+          "alt": "Cropped 16:9 banner",
+          "contentScale": "crop",
+          "alpha": 0.85,
+          "aspectRatio": 1.7777778,
+          "modifier": {
+            "cornerRadius": 10
+          }
+        },
+        {
+          "type": "divider",
+          "thickness": 2,
+          "color": "#6200EE"
+        },
+        {
+          "type": "row",
+          "children": [
+            {
+              "type": "button",
+              "label": "Filled",
+              "action": {
+                "type": "reload"
+              },
+              "icon": "https://picsum.photos/400/200",
+              "modifier": {
+                "weight": 1.0
+              }
+            },
+            {
+              "type": "button",
+              "label": "Outlined",
+              "action": {
+                "type": "reload"
+              },
+              "variant": "outlined",
+              "modifier": {
+                "weight": 1.0
+              }
+            },
+            {
+              "type": "button",
+              "label": "Text",
+              "action": {
+                "type": "reload"
+              },
+              "variant": "text"
+            }
+          ],
+          "spacing": 8
+        }
+      ],
+      "spacing": 10
+    }
+  ]
+}
