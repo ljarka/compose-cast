@@ -26,6 +26,7 @@ one (never silently contradict an accepted ADR).
 | [0018](0018-distribution-like-immich.md) | Distribution like Immich: release assets + GHCR image + Maven Central SDK | Accepted; Maven Central part superseded by 0019 |
 | [0019](0019-self-hosted-maven-reposilite.md) | Android artifacts on a self-hosted Maven repository (Reposilite on the VPS) | Accepted |
 | [0020](0020-component-tree-and-modifiers.md) | Component tree (column/row/box) and a fixed box-model modifier | Accepted |
+| [0021](0021-version-negotiation.md) | Client–server version negotiation (compatibility policy) | Accepted |
 
 ## Template
 

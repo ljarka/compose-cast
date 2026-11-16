@@ -19,6 +19,12 @@ object Headers {
     /** SDK version sent by the player on every `/screens/{id}` request; used for compatibility checks. */
     const val PLAYER_VERSION = "X-Composecast-Player-Version"
 
+    /** Player's `CoreDocument.DOCUMENT_API_LEVEL` (T-004). */
+    const val RC_API_LEVEL = "X-Composecast-Rc-Api-Level"
+
+    /** Bitmask of Remote Compose profiles supported by the player (T-004). */
+    const val RC_PROFILES = "X-Composecast-Rc-Profiles"
+
     /** Screen title sent with `GET /screens/{id}`; UTF-8, percent-encoded (URL encoding). */
     const val SCREEN_TITLE = "X-Composecast-Screen-Title"
 }

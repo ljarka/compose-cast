@@ -5,6 +5,7 @@ import io.composecast.protocol.ScreenDefinition
 import io.composecast.protocol.ScreenJson
 import java.nio.file.Path
 import java.security.MessageDigest
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.nameWithoutExtension
@@ -40,7 +41,11 @@ class RemoteScreen internal constructor(
  * What a render may depend on. Today the request's query parameters; README Etap 12 (targeting)
  * will add client attributes. No cache key needs maintaining: [RemoteScreen.etag] hashes the output.
  */
-data class RenderContext(val params: Map<String, String> = emptyMap()) {
+data class RenderContext(
+    val params: Map<String, String> = emptyMap(),
+    val rcApiLevel: Int? = null,
+    val rcProfiles: Int? = null,
+) {
     /** A required parameter; missing → [ScreenParameterException] (the server answers 400). */
     fun param(name: String): String = params[name] ?: throw ScreenParameterException("Missing parameter '$name'")
 
@@ -51,6 +56,10 @@ data class RenderContext(val params: Map<String, String> = emptyMap()) {
 
 /** The request lacks or has an invalid parameter: a client error (HTTP 400), not a server bug. */
 class ScreenParameterException(message: String) : IllegalArgumentException(message)
+
+/** The client's Remote Compose player is too old for the requested document (HTTP 426). */
+class UnsupportedClientVersionException(val minApiLevel: Int, message: String, cause: Throwable? = null) :
+    RuntimeException(message, cause)
 
 /**
  * All screens of an app. Static screens (DSL `screen`, JSON) are rendered and validated once at
@@ -89,22 +98,46 @@ class ScreenRegistry internal constructor(
     /** Rendered per request from data sources/params (T-006). */
     fun isBound(id: String): Boolean = id in bound
 
+    private val staticByVersion = ConcurrentHashMap<Triple<String, Int, Int>, RemoteScreen>()
+
     /**
-     * The document for [id] in [context]: the cached one for static screens (they ignore params),
-     * a fresh render for bound and dynamic ones. `null` = unknown id. Blocks while data sources
-     * are fetched: call it off the request thread (server-app uses `Dispatchers.IO`).
+     * The document for [id] in [context]: the cached one for static screens (keyed by RC API
+     * level/profiles when negotiated), a fresh render for bound and dynamic ones. `null` = unknown
+     * id. Blocks while data sources are fetched: call it off the request thread (server-app uses
+     * `Dispatchers.IO`).
      * @throws ScreenParameterException when a required parameter is missing (HTTP 400)
      * @throws DataSourceException when a data source fails and the screen has no `error` components (HTTP 502)
+     * @throws UnsupportedClientVersionException when the client's RC API level is below minimum or unsupported (HTTP 426)
      */
     fun render(id: String, context: RenderContext = RenderContext.EMPTY): RemoteScreen? {
-        static[id]?.let { return it }
-        bound[id]?.let { return render(it.bind(context)) }
+        val apiLevel = context.rcApiLevel ?: RemoteComposeRenderer.MAX_API_LEVEL
+        val profiles = context.rcProfiles ?: RemoteComposeRenderer.DEFAULT_PROFILES
+        if (apiLevel < RemoteComposeRenderer.MIN_API_LEVEL) {
+            throw UnsupportedClientVersionException(
+                RemoteComposeRenderer.MIN_API_LEVEL,
+                "Client RC API level $apiLevel is below minimum supported ${RemoteComposeRenderer.MIN_API_LEVEL}",
+            )
+        }
+        val targetLevel = minOf(apiLevel, RemoteComposeRenderer.MAX_API_LEVEL)
+        static[id]?.let { defaultScreen ->
+            if (targetLevel == RemoteComposeRenderer.MAX_API_LEVEL &&
+                profiles == RemoteComposeRenderer.DEFAULT_PROFILES
+            ) {
+                return defaultScreen
+            }
+            return staticByVersion.computeIfAbsent(Triple(id, targetLevel, profiles)) {
+                render(defaultScreen.definition, targetLevel, profiles)
+            }
+        }
+        bound[id]?.let { return render(it.bind(context), targetLevel, profiles) }
         val build = dynamic[id] ?: return null
         val definition = build(context).also { it.validate() }
-        return render(if (definition.isBound) BoundScreen(definition, fetcher).bind(context) else definition)
+        val resolved = if (definition.isBound) BoundScreen(definition, fetcher).bind(context) else definition
+        return render(resolved, targetLevel, profiles)
     }
 
-    private fun render(definition: ScreenDefinition) = RemoteScreen(definition, renderer.render(definition))
+    private fun render(definition: ScreenDefinition, apiLevel: Int, profiles: Int) =
+        RemoteScreen(definition, renderer.render(definition, apiLevel, profiles))
 }
 
 @ScreenDslMarker

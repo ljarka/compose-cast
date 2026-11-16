@@ -216,4 +216,13 @@ README roadmap's "Etap" numbers.
     `icon`. Validation + bindings updated across `protocol` and `sdk-server`. RC alpha23 facts
     recorded (`docs/remote-compose.md` #13–14): `Modifier.marquee` needs `velocity > 0`, `Icon`
     has no tint. Updated `layouts` cards to `ContentScale.Crop`, added `components` demo screen
-    (DSL + JSON, byte-identical) and `components.png` golden screenshot. T-004 is next.
+    (DSL + JSON, byte-identical) and `components.png` golden screenshot (`b75647f`). T-004 is next.
+41. **T-004 version negotiation** ([task](tasks/T-004-version-negotiation.md),
+    [ADR 0021](decisions/0021-version-negotiation.md)): `Headers.RC_API_LEVEL` / `RC_PROFILES` and
+    `UpgradeRequiredResponse` in `protocol`; `ComposeCastClient` sends `CoreDocument.DOCUMENT_API_LEVEL`
+    and `RcProfiles.PROFILE_ANDROIDX` on every screen fetch and throws
+    `ComposeCastUpgradeRequiredException` on HTTP 426 (`app-shell` shows `"Please update the app to
+    continue."`). `RemoteComposeRenderer` and `ScreenRegistry` render at `min(client, server)` and
+    cache static screens per `(id, level, profiles)`; verified in alpha23 that `DOC_DENSITY_BEHAVIOR`
+    requires API level 8+, so `MIN_API_LEVEL = 8` and levels < 8 (or unsupported ops) return `426`
+    with `minApiLevel`. T-014 is next.

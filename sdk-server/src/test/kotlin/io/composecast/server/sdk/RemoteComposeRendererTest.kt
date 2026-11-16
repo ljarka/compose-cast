@@ -253,4 +253,18 @@ class RemoteComposeRendererTest {
             "BorderModifierOperation",
         ).forEach { assertTrue(it in dump, "no $it in:\n$dump") }
     }
+
+    @Test
+    fun `renders and decodes at RC API level 8+ and rejects levels below 8`() {
+        for (level in listOf(8, 9)) {
+            val screen = assertNotNull(registry.render("main", RenderContext(rcApiLevel = level)))
+            assertTrue("COLUMN" in screen.describe(), "level $level failed to decode")
+        }
+        for (tooOld in listOf(5, 6, 7)) {
+            val ex = assertFailsWith<UnsupportedClientVersionException> {
+                registry.render("main", RenderContext(rcApiLevel = tooOld))
+            }
+            assertEquals(8, ex.minApiLevel)
+        }
+    }
 }

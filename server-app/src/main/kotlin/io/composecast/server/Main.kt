@@ -1,7 +1,9 @@
 package io.composecast.server
 
+import io.composecast.protocol.UpgradeRequiredResponse
 import io.composecast.server.sdk.DataSourceException
 import io.composecast.server.sdk.ScreenParameterException
+import io.composecast.server.sdk.UnsupportedClientVersionException
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
@@ -41,6 +43,13 @@ fun Application.module(screens: LiveScreens) {
         // An external API failed and the screen has no `error` components (T-006); already logged.
         exception<DataSourceException> { call, cause ->
             call.respond(HttpStatusCode.BadGateway, mapOf("error" to cause.message))
+        }
+        // Client player RC API level is too old for the requested screen (T-004).
+        exception<UnsupportedClientVersionException> { call, cause ->
+            call.respond(
+                HttpStatusCode.UpgradeRequired,
+                UpgradeRequiredResponse(cause.message ?: "App update required", cause.minApiLevel),
+            )
         }
         exception<Throwable> { call, cause ->
             call.application.environment.log.error("Unhandled error for ${call.request.local.uri}", cause)

@@ -223,8 +223,11 @@ All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alph
 ## Document versions
 
 - `CoreDocument.DOCUMENT_API_LEVEL = 8` in alpha20 and alpha23; header version 1.1.0.
-- The writer accepts API levels 6–8 for our documents (level 5 → `Unsupported API level`);
-  operations are validated per level/profile at **creation** time (`Operations`,
+- The writer accepts API levels 6–8 in general, but `Header.DOC_DENSITY_BEHAVIOR` (required for our
+  DP-unit documents, [ADR 0004](decisions/0004-units-dp-and-sp.md)) requires API level 8+ in alpha23
+  (`RemoteComposeWriter.filterAndValidateTags` throws `IllegalArgumentException` at levels 6–7).
+  `RemoteComposeRenderer.MIN_API_LEVEL` is therefore `8` ([ADR 0021](decisions/0021-version-negotiation.md)).
+- Operations are validated per level/profile at **creation** time (`Operations`,
   `RemoteComposeBuffer.setVersion`), so an unsupported op fails on the server.
 - We write profile `RcProfiles.PROFILE_ANDROIDX` (512); the profile is stored in the header
   (`DOC_PROFILES`) and the reader needs it to know e.g. `CORE_TEXT`.

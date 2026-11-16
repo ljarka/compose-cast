@@ -68,9 +68,27 @@ fun Application.configureRouting(screens: LiveScreens) {
 private suspend fun ApplicationCall.renderScreen(screens: LiveScreens): RemoteScreen? {
     val id = parameters["id"]!!
     val params = request.queryParameters.entries().associate { (name, values) -> name to values.first() }
+    val rawApiLevel = request.headers[Headers.RC_API_LEVEL]
+    val rcApiLevel = rawApiLevel?.toIntOrNull()
+    if (rawApiLevel == null) {
+        application.environment.log.debug(
+            "Missing {} header for screen '{}', using server default",
+            Headers.RC_API_LEVEL,
+            id,
+        )
+    } else if (rcApiLevel == null) {
+        application.environment.log.warn(
+            "Invalid {} header '{}', using server default",
+            Headers.RC_API_LEVEL,
+            rawApiLevel,
+        )
+    }
+    val rcProfiles = request.headers[Headers.RC_PROFILES]?.toIntOrNull()
     // Bound screens block on data sources (T-006): keep them off the request threads.
     val registry = screens.current
-    val screen = withContext(Dispatchers.IO) { registry.render(id, RenderContext(params)) }
+    val screen = withContext(Dispatchers.IO) {
+        registry.render(id, RenderContext(params, rcApiLevel = rcApiLevel, rcProfiles = rcProfiles))
+    }
     if (screen == null) respond(HttpStatusCode.NotFound, ErrorResponse("screen_not_found", "Screen '$id' not found"))
     return screen
 }

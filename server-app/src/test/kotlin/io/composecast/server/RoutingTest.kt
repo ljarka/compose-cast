@@ -129,4 +129,26 @@ class RoutingTest {
         assertEquals(HttpStatusCode.NotFound, client.get("/screens/main").status)
         assertEquals(HttpStatusCode.OK, client.get("/screens/only").status)
     }
+
+    @Test
+    fun `version negotiation serves level 8+ and returns 426 for levels below 8`() = test {
+        for (level in listOf(8, 9)) {
+            val ok = client.get("/screens/main") {
+                header(Headers.RC_API_LEVEL, level)
+                header(Headers.RC_PROFILES, 512)
+            }
+            assertEquals(HttpStatusCode.OK, ok.status, "expected 200 at API level $level")
+            assertNotNull(ok.headers[HttpHeaders.ETag])
+        }
+
+        for (tooOld in listOf(5, 7)) {
+            val upgrade = client.get("/screens/main") {
+                header(Headers.RC_API_LEVEL, tooOld)
+                header(Headers.RC_PROFILES, 512)
+            }
+            assertEquals(HttpStatusCode.UpgradeRequired, upgrade.status)
+            val body = upgrade.bodyAsText().replace(" ", "")
+            assertTrue("\"minApiLevel\":8" in body, body)
+        }
+    }
 }

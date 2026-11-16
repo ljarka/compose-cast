@@ -1,10 +1,13 @@
 package io.composecast.android
 
 import android.util.Log
+import androidx.compose.remote.core.CoreDocument
+import androidx.compose.remote.core.RcProfiles
 import io.composecast.protocol.Action
 import io.composecast.protocol.ActionCodec
 import io.composecast.protocol.BrandConfig
 import io.composecast.protocol.Headers
+import io.composecast.protocol.UpgradeRequiredResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.android.Android
@@ -71,11 +74,20 @@ class ComposeCastClient(private val config: ComposeCastConfig) {
                 params.forEach { (name, value) -> parameters.append(name, value) }
             }
             header(Headers.PLAYER_VERSION, config.playerVersion)
+            header(Headers.RC_API_LEVEL, CoreDocument.DOCUMENT_API_LEVEL)
+            header(Headers.RC_PROFILES, RcProfiles.PROFILE_ANDROIDX)
             cached?.let { header(HttpHeaders.IfNoneMatch, it.etag) }
             expectSuccess = false // 304 is not an error here
         }
         val screen = when {
             response.status == HttpStatusCode.NotModified && cached != null -> cached
+            response.status == HttpStatusCode.UpgradeRequired -> {
+                val upgrade = runCatching { response.body<UpgradeRequiredResponse>() }.getOrNull()
+                throw ComposeCastUpgradeRequiredException(
+                    minApiLevel = upgrade?.minApiLevel ?: (CoreDocument.DOCUMENT_API_LEVEL + 1),
+                    message = upgrade?.error ?: "App update required",
+                )
+            }
             !response.status.isSuccess() -> throw ComposeCastHttpException(
                 response.status.value,
                 "HTTP ${response.status.value} for screen '$id'",
@@ -103,4 +115,9 @@ class ComposeCastClient(private val config: ComposeCastConfig) {
 }
 
 /** The server answered with a non-2xx [status] (e.g. 404 = unknown screen). */
-class ComposeCastHttpException(val status: Int, message: String, cause: Throwable? = null) : Exception(message, cause)
+open class ComposeCastHttpException(val status: Int, message: String, cause: Throwable? = null) :
+    Exception(message, cause)
+
+/** The server answered 426 Upgrade Required: this app's Remote Compose player is too old (T-004). */
+class ComposeCastUpgradeRequiredException(val minApiLevel: Int, message: String) :
+    ComposeCastHttpException(426, message)

@@ -46,6 +46,7 @@ import io.composecast.android.ComposeCastClient
 import io.composecast.android.ComposeCastConfig
 import io.composecast.android.ComposeCastHttpException
 import io.composecast.android.ComposeCastScreen
+import io.composecast.android.ComposeCastUpgradeRequiredException
 import io.composecast.android.ScreenDocument
 import io.composecast.protocol.Action
 import io.composecast.protocol.ActionCodec
@@ -170,11 +171,14 @@ private fun ComposeCastApp(client: ComposeCastClient, serverUrl: String, onOpenU
                 ) {
                     val error = screenState!!.exceptionOrNull()
                     Text(
-                        text = if (error is ComposeCastHttpException) {
-                            // The server answered (e.g. 404 unknown screen): not a connectivity problem.
-                            "Server error ${error.status} for screen '$screenId'."
-                        } else {
-                            "Cannot reach $serverUrl.\nCheck app.serverUrl in compose-cast.properties.\n\n${error?.message}"
+                        text = when (error) {
+                            is ComposeCastUpgradeRequiredException ->
+                                "Please update the app to continue."
+                            is ComposeCastHttpException ->
+                                // The server answered (e.g. 404 unknown screen): not a connectivity problem.
+                                "Server error ${error.status} for screen '$screenId'."
+                            else ->
+                                "Cannot reach $serverUrl.\nCheck app.serverUrl in compose-cast.properties.\n\n${error?.message}"
                         },
                         textAlign = TextAlign.Center,
                     )

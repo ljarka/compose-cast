@@ -52,6 +52,7 @@ import io.composecast.protocol.TextAlign
 import io.composecast.protocol.TextOverflow
 import io.composecast.protocol.TextStyle
 import java.io.ByteArrayInputStream
+import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
 import javax.imageio.ImageIO
 import kotlin.math.roundToInt
@@ -69,10 +70,38 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
 
     /** Images fetched so far, shared by all (concurrent) renders of one registry. */
     private val images = ImageCache<EncodedImage>()
+    private val profiles = ConcurrentHashMap<Pair<Int, Int>, RcProfile>()
 
-    fun render(screen: ScreenDefinition): ByteArray = createRcBuffer(PROFILE, *HEADER_TAGS) {
-        Column(Modifier.fillMaxSize().background(background).verticalScroll().padding(SCREEN_PADDING)) {
-            renderChildren(screen.components, Slot(Axis.Vertical) { m, w -> m.weight(w) })
+    fun render(screen: ScreenDefinition, apiLevel: Int = MAX_API_LEVEL, profiles: Int = DEFAULT_PROFILES): ByteArray {
+        if (apiLevel < MIN_API_LEVEL) {
+            throw UnsupportedClientVersionException(
+                MIN_API_LEVEL,
+                "Client RC API level $apiLevel is below minimum supported $MIN_API_LEVEL",
+            )
+        }
+        val targetLevel = minOf(apiLevel, MAX_API_LEVEL)
+        val targetProfiles = (profiles and DEFAULT_PROFILES).let { if (it == 0) DEFAULT_PROFILES else it }
+        val profile = this.profiles.computeIfAbsent(targetLevel to targetProfiles) { (level, mask) ->
+            RcProfile(
+                Profile(level, mask, PlatformServices) { info, p, tag -> RemoteComposeWriter(info, null, p, tag) },
+                false,
+            )
+        }
+        return try {
+            createRcBuffer(profile, *HEADER_TAGS) {
+                Column(Modifier.fillMaxSize().background(background).verticalScroll().padding(SCREEN_PADDING)) {
+                    renderChildren(screen.components, Slot(Axis.Vertical) { m, w -> m.weight(w) })
+                }
+            }
+        } catch (e: Exception) {
+            if (targetLevel < MAX_API_LEVEL) {
+                throw UnsupportedClientVersionException(
+                    targetLevel + 1,
+                    "Screen '${screen.id}' requires a newer RC API level than $targetLevel: ${e.message}",
+                    e,
+                )
+            }
+            throw e
         }
     }
 
@@ -593,14 +622,13 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
         private const val IMAGE_NAME_PREFIX = "image:"
         private const val SCREEN_PADDING = 16f
 
-        private val PROFILE = RcProfile(
-            Profile(
-                CoreDocument.DOCUMENT_API_LEVEL,
-                RcProfiles.PROFILE_ANDROIDX,
-                PlatformServices,
-            ) { info, profile, tag -> RemoteComposeWriter(info, null, profile, tag) },
-            false,
-        )
+        /**
+         * `Header.DOC_DENSITY_BEHAVIOR` requires API level 8+ in RC alpha23
+         * (`RemoteComposeWriter.filterAndValidateTags`), so 8 is the minimum supported level.
+         */
+        const val MIN_API_LEVEL = 8
+        const val MAX_API_LEVEL = CoreDocument.DOCUMENT_API_LEVEL
+        const val DEFAULT_PROFILES = RcProfiles.PROFILE_ANDROIDX
 
         /** All sizes in the document are dp/sp; without this the player mixes pixels and dp. */
         private val HEADER_TAGS = arrayOf(
