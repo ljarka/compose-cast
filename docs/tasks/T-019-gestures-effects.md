@@ -1,6 +1,6 @@
 # T-019 — Gestures and visual effects
 
-Status: later (only when a real app needs it) · Roadmap: Etap 5 · Depends on: T-012
+Status: later (only when a real app needs it) · Roadmap: Etap 5 · Depends on: T-012 · Module: protocol, sdk-server, sdk-android
 
 ## Goal
 

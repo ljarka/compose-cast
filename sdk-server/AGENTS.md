@@ -17,10 +17,10 @@ Do NOT load `server-app`, `sdk-android`, or other modules unless cross-cutting.
 | `ScreenRegistry.kt` | `composeCast {}` builder (`screen {}`, `dynamicScreen {}`, `screen(definition)`, `screensFrom(dir)`, `brand`), `ScreenRegistry` (`render(id, RenderContext)`), `RenderContext`, `ScreenParameterException`, `RemoteScreen` (definition, bytes, `etag`) |
 | `ImageCache.kt` | Thread-safe LRU (256) of fetched images; failures cached 60 s only |
 | `RemoteComposeRenderer.kt` | **Only** file using the Remote Compose creation API; `ScreenDefinition` → RC bytes |
+| `ImageLoader.kt` | `ImageLoader` fun interface + `HttpImageLoader` (http/https only, max 5 MB); inject a fake one in tests |
 
 The screen model itself (`ScreenDefinition`, `Component`, `TextStyle`, `ScreenJson`, validation)
 is in `protocol/.../Screen.kt` ([ADR 0015](../docs/decisions/0015-screen-model-is-the-product.md)).
-| `ImageLoader.kt` | `ImageLoader` fun interface + `HttpImageLoader` (http/https only, max 5 MB); inject a fake one in tests |
 
 ## Usage
 

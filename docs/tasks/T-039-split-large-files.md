@@ -4,8 +4,8 @@ Status: queued (after T-026) · Roadmap: chores · Depends on: — · Module: sd
 
 ## Goal
 No source file an agent must edit is longer than ~400 lines, and no `AGENTS.md` is longer than
-150 lines (rule R9). Today `RemoteComposeRenderer.kt` is ~800 lines, `Screens.kt` ~470, `Binder.kt`
-~400, and `protocol/AGENTS.md` is 133 lines.
+150 lines (rule R9). Today `RemoteComposeRenderer.kt` is ~800 lines, `Screen.kt` ~730, `Screens.kt`
+~470, `Binder.kt` ~400, and `protocol/AGENTS.md` is 133 lines.
 
 ## Design
 - `sdk-server`: split the renderer into a package `io.composecast.server.sdk.render` (one file per

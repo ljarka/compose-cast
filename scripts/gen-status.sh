@@ -18,7 +18,7 @@ def table(text):
 
 tasks = table((root / "docs/tasks/README.md").read_text())
 tasks = [[re.sub(r"\]\((T-[^)]+)\)", r"](tasks/\1)", c) for c in row] for row in tasks]
-ready = [r for r in tasks if r[2] == "ready"]
+ready = [r for r in tasks if r[2] == "ready" or r[2].startswith("ready ")]
 waiting = [r for r in tasks if r[2].startswith(("needs design", "blocked"))]
 
 etaps = []
@@ -27,7 +27,7 @@ for line in (root / "README.md").read_text().splitlines():
     if line.startswith("### Etap"):
         section = [re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", line[4:]), 0, 0]
         etaps.append(section)
-    elif line.startswith("## ") and section:
+    elif line.startswith(("## ", "### ")) and section:
         section = None
     elif section and re.match(r"- \[[ x]\]", line):
         section[2] += 1

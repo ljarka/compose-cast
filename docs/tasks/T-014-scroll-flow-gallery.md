@@ -1,6 +1,6 @@
 # T-014 — Scrolling, Flow layout, galleries and grids
 
-Status: queued (after T-004) · Roadmap: Etap 5 · Depends on: T-012
+Status: done (70e3329) · Roadmap: Etap 5 · Depends on: T-012 · Module: protocol, sdk-server, compat-tests
 
 ## Goal
 

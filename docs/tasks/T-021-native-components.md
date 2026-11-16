@@ -1,6 +1,6 @@
 # T-021 — Native components through RC `Custom`: text input, search, maps, video
 
-Status: queued (after T-018); spike first · Roadmap: Etap 10 · Depends on: T-012, T-017
+Status: queued (after T-018); spike first · Roadmap: Etap 10 · Depends on: T-012, T-017 · Module: protocol, sdk-server, sdk-android
 
 ## Goal
 

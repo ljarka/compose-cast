@@ -1,6 +1,6 @@
 # T-015 — Adaptive layouts: FitBox, collapsible row/column, size constraints
 
-Status: queued (after T-014) · Roadmap: Etap 5 · Depends on: T-012
+Status: done (532da5c) · Roadmap: Etap 5 · Depends on: T-012 · Module: protocol, sdk-server, compat-tests
 
 ## Goal
 

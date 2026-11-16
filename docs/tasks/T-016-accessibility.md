@@ -1,6 +1,6 @@
 # T-016 — Accessibility semantics
 
-Status: queued (after T-015) · Roadmap: Etap 5 · Depends on: T-012
+Status: done (bd3cd2c) · Roadmap: Etap 5 · Depends on: T-012 · Module: protocol, sdk-server, compat-tests
 
 ## Goal
 

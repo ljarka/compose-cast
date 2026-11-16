@@ -5,7 +5,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Next
 
-- No `ready` task: specify one.
+- **[T-026 Image fetch hardening (no private addresses)](tasks/T-026-image-fetch-hardening.md)** (Etap 6) — the `ready` task.
 
 ## Task queue (priority order)
 
@@ -67,7 +67,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | Etap 9 — White-label app export + TV shows milestone | 1/6 |
 | Etap 10 — Interactivity (DivKit core) | 1/8 |
 | Etap 11 — Release 0.1.0-alpha | 0/2 |
-| Etap 12 — Feature flags, A/B tests, analytics, push | 0/10 |
+| Etap 12 — Feature flags, A/B tests, analytics, push | 0/8 |
 
 ## Waiting for a decision or design
 

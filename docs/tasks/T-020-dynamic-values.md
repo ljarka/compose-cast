@@ -1,6 +1,6 @@
 # T-020 — Dynamic values: live clock, formatted numbers, light/dark colors, conditions
 
-Status: later · Roadmap: Etap 7 / Etap 10 · Depends on: T-012
+Status: later · Roadmap: Etap 7 / Etap 10 · Depends on: T-012 · Module: protocol, sdk-server
 
 ## Goal
 

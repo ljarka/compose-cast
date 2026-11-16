@@ -1,6 +1,6 @@
 # T-022 — Advanced RC features: templates, sensors, drag, particles, sound
 
-Status: later (pick by real use case) · Roadmap: Etap 10 · Depends on: T-012, T-017
+Status: later (pick by real use case) · Roadmap: Etap 10 · Depends on: T-012, T-017 · Module: protocol, sdk-server, sdk-android
 
 ## Goal
 

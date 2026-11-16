@@ -35,7 +35,7 @@ designers) need to change UI without a code deploy; the Kotlin DSL is too high a
 | UI tech | Freemarker (server-rendered HTML) + HTMX for partial updates — ADR 0012 |
 | Preview | Server-rendered PNG from RC binary (browser shows image) — ADR 0013 |
 | History | `screen_history` table in SQLite; timestamp key `20261107T143200Z[-n]` — ADR 0014/0016 |
-| Deployment | Admin mounted into `server-app` on the same port at `/admin/*` (not a separate module) |
+| Deployment | Admin module (`server-admin`) mounted into `server-app` on the same port at `/admin/*` |
 
 ## Review notes resolved
 

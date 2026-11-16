@@ -1,6 +1,6 @@
 # T-004 — Version negotiation
 
-Status: queued (after Milestone 1) · Roadmap: Etap 7 · Depends on: T-003
+Status: done (da06bdd) · Roadmap: Etap 7 · Depends on: T-003 · Module: protocol, sdk-server, sdk-android
 
 Deprioritized 2026-11-07 (owner): needed before apps are in users' hands, not before the first
 sample app. `ComposeCastClient` already sends `Headers.PLAYER_VERSION`, so servers can start

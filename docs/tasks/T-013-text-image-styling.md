@@ -1,6 +1,6 @@
 # T-013 — Text and image options, Icon, Divider, Card, button variants
 
-Status: ready · Roadmap: Etap 5 · Depends on: T-012
+Status: done (b75647f) · Roadmap: Etap 5 · Depends on: T-012 · Module: protocol, sdk-server, compat-tests
 
 ## Goal
 
