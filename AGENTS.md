@@ -65,6 +65,10 @@ Do not load the whole project.
 7. Git: work on `main` (or the branch/worktree you were given). **Commit** finished, verified work
    (`verify.sh` green) without asking: small commits, conventional messages (`feat:`, `docs:`,
    `fix:`). **Push only when the owner asks** (owner, 2026-11-16).
+8. **Never commit sensitive data:** no secrets, `.env`, keystores, real API keys, personal data, and
+   no AI chat histories or tool state (`.claude/`, `.copilot/`, `copilot/`, `.obsidian/`, all
+   gitignored). Before every commit, check `git status` and stage files by name, never `git add -A`
+   or `git add .`.
 
 ## Definition of Done (every task)
 

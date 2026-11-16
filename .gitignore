@@ -10,3 +10,21 @@
 local.properties
 **/.kotlin/
 **/build/
+
+# Obsidian vault settings
+.obsidian/
+
+# AI tooling
+.claude/
+.copilot/
+copilot/
+
+# Secrets (never commit; templates like distribution/example.env are fine)
+.env
+*.env
+!distribution/example.env
+*.jks
+*.keystore
+*.p12
+*.pem
+data/
