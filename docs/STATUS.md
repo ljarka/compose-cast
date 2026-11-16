@@ -27,14 +27,24 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-015 Adaptive layouts (FitBox, collapsible)](tasks/T-015-adaptive-layouts.md) | Etap 5 | done (`532da5c`) |
 | [T-016 Accessibility semantics](tasks/T-016-accessibility.md) | Etap 5 | done (`bd3cd2c`) |
 | [T-026 Image fetch hardening (no private addresses)](tasks/T-026-image-fetch-hardening.md) | Etap 6 | ready — small security fix before Milestone 1 |
-| [T-025 Milestone 1: weather app in its own repo + measurements](tasks/T-025-weather-app-milestone.md) | Etap 6 | queued (after T-026); owner steps: first release, Reposilite, domain |
+| [T-039 Split large files and long AGENTS.md](tasks/T-039-split-large-files.md) | chores | queued (after T-026); small contexts for agents (ADR 0023) |
+| [T-025 Milestone 1: weather app in its own repo + measurements](tasks/T-025-weather-app-milestone.md) | Etap 6 | queued (after T-039); owner steps: first release, Reposilite, domain |
 | [T-007 Admin panel MVP](tasks/T-007-admin-panel.md) | Etap 8 | queued (after T-025); **core of the product**; first step: write the MVP cut into the task file |
 | [T-029 Visual screen editor (no JSON)](tasks/T-029-visual-screen-editor.md) | Etap 8 | queued (after T-007) |
-| [T-027 Images loaded by the SDK (lists)](tasks/T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-029); blocks the TV shows milestone |
+| [T-031 Data source wizard (URL → screens)](tasks/T-031-data-source-wizard.md) | Etap 8 | queued (after T-029) |
+| [T-030 App templates](tasks/T-030-app-templates.md) | Etap 8 | queued (after T-031) |
+| [T-032 Live preview on a phone](tasks/T-032-live-preview.md) | Etap 8 | queued (after T-030) |
+| [T-038 Feature flags and A/B tests](tasks/T-038-feature-flags-ab.md) | Etap 12 | queued (after T-032) |
+| [T-037 Analytics in the panel](tasks/T-037-analytics.md) | Etap 12 | queued (after T-038) |
+| [T-033 AI assistant in the panel](tasks/T-033-ai-assistant.md) | Etap 8 | queued (after T-037) |
+| [T-027 Images loaded by the SDK (lists)](tasks/T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-033); blocks the TV shows milestone |
 | [T-028 Offline: disk cache of the last screen](tasks/T-028-offline-disk-cache.md) | Etap 7 | queued (after T-027) |
 | [T-018 Canvas: progress, charts, gradients](tasks/T-018-canvas-charts.md) | Etap 5 | queued (after T-028; pull it forward if T-025 needs an hourly chart) |
 | [T-021 Native components via RC `Custom` (text input)](tasks/T-021-native-components.md) | Etap 10 | queued (after T-018); spike first; needed for TV shows search |
-| [T-017 Stateful components (tabs, toggles, visibility)](tasks/T-017-stateful-components.md) | Etap 10 | queued (after T-021) |
+| [T-034 Forms and submit](tasks/T-034-forms-submit.md) | Etap 10 | queued (after T-021) |
+| [T-035 App user accounts (Supabase)](tasks/T-035-app-user-auth-supabase.md) | Etap 10 | queued (after T-034) |
+| [T-036 Push notifications (FCM)](tasks/T-036-push-notifications.md) | Etap 12 | queued (after T-035) |
+| [T-017 Stateful components (tabs, toggles, visibility)](tasks/T-017-stateful-components.md) | Etap 10 | queued (after T-036) |
 | [T-010 Settings export (properties + icon)](tasks/T-010-app-export.md) | Etap 9 | needs design detail (after T-007; much smaller since the plugin, see the note in the task file) |
 | [T-019 Gestures and visual effects](tasks/T-019-gestures-effects.md) | Etap 5 | later (only when a real app needs it) |
 | [T-020 Dynamic values (clock, light/dark, conditions)](tasks/T-020-dynamic-values.md) | Etap 7/10 | later (light/dark may be pulled forward by a real app) |
@@ -53,10 +63,11 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | Etap 5 — Components for real apps | 7/11 |
 | Etap 6 — Milestone 1: Example weather app (external project) | 2/7 |
 | Etap 7 — App shells & SDKs | 3/7 |
-| Etap 8 — Admin panel MVP | 0/7 |
+| Etap 8 — Admin panel MVP | 0/11 |
 | Etap 9 — White-label app export + TV shows milestone | 1/6 |
-| Etap 10 — Interactivity (DivKit core) | 1/6 |
-| Etap 11 — Release 0.1.0-alpha | 0/10 |
+| Etap 10 — Interactivity (DivKit core) | 1/8 |
+| Etap 11 — Release 0.1.0-alpha | 0/2 |
+| Etap 12 — Feature flags, A/B tests, analytics, push | 0/10 |
 
 ## Waiting for a decision or design
 
@@ -64,9 +75,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- New feature tasks and module structure
 - Self-hosted only
 - Git rule changed
 - Admin panel is the product core
 - Project review, re-prioritization
 - iOS dropped
-- T-016 accessibility semantics

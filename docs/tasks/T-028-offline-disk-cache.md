@@ -1,6 +1,6 @@
 # T-028 — Offline: disk cache of the last known screen
 
-Status: queued (after T-027) · Roadmap: Etap 7 · Depends on: T-003 (ETag cache)
+Status: queued (after T-027) · Roadmap: Etap 7 · Depends on: T-003 (ETag cache) · Module: sdk-android, app-shell
 
 ## Goal
 

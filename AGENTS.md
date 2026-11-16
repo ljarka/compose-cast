@@ -32,7 +32,8 @@ This file is the index. Keep it short (< 150 lines); details live where the tabl
 | What was done when | [docs/history.md](docs/history.md) |
 | A module's scope, files, decisions | `<module>/AGENTS.md` |
 
-Do not load the whole project.
+Do not load the whole project: root `AGENTS.md` → task → the modules in its `Module:` line
+([ADR 0023](docs/decisions/0023-module-structure.md)).
 
 ## Module map
 
@@ -47,6 +48,7 @@ Do not load the whole project.
 | `app-template` | Demo app built like an app repository: `io.composecast.app` + `compose-cast.properties` | done |
 | `gradle-plugins` (included build) | `io.composecast.app` Gradle plugin: properties → branded app + shell | done |
 | `compat-tests` | Screenshot tests server → player; goldens = README images | done |
+| planned: `server-store`, `server-admin`, `app-templates`, `server-ai`, `server-forms`, `server-auth`, `server-push`/`android-push`, `server-analytics`, `server-flags` | one feature = one module with its own `AGENTS.md` ([ADR 0023](docs/decisions/0023-module-structure.md)) | planned |
 
 ## Rules
 
@@ -116,8 +118,9 @@ maestro test app-template/maestro/smoke.yaml      # click through the demo app (
 ## Current focus
 
 [Task queue](docs/tasks/README.md) (priority order, re-prioritized 2026-11-16): **T-026 image fetch
-hardening (ready)** → T-025 Milestone 1 weather app in its own repo + measurements (owner steps:
+hardening (ready)** → T-039 split large files → T-025 Milestone 1 weather app in its own repo + measurements (owner steps:
 release, Reposilite) → **T-007 admin panel MVP → T-029 visual editor (the core of the product:
-anyone builds app screens in the admin panel)** → T-027 SDK-loaded images → T-028 offline cache → T-018 → T-021 → T-017.
+anyone builds app screens in the admin panel)** → T-031 wizard → T-030 templates → T-032 live
+preview → T-038 flags/A-B → T-037 analytics → T-033 AI → T-027 SDK-loaded images → T-028 offline cache → T-018 → T-021 → T-034 forms → T-035 Supabase auth → T-036 push → T-017.
 Real apps decide the catalog; T-019/T-020/T-022 are `later`. Android only
 ([ADR 0022](docs/decisions/0022-android-only.md)).

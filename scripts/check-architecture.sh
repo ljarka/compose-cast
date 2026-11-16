@@ -92,10 +92,33 @@ if "ktor" in (root / "server-scripting/build.gradle.kts").read_text():
     fail("R8", "server-scripting/AGENTS.md", "server-scripting/build.gradle.kts",
          "server-scripting depends on Ktor", "keep HTTP concerns in server-app")
 
+# R9 — every Gradle module has an AGENTS.md of at most 150 lines (agents load one module at a time).
+ADR23 = "docs/decisions/0023-module-structure.md"
+# Modules = top-level directories with a build file (distribution/ and examples/ are app templates, not modules).
+modules = sorted({root / p.parts[0] for p in gradle if len(p.parts) > 1 and p.parts[0] not in {"distribution", "examples"}})
+for m in modules:
+    a = m / "AGENTS.md"
+    if not a.exists():
+        fail("R9", ADR23, rel(m), "module has no AGENTS.md", "add one (scope, files, public API, decisions, tests)")
+    elif len(a.read_text().splitlines()) > 150:
+        fail("R9", ADR23, rel(a), "longer than 150 lines", "move detail to docs/ and link it")
+
+# R10 — feature modules never depend on server-app or on each other (server-admin may use features).
+FEATURE = re.compile(r"^server-(?!app$|scripting$)[\w-]+$")
+for f in gradle:
+    name = f.parent.name
+    if not FEATURE.match(name):
+        continue
+    for dep in re.findall(r'project\(\s*"[:]([\w-]+)"\s*\)', f.read_text()):
+        bad = dep == "server-app" or (FEATURE.match(dep) and dep != "server-store" and name != "server-admin")
+        if bad:
+            fail("R10", ADR23, rel(f), f"feature module '{name}' depends on '{dep}'",
+                 "depend only on protocol, sdk-server, server-store; wire features together in server-app")
+
 if errors:
     print(f"Architecture check failed ({len(errors)}):")
     for e in errors:
         print(" -", e)
     sys.exit(1)
-print(f"Architecture OK: 8 rules, {len(kotlin)} Kotlin files, {len(gradle)} build files")
+print(f"Architecture OK: 10 rules, {len(kotlin)} Kotlin files, {len(gradle)} build files")
 PY

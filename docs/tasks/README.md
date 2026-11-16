@@ -22,14 +22,24 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-015 Adaptive layouts (FitBox, collapsible)](T-015-adaptive-layouts.md) | Etap 5 | done (`532da5c`) |
 | [T-016 Accessibility semantics](T-016-accessibility.md) | Etap 5 | done (`bd3cd2c`) |
 | [T-026 Image fetch hardening (no private addresses)](T-026-image-fetch-hardening.md) | Etap 6 | ready — small security fix before Milestone 1 |
-| [T-025 Milestone 1: weather app in its own repo + measurements](T-025-weather-app-milestone.md) | Etap 6 | queued (after T-026); owner steps: first release, Reposilite, domain |
+| [T-039 Split large files and long AGENTS.md](T-039-split-large-files.md) | chores | queued (after T-026); small contexts for agents (ADR 0023) |
+| [T-025 Milestone 1: weather app in its own repo + measurements](T-025-weather-app-milestone.md) | Etap 6 | queued (after T-039); owner steps: first release, Reposilite, domain |
 | [T-007 Admin panel MVP](T-007-admin-panel.md) | Etap 8 | queued (after T-025); **core of the product**; first step: write the MVP cut into the task file |
 | [T-029 Visual screen editor (no JSON)](T-029-visual-screen-editor.md) | Etap 8 | queued (after T-007) |
-| [T-027 Images loaded by the SDK (lists)](T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-029); blocks the TV shows milestone |
+| [T-031 Data source wizard (URL → screens)](T-031-data-source-wizard.md) | Etap 8 | queued (after T-029) |
+| [T-030 App templates](T-030-app-templates.md) | Etap 8 | queued (after T-031) |
+| [T-032 Live preview on a phone](T-032-live-preview.md) | Etap 8 | queued (after T-030) |
+| [T-038 Feature flags and A/B tests](T-038-feature-flags-ab.md) | Etap 12 | queued (after T-032) |
+| [T-037 Analytics in the panel](T-037-analytics.md) | Etap 12 | queued (after T-038) |
+| [T-033 AI assistant in the panel](T-033-ai-assistant.md) | Etap 8 | queued (after T-037) |
+| [T-027 Images loaded by the SDK (lists)](T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-033); blocks the TV shows milestone |
 | [T-028 Offline: disk cache of the last screen](T-028-offline-disk-cache.md) | Etap 7 | queued (after T-027) |
 | [T-018 Canvas: progress, charts, gradients](T-018-canvas-charts.md) | Etap 5 | queued (after T-028; pull it forward if T-025 needs an hourly chart) |
 | [T-021 Native components via RC `Custom` (text input)](T-021-native-components.md) | Etap 10 | queued (after T-018); spike first; needed for TV shows search |
-| [T-017 Stateful components (tabs, toggles, visibility)](T-017-stateful-components.md) | Etap 10 | queued (after T-021) |
+| [T-034 Forms and submit](T-034-forms-submit.md) | Etap 10 | queued (after T-021) |
+| [T-035 App user accounts (Supabase)](T-035-app-user-auth-supabase.md) | Etap 10 | queued (after T-034) |
+| [T-036 Push notifications (FCM)](T-036-push-notifications.md) | Etap 12 | queued (after T-035) |
+| [T-017 Stateful components (tabs, toggles, visibility)](T-017-stateful-components.md) | Etap 10 | queued (after T-036) |
 | [T-010 Settings export (properties + icon)](T-010-app-export.md) | Etap 9 | needs design detail (after T-007; much smaller since the plugin, see the note in the task file) |
 | [T-019 Gestures and visual effects](T-019-gestures-effects.md) | Etap 5 | later (only when a real app needs it) |
 | [T-020 Dynamic values (clock, light/dark, conditions)](T-020-dynamic-values.md) | Etap 7/10 | later (light/dark may be pulled forward by a real app) |
@@ -56,6 +66,11 @@ catalog in [docs/remote-compose.md → Procedural catalog](../remote-compose.md)
 Statuses: `ready` (start now; only one task at a time) · `queued (after T-xxx)` · `in progress` ·
 `blocked: reason` · `needs design detail` · `later` · `dropped` · `done` (+ commit hash once committed).
 When a task is done, the next `queued` task becomes `ready`.
+
+## Context budget (ADR 0023)
+
+Read only: root `AGENTS.md` → the task file → the `AGENTS.md` of the modules in its `Module:` line
+(plus the ADRs they link). Do not load other modules. If a task needs more, split it.
 
 ## Working a task
 

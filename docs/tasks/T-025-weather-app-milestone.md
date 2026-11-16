@@ -1,6 +1,6 @@
 # T-025 — Milestone 1: example weather app (external repository) + measurements
 
-Status: queued (after T-026) · Roadmap: Etap 6 · Depends on: T-023, T-024 (owner steps below)
+Status: queued (after T-039) · Roadmap: Etap 6 · Depends on: T-023, T-024 (owner steps below) · Module: external repository (+ fixes in existing modules)
 
 ## Goal
 

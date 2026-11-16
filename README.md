@@ -394,7 +394,11 @@ Android only ([ADR 0022](docs/decisions/0022-android-only.md), owner 2026-11-16)
 - [ ] User accounts (email + bcrypt password), roles: `admin` / `editor` / `viewer`; session cookie;
   first admin from `COMPOSECAST_ADMIN_EMAIL`/`_PASSWORD` env vars (no shared `ADMIN_PASSWORD`)
 - [ ] MVP: JSON editor with live validation, preview, publish, history — T-007
-- [ ] Visual editor for non-developers: component palette, schema-driven property forms, data-source editor with field picker, starter templates — T-029
+- [ ] Visual editor for non-developers: component palette, schema-driven property forms — T-029
+- [ ] Data source wizard: paste an API URL → list + detail screens, field picker — T-031
+- [ ] App templates (news, catalog, events, weather): a working app in 5 minutes — T-030
+- [ ] Live preview on a phone, refreshed on every edit — T-032
+- [ ] AI assistant (optional, own API key): describe a screen → draft; brand palette — T-033
 - [ ] Preview on a device: temporary `__preview` screen + QR code ([ADR 0013](docs/decisions/0013-admin-preview.md));
   in-browser RC player later, if one matures
 - [ ] Publish (screen goes live); change history per screen (who published, when); one-click rollback
@@ -420,6 +424,8 @@ Android only ([ADR 0022](docs/decisions/0022-android-only.md), owner 2026-11-16)
 - [x] Local state PoC in procedural RC API (`StateLayout` + `setValue` on tap: `Component.Expandable`) — T-008
 - [ ] Host → document variables (RC named variables); general local state (`StateLayout`): toggles, tabs — T-017
 - [ ] Device-side values: live clock, formatted numbers, light/dark colors, conditions — T-020
+- [ ] Forms: fields, validation, submit to API/webhook/database — T-034
+- [ ] App user accounts via Supabase (login, per-user data with RLS) — T-035
 - [ ] Text input / search (native views via RC `Custom`) — T-021; expressions (conditional visibility, computed text) — T-017, T-020
 - [ ] Templates: reusable components; RC macros to shrink documents — T-022
 - [ ] Drag/swipe, sensors, particles, sound — T-022
@@ -429,7 +435,12 @@ Android only ([ADR 0022](docs/decisions/0022-android-only.md), owner 2026-11-16)
 - [ ] Publish the Android SDK and plugin (Reposilite, ADR 0019) + server image (GHCR); tag, CHANGELOG, GitHub Release
   (server image and Android SDK are pulled forward into Milestone 1: T-023, T-024)
 
-### Later — Experimentation & feature flags (not planned; after 0.1.0 and real users)
+### Etap 12 — Feature flags, A/B tests, analytics, push
+- [ ] Feature flags on elements and screens, A/B tests with traffic split — T-038
+- [ ] Analytics in the panel (screen views, taps, events; self-hosted) — T-037
+- [ ] Push notifications from the panel (FCM) — T-036
+
+Original ideas (detailed by T-038/T-037):
 Production SDUI systems (Nubank, Yelp, RevenueCat) treat server-driven screens as an
 experimentation platform — no release needed to change what a user sees.
 
@@ -443,7 +454,6 @@ experimentation platform — no release needed to change what a user sees.
 - [ ] Experiment results dashboard (conversion per variant, action counts)
 
 ### Later / chores
-- [ ] AI brand setup: a brand description → `BrandConfig` palette suggestion (optional)
 - [ ] `.screen.kts` hot reload (`server-scripting`) + dev-loop push refresh
 - [ ] GIF for README; Gradle configuration cache
 

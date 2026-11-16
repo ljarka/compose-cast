@@ -28,6 +28,7 @@ one (never silently contradict an accepted ADR).
 | [0020](0020-component-tree-and-modifiers.md) | Component tree (column/row/box) and a fixed box-model modifier | Accepted |
 | [0021](0021-version-negotiation.md) | Client–server version negotiation (compatibility policy) | Accepted |
 | [0022](0022-android-only.md) | Android only: iOS is out of scope | Accepted |
+| [0023](0023-module-structure.md) | Small modules, each with its own AGENTS.md; dependency direction | Accepted |
 
 ## Template
 

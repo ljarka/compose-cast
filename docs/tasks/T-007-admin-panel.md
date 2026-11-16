@@ -1,6 +1,13 @@
 # T-007 — Admin panel (Etap 8)
 
-Status: queued (after T-025); first step: write the MVP cut into Steps, then implement · Roadmap: Etap 8 · Depends on: T-002 (JSON screen model), T-006 (data sources)
+Status: queued (after T-025); first step: write the MVP cut into Steps, then implement · Roadmap: Etap 8 · Depends on: T-002 (JSON screen model), T-006 (data sources) · Module: server-store, server-admin
+
+## Modules (2026-11-16, ADR 0023): overrides the file paths in Steps below
+
+Create `server-store` (database, migrations, repositories: `io.composecast.server.store`) and
+`server-admin` (routes and UI: `io.composecast.server.admin`), each with its own `AGENTS.md`.
+`server-app` only wires them up. The `cc.composecast` paths in Steps are wrong: use the modules
+above. Dependency versions go in `gradle/libs.versions.toml` (rule R7), not in build files.
 
 ## MVP cut (2026-11-16, decide before step 1)
 

@@ -260,3 +260,7 @@ README roadmap's "Etap" numbers.
     new T-029 visual editor for non-developers; README vision updated.
 48. **Git rule changed** (owner, 2026-11-16): agents commit verified work themselves; push only on request.
 49. **Self-hosted only** (owner, 2026-11-16): everyone runs their own server and admin panel; no multi-tenant service (README principle 5, T-007 out of scope).
+50. **New feature tasks and module structure** (owner, 2026-11-16): T-030…T-038 (templates, data source
+    wizard, live preview, AI assistant, forms, Supabase app auth, push, analytics, feature flags/A-B),
+    T-039 (split large files); [ADR 0023](decisions/0023-module-structure.md): one feature = one module
+    with its own `AGENTS.md` (≤150 lines), rules R9/R10 in `check-architecture.sh`.
