@@ -282,6 +282,11 @@ All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alph
     in `createMapV7_Androidx_Experimental()`, not in `PROFILE_ANDROIDX` (`512`). Both
     `RemoteComposeRenderer.DEFAULT_PROFILES` and `ComposeCastClient` use
     `PROFILE_ANDROIDX or PROFILE_EXPERIMENTAL` (`513`). Verified alpha23 (T-014).
+16. **`FitBoxLayout` & `CollapsibleRow/Column`** (`FitBoxLayout.java`, `CollapsiblePriority.java`):
+    `FitBox` iterates children in order and shows the first whose min size / measured size fits
+    `maxWidth` × `maxHeight` (`OVERRIDE_VISIBLE`, rest `OVERRIDE_GONE`). `CollapsiblePriority`
+    defaults unprioritized children to `Float.MAX_VALUE`; lower priority numbers are dropped first
+    when space runs out. Verified alpha23 (T-015).
 
 ---
 

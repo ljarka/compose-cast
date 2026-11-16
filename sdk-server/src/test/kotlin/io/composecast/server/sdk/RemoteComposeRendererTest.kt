@@ -297,4 +297,31 @@ class RemoteComposeRendererTest {
         assertTrue("FLOW" in dump, "no FLOW in:\n$dump")
         assertTrue(Regex("Width.*WEIGHT", RegexOption.IGNORE_CASE).containsMatchIn(dump), "no weight in:\n$dump")
     }
+
+    @Test
+    fun `fitBox, collapsible row and column, size constraints and fillFraction emit expected ops`() {
+        val registry = composeCast(fakeImages) {
+            screen("adaptive") {
+                fitBox {
+                    text("Wide", modifier = Modifier(minWidth = 500))
+                    text("Compact")
+                }
+                row(collapsible = true, spacing = 8) {
+                    text("Keep", modifier = Modifier(collapsePriority = 10f))
+                    text("Drop", modifier = Modifier(collapsePriority = 1f))
+                }
+                column(collapsible = true) {
+                    text("Top", modifier = Modifier(collapsePriority = 5f, fillFraction = 0.6f, maxHeight = 80))
+                }
+            }
+        }
+        val dump = registry.get("adaptive")!!.describe()
+        listOf(
+            "FITBOX",
+            "COLLAPSIBLE_ROW",
+            "COLLAPSIBLE_COLUMN",
+            "CollapsiblePriority",
+            "WidthInModifierOperation",
+        ).forEach { assertTrue(it in dump, "no $it in:\n$dump") }
+    }
 }

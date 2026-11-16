@@ -1,0 +1,151 @@
+{
+  "id": "adaptive",
+  "title": "Adaptive",
+  "components": [
+    {
+      "type": "text",
+      "text": "FitBox",
+      "style": "h3"
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "fitBox",
+      "children": [
+        {
+          "type": "card",
+          "children": [
+            {
+              "type": "text",
+              "text": "Wide tablet variant (520 dp)",
+              "style": "h3"
+            },
+            {
+              "type": "text",
+              "text": "Shown only when the screen is wide enough.",
+              "style": "caption"
+            }
+          ],
+          "modifier": {
+            "width": 520,
+            "background": "#E8DEF8"
+          }
+        },
+        {
+          "type": "card",
+          "children": [
+            {
+              "type": "text",
+              "text": "Compact phone variant",
+              "style": "h3"
+            },
+            {
+              "type": "text",
+              "text": "Selected when the 520 dp variant does not fit.",
+              "style": "caption"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "spacer",
+      "height": 16
+    },
+    {
+      "type": "text",
+      "text": "Collapsible row",
+      "style": "h3"
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "row",
+      "children": [
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "text",
+              "text": "Primary (p=10)"
+            }
+          ],
+          "modifier": {
+            "padding": 12,
+            "width": 180,
+            "background": "#F3EDF7",
+            "cornerRadius": 8,
+            "collapsePriority": 10.0
+          }
+        },
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "text",
+              "text": "Secondary (p=5)"
+            }
+          ],
+          "modifier": {
+            "padding": 12,
+            "width": 180,
+            "background": "#F3EDF7",
+            "cornerRadius": 8,
+            "collapsePriority": 5.0
+          }
+        },
+        {
+          "type": "box",
+          "children": [
+            {
+              "type": "text",
+              "text": "Optional (p=1)"
+            }
+          ],
+          "modifier": {
+            "padding": 12,
+            "width": 180,
+            "background": "#F3EDF7",
+            "cornerRadius": 8,
+            "collapsePriority": 1.0
+          }
+        }
+      ],
+      "spacing": 8,
+      "collapsible": true
+    },
+    {
+      "type": "spacer",
+      "height": 16
+    },
+    {
+      "type": "text",
+      "text": "Constraints & fillFraction",
+      "style": "h3"
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "box",
+      "children": [
+        {
+          "type": "text",
+          "text": "60% width (140..320 dp)",
+          "style": "caption"
+        }
+      ],
+      "modifier": {
+        "padding": 12,
+        "background": "#F3EDF7",
+        "cornerRadius": 8,
+        "minWidth": 140,
+        "maxWidth": 320,
+        "minHeight": 48,
+        "fillFraction": 0.6
+      }
+    }
+  ]
+}

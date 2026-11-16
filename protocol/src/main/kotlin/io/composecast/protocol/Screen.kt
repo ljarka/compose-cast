@@ -130,6 +130,9 @@ data class ScreenDefinition(
                 is Component.Box -> addAll(
                     componentProblems(component.children, "$at.children", Parent.Other, depth + 1),
                 )
+                is Component.FitBox -> addAll(
+                    componentProblems(component.children, "$at.children", Parent.Other, depth + 1),
+                )
                 is Component.Flow -> {
                     component.maxItemsInEachRow?.let {
                         if (it < 1) add("$at.maxItemsInEachRow: must be >= 1, was $it")
@@ -173,6 +176,22 @@ data class ScreenDefinition(
             colorProblem(border.color)?.let { add("$at.border.color: $it") }
         }
         m.action?.let { action -> actionProblem(action)?.let { add("$at.action: $it") } }
+        m.minWidth?.let { if (it < 0) add("$at.minWidth: must be >= 0, was $it") }
+        m.maxWidth?.let { if (it < 0) add("$at.maxWidth: must be >= 0, was $it") }
+        if (m.minWidth != null && m.maxWidth != null && m.minWidth > m.maxWidth) {
+            add("$at.minWidth: must be <= maxWidth (${m.maxWidth}), was ${m.minWidth}")
+        }
+        m.minHeight?.let { if (it < 0) add("$at.minHeight: must be >= 0, was $it") }
+        m.maxHeight?.let { if (it < 0) add("$at.maxHeight: must be >= 0, was $it") }
+        if (m.minHeight != null && m.maxHeight != null && m.minHeight > m.maxHeight) {
+            add("$at.minHeight: must be <= maxHeight (${m.maxHeight}), was ${m.minHeight}")
+        }
+        m.fillFraction?.let {
+            if (it.isNaN() || it <= 0f || it > 1f) add("$at.fillFraction: must be in (0, 1], was $it")
+        }
+        m.collapsePriority?.let {
+            if (it.isNaN() || it.isInfinite()) add("$at.collapsePriority: must be finite, was $it")
+        }
     }
 
     private fun colorProblem(color: String): String? =
@@ -392,6 +411,7 @@ sealed interface Component {
         val horizontalAlignment: Alignment = Alignment.Start,
         val verticalArrangement: Arrangement = Arrangement.Start,
         val spacing: Int = 0,
+        val collapsible: Boolean = false,
         override val modifier: Modifier = Modifier.NONE,
     ) : Component
 
@@ -403,6 +423,7 @@ sealed interface Component {
         val horizontalArrangement: Arrangement = Arrangement.Start,
         val verticalAlignment: Alignment = Alignment.Start,
         val spacing: Int = 0,
+        val collapsible: Boolean = false,
         override val modifier: Modifier = Modifier.NONE,
     ) : Component
 
@@ -410,6 +431,16 @@ sealed interface Component {
     @Serializable
     @SerialName("box")
     data class Box(
+        val children: List<Component>,
+        val horizontalAlignment: Alignment = Alignment.Start,
+        val verticalAlignment: Alignment = Alignment.Start,
+        override val modifier: Modifier = Modifier.NONE,
+    ) : Component
+
+    /** Shows the first child that fits within the available bounds (T-015). */
+    @Serializable
+    @SerialName("fitBox")
+    data class FitBox(
         val children: List<Component>,
         val horizontalAlignment: Alignment = Alignment.Start,
         val verticalAlignment: Alignment = Alignment.Start,
@@ -475,7 +506,7 @@ sealed interface Component {
             listOfNotNull(icon?.let { "icon" to it }) +
             action.strings().map { (field, value) -> "action.$field" to value }
         is Expandable -> listOf("title" to title)
-        is Divider, is Card, is Spacer, is Repeat, is Column, is Row, is Box, is Flow, is Grid -> emptyList()
+        is Divider, is Card, is Spacer, is Repeat, is Column, is Row, is Box, is FitBox, is Flow, is Grid -> emptyList()
     } + modifier.action?.strings().orEmpty().map { (field, value) -> "modifier.action.$field" to value }
 
     /** Nested component lists by field name (`children`, `content`, `template`, `empty`). */
@@ -483,6 +514,7 @@ sealed interface Component {
         is Column -> listOf("children" to children)
         is Row -> listOf("children" to children)
         is Box -> listOf("children" to children)
+        is FitBox -> listOf("children" to children)
         is Card -> listOf("children" to children)
         is Flow -> listOf("children" to children)
         is Grid -> listOf("children" to children)

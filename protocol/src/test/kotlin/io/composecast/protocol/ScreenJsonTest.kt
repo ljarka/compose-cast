@@ -243,4 +243,51 @@ class ScreenJsonTest {
             "components[0].spacing",
         )
     }
+
+    @Test
+    fun `fitBox, collapsible and size constraints roundtrip and validate`() {
+        val raw = """
+            {
+              "id": "adaptive",
+              "components": [
+                {
+                  "type": "fitBox",
+                  "children": [
+                    { "type": "text", "text": "Wide", "modifier": { "minWidth": 500 } },
+                    { "type": "text", "text": "Compact" }
+                  ]
+                },
+                {
+                  "type": "row",
+                  "collapsible": true,
+                  "spacing": 8,
+                  "children": [
+                    { "type": "text", "text": "Keep", "modifier": { "collapsePriority": 10.0 } },
+                    { "type": "text", "text": "Drop", "modifier": { "collapsePriority": 1.0, "fillFraction": 0.5 } }
+                  ]
+                }
+              ]
+            }
+        """.trimIndent()
+        val decoded = ScreenJson.decode(raw, "adaptive.json")
+        assertEquals(decoded, ScreenJson.decode(ScreenJson.encode(decoded), "adaptive.json"))
+
+        assertError("""{"id":"a","components":[{"type":"text","text":"x","modifier":{"minWidth":-1}}]}""", "minWidth")
+        assertError(
+            """{"id":"a","components":[{"type":"text","text":"x","modifier":{"minWidth":200,"maxWidth":100}}]}""",
+            "minWidth",
+        )
+        assertError(
+            """{"id":"a","components":[{"type":"text","text":"x","modifier":{"minHeight":200,"maxHeight":100}}]}""",
+            "minHeight",
+        )
+        assertError(
+            """{"id":"a","components":[{"type":"text","text":"x","modifier":{"fillFraction":0}}]}""",
+            "fillFraction",
+        )
+        assertError(
+            """{"id":"a","components":[{"type":"text","text":"x","modifier":{"fillFraction":1.5}}]}""",
+            "fillFraction",
+        )
+    }
 }

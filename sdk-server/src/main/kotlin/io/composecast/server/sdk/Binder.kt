@@ -215,6 +215,8 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
             listOf(c.copy(children = bindComponents(c.children, roots), modifier = bindModifier(c.modifier, roots)))
         is Component.Box ->
             listOf(c.copy(children = bindComponents(c.children, roots), modifier = bindModifier(c.modifier, roots)))
+        is Component.FitBox ->
+            listOf(c.copy(children = bindComponents(c.children, roots), modifier = bindModifier(c.modifier, roots)))
         is Component.Flow ->
             listOf(c.copy(children = bindComponents(c.children, roots), modifier = bindModifier(c.modifier, roots)))
         is Component.Grid ->

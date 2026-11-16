@@ -45,6 +45,15 @@ data class Modifier(
     val action: Action? = null,
     /** Enables scrolling on a container (`"vertical"` or `"horizontal"`, T-014). */
     val scroll: ScrollDirection? = null,
+    /** Size constraints in dp (T-015). */
+    val minWidth: Int? = null,
+    val maxWidth: Int? = null,
+    val minHeight: Int? = null,
+    val maxHeight: Int? = null,
+    /** Fraction `(0, 1]` of parent width when `width` is not set (T-015). */
+    val fillFraction: Float? = null,
+    /** Drop priority in a `collapsible` row/column: lower values collapse first (T-015). */
+    val collapsePriority: Float? = null,
 ) {
     val isEmpty: Boolean get() = this == NONE
 

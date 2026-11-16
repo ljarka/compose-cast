@@ -132,9 +132,17 @@ open class ComponentsBuilder internal constructor(private val context: String) {
         horizontalAlignment: Alignment = Alignment.Start,
         verticalArrangement: Arrangement = Arrangement.Start,
         spacing: Int = 0,
+        collapsible: Boolean = false,
         children: ComponentsBuilder.() -> Unit,
     ) {
-        components += Component.Column(nested(children), horizontalAlignment, verticalArrangement, spacing, modifier)
+        components += Component.Column(
+            nested(children),
+            horizontalAlignment,
+            verticalArrangement,
+            spacing,
+            collapsible,
+            modifier,
+        )
     }
 
     /** Children side by side, [spacing] dp apart (T-012). */
@@ -143,9 +151,17 @@ open class ComponentsBuilder internal constructor(private val context: String) {
         horizontalArrangement: Arrangement = Arrangement.Start,
         verticalAlignment: Alignment = Alignment.Start,
         spacing: Int = 0,
+        collapsible: Boolean = false,
         children: ComponentsBuilder.() -> Unit,
     ) {
-        components += Component.Row(nested(children), horizontalArrangement, verticalAlignment, spacing, modifier)
+        components += Component.Row(
+            nested(children),
+            horizontalArrangement,
+            verticalAlignment,
+            spacing,
+            collapsible,
+            modifier,
+        )
     }
 
     /** Children stacked on top of each other, aligned in the box (T-012). */
@@ -156,6 +172,16 @@ open class ComponentsBuilder internal constructor(private val context: String) {
         children: ComponentsBuilder.() -> Unit,
     ) {
         components += Component.Box(nested(children), horizontalAlignment, verticalAlignment, modifier)
+    }
+
+    /** Shows the first child that fits within the available bounds (T-015). */
+    fun fitBox(
+        modifier: Modifier = Modifier.NONE,
+        horizontalAlignment: Alignment = Alignment.Start,
+        verticalAlignment: Alignment = Alignment.Start,
+        children: ComponentsBuilder.() -> Unit,
+    ) {
+        components += Component.FitBox(nested(children), horizontalAlignment, verticalAlignment, modifier)
     }
 
     /** Children laid out horizontally and wrapped onto new lines (T-014). */

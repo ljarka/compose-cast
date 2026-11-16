@@ -18,9 +18,9 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-012 Layout containers and common modifiers](T-012-layout-containers.md) | Etap 5 | done (`a444bf4`) — the weather app needs rows/columns |
 | [T-013 Text/image options, Icon, Divider, Card, button variants](T-013-text-image-styling.md) | Etap 5 | done (`b75647f`) |
 | [T-004 Version negotiation](T-004-version-negotiation.md) | Etap 7 | done (`da06bdd`) |
-| [T-014 Scrolling, Flow, galleries, grids](T-014-scroll-flow-gallery.md) | Etap 5 | done |
-| [T-015 Adaptive layouts (FitBox, collapsible)](T-015-adaptive-layouts.md) | Etap 5 | ready |
-| [T-016 Accessibility semantics](T-016-accessibility.md) | Etap 5 | queued (after T-015) |
+| [T-014 Scrolling, Flow, galleries, grids](T-014-scroll-flow-gallery.md) | Etap 5 | done (`70e3329`) |
+| [T-015 Adaptive layouts (FitBox, collapsible)](T-015-adaptive-layouts.md) | Etap 5 | done |
+| [T-016 Accessibility semantics](T-016-accessibility.md) | Etap 5 | ready |
 | [T-018 Canvas: progress, charts, gradients](T-018-canvas-charts.md) | Etap 5 | queued (after T-016) |
 | [T-019 Gestures and visual effects](T-019-gestures-effects.md) | Etap 5 | queued (after T-018) |
 | [T-017 Stateful components (tabs, toggles, visibility)](T-017-stateful-components.md) | Etap 10 | queued (after T-019) |

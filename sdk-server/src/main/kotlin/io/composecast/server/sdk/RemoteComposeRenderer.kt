@@ -29,12 +29,16 @@ import androidx.compose.remote.creation.dsl.fillMaxHeight
 import androidx.compose.remote.creation.dsl.fillMaxSize
 import androidx.compose.remote.creation.dsl.fillMaxWidth
 import androidx.compose.remote.creation.dsl.height
+import androidx.compose.remote.creation.dsl.heightIn
+import androidx.compose.remote.creation.dsl.horizontalCollapsiblePriority
 import androidx.compose.remote.creation.dsl.horizontalScroll
 import androidx.compose.remote.creation.dsl.marquee
 import androidx.compose.remote.creation.dsl.onClick
 import androidx.compose.remote.creation.dsl.padding
+import androidx.compose.remote.creation.dsl.verticalCollapsiblePriority
 import androidx.compose.remote.creation.dsl.verticalScroll
 import androidx.compose.remote.creation.dsl.width
+import androidx.compose.remote.creation.dsl.widthIn
 import androidx.compose.remote.creation.modifiers.RoundedRectShape
 import androidx.compose.remote.creation.profile.Profile
 import io.composecast.protocol.ActionCodec
@@ -144,8 +148,25 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
     ): Modifier {
         var r: Modifier = Modifier
         m.weight?.let { weight -> r = slot.weigh?.invoke(r, weight) ?: r }
-        r = r.dimension(m.width ?: defaultWidth, horizontal = true)
+        m.collapsePriority?.let { p ->
+            r = when (slot.axis) {
+                Axis.Horizontal -> r.horizontalCollapsiblePriority(p)
+                Axis.Vertical -> r.verticalCollapsiblePriority(p)
+                Axis.Stack -> r
+            }
+        }
+        r = if (m.fillFraction != null && m.width == null) {
+            r.fillMaxWidth(m.fillFraction!!)
+        } else {
+            r.dimension(m.width ?: defaultWidth, horizontal = true)
+        }
         r = r.dimension(m.height ?: defaultHeight, horizontal = false)
+        if (m.minWidth != null || m.maxWidth != null) {
+            r = r.widthIn(min = (m.minWidth ?: 0).toFloat(), max = m.maxWidth?.toFloat() ?: Float.MAX_VALUE)
+        }
+        if (m.minHeight != null || m.maxHeight != null) {
+            r = r.heightIn(min = (m.minHeight ?: 0).toFloat(), max = m.maxHeight?.toFloat() ?: Float.MAX_VALUE)
+        }
         val radius = if (m.shape == Shape.Circle) null else m.cornerRadius?.toFloat() ?: defaultCornerRadius
         if (radius != null) {
             r = r.clip(RoundedRectShape(radius, radius, radius, radius))
@@ -291,37 +312,51 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
 
             is Component.Expandable -> renderExpandable(node, slot)
 
-            is Component.Column -> Column(
-                modifier = boxModel(node.modifier, slot),
-                horizontal = node.horizontalAlignment.horizontal(),
-                vertical = when (node.verticalArrangement) {
-                    Arrangement.Start -> RcColumnVerticalPositioning.Top
-                    Arrangement.Center -> RcColumnVerticalPositioning.Center
-                    Arrangement.End -> RcColumnVerticalPositioning.Bottom
-                    Arrangement.SpaceBetween -> RcColumnVerticalPositioning.SpaceBetween
-                    Arrangement.SpaceAround -> RcColumnVerticalPositioning.SpaceAround
-                    Arrangement.SpaceEvenly -> RcColumnVerticalPositioning.SpaceEvenly
-                },
-            ) {
-                renderChildren(node.children, Slot(Axis.Vertical) { m, w -> m.weight(w) }, node.spacing)
+            is Component.Column -> if (node.collapsible) {
+                CollapsibleColumn(
+                    modifier = boxModel(node.modifier, slot),
+                    horizontal = node.horizontalAlignment.horizontal(),
+                    vertical = node.verticalArrangement.vertical(),
+                ) {
+                    renderChildren(node.children, Slot(Axis.Vertical) { m, w -> m.weight(w) }, node.spacing)
+                }
+            } else {
+                Column(
+                    modifier = boxModel(node.modifier, slot),
+                    horizontal = node.horizontalAlignment.horizontal(),
+                    vertical = node.verticalArrangement.vertical(),
+                ) {
+                    renderChildren(node.children, Slot(Axis.Vertical) { m, w -> m.weight(w) }, node.spacing)
+                }
             }
 
-            is Component.Row -> Row(
-                modifier = boxModel(node.modifier, slot),
-                horizontal = when (node.horizontalArrangement) {
-                    Arrangement.Start -> RcRowHorizontalPositioning.Start
-                    Arrangement.Center -> RcRowHorizontalPositioning.Center
-                    Arrangement.End -> RcRowHorizontalPositioning.End
-                    Arrangement.SpaceBetween -> RcRowHorizontalPositioning.SpaceBetween
-                    Arrangement.SpaceAround -> RcRowHorizontalPositioning.SpaceAround
-                    Arrangement.SpaceEvenly -> RcRowHorizontalPositioning.SpaceEvenly
-                },
-                vertical = node.verticalAlignment.vertical(),
-            ) {
-                renderChildren(node.children, Slot(Axis.Horizontal) { m, w -> m.weight(w) }, node.spacing)
+            is Component.Row -> if (node.collapsible) {
+                CollapsibleRow(
+                    modifier = boxModel(node.modifier, slot),
+                    horizontal = node.horizontalAlignment(),
+                    vertical = node.verticalAlignment.vertical(),
+                ) {
+                    renderChildren(node.children, Slot(Axis.Horizontal) { m, w -> m.weight(w) }, node.spacing)
+                }
+            } else {
+                Row(
+                    modifier = boxModel(node.modifier, slot),
+                    horizontal = node.horizontalAlignment(),
+                    vertical = node.verticalAlignment.vertical(),
+                ) {
+                    renderChildren(node.children, Slot(Axis.Horizontal) { m, w -> m.weight(w) }, node.spacing)
+                }
             }
 
             is Component.Box -> Box(
+                modifier = boxModel(node.modifier, slot),
+                horizontal = node.horizontalAlignment.horizontal(),
+                vertical = node.verticalAlignment.vertical(),
+            ) {
+                renderChildren(node.children, Slot(Axis.Stack))
+            }
+
+            is Component.FitBox -> FitBox(
                 modifier = boxModel(node.modifier, slot),
                 horizontal = node.horizontalAlignment.horizontal(),
                 vertical = node.verticalAlignment.vertical(),
@@ -508,6 +543,24 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
         ContentScale.FillHeight -> RcContentScale.FillHeight
         ContentScale.Inside -> RcContentScale.Inside
         ContentScale.None -> RcContentScale.None
+    }
+
+    private fun Arrangement.vertical(): RcColumnVerticalPositioning = when (this) {
+        Arrangement.Start -> RcColumnVerticalPositioning.Top
+        Arrangement.Center -> RcColumnVerticalPositioning.Center
+        Arrangement.End -> RcColumnVerticalPositioning.Bottom
+        Arrangement.SpaceBetween -> RcColumnVerticalPositioning.SpaceBetween
+        Arrangement.SpaceAround -> RcColumnVerticalPositioning.SpaceAround
+        Arrangement.SpaceEvenly -> RcColumnVerticalPositioning.SpaceEvenly
+    }
+
+    private fun Component.Row.horizontalAlignment(): RcRowHorizontalPositioning = when (horizontalArrangement) {
+        Arrangement.Start -> RcRowHorizontalPositioning.Start
+        Arrangement.Center -> RcRowHorizontalPositioning.Center
+        Arrangement.End -> RcRowHorizontalPositioning.End
+        Arrangement.SpaceBetween -> RcRowHorizontalPositioning.SpaceBetween
+        Arrangement.SpaceAround -> RcRowHorizontalPositioning.SpaceAround
+        Arrangement.SpaceEvenly -> RcRowHorizontalPositioning.SpaceEvenly
     }
 
     private fun Alignment.horizontal(): RcHorizontalPositioning = when (this) {

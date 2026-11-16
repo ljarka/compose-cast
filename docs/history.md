@@ -233,4 +233,11 @@ README roadmap's "Etap" numbers.
     scroll). Discovered that `LAYOUT_FLOW` (240) in RC alpha23 requires
     `PROFILE_ANDROIDX or PROFILE_EXPERIMENTAL` (`513`) in both renderer and client
     (`docs/remote-compose.md` #15). Added `collections` demo screen (DSL + JSON, byte-identical)
-    and `collections.png` golden screenshot. T-015 is next.
+    and `collections.png` golden screenshot (`70e3329`). T-015 is next.
+43. **T-015 adaptive layouts** ([task](tasks/T-015-adaptive-layouts.md)):
+    added `Component.FitBox`, `collapsible` flag on `Row`/`Column`, `Modifier.collapsePriority`,
+    `minWidth`/`maxWidth`/`minHeight`/`maxHeight` (`widthIn`/`heightIn`), and `fillFraction`
+    (`fillMaxWidth(fraction)`). Verified `FitBoxLayout` and `CollapsiblePriority` rules in RC
+    alpha23 (`docs/remote-compose.md` #16). Added `adaptive` demo screen (DSL + JSON,
+    byte-identical) and two golden screenshots (`adaptive-phone.png` and `adaptive-tablet.png`,
+    both reviewed). T-016 is next.

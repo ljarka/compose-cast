@@ -338,7 +338,7 @@ that force every layer to work end to end. Details and reasoning: [docs/decision
 - [x] Text color/weight/align/lines/ellipsis/marquee; Icon, Divider, Card, button variants — T-013
 - [ ] Image sizing (aspect, crop, rounded) ✅ T-013; large/many images loaded by the SDK as named bitmaps
 - [x] Horizontal gallery, Flow (chips), grids, scroll on any container — T-014; lists from data — T-006
-- [ ] Adaptive layouts: FitBox, collapsible rows/columns, min/max sizes — T-015
+- [x] Adaptive layouts: FitBox, collapsible rows/columns, min/max sizes — T-015
 - [ ] Accessibility: content descriptions, roles — T-016
 - [ ] Canvas: progress bar/ring, line/bar charts, rating, gradients — T-018
 - [ ] Long-press, double-tap, ripple, haptics; alpha/scale/rotation/offset/z-order — T-019

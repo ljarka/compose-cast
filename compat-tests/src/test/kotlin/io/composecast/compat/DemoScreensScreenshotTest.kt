@@ -70,6 +70,15 @@ class DemoScreensScreenshotTest {
     @Test
     fun collections() = capture("collections")
 
+    /** Adaptive layouts on a phone width (T-015): compact FitBox + collapsed row. */
+    @Test
+    fun adaptivePhone() = capture("adaptive", file = "adaptive-phone")
+
+    /** Adaptive layouts on a tablet width (T-015): wide FitBox + all 3 row items. */
+    @Test
+    @Config(sdk = [35], qualifiers = RobolectricDeviceQualifiers.MediumTablet)
+    fun adaptiveTablet() = capture("adaptive", file = "adaptive-tablet")
+
     /** A dynamic screen, rendered from query parameters (T-003). */
     @Test
     fun echo() = capture("echo", mapOf("word" to "zażółć gęślą jaźń"))
