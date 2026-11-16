@@ -259,3 +259,4 @@ README roadmap's "Etap" numbers.
 47. **Admin panel is the product core** (owner, 2026-11-16): T-007 MVP moved right after Milestone 1,
     new T-029 visual editor for non-developers; README vision updated.
 48. **Git rule changed** (owner, 2026-11-16): agents commit verified work themselves; push only on request.
+49. **Self-hosted only** (owner, 2026-11-16): everyone runs their own server and admin panel; no multi-tenant service (README principle 5, T-007 out of scope).

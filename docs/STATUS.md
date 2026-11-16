@@ -64,9 +64,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- Self-hosted only
 - Git rule changed
 - Admin panel is the product core
 - Project review, re-prioritization
 - iOS dropped
 - T-016 accessibility semantics
-- T-015 adaptive layouts

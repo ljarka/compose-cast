@@ -46,7 +46,8 @@ Principles:
    capabilities the client reports.
 3. Interaction runs on the device where possible (RC variables, expressions, states).
 4. Backend starts with one command (`docker compose up`).
-5. No backend code per app: everything that differs between apps (screens, data sources, brand,
+5. Self-hosted, one server = one product: everyone runs their own compose-cast server with its own
+   admin panel (owner, 2026-11-16; no shared multi-tenant service). No backend code per app: everything that differs between apps (screens, data sources, brand,
    app settings) is configuration, editable in the admin panel; apps live in their own repositories
    and install the server like Immich ([ADR 0017](docs/decisions/0017-apps-in-own-repositories.md),
    [ADR 0018](docs/decisions/0018-distribution-like-immich.md)).

@@ -249,7 +249,7 @@ curl http://localhost:8080/screens/hello | xxd | head   # must be .rc binary
 ## Out of scope
 
 - OAuth / SSO authentication
-- Multi-tenant / per-organization screens
-- Component drag-and-drop visual editor (plain JSON textarea is sufficient for v1; JSON supports all `Component` types including `expandable` from T-008)
+- Multi-tenant / per-organization screens: **never** (owner, 2026-11-16: everyone runs their own server, one server = one product; README principle 5)
+- Visual editor (T-029; plain JSON textarea is sufficient for v1; JSON supports all `Component` types including `expandable` from T-008)
 - General multi-state / tab editor UI (T-017)
 - Experiment / A/B flag management (Etap 12)
