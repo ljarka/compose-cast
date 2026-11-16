@@ -4,12 +4,16 @@ package io.composecast.protocol
 object Actions {
     /** Navigate to a server-driven screen. */
     const val NAVIGATE = "navigate"
+
     /** Open a URL in the system browser or the app registered for it. */
     const val OPEN_URL = "open_url"
+
     /** Reload the current screen from the server. */
     const val RELOAD = "reload"
+
     /** Fire an analytics event; the app decides where to send it. */
     const val TRACK = "track"
+
     /** Host-defined behavior; payload is passed through unchanged. */
     const val CUSTOM = "custom"
 }
