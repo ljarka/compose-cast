@@ -54,6 +54,8 @@ data class Modifier(
     val fillFraction: Float? = null,
     /** Drop priority in a `collapsible` row/column: lower values collapse first (T-015). */
     val collapsePriority: Float? = null,
+    /** Accessibility semantics overrides (T-016). */
+    val semantics: Semantics? = null,
 ) {
     val isEmpty: Boolean get() = this == NONE
 
@@ -129,6 +131,46 @@ enum class ScrollDirection {
 
     @SerialName("horizontal")
     Horizontal,
+}
+
+/** Accessibility semantics override for any component (T-016). */
+@Serializable
+data class Semantics(
+    val description: String? = null,
+    val role: SemanticsRole? = null,
+    val stateDescription: String? = null,
+    val hidden: Boolean = false,
+    val enabled: Boolean? = null,
+)
+
+@Serializable
+enum class SemanticsRole {
+    @SerialName("button")
+    Button,
+
+    @SerialName("checkbox")
+    Checkbox,
+
+    @SerialName("switch")
+    Switch,
+
+    @SerialName("radioButton")
+    RadioButton,
+
+    @SerialName("tab")
+    Tab,
+
+    @SerialName("image")
+    Image,
+
+    @SerialName("dropdownList")
+    DropdownList,
+
+    @SerialName("picker")
+    Picker,
+
+    @SerialName("carousel")
+    Carousel,
 }
 
 internal object PaddingSerializer : KSerializer<Padding> {

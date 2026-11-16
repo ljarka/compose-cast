@@ -151,4 +151,23 @@ class RoutingTest {
             assertTrue("\"minApiLevel\":8" in body, body)
         }
     }
+
+    @Test
+    fun `debug endpoint surfaces accessibility warnings for clickable images without alt`() = test {
+        screens.replace(
+            composeCast(fakeImages) {
+                screen("warn") {
+                    image(
+                        "https://example.com/x.png",
+                        modifier = io.composecast.protocol.Modifier(
+                            action = io.composecast.protocol.Action.Reload,
+                        ),
+                    )
+                }
+            },
+        )
+        val debug = client.get("/screens/warn/debug").bodyAsText()
+        assertTrue("warnings:" in debug, debug)
+        assertTrue("components[0]" in debug, debug)
+    }
 }

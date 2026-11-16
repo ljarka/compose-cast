@@ -240,4 +240,12 @@ README roadmap's "Etap" numbers.
     (`fillMaxWidth(fraction)`). Verified `FitBoxLayout` and `CollapsiblePriority` rules in RC
     alpha23 (`docs/remote-compose.md` #16). Added `adaptive` demo screen (DSL + JSON,
     byte-identical) and two golden screenshots (`adaptive-phone.png` and `adaptive-tablet.png`,
-    both reviewed). T-016 is next.
+    both reviewed). (`532da5c`) T-016 is next.
+44. **T-016 accessibility semantics** ([task](tasks/T-016-accessibility.md)):
+    added `Semantics` and `SemanticsRole` on `Modifier.semantics` (`description`, `role`,
+    `stateDescription`, `hidden`, `enabled`), bindable `description`/`stateDescription` in `Binder`,
+    and `ScreenDefinition.warnings()` surfaced in `/screens/{id}/debug` (clickable images/icons
+    without `alt` or `semantics.description`). `RemoteComposeRenderer` emits `CoreSemantics`
+    automatically for buttons (`Role.BUTTON`, `clickable = true`) and clickable containers, respects
+    `hidden = true` via `Mode.CLEAR_AND_SET` and `contentDescription = null`, and records alpha23
+    `AccessibleComponent.Role` values (`docs/remote-compose.md` #17). T-018 is next.

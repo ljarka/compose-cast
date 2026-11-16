@@ -52,6 +52,28 @@ data class ScreenDefinition(
         addAll(componentProblems(error, "error"))
     }
 
+    /** Non-fatal accessibility/authoring warnings (surfaced in `/screens/{id}/debug`, T-016). */
+    fun warnings(): List<String> = componentWarnings(components, "components") + componentWarnings(error, "error")
+
+    private fun componentWarnings(list: List<Component>, path: String): List<String> = buildList {
+        list.forEachIndexed { i, component ->
+            val at = "$path[$i]"
+            if ((component is Component.Image || component is Component.Icon) &&
+                component.modifier.action != null &&
+                component.modifier.semantics?.hidden != true &&
+                component.modifier.semantics?.description.isNullOrBlank()
+            ) {
+                val alt = if (component is Component.Image) component.alt else (component as Component.Icon).alt
+                if (alt.isBlank()) {
+                    add("$at: clickable image/icon has no alt or semantics.description")
+                }
+            }
+            component.childLists().forEach { (field, children) ->
+                addAll(componentWarnings(children, "$at.$field"))
+            }
+        }
+    }
+
     /** Throws [IllegalArgumentException] listing [problems], if any. */
     fun validate() {
         val problems = problems()
@@ -507,7 +529,11 @@ sealed interface Component {
             action.strings().map { (field, value) -> "action.$field" to value }
         is Expandable -> listOf("title" to title)
         is Divider, is Card, is Spacer, is Repeat, is Column, is Row, is Box, is FitBox, is Flow, is Grid -> emptyList()
-    } + modifier.action?.strings().orEmpty().map { (field, value) -> "modifier.action.$field" to value }
+    } + modifier.action?.strings().orEmpty().map { (field, value) -> "modifier.action.$field" to value } +
+        listOfNotNull(
+            modifier.semantics?.description?.let { "modifier.semantics.description" to it },
+            modifier.semantics?.stateDescription?.let { "modifier.semantics.stateDescription" to it },
+        )
 
     /** Nested component lists by field name (`children`, `content`, `template`, `empty`). */
     fun childLists(): List<Pair<String, List<Component>>> = when (this) {

@@ -247,8 +247,20 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
     }
 
     /** Only the action is bindable (colors and sizes are not data). */
-    private fun bindModifier(m: Modifier, roots: Map<String, JsonElement>): Modifier =
-        m.action?.let { m.copy(action = bindAction(it, roots)) } ?: m
+    private fun bindModifier(m: Modifier, roots: Map<String, JsonElement>): Modifier {
+        val boundAction = m.action?.let { bindAction(it, roots) }
+        val boundSemantics = m.semantics?.let { s ->
+            s.copy(
+                description = s.description?.let { render(it, roots) },
+                stateDescription = s.stateDescription?.let { render(it, roots) },
+            )
+        }
+        return if (boundAction == m.action && boundSemantics == m.semantics) {
+            m
+        } else {
+            m.copy(action = boundAction, semantics = boundSemantics)
+        }
+    }
 
     private fun bindAction(action: Action, roots: Map<String, JsonElement>): Action = when (action) {
         is Action.Navigate ->

@@ -45,9 +45,17 @@ fun Application.configureRouting(screens: LiveScreens) {
         // Human-readable dump of the decoded document, for debugging in a browser or curl.
         get("/screens/{id}/debug") {
             val screen = call.renderScreen(screens) ?: return@get
+            val warnings = screen.definition.warnings()
+            val warningBlock = if (warnings.isEmpty()) {
+                ""
+            } else {
+                "warnings:\n${warnings.joinToString("\n") {
+                    "  - $it"
+                }}\n"
+            }
             call.respondText(
                 "screen: ${screen.id}\ntitle: ${screen.title}\nsize: ${screen.size} bytes\n" +
-                    "etag: ${screen.etag}\n\n${screen.describe()}",
+                    "etag: ${screen.etag}\n$warningBlock\n${screen.describe()}",
             )
         }
         get("/brand") {

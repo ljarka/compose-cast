@@ -6,6 +6,7 @@ import androidx.compose.remote.core.RcProfiles
 import androidx.compose.remote.core.RemoteComposeBuffer
 import androidx.compose.remote.core.operations.Header
 import androidx.compose.remote.core.operations.layout.modifiers.ShapeType
+import androidx.compose.remote.core.semantics.AccessibleComponent
 import androidx.compose.remote.creation.JvmRcPlatformServices
 import androidx.compose.remote.creation.RemoteComposeWriter
 import androidx.compose.remote.creation.dsl.Modifier
@@ -35,6 +36,7 @@ import androidx.compose.remote.creation.dsl.horizontalScroll
 import androidx.compose.remote.creation.dsl.marquee
 import androidx.compose.remote.creation.dsl.onClick
 import androidx.compose.remote.creation.dsl.padding
+import androidx.compose.remote.creation.dsl.semantics
 import androidx.compose.remote.creation.dsl.verticalCollapsiblePriority
 import androidx.compose.remote.creation.dsl.verticalScroll
 import androidx.compose.remote.creation.dsl.width
@@ -53,6 +55,7 @@ import io.composecast.protocol.FontWeight
 import io.composecast.protocol.Padding
 import io.composecast.protocol.ScreenDefinition
 import io.composecast.protocol.ScrollDirection
+import io.composecast.protocol.SemanticsRole
 import io.composecast.protocol.Shape
 import io.composecast.protocol.TextAlign
 import io.composecast.protocol.TextOverflow
@@ -144,6 +147,8 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
         defaultPadding: Padding? = null,
         defaultBackground: Int? = null,
         defaultCornerRadius: Float? = null,
+        defaultRole: AccessibleComponent.Role? = null,
+        defaultClickable: Boolean = false,
         decorate: (Modifier) -> Modifier = { it },
     ): Modifier {
         var r: Modifier = Modifier
@@ -185,6 +190,20 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
             r = r.border(border.width.toFloat(), radius ?: 0f, parseColor(border.color), shape)
         }
         m.action?.let { action -> r = r.onClick { hostAction(ActionCodec.encode(action)) } }
+        val s = m.semantics
+        val hasAction = m.action != null || defaultClickable
+        if (s?.hidden == true) {
+            r = r.semantics { mode(AccessibleComponent.Mode.CLEAR_AND_SET) }
+        } else if (s != null || hasAction || defaultRole != null) {
+            r = r.semantics {
+                s?.description?.let { contentDescription(it) }
+                s?.stateDescription?.let { stateDescription(it) }
+                s?.enabled?.let { enabled(it) }
+                val role = s?.role?.toRc() ?: defaultRole ?: if (hasAction) AccessibleComponent.Role.BUTTON else null
+                role?.let { role(it) }
+                if (hasAction) clickable(true)
+            }
+        }
         r = decorate(r)
         when (m.scroll) {
             ScrollDirection.Vertical -> r = r.verticalScroll()
@@ -259,11 +278,16 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
                 val image = images.get(node.url, ::fetch)
                 val sizeDp = Dimension.Dp(node.size)
                 val modifier = boxModel(node.modifier, slot, defaultWidth = sizeDp, defaultHeight = sizeDp)
+                val description = if (node.modifier.semantics?.hidden == true) {
+                    null
+                } else {
+                    node.modifier.semantics?.description ?: node.alt.ifBlank { null }
+                }
                 if (image != null) {
                     Icon(
                         remoteNamedBitmap("$IMAGE_NAME_PREFIX${node.url}", image),
                         modifier = modifier,
-                        contentDescription = node.alt.ifBlank { null },
+                        contentDescription = description,
                     )
                 } else {
                     Text(
@@ -451,10 +475,15 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
                     .height(written(min(contentWidthDp * ratio, image.height.toFloat())))
             }
         }
+        val description = if (node.modifier.semantics?.hidden == true) {
+            null
+        } else {
+            node.modifier.semantics?.description ?: node.alt.ifBlank { null }
+        }
         Image(
             remoteNamedBitmap("$IMAGE_NAME_PREFIX${node.url}", image),
             modifier = modifier,
-            contentDescription = node.alt.ifBlank { null },
+            contentDescription = description,
             contentScale = node.contentScale?.toRc() ?: RcContentScale.Fit,
             alpha = node.alpha ?: 1f,
         )
@@ -474,6 +503,8 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
                 defaultPadding = Padding(BUTTON_PADDING),
                 defaultBackground = bg,
                 defaultCornerRadius = BUTTON_RADIUS,
+                defaultRole = AccessibleComponent.Role.BUTTON,
+                defaultClickable = true,
             ) {
                 var r = it
                 if (hasBorder && node.modifier.border == null) {
@@ -533,6 +564,18 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
         TextOverflow.Ellipsis -> RcTextOverflow.Ellipsis
         TextOverflow.StartEllipsis -> RcTextOverflow.StartEllipsis
         TextOverflow.MiddleEllipsis -> RcTextOverflow.MiddleEllipsis
+    }
+
+    private fun SemanticsRole.toRc(): AccessibleComponent.Role = when (this) {
+        SemanticsRole.Button -> AccessibleComponent.Role.BUTTON
+        SemanticsRole.Checkbox -> AccessibleComponent.Role.CHECKBOX
+        SemanticsRole.Switch -> AccessibleComponent.Role.SWITCH
+        SemanticsRole.RadioButton -> AccessibleComponent.Role.RADIO_BUTTON
+        SemanticsRole.Tab -> AccessibleComponent.Role.TAB
+        SemanticsRole.Image -> AccessibleComponent.Role.IMAGE
+        SemanticsRole.DropdownList -> AccessibleComponent.Role.DROPDOWN_LIST
+        SemanticsRole.Picker -> AccessibleComponent.Role.PICKER
+        SemanticsRole.Carousel -> AccessibleComponent.Role.CAROUSEL
     }
 
     private fun ContentScale.toRc(): RcContentScale = when (this) {

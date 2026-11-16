@@ -324,4 +324,35 @@ class RemoteComposeRendererTest {
             "WidthInModifierOperation",
         ).forEach { assertTrue(it in dump, "no $it in:\n$dump") }
     }
+
+    @Test
+    fun `accessibility semantics are emitted for buttons, actions and overrides`() {
+        val registry = composeCast(fakeImages) {
+            screen("a11y") {
+                button("Save", Action.Reload)
+                image(
+                    "https://example.com/decor.png",
+                    alt = "Ignored when hidden",
+                    modifier = Modifier(
+                        semantics = io.composecast.protocol.Semantics(hidden = true),
+                    ),
+                )
+                text(
+                    "Tab",
+                    modifier = Modifier(
+                        semantics = io.composecast.protocol.Semantics(
+                            description = "Weather tab",
+                            role = io.composecast.protocol.SemanticsRole.Tab,
+                            stateDescription = "Selected",
+                        ),
+                    ),
+                )
+            }
+        }
+        val dump = registry.get("a11y")!!.describe()
+        assertTrue("SEMANTICS" in dump, "no SEMANTICS in:\n$dump")
+        assertTrue("CLEAR_AND_SET" in dump, "no CLEAR_AND_SET in:\n$dump")
+        assertTrue("BUTTON" in dump, "no BUTTON role in:\n$dump")
+        assertTrue("TAB" in dump, "no TAB role in:\n$dump")
+    }
 }

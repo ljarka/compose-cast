@@ -290,4 +290,42 @@ class ScreenJsonTest {
             "fillFraction",
         )
     }
+
+    @Test
+    fun `semantics roundtrip and clickable image without alt produces warning`() {
+        val raw = """
+            {
+              "id": "a11y",
+              "components": [
+                {
+                  "type": "image",
+                  "url": "https://example.com/a.png",
+                  "modifier": { "action": { "type": "reload" } }
+                },
+                {
+                  "type": "image",
+                  "url": "https://example.com/b.png",
+                  "modifier": { "semantics": { "hidden": true } }
+                },
+                {
+                  "type": "text",
+                  "text": "Status",
+                  "modifier": {
+                    "semantics": {
+                      "description": "Connection status",
+                      "role": "tab",
+                      "stateDescription": "Selected",
+                      "enabled": true
+                    }
+                  }
+                }
+              ]
+            }
+        """.trimIndent()
+        val decoded = ScreenJson.decode(raw, "a11y.json")
+        assertEquals(decoded, ScreenJson.decode(ScreenJson.encode(decoded), "a11y.json"))
+        val warnings = decoded.warnings()
+        assertEquals(1, warnings.size)
+        assertTrue("components[0]" in warnings.single())
+    }
 }

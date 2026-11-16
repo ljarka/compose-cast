@@ -287,6 +287,11 @@ All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alph
     `maxWidth` × `maxHeight` (`OVERRIDE_VISIBLE`, rest `OVERRIDE_GONE`). `CollapsiblePriority`
     defaults unprioritized children to `Float.MAX_VALUE`; lower priority numbers are dropped first
     when space runs out. Verified alpha23 (T-015).
+17. **Accessibility semantics** (`AccessibleComponent.java`, `CoreSemantics.java`):
+    `AccessibleComponent.Role` has `BUTTON`, `CHECKBOX`, `SWITCH`, `RADIO_BUTTON`, `TAB`, `IMAGE`,
+    `DROPDOWN_LIST`, `PICKER`, `CAROUSEL`, `UNKNOWN` (there is no `HEADING` role in alpha23).
+    `CoreSemantics.Mode.CLEAR_AND_SET` maps to `Modifier.clearAndSetSemantics {}` (used for
+    `semantics.hidden = true`). Verified alpha23 (T-016).
 
 ---
 
