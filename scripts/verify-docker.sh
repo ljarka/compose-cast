@@ -40,8 +40,18 @@ for _ in $(seq 1 30); do
 done
 [[ "$status" == healthy ]] || { echo "Container not healthy after 30 s (status: $status)"; exit 1; }
 
+expected_screens="["
+first=true
+for f in examples/demo/screens/*.json; do
+  name=$(basename "$f" .json)
+  $first || expected_screens+=","
+  expected_screens+="\"$name\""
+  first=false
+done
+expected_screens+="]"
+
 screens=$(curl -fsS "http://127.0.0.1:$PORT/screens" | tr -d ' \n')
-[[ "$screens" == '["actions","data","layouts","main","onboarding"]' ]] || { echo "Unexpected /screens: $screens"; exit 1; }
+[[ "$screens" == "$expected_screens" ]] || { echo "Unexpected /screens: $screens (expected $expected_screens)"; exit 1; }
 curl -fsS -o /dev/null "http://127.0.0.1:$PORT/screens/main"
 
 size_mb=$(( $(docker run --rm --user root --entrypoint sh "$IMAGE" -c 'du -sxk /' | cut -f1) / 1024 ))
@@ -76,7 +86,7 @@ echo "Starting distribution/docker-compose.yml"
 COMPOSECAST_VERSION=verify COMPOSECAST_PORT="127.0.0.1:$INSTALL_PORT" \
   "${COMPOSE[@]}" up -d --wait --wait-timeout 60 --pull never >/dev/null
 screens=$(curl -fsS "http://127.0.0.1:$INSTALL_PORT/screens" | tr -d ' \n')
-[[ "$screens" == '["actions","data","layouts","main","onboarding"]' ]] || { echo "Unexpected /screens (install): $screens"; exit 1; }
+[[ "$screens" == "$expected_screens" ]] || { echo "Unexpected /screens (install): $screens (expected $expected_screens)"; exit 1; }
 docker rmi "ghcr.io/ljarka/compose-cast-server:verify" >/dev/null
 
 echo "verify --docker: OK"
