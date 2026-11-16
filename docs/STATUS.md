@@ -25,7 +25,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-004 Version negotiation](tasks/T-004-version-negotiation.md) | Etap 7 | done (`da06bdd`) |
 | [T-014 Scrolling, Flow, galleries, grids](tasks/T-014-scroll-flow-gallery.md) | Etap 5 | done (`70e3329`) |
 | [T-015 Adaptive layouts (FitBox, collapsible)](tasks/T-015-adaptive-layouts.md) | Etap 5 | done (`532da5c`) |
-| [T-016 Accessibility semantics](tasks/T-016-accessibility.md) | Etap 5 | done |
+| [T-016 Accessibility semantics](tasks/T-016-accessibility.md) | Etap 5 | done (`bd3cd2c`) |
 | [T-018 Canvas: progress, charts, gradients](tasks/T-018-canvas-charts.md) | Etap 5 | ready |
 | [T-019 Gestures and visual effects](tasks/T-019-gestures-effects.md) | Etap 5 | queued (after T-018) |
 | [T-017 Stateful components (tabs, toggles, visibility)](tasks/T-017-stateful-components.md) | Etap 10 | queued (after T-019) |

@@ -248,4 +248,4 @@ README roadmap's "Etap" numbers.
     without `alt` or `semantics.description`). `RemoteComposeRenderer` emits `CoreSemantics`
     automatically for buttons (`Role.BUTTON`, `clickable = true`) and clickable containers, respects
     `hidden = true` via `Mode.CLEAR_AND_SET` and `contentDescription = null`, and records alpha23
-    `AccessibleComponent.Role` values (`docs/remote-compose.md` #17). T-018 is next.
+    `AccessibleComponent.Role` values (`docs/remote-compose.md` #17) (`bd3cd2c`). T-018 is next.
