@@ -2,6 +2,7 @@ package io.composecast.server
 
 import io.composecast.protocol.UpgradeRequiredResponse
 import io.composecast.server.sdk.DataSourceException
+import io.composecast.server.sdk.HttpImageLoader
 import io.composecast.server.sdk.ScreenParameterException
 import io.composecast.server.sdk.UnsupportedClientVersionException
 import io.ktor.http.HttpStatusCode
@@ -22,11 +23,17 @@ import java.nio.file.Path
  * - `PORT` (default 8080)
  * - `COMPOSECAST_DATA_DIR`: serve `screens/<id>.json` (+ optional `brand.json`) from this directory
  *   instead of the built-in demo screens (layout: ADR 0011).
+ * - `COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS=true`: allow image URLs on loopback/private/link-local
+ *   hosts (local development only; default false, T-026).
  */
 fun main() {
     val port = System.getenv("PORT")?.toInt() ?: 8080
     // Built before the server starts: an invalid screen stops startup with a clear message.
-    val registry = loadScreens(System.getenv("COMPOSECAST_DATA_DIR")?.let(Path::of))
+    val allowPrivateImageHosts = System.getenv("COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS").toBoolean()
+    val registry = loadScreens(
+        System.getenv("COMPOSECAST_DATA_DIR")?.let(Path::of),
+        imageLoader = HttpImageLoader(allowPrivateHosts = allowPrivateImageHosts),
+    )
     embeddedServer(Netty, port = port, host = "0.0.0.0") { module(LiveScreens(registry)) }.start(wait = true)
 }
 

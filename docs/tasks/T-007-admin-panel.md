@@ -47,7 +47,7 @@ designers) need to change UI without a code deploy; the Kotlin DSL is too high a
 5. **Validation UX** — `POST /admin/api/screens/{id}/publish` calls `ScreenDefinition.problems()`
    and returns `{"errors": ["components[0].text: empty text"]}` with 422 before saving; nothing
    invalid reaches the live registry
-6. **SSRF** — `HttpDataLoader` and `HttpImageLoader` reject URLs resolving to private address
+6. **SSRF** — (images: done in T-026, reuse `HttpImageLoader.isPrivateAddress`) `HttpDataLoader` and `HttpImageLoader` reject URLs resolving to private address
    ranges (RFC 1918 + loopback + link-local); scheme must be `https` for non-localhost; response
    size capped at 2 MB (already specified in T-006 for data sources; apply same guard to image URLs)
 

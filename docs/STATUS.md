@@ -5,7 +5,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Next
 
-- **[T-026 Image fetch hardening (no private addresses)](tasks/T-026-image-fetch-hardening.md)** (Etap 6) — the `ready` task.
+- **[T-039 Split large files and long AGENTS.md](tasks/T-039-split-large-files.md)** (chores) — the `ready` task.
 
 ## Task queue (priority order)
 
@@ -26,8 +26,8 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-014 Scrolling, Flow, galleries, grids](tasks/T-014-scroll-flow-gallery.md) | Etap 5 | done (`70e3329`) |
 | [T-015 Adaptive layouts (FitBox, collapsible)](tasks/T-015-adaptive-layouts.md) | Etap 5 | done (`532da5c`) |
 | [T-016 Accessibility semantics](tasks/T-016-accessibility.md) | Etap 5 | done (`bd3cd2c`) |
-| [T-026 Image fetch hardening (no private addresses)](tasks/T-026-image-fetch-hardening.md) | Etap 6 | ready — small security fix before Milestone 1 |
-| [T-039 Split large files and long AGENTS.md](tasks/T-039-split-large-files.md) | chores | queued (after T-026); small contexts for agents (ADR 0023) |
+| [T-026 Image fetch hardening (no private addresses)](tasks/T-026-image-fetch-hardening.md) | Etap 6 | done (commit pending) |
+| [T-039 Split large files and long AGENTS.md](tasks/T-039-split-large-files.md) | chores | ready — small contexts for agents (ADR 0023) |
 | [T-025 Milestone 1: weather app in its own repo + measurements](tasks/T-025-weather-app-milestone.md) | Etap 6 | queued (after T-039); owner steps: first release, Reposilite, domain |
 | [T-007 Admin panel MVP](tasks/T-007-admin-panel.md) | Etap 8 | queued (after T-025); **core of the product**; first step: write the MVP cut into the task file |
 | [T-029 Visual screen editor (no JSON)](tasks/T-029-visual-screen-editor.md) | Etap 8 | queued (after T-007) |
@@ -61,7 +61,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | Etap 3 — iOS spike: dropped | 0/0 |
 | Etap 4 — Data sources (APIs) — ADR 0008 | 3/3 |
 | Etap 5 — Components for real apps | 7/11 |
-| Etap 6 — Milestone 1: Example weather app (external project) | 2/7 |
+| Etap 6 — Milestone 1: Example weather app (external project) | 3/7 |
 | Etap 7 — App shells & SDKs | 3/7 |
 | Etap 8 — Admin panel MVP | 0/11 |
 | Etap 9 — White-label app export + TV shows milestone | 1/6 |
@@ -75,9 +75,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- T-026 image fetch hardening
 - New feature tasks and module structure
 - Self-hosted only
 - Git rule changed
 - Admin panel is the product core
 - Project review, re-prioritization
-- iOS dropped

@@ -264,3 +264,6 @@ README roadmap's "Etap" numbers.
     wizard, live preview, AI assistant, forms, Supabase app auth, push, analytics, feature flags/A-B),
     T-039 (split large files); [ADR 0023](decisions/0023-module-structure.md): one feature = one module
     with its own `AGENTS.md` (≤150 lines), rules R9/R10 in `check-architecture.sh`.
+51. **T-026 image fetch hardening**: `HttpImageLoader` rejects hosts resolving to private addresses
+    and checks every redirect hop (≤ 3); opt-out `COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS`
+    ([ADR 0003](decisions/0003-embed-images-server-side.md) consequence).

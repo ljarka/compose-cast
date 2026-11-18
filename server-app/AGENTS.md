@@ -11,7 +11,7 @@ Do NOT load `sdk-android` or `app-template` unless cross-cutting.
 
 | File | Purpose |
 |---|---|
-| `Main.kt` | `main()` reads env (`PORT`, `COMPOSECAST_DATA_DIR`), builds the registry **before** starting (fail fast); `Application.module(LiveScreens)`: CallLogging, ContentNegotiation, StatusPages (`ScreenParameterException` → 400, `DataSourceException` → 502, other → logged JSON 500) |
+| `Main.kt` | `main()` reads env (`PORT`, `COMPOSECAST_DATA_DIR`, `COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS` → `HttpImageLoader(allowPrivateHosts)`, T-026), builds the registry **before** starting (fail fast); `Application.module(LiveScreens)`: CallLogging, ContentNegotiation, StatusPages (`ScreenParameterException` → 400, `DataSourceException` → 502, other → logged JSON 500) |
 | `Routing.kt` | All HTTP endpoints; `configureRouting(screens: LiveScreens)`; ETag / `If-None-Match`; renders in `Dispatchers.IO` (bound screens block on data sources) |
 | `LiveScreens.kt` | `AtomicReference` holder of the served `ScreenRegistry`; `replace()` swaps it atomically (admin publish, reloads) |
 | `Screens.kt` | `loadScreens(dataDir)` (JSON data dir or demo), `demoScreens()` (incl. dynamic `echo`, bound `data` on Open-Meteo), `demoBrand`; injectable `ImageLoader`/`DataLoader` for tests |
@@ -59,7 +59,8 @@ copy of `demoScreens()`. `./gradlew :server-app:run` runs from the repo root, so
   get request params through `params` + `{{params.x}}` (T-006, see `data.json`).
 - The demo `data` screen calls the live Open-Meteo API (keyless); tests and screenshots use a fake
   `DataLoader` with fixture JSON — no network in CI.
-- `ImageLoader` is injected (default: `HttpImageLoader`) so `compat-tests` can use a fake one
+- `ImageLoader` is injected (default: `HttpImageLoader()`, private hosts blocked unless
+  `COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS=true`) so `compat-tests` can use a fake one
   without network access.
 - New endpoints always added in `Routing.kt`; no business logic in `Routing.kt` itself.
 

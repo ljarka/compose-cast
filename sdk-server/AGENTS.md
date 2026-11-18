@@ -17,7 +17,7 @@ Do NOT load `server-app`, `sdk-android`, or other modules unless cross-cutting.
 | `ScreenRegistry.kt` | `composeCast {}` builder (`screen {}`, `dynamicScreen {}`, `screen(definition)`, `screensFrom(dir)`, `brand`), `ScreenRegistry` (`render(id, RenderContext)`), `RenderContext`, `ScreenParameterException`, `RemoteScreen` (definition, bytes, `etag`) |
 | `ImageCache.kt` | Thread-safe LRU (256) of fetched images; failures cached 60 s only |
 | `RemoteComposeRenderer.kt` | **Only** file using the Remote Compose creation API; `ScreenDefinition` → RC bytes |
-| `ImageLoader.kt` | `ImageLoader` fun interface + `HttpImageLoader` (http/https only, max 5 MB); inject a fake one in tests |
+| `ImageLoader.kt` | `ImageLoader` fun interface + `HttpImageLoader(allowPrivateHosts = false)` (http/https only, max 5 MB, no private/loopback/link-local hosts, ≤ 3 redirects each checked — T-026); `isPrivateAddress()`; inject a fake one in tests |
 
 The screen model itself (`ScreenDefinition`, `Component`, `TextStyle`, `ScreenJson`, validation)
 is in `protocol/.../Screen.kt` ([ADR 0015](../docs/decisions/0015-screen-model-is-the-product.md)).
@@ -89,6 +89,10 @@ file and the JSON path; a file must be named `<id>.json`.
   call `setValue(state, nextState)` — expanding/collapsing happens entirely on the device.
 - Images are fetched at render time and embedded, named `image:<url>`; failed fetch → alt text
   ([ADR 0003](../docs/decisions/0003-embed-images-server-side.md)).
+- SSRF (T-026): `HttpImageLoader` resolves the host and rejects it if any address is private; redirects
+  are followed by hand (`Redirect.NEVER`) so every hop is checked. `sdk-server` never reads env: the
+  opt-out is a constructor flag set by `server-app`. DNS rebinding is an accepted residual risk (KDoc).
+  Tests of redirects use the JDK `HttpServer` with an injected address filter (no Ktor dependency).
 - Units: DP density header; sizes in dp; fonts via `sp()` expression; image height expression in
   dp wrapped in `written(...)` ([ADR 0004](../docs/decisions/0004-units-dp-and-sp.md) — re-check its
   table on every RC upgrade).

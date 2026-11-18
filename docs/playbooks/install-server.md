@@ -32,6 +32,7 @@ names the file and the JSON path.
 | `COMPOSECAST_PORT` | `8080` | Host port; with HTTPS use `127.0.0.1:8080` so only Caddy is public |
 | `COMPOSE_PROFILES` | — | `https` starts Caddy (reverse proxy, automatic Let's Encrypt certificates) |
 | `COMPOSECAST_DOMAIN` | `localhost` | Domain Caddy serves and obtains the certificate for |
+| `COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS` | `false` | `true` lets screens load images from loopback/private/link-local hosts (local development only; keep `false` in production — SSRF) |
 | `COMPOSECAST_SECRET_<NAME>` | — | Secret for data sources, read by `{{secret.NAME}}` in a data source URL/header (never sent to the app) |
 
 The whole `.env` is passed to the server container, so secrets only need to be added there.

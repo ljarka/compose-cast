@@ -48,6 +48,6 @@ class ImageCacheTest {
 
     @Test
     fun `http image loader rejects non-http urls without touching the network`() {
-        assertFailsWith<IllegalArgumentException> { HttpImageLoader.load("file:///etc/passwd") }
+        assertFailsWith<IllegalArgumentException> { HttpImageLoader().load("file:///etc/passwd") }
     }
 }

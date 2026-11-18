@@ -33,7 +33,7 @@ import kotlin.io.path.readText
  */
 fun loadScreens(
     dataDir: Path?,
-    imageLoader: ImageLoader = HttpImageLoader,
+    imageLoader: ImageLoader = HttpImageLoader(),
     dataLoader: DataLoader = HttpDataLoader,
 ): ScreenRegistry {
     if (dataDir == null) return demoScreens(imageLoader, dataLoader)
@@ -64,7 +64,7 @@ val demoBrand = BrandConfig(
  * `JsonScreensTest`; update both). A function so that screenshot tests (`compat-tests`) render exactly these
  * screens with a fake [ImageLoader] and [DataLoader], without network access.
  */
-fun demoScreens(imageLoader: ImageLoader = HttpImageLoader, dataLoader: DataLoader = HttpDataLoader): ScreenRegistry =
+fun demoScreens(imageLoader: ImageLoader = HttpImageLoader(), dataLoader: DataLoader = HttpDataLoader): ScreenRegistry =
     composeCast(imageLoader, dataLoader) {
         brand(demoBrand)
 

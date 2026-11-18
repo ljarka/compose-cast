@@ -235,7 +235,7 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader,
  * from [env].
  */
 fun composeCast(
-    imageLoader: ImageLoader = HttpImageLoader,
+    imageLoader: ImageLoader = HttpImageLoader(),
     dataLoader: DataLoader = HttpDataLoader,
     env: (String) -> String? = System::getenv,
     block: RegistryBuilder.() -> Unit,

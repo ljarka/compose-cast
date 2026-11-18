@@ -117,8 +117,8 @@ maestro test app-template/maestro/smoke.yaml      # click through the demo app (
 
 ## Current focus
 
-[Task queue](docs/tasks/README.md) (priority order, re-prioritized 2026-11-16): **T-026 image fetch
-hardening (ready)** → T-039 split large files → T-025 Milestone 1 weather app in its own repo + measurements (owner steps:
+[Task queue](docs/tasks/README.md) (priority order, re-prioritized 2026-11-16): **T-039 split large
+files (ready)** → T-025 Milestone 1 weather app in its own repo + measurements (owner steps:
 release, Reposilite) → **T-007 admin panel MVP → T-029 visual editor (the core of the product:
 anyone builds app screens in the admin panel)** → T-031 wizard → T-030 templates → T-032 live
 preview → T-038 flags/A-B → T-037 analytics → T-033 AI → T-027 SDK-loaded images → T-028 offline cache → T-018 → T-021 → T-034 forms → T-035 Supabase auth → T-036 push → T-017.

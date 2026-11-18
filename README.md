@@ -356,7 +356,7 @@ Android only ([ADR 0022](docs/decisions/0022-android-only.md), owner 2026-11-16)
 > configured from `app-template`. Anything missing is added to the framework generically, never as
 > weather-specific code in this project.
 
-- [ ] Image fetches never reach private/loopback addresses (SSRF) — T-026
+- [x] Image fetches never reach private/loopback addresses (SSRF) — T-026
 - [ ] Example weather app on [Open-Meteo](https://open-meteo.com) (no API key): current conditions,
   hourly/daily forecast, city list — screens as JSON, data via data sources — built as a separate
   example repository using the published compose-cast artifacts

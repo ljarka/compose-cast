@@ -1,6 +1,6 @@
 # T-039 — Split large files and long AGENTS.md (small context per change)
 
-Status: queued (after T-026) · Roadmap: chores · Depends on: — · Module: sdk-server, protocol, server-app
+Status: ready · Roadmap: chores · Depends on: — · Module: sdk-server, protocol, server-app
 
 ## Goal
 No source file an agent must edit is longer than ~400 lines, and no `AGENTS.md` is longer than

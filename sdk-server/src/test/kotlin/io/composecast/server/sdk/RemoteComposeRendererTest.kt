@@ -99,6 +99,15 @@ class RemoteComposeRendererTest {
     }
 
     @Test
+    fun `image on a private host renders alt text (T-026)`() {
+        val registry = composeCast(imageLoader = HttpImageLoader()) {
+            screen("a") { image("http://127.0.0.1:8080/health", alt = "Blocked image") }
+        }
+        assertTrue("IMAGE_LAYOUT" !in registry.get("a")!!.describe())
+        assertTrue("Blocked image" in String(registry.get("a")!!.document, Charsets.ISO_8859_1))
+    }
+
+    @Test
     fun `typed actions with params are encoded deterministically into the document`() {
         fun build() = composeCast(fakeImages) {
             screen("a") {

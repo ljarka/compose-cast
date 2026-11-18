@@ -1,6 +1,6 @@
 # T-026 — Image fetch hardening (no requests to private addresses)
 
-Status: ready · Roadmap: Etap 6 · Depends on: — · Module: sdk-server, server-app
+Status: done · Roadmap: Etap 6 · Depends on: — · Module: sdk-server, server-app
 
 ## Goal
 
