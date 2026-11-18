@@ -14,7 +14,8 @@ Do NOT load `sdk-android` or `app-template` unless cross-cutting.
 | `Main.kt` | `main()` reads env (`PORT`, `COMPOSECAST_DATA_DIR`, `COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS` → `HttpImageLoader(allowPrivateHosts)`, T-026), builds the registry **before** starting (fail fast); `Application.module(LiveScreens)`: CallLogging, ContentNegotiation, StatusPages (`ScreenParameterException` → 400, `DataSourceException` → 502, other → logged JSON 500) |
 | `Routing.kt` | All HTTP endpoints; `configureRouting(screens: LiveScreens)`; ETag / `If-None-Match`; renders in `Dispatchers.IO` (bound screens block on data sources) |
 | `LiveScreens.kt` | `AtomicReference` holder of the served `ScreenRegistry`; `replace()` swaps it atomically (admin publish, reloads) |
-| `Screens.kt` | `loadScreens(dataDir)` (JSON data dir or demo), `demoScreens()` (incl. dynamic `echo`, bound `data` on Open-Meteo), `demoBrand`; injectable `ImageLoader`/`DataLoader` for tests |
+| `Screens.kt` | `loadScreens(dataDir)` (JSON data dir or demo), `demoScreens()` (registers the demo screens in order), `demoBrand`; injectable `ImageLoader`/`DataLoader` for tests |
+| `demo/Demo<Id>Screen.kt` | One file per demo screen: `internal fun RegistryBuilder.<id>Screen()` (incl. dynamic `echo`, bound `data` on Open-Meteo); `DemoShared.kt`: `featureCard`, `HERO_IMAGE`, `SURFACE` |
 | `src/main/resources/logback.xml` | SLF4J provider config — without logback the server logged nothing (not even 500 stack traces) |
 | `src/test/.../RoutingTest.kt` | Ktor `testApplication`: 304, query params (non-ASCII), 400/404, 50 concurrent requests, registry swap |
 | `src/test/.../JsonScreensTest.kt` | `examples/demo` == DSL definitions and brand, canonical, byte-identical RC documents |

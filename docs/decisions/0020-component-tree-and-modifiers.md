@@ -28,7 +28,7 @@ Decorators (clip, background, border) are painted in order, each inset by the pa
    and the clip (`cornerRadius` or `shape: "circle"`) cover the whole size; `padding` insets the
    content; `action` makes the whole size tappable. **No margin** — use the parent's `spacing` or
    padding. Rendered as the RC chain weight → width → height → clip → background → border → click →
-   component styling → padding (`RemoteComposeRenderer.boxModel`).
+   component styling → padding (`boxModel` in `sdk-server/.../render/Modifiers.kt`).
 3. **Defaults keep existing screens identical:** children of a column (and the screen) fill the
    width, children of a row wrap; heights wrap. A `spacer` is space along its parent's direction.
 4. **Validation at load** with JSON paths: `weight` only for direct children of a row/column (a

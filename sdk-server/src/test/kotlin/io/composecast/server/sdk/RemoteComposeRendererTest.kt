@@ -9,6 +9,7 @@ import io.composecast.protocol.Dimension
 import io.composecast.protocol.Modifier
 import io.composecast.protocol.Padding
 import io.composecast.protocol.Shape
+import io.composecast.server.sdk.render.RemoteComposeRenderer
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO

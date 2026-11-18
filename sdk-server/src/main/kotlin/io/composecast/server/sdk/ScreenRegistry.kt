@@ -3,6 +3,7 @@ package io.composecast.server.sdk
 import io.composecast.protocol.BrandConfig
 import io.composecast.protocol.ScreenDefinition
 import io.composecast.protocol.ScreenJson
+import io.composecast.server.sdk.render.RemoteComposeRenderer
 import java.nio.file.Path
 import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap

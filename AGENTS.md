@@ -27,6 +27,7 @@ This file is the index. Keep it short (< 150 lines); details live where the tabl
 | How to do recurring things (add component, upgrades, emulator) | [docs/playbooks/](docs/playbooks/README.md) |
 | Vision, principles, roadmap | [README → Vision, Roadmap](README.md#vision) |
 | Why something is the way it is | [docs/decisions/](docs/decisions/README.md) (ADRs) |
+| Screen JSON format (every component, modifier, binding) | [docs/screen-json-format.md](docs/screen-json-format.md) |
 | How Remote Compose actually behaves (per version) | [docs/remote-compose.md](docs/remote-compose.md) |
 | New RC release? (watch it: alpha, semantics change) | `./scripts/check-rc-release.sh`, [release notes](https://developer.android.com/jetpack/androidx/releases/compose-remote), [upgrade playbook](docs/playbooks/upgrade-remote-compose.md) |
 | What was done when | [docs/history.md](docs/history.md) |
@@ -42,7 +43,7 @@ Do not load the whole project: root `AGENTS.md` → task → the modules in its 
 | `protocol` | Screen model `ScreenDefinition` + `ScreenJson`, `Action` + codec, `Headers`, `BrandConfig` | done |
 | `sdk-server` | DSL/JSON → `ScreenDefinition` → RC documents (`RemoteComposeRenderer`), `ScreenRegistry` | done |
 | `server-scripting` | `.screen.kts` hot reload | empty |
-| `server-app` | Ktor server; demo screens in `Screens.kt` (`demoScreens()`) | done |
+| `server-app` | Ktor server; demo screens in `demo/` (`demoScreens()` in `Screens.kt`) | done |
 | `sdk-android` | Fetch RC documents, play with `remote-player-view` (`ComposeCastScreen`) | done |
 | `app-shell` | The Android app itself (activity, back stack, states, action routing), configured via resources | done |
 | `app-template` | Demo app built like an app repository: `io.composecast.app` + `compose-cast.properties` | done |
@@ -54,7 +55,7 @@ Do not load the whole project: root `AGENTS.md` → task → the modules in its 
 
 1. **Remote Compose stays the Android wire format** — never add a custom Android renderer
    ([0001](docs/decisions/0001-remote-compose-wire-format.md)).
-2. RC creation API only in `RemoteComposeRenderer.kt`; RC player API only in `sdk-android`; no RC
+2. RC creation API only in `sdk-server/.../render/` (`RemoteComposeRenderer`); RC player API only in `sdk-android`; no RC
    types in public APIs ([0002](docs/decisions/0002-confine-restricted-remote-compose-api.md)).
 3. **Never guess RC behavior** — read the sources jar ([how](docs/remote-compose.md#how-to-research-the-api-do-this-instead-of-guessing))
    and record what you verified in `docs/remote-compose.md` with the version.
@@ -117,9 +118,8 @@ maestro test app-template/maestro/smoke.yaml      # click through the demo app (
 
 ## Current focus
 
-[Task queue](docs/tasks/README.md) (priority order, re-prioritized 2026-11-16): **T-039 split large
-files (ready)** → T-025 Milestone 1 weather app in its own repo + measurements (owner steps:
-release, Reposilite) → **T-007 admin panel MVP → T-029 visual editor (the core of the product:
+[Task queue](docs/tasks/README.md) (priority order, re-prioritized 2026-11-16): **T-025 Milestone 1
+weather app in its own repo + measurements (ready; owner steps: release, Reposilite)** → **T-007 admin panel MVP → T-029 visual editor (the core of the product:
 anyone builds app screens in the admin panel)** → T-031 wizard → T-030 templates → T-032 live
 preview → T-038 flags/A-B → T-037 analytics → T-033 AI → T-027 SDK-loaded images → T-028 offline cache → T-018 → T-021 → T-034 forms → T-035 Supabase auth → T-036 push → T-017.
 Real apps decide the catalog; T-019/T-020/T-022 are `later`. Android only

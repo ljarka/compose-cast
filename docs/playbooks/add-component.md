@@ -14,14 +14,15 @@ Example: `divider(thickness = 1)`. Read first: [ADR 0002](../decisions/0002-conf
    Validate content in `ScreenDefinition.problems()` (message with the `components[i].field` path)
    so mistakes fail at server start, not on devices; test it in `ScreenJsonTest`.
    **DSL** — `sdk-server/.../ScreenDsl.kt`: add the `ScreenBuilder` function that appends it.
-3. **Renderer** — `sdk-server/.../RemoteComposeRenderer.kt` (the only file allowed to use the RC
-   creation API): add the `renderNode(node, slot)` branch and pass `boxModel(node.modifier, slot, …)` as its RC
+3. **Renderer** — package `sdk-server/.../sdk/render/` (the only place allowed to use the RC
+   creation API): add the `renderNode(env, node, slot)` branch in `Nodes.kt`, the code in the file of
+   its group (`Containers.kt`, `Images.kt`, `Interactive.kt`, or a new one) and pass `boxModel(node.modifier, slot, …)` as its RC
    modifier (own styling via `decorate`, defaults via `defaultWidth`/`defaultPadding`). Units per ADR 0004: sizes as dp constants, fonts via
    `sp()`, height expressions wrapped in `written(...)`.
 4. **Unit tests** — `RemoteComposeRendererTest`: the `describe()` dump contains the expected
    operations; invalid input throws `IllegalArgumentException`; no `Height(EXACT, 0.0)`.
-5. **Demo + screenshot** — use the component in `server-app/.../Screens.kt` (`demoScreens()`), or add
-   a demo screen plus a `@Test` in `compat-tests/.../DemoScreensScreenshotTest.kt`.
+5. **Demo + screenshot** — use the component in a demo screen (`server-app/.../demo/Demo*Screen.kt`, registered in
+   `demoScreens()` in `Screens.kt`), or add one plus a `@Test` in `compat-tests/.../DemoScreensScreenshotTest.kt`.
    `./gradlew :compat-tests:recordRoborazziDebug`, **open the PNG and check it**, then
    `verifyRoborazziDebug`.
 6. **Device** — [verify-on-emulator.md](verify-on-emulator.md).

@@ -1,6 +1,6 @@
 # T-039 — Split large files and long AGENTS.md (small context per change)
 
-Status: ready · Roadmap: chores · Depends on: — · Module: sdk-server, protocol, server-app
+Status: done · Roadmap: chores · Depends on: — · Module: sdk-server, protocol, server-app
 
 ## Goal
 No source file an agent must edit is longer than ~400 lines, and no `AGENTS.md` is longer than
@@ -20,6 +20,17 @@ No source file an agent must edit is longer than ~400 lines, and no `AGENTS.md` 
 ## Acceptance criteria
 - `./scripts/verify.sh` is green with **no** screenshot re-recording; R1 is updated; files are under
   ~400 lines.
+
+## Result (2026-11-18)
+- `sdk-server/.../render/`: `RemoteComposeRenderer.kt` 150, `Modifiers.kt` 160, `Nodes.kt` 105,
+  `Containers.kt` 115, `Images.kt` 85, `Interactive.kt` 140, `Mappings.kt` 105, `Style.kt` 25 lines.
+- `protocol`: `Screen.kt` 85, `ScreenValidation.kt` 305, `Component.kt` 220, `ComponentOptions.kt`
+  140; public API unchanged (validation stays `ScreenDefinition` members, delegating).
+- `server-app`: `Screens.kt` 75 + `demo/Demo<Id>Screen.kt` (≤ 95 each) + `DemoShared.kt`.
+- `protocol/AGENTS.md` 133 → 68 lines; JSON reference in `docs/screen-json-format.md`.
+- Byte-identity checked beyond the tests: SHA-256 of every demo document (DSL and JSON, API level
+  max and 8) before and after, all 34 equal. `Binder.kt` (405) left as is (at the limit, not
+  touched by this task's design).
 
 ## Docs to update
 `sdk-server/AGENTS.md` (file list), `protocol/AGENTS.md`, ADR 0002, history.

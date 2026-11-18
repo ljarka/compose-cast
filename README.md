@@ -74,7 +74,7 @@ Principles:
 
 ## Screenshots
 
-The demo screens from [`Screens.kt`](server-app/src/main/kotlin/io/composecast/server/Screens.kt),
+The demo screens from [`demo/`](server-app/src/main/kotlin/io/composecast/server/demo/),
 rendered to Remote Compose documents by the server SDK and played by the Android SDK's
 `RemoteComposePlayer`:
 
@@ -159,7 +159,7 @@ dynamicScreen("echo") { ctx ->
 }
 ```
 
-Demo screens live in `server-app/src/main/kotlin/io/composecast/server/Screens.kt`.
+Demo screens live in `server-app/src/main/kotlin/io/composecast/server/demo/` (one file per screen, registered in `Screens.kt`).
 
 The DSL builds a serializable `ScreenDefinition`; the same screens can be JSON files, one
 `<id>.json` per screen, loaded with `composeCast { screensFrom(Path.of("screens")) }`:
@@ -178,7 +178,7 @@ The DSL builds a serializable `ScreenDefinition`; the same screens can be JSON f
 
 Both paths render byte-identical documents (`JsonScreensTest`). JSON errors name the file and the
 JSON path, e.g. `main.json: … subclass 'carousel' is not found … at path: $.components[1]`.
-Format reference: [protocol/AGENTS.md](protocol/AGENTS.md#screen-json-format).
+Format reference: [docs/screen-json-format.md](docs/screen-json-format.md).
 
 ### Data from external APIs
 
@@ -207,7 +207,7 @@ per-source timeout and cache), binds and renders per request; API keys never rea
 
 `GET /screens/weather?lat=52.23&lon=21.01&city=Warsaw` changes the data. Filters: `round`, `date`,
 `lookup`, `default`, `upper`, `lower`; secrets as `{{secret.KEY}}` from `COMPOSECAST_SECRET_KEY`
-(source URLs/headers only). Full grammar: [protocol/AGENTS.md](protocol/AGENTS.md#data-sources-and-bindings-t-006);
+(source URLs/headers only). Full grammar: [docs/screen-json-format.md](docs/screen-json-format.md#data-sources-and-bindings-t-006);
 live demo: `examples/demo/screens/data.json` ("Live data" on the home screen).
 
 ## Modules

@@ -267,3 +267,7 @@ README roadmap's "Etap" numbers.
 51. **T-026 image fetch hardening**: `HttpImageLoader` rejects hosts resolving to private addresses
     and checks every redirect hop (≤ 3); opt-out `COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS`
     ([ADR 0003](decisions/0003-embed-images-server-side.md) consequence).
+52. **T-039 large files split** (pure refactor, documents byte-identical): RC creation code in the
+    `sdk-server` package `render/` (rule R1 + [ADR 0002](decisions/0002-confine-restricted-remote-compose-api.md)
+    amended to the package), `protocol` screen model in `Screen`/`ScreenValidation`/`Component`/
+    `ComponentOptions`, demo screens one file each, JSON format reference → `docs/screen-json-format.md`.

@@ -21,9 +21,9 @@ kotlin = files("*.kt")
 gradle = files("build.gradle.kts")
 catalog = (root / "gradle/libs.versions.toml").read_text()
 
-# R1 — Remote Compose API only in the renderer (server) and sdk-android main sources.
+# R1 — Remote Compose API only in the renderer package (server) and sdk-android main sources.
 R1_ALLOWED = [
-    re.compile(r"^sdk-server/src/main/.*/RemoteComposeRenderer\.kt$"),
+    re.compile(r"^sdk-server/src/main/kotlin/io/composecast/server/sdk/render/[^/]+\.kt$"),
     re.compile(r"^sdk-android/src/main/"),
 ]
 for f in kotlin:

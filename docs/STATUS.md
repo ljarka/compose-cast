@@ -5,7 +5,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Next
 
-- **[T-039 Split large files and long AGENTS.md](tasks/T-039-split-large-files.md)** (chores) — the `ready` task.
+- **[T-025 Milestone 1: weather app in its own repo + measurements](tasks/T-025-weather-app-milestone.md)** (Etap 6) — the `ready` task.
 
 ## Task queue (priority order)
 
@@ -27,8 +27,8 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-015 Adaptive layouts (FitBox, collapsible)](tasks/T-015-adaptive-layouts.md) | Etap 5 | done (`532da5c`) |
 | [T-016 Accessibility semantics](tasks/T-016-accessibility.md) | Etap 5 | done (`bd3cd2c`) |
 | [T-026 Image fetch hardening (no private addresses)](tasks/T-026-image-fetch-hardening.md) | Etap 6 | done (`de38360`) |
-| [T-039 Split large files and long AGENTS.md](tasks/T-039-split-large-files.md) | chores | ready — small contexts for agents (ADR 0023) |
-| [T-025 Milestone 1: weather app in its own repo + measurements](tasks/T-025-weather-app-milestone.md) | Etap 6 | queued (after T-039); owner steps: first release, Reposilite, domain |
+| [T-039 Split large files and long AGENTS.md](tasks/T-039-split-large-files.md) | chores | done (commit pending) — renderer → `render/` package, protocol model in 4 files, demo screens one per file |
+| [T-025 Milestone 1: weather app in its own repo + measurements](tasks/T-025-weather-app-milestone.md) | Etap 6 | ready — owner steps: first release, Reposilite, domain (without them: prepare locally, see task file) |
 | [T-007 Admin panel MVP](tasks/T-007-admin-panel.md) | Etap 8 | queued (after T-025); **core of the product**; first step: write the MVP cut into the task file |
 | [T-029 Visual screen editor (no JSON)](tasks/T-029-visual-screen-editor.md) | Etap 8 | queued (after T-007) |
 | [T-031 Data source wizard (URL → screens)](tasks/T-031-data-source-wizard.md) | Etap 8 | queued (after T-029) |
@@ -75,9 +75,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- T-039 large files split
 - T-026 image fetch hardening
 - New feature tasks and module structure
 - Self-hosted only
 - Git rule changed
 - Admin panel is the product core
-- Project review, re-prioritization

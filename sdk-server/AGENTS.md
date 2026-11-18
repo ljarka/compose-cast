@@ -16,7 +16,7 @@ Do NOT load `server-app`, `sdk-android`, or other modules unless cross-cutting.
 | `Binder.kt` | T-006 execution: `DataFetcher` (parallel fetch, secrets from env), `DataCache` (LRU 256 per URL + headers, TTL `cacheSeconds`, failures 10 s), `BoundScreen` (params → fetch → model-to-model bind → `validate()`), filter implementations, secret masking in logs |
 | `ScreenRegistry.kt` | `composeCast {}` builder (`screen {}`, `dynamicScreen {}`, `screen(definition)`, `screensFrom(dir)`, `brand`), `ScreenRegistry` (`render(id, RenderContext)`), `RenderContext`, `ScreenParameterException`, `RemoteScreen` (definition, bytes, `etag`) |
 | `ImageCache.kt` | Thread-safe LRU (256) of fetched images; failures cached 60 s only |
-| `RemoteComposeRenderer.kt` | **Only** file using the Remote Compose creation API; `ScreenDefinition` → RC bytes |
+| `render/` | **Only** package using the Remote Compose creation API (rule R1), all `internal`: `RemoteComposeRenderer.kt` (entry: `render()`, profiles/API levels, image fetch + `PlatformServices`, `describe`, `parseColor`; `RenderEnv`, `EncodedImage`), `Nodes.kt` (`renderChildren`, `renderNode` dispatch, text), `Containers.kt` (card, column, row, box, fitBox, flow, grid), `Images.kt` (image, icon), `Interactive.kt` (button, expandable), `Modifiers.kt` (`Axis`, `Slot`, `boxModel`, semantics, `sp`, `written`), `Mappings.kt` (model enums → RC), `Style.kt` (colors, sizes) |
 | `ImageLoader.kt` | `ImageLoader` fun interface + `HttpImageLoader(allowPrivateHosts = false)` (http/https only, max 5 MB, no private/loopback/link-local hosts, ≤ 3 redirects each checked — T-026); `isPrivateAddress()`; inject a fake one in tests |
 
 The screen model itself (`ScreenDefinition`, `Component`, `TextStyle`, `ScreenJson`, validation)
@@ -76,10 +76,12 @@ file and the JSON path; a file must be named `<id>.json`.
 
 ## Decisions
 
-- RC creation API is confined to `RemoteComposeRenderer` ([ADR 0002](../docs/decisions/0002-confine-restricted-remote-compose-api.md)).
+- RC creation API is confined to the `render` package ([ADR 0002](../docs/decisions/0002-confine-restricted-remote-compose-api.md)).
 - Buttons are a clickable `Box` with brand `primaryColor` background; click = `hostAction(action)`.
+- Node renderers are `RcScope` extensions taking a `RenderEnv` (brand primary color + image cache);
+  each new component group goes in its own file (keep files < ~400 lines, T-039).
 - Containers/modifiers (T-012, [ADR 0020](../docs/decisions/0020-component-tree-and-modifiers.md)):
-  `renderChildren(list, Slot, spacing)` — the `Slot` carries the parent's axis (default width: fill
+  `renderChildren(env, list, Slot, spacing)` — the `Slot` carries the parent's axis (default width: fill
   in columns, wrap in rows) and a `weigh` lambda captured in the Row/Column scope (RC's `weight` is
   scope-only); `boxModel()` emits weight → width → height → clip → background → border → click →
   component styling → padding. `spacing` = spacers between children. `shape: circle` = rounded clip
