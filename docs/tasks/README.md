@@ -22,7 +22,7 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-015 Adaptive layouts (FitBox, collapsible)](T-015-adaptive-layouts.md) | Etap 5 | done (`532da5c`) |
 | [T-016 Accessibility semantics](T-016-accessibility.md) | Etap 5 | done (`bd3cd2c`) |
 | [T-026 Image fetch hardening (no private addresses)](T-026-image-fetch-hardening.md) | Etap 6 | done (`de38360`) |
-| [T-039 Split large files and long AGENTS.md](T-039-split-large-files.md) | chores | done (commit pending) — renderer → `render/` package, protocol model in 4 files, demo screens one per file |
+| [T-039 Split large files and long AGENTS.md](T-039-split-large-files.md) | chores | done (`dcaaa50`) — renderer → `render/` package, protocol model in 4 files, demo screens one per file |
 | [T-025 Milestone 1: weather app in its own repo + measurements](T-025-weather-app-milestone.md) | Etap 6 | ready — owner steps: first release, Reposilite, domain (without them: prepare locally, see task file) |
 | [T-007 Admin panel MVP](T-007-admin-panel.md) | Etap 8 | queued (after T-025); **core of the product**; first step: write the MVP cut into the task file |
 | [T-029 Visual screen editor (no JSON)](T-029-visual-screen-editor.md) | Etap 8 | queued (after T-007) |
