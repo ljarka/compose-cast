@@ -91,8 +91,8 @@ Do not load the whole project: root `AGENTS.md` → task → the modules in its 
   `-gpu host` (≈20x faster). On Linux `verify.sh` also probes `/usr/lib/jvm/*21*`.
 - UI clicking on the emulator: **Maestro** (`/opt/homebrew/bin/maestro`, 2.12.1), flows in
   `app-template/maestro/` ([playbook](docs/playbooks/verify-on-emulator.md)).
-- No `gh` CLI — CI:
-  https://github.com/ljarka/compose-cast/actions (public API, rate-limited).
+- `gh` CLI (`/opt/homebrew/bin/gh`, logged in as the owner, scope `repo`): CI runs
+  (`gh run list/watch`), releases. https://github.com/ljarka/compose-cast/actions
 - Toolchain: AGP 9.5.1 (built-in Kotlin: never apply `org.jetbrains.kotlin.android`), Gradle 9.6.0,
   Kotlin 2.4.21, Compose BOM (`platform(libs.compose.bom)`), compileSdk 37 / targetSdk 36,
   Ktor 3.6.1, RC 1.0.0-alpha23. All versions in `gradle/libs.versions.toml`.
