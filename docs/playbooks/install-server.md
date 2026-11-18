@@ -32,6 +32,7 @@ names the file and the JSON path.
 | `COMPOSECAST_PORT` | `8080` | Host port; with HTTPS use `127.0.0.1:8080` so only Caddy is public |
 | `COMPOSE_PROFILES` | — | `https` starts Caddy (reverse proxy, automatic Let's Encrypt certificates) |
 | `COMPOSECAST_DOMAIN` | `localhost` | Domain Caddy serves and obtains the certificate for |
+| `JAVA_OPTS` | — (image: `-XX:MaxRAMPercentage=75`) | JVM options. On a small VPS cap the heap, e.g. `-Xmx256m`: by default the heap grows to 75% of RAM under load (T-025 measurements in the README) |
 | `COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS` | `false` | `true` lets screens load images from loopback/private/link-local hosts (local development only; keep `false` in production — SSRF) |
 | `COMPOSECAST_SECRET_<NAME>` | — | Secret for data sources, read by `{{secret.NAME}}` in a data source URL/header (never sent to the app) |
 

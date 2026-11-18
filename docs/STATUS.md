@@ -5,7 +5,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Next
 
-- **[T-025 Milestone 1: weather app in its own repo + measurements](tasks/T-025-weather-app-milestone.md)** (Etap 6) — the `ready` task.
+- **[T-043 App bar shows the screen id while loading](tasks/T-043-shell-loading-title.md)** (Etap 7) — the `ready` task.
 
 ## Task queue (priority order)
 
@@ -28,8 +28,13 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-016 Accessibility semantics](tasks/T-016-accessibility.md) | Etap 5 | done (`bd3cd2c`) |
 | [T-026 Image fetch hardening (no private addresses)](tasks/T-026-image-fetch-hardening.md) | Etap 6 | done (`de38360`) |
 | [T-039 Split large files and long AGENTS.md](tasks/T-039-split-large-files.md) | chores | done (`dcaaa50`) — renderer → `render/` package, protocol model in 4 files, demo screens one per file |
-| [T-025 Milestone 1: weather app in its own repo + measurements](tasks/T-025-weather-app-milestone.md) | Etap 6 | ready — owner steps: first release, Reposilite, domain (without them: prepare locally, see task file) |
-| [T-007 Admin panel MVP](tasks/T-007-admin-panel.md) | Etap 8 | queued (after T-025); **core of the product**; first step: write the MVP cut into the task file |
+| [T-025 Milestone 1: weather app in its own repo + measurements](tasks/T-025-weather-app-milestone.md) | Etap 6 | in progress (waiting for owner: release) — app prepared locally in `../weather-app` |
+| [T-043 App bar shows the screen id while loading](tasks/T-043-shell-loading-title.md) | Etap 7 | ready — gap from T-025 (tiny) |
+| [T-040 Brand theme colors for component defaults](tasks/T-040-brand-theme-colors.md) | Etap 5 | queued (after T-043) — gap from T-025 |
+| [T-041 Lookups keyed by more than one value (day/night)](tasks/T-041-compound-lookup-keys.md) | Etap 4 | queued (after T-040) — gap from T-025 |
+| [T-042 Reload the data directory without a restart](tasks/T-042-reload-data-dir.md) | Etap 6 | queued (after T-041) — gap from T-025 |
+| [T-044 Release signing configured by the app repository](tasks/T-044-release-signing.md) | Etap 6 | queued (after T-042) — gap from T-025 |
+| [T-007 Admin panel MVP](tasks/T-007-admin-panel.md) | Etap 8 | queued (after T-044 and T-025); **core of the product**; first step: write the MVP cut into the task file |
 | [T-029 Visual screen editor (no JSON)](tasks/T-029-visual-screen-editor.md) | Etap 8 | queued (after T-007) |
 | [T-031 Data source wizard (URL → screens)](tasks/T-031-data-source-wizard.md) | Etap 8 | queued (after T-029) |
 | [T-030 App templates](tasks/T-030-app-templates.md) | Etap 8 | queued (after T-031) |
@@ -75,9 +80,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- T-025 weather app prepared locally
 - T-039 large files split
 - T-026 image fetch hardening
 - New feature tasks and module structure
 - Self-hosted only
 - Git rule changed
-- Admin panel is the product core

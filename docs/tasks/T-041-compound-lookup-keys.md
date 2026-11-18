@@ -1,0 +1,33 @@
+# T-041 — Lookups keyed by more than one value (day/night icons)
+
+Status: queued (after T-040) · Roadmap: Etap 4 · Depends on: — · Module: protocol, sdk-server
+
+## Goal
+
+A binding can pick a lookup entry from two values. Found by the weather app (T-025): the hourly
+list shows ☀️ at 23:00 because `{{h.code | lookup:icon}}` cannot also use Open-Meteo's `is_day`.
+
+## Design (recommended; confirm in the task before coding)
+
+- New filter `append:<arg>`: appends a string to the value. `<arg>` is either a quoted literal
+  (`append:'-'`) or a **path** in the same scope (`append:h.is_day`). Then
+  `{{h.code | append:'-' | append:h.is_day | lookup:icon}}` with keys `"0-1": "☀️"`, `"0-0": "🌙"`.
+- Path arguments are new: today every filter argument is a literal. Validate them like template
+  roots (unknown root → error with the JSON path) in `protocol/ScreenValidation.kt`.
+- `lookup` keeps its `"*"` fallback; consider a second fallback step (`"0-*"`) only if needed.
+
+Alternative considered: a `when`/conditional component — larger, belongs to T-020.
+
+## Steps
+
+1. `protocol/Binding.kt` (`Template` parser: path arguments, `Filters.ARITY`), validation.
+2. `sdk-server/Binder.kt` (filter implementation, resolving path arguments in the item scope).
+3. Tests: `BindingTest`, `DataBindingTest` (zip repeat with code + is_day).
+
+## Acceptance criteria
+
+The weather app's hourly screen shows 🌙 for clear night hours (verify on the emulator).
+
+## Docs to update
+
+`docs/screen-json-format.md` (filters), history.

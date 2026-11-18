@@ -23,8 +23,13 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-016 Accessibility semantics](T-016-accessibility.md) | Etap 5 | done (`bd3cd2c`) |
 | [T-026 Image fetch hardening (no private addresses)](T-026-image-fetch-hardening.md) | Etap 6 | done (`de38360`) |
 | [T-039 Split large files and long AGENTS.md](T-039-split-large-files.md) | chores | done (`dcaaa50`) — renderer → `render/` package, protocol model in 4 files, demo screens one per file |
-| [T-025 Milestone 1: weather app in its own repo + measurements](T-025-weather-app-milestone.md) | Etap 6 | ready — owner steps: first release, Reposilite, domain (without them: prepare locally, see task file) |
-| [T-007 Admin panel MVP](T-007-admin-panel.md) | Etap 8 | queued (after T-025); **core of the product**; first step: write the MVP cut into the task file |
+| [T-025 Milestone 1: weather app in its own repo + measurements](T-025-weather-app-milestone.md) | Etap 6 | in progress (waiting for owner: release) — app prepared locally in `../weather-app` |
+| [T-043 App bar shows the screen id while loading](T-043-shell-loading-title.md) | Etap 7 | ready — gap from T-025 (tiny) |
+| [T-040 Brand theme colors for component defaults](T-040-brand-theme-colors.md) | Etap 5 | queued (after T-043) — gap from T-025 |
+| [T-041 Lookups keyed by more than one value (day/night)](T-041-compound-lookup-keys.md) | Etap 4 | queued (after T-040) — gap from T-025 |
+| [T-042 Reload the data directory without a restart](T-042-reload-data-dir.md) | Etap 6 | queued (after T-041) — gap from T-025 |
+| [T-044 Release signing configured by the app repository](T-044-release-signing.md) | Etap 6 | queued (after T-042) — gap from T-025 |
+| [T-007 Admin panel MVP](T-007-admin-panel.md) | Etap 8 | queued (after T-044 and T-025); **core of the product**; first step: write the MVP cut into the task file |
 | [T-029 Visual screen editor (no JSON)](T-029-visual-screen-editor.md) | Etap 8 | queued (after T-007) |
 | [T-031 Data source wizard (URL → screens)](T-031-data-source-wizard.md) | Etap 8 | queued (after T-029) |
 | [T-030 App templates](T-030-app-templates.md) | Etap 8 | queued (after T-031) |
@@ -46,7 +51,8 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-022 Advanced RC features (templates, drag, sensors)](T-022-advanced-rc-features.md) | Etap 10 | later (pick by real use case) |
 | [T-005 iOS spike](T-005-ios-spike.md) | Etap 3 | dropped (Android only, ADR 0022) |
 
-Rows are in priority order. **Re-prioritized 2026-11-16 (owner):** real apps before catalog
+Rows are in priority order. **T-025 gaps (2026-11-18):** T-025 waits for the owner's release steps;
+the small gaps it found (T-043, T-040, T-041, T-042, T-044) run meanwhile, before the admin panel. **Re-prioritized 2026-11-16 (owner):** real apps before catalog
 breadth. **The admin panel is the core of the product** (owner: anyone can create the screens
 of their mobile app in the admin panel). Order: Milestone 1 (T-025) proves the runtime → admin panel MVP
 (T-007) → visual editor (T-029). The gap lists and its gap list decides what follows. Catalog tasks

@@ -1,6 +1,6 @@
 # T-025 — Milestone 1: example weather app (external repository) + measurements
 
-Status: ready · Roadmap: Etap 6 · Depends on: T-023, T-024 (owner steps below) · Module: external repository (+ fixes in existing modules)
+Status: in progress (waiting for owner: release) · Roadmap: Etap 6 · Depends on: T-023, T-024 (owner steps below) · Module: external repository (+ fixes in existing modules)
 
 ## Goal
 
@@ -20,6 +20,31 @@ promise end to end and shows the framework's real gaps. Do this **before** more 
 If they are not done, the agent prepares the repository locally against
 `./scripts/verify-app-repository.sh` (local Maven) and records it in the status line as
 `in progress (waiting for owner: release)`.
+
+## Progress (2026-11-18, agent)
+
+Done locally, without the owner steps:
+- Repository `../weather-app` (local git, no remote): `server/` (compose file + `example.env` from
+  `distribution/`, `data/brand.json`, `data/screens/{main,hourly,daily,cities}.json`), `android/`
+  (`compose-cast.properties` with a placeholder `https://weather.example.com`,
+  `compose-cast.local.properties` for debug, wrapper, `maestro/smoke.yaml`), README, screenshots.
+- Built against a publish dry run (`-PcomposecastVersion=0.1.0`) via the new
+  `scripts/local-maven.init.gradle.kts`; `assembleDebug` and `assembleRelease` (unsigned) green with
+  no Kotlin. Server = locally built image tagged `ghcr.io/ljarka/compose-cast-server:local`.
+- Emulator: Maestro flow through all screens passed; screenshots in the README.
+- Measurements: README "Performance" (p50 3 ms warm / 47 ms cold, docs 3–9 KB, RSS ~260 MB with
+  `-Xmx128m`; default heap grows → `JAVA_OPTS` documented).
+- Gap list → T-043 (app bar shows the screen id while loading), T-040 (brand surface/text colors),
+  T-041 (day/night: lookup by two values), T-042 (data dir needs a restart), T-044 (release
+  signing). Fixed inline: playbook steps (debug config via `composecast.appConfig`, wrapper copy,
+  Maestro output dir, local Maven), `JAVA_OPTS` docs. Not a gap: Open-Meteo, dates, repeats,
+  rows/weights, navigation params, emoji in text all worked as documented.
+- Smaller notes (no task): "Today" instead of the weekday needs conditions (T-020); an hourly chart
+  would need T-018 — the list is fine.
+
+Remaining (needs the owner): owner steps 1–3, then ask where to push `../weather-app`, set the real
+domain in `compose-cast.properties`, deploy `server/` on the VPS (https), run the app against it,
+tick the README Etap 6 boxes, set this task `done`.
 
 ## Design
 

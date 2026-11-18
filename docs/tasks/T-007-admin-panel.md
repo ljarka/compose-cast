@@ -1,6 +1,6 @@
 # T-007 — Admin panel (Etap 8)
 
-Status: queued (after T-025); first step: write the MVP cut into Steps, then implement · Roadmap: Etap 8 · Depends on: T-002 (JSON screen model), T-006 (data sources) · Module: server-store, server-admin
+Status: queued (after T-044 and T-025); first step: write the MVP cut into Steps, then implement · Roadmap: Etap 8 · Depends on: T-002 (JSON screen model), T-006 (data sources) · Module: server-store, server-admin
 
 ## Modules (2026-11-16, ADR 0023): overrides the file paths in Steps below
 

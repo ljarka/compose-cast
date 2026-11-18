@@ -101,6 +101,34 @@ remote images are replaced by a generated gradient). CI fails when rendering cha
 ./gradlew :compat-tests:recordRoborazziDebug   # accept intentional changes, then commit the PNGs
 ```
 
+### Example app: Weather (Milestone 1, T-025)
+
+A separate app repository using compose-cast like any product would: 4 JSON screens, live
+[Open-Meteo](https://open-meteo.com) data through data sources, an Android app with no Kotlin
+(`compose-cast.properties` + the `io.composecast.app` plugin). On the emulator against the server
+in Docker, 2026-11-18:
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/images/weather-app/main.png" width="200" alt="Weather now"><br><code>main</code></td>
+    <td align="center"><img src="docs/images/weather-app/hourly.png" width="200" alt="Next 24 hours"><br><code>hourly</code></td>
+    <td align="center"><img src="docs/images/weather-app/daily.png" width="200" alt="Next 7 days"><br><code>daily</code></td>
+    <td align="center"><img src="docs/images/weather-app/cities.png" width="200" alt="City list"><br><code>cities</code></td>
+  </tr>
+</table>
+
+### Performance
+
+The weather app's server (Docker on an Apple-silicon Mac, `ab -c 10`, 2026-11-18):
+
+| Measurement | Result |
+|---|---|
+| `GET /screens/main`, data cached (1,000 requests) | p50 3 ms, p95 6 ms, p99 9 ms, ~2,600 req/s |
+| `GET /screens/main`, cache miss (40 places → Open-Meteo each time) | p50 47 ms, p95 53 ms |
+| Document size | `main` 3.1 KB, `hourly` (24 rows) 9.0 KB, `daily` 4.2 KB, `cities` 3.2 KB |
+| Memory, `-Xmx128m`, 12,000 requests | RSS steady at 253–261 MB, no errors |
+| Memory, image default (`MaxRAMPercentage=75`) | RSS grows with load (930 MB after 4,500 requests on a 6.8 GB VM) — heap ergonomics, not a leak: cap it with `JAVA_OPTS` on a small VPS ([install-server](docs/playbooks/install-server.md#settings-env)) |
+
 ## Architecture
 
 ```
@@ -359,7 +387,8 @@ Android only ([ADR 0022](docs/decisions/0022-android-only.md), owner 2026-11-16)
 - [x] Image fetches never reach private/loopback addresses (SSRF) — T-026
 - [ ] Example weather app on [Open-Meteo](https://open-meteo.com) (no API key): current conditions,
   hourly/daily forecast, city list — screens as JSON, data via data sources — built as a separate
-  example repository using the published compose-cast artifacts
+  example repository using the published compose-cast artifacts (built locally against a publish
+  dry run, 2026-11-18; waits for the first release)
 - [ ] Server install like [Immich](https://immich.app/docs/install/docker-compose): `docker-compose.yml`
   + `example.env` from GitHub Releases, image on GHCR (amd64 + arm64), optional HTTPS (Caddy) — T-023
   ([ADR 0018](docs/decisions/0018-distribution-like-immich.md)); files and workflow done, ticked
@@ -371,7 +400,8 @@ Android only ([ADR 0022](docs/decisions/0022-android-only.md), owner 2026-11-16)
 - [x] Server serves JSON screens from a directory (`COMPOSECAST_DATA_DIR`, `PORT`), request logging
 - [x] Backend in one command: Docker image (amd64 + arm64) + `docker-compose.yml`, screens on a
   volume, secrets in `.env`, healthcheck — T-009
-- [ ] Weather app repository, screenshots in this README; RAM/latency measured with per-request rendering — T-025
+- [ ] Weather app repository, screenshots in this README; RAM/latency measured with per-request rendering — T-025;
+  repository, screenshots and measurements done locally (2026-11-18), ticked when it runs from the release on a VPS over https
 
 ### Etap 7 — App shells & SDKs
 - [x] Android SDK: `RemoteComposePlayer` in `AndroidView`, Ktor fetch, loading/error, action router
