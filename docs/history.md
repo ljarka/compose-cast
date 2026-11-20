@@ -271,6 +271,7 @@ README roadmap's "Etap" numbers.
     `sdk-server` package `render/` (rule R1 + [ADR 0002](decisions/0002-confine-restricted-remote-compose-api.md)
     amended to the package), `protocol` screen model in `Screen`/`ScreenValidation`/`Component`/
     `ComponentOptions`, demo screens one file each, JSON format reference → `docs/screen-json-format.md`.
+54. **T-043 app bar loading title** (`ComposeCastActivity`): top bar falls back to `app_name` instead of the raw screen id while loading or on error — the "main" flash spotted in T-025 is gone.
 53. **T-025 weather app prepared locally** (waits for the owner's release): `../weather-app` with 4
     JSON screens on Open-Meteo, Android app without Kotlin built against a publish dry run
     (`scripts/local-maven.init.gradle.kts`), Maestro on the emulator, measurements in the README

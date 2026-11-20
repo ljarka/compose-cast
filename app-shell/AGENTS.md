@@ -42,6 +42,7 @@ ComposeCastActivity (config: getString/getColor of the resources above)
 - Action routing: exhaustive `when` over `Action` — `Navigate` push, `OpenUrl` `ACTION_VIEW` (no app
   → snackbar), `Reload` `reloadKey++`, `Track` no-op (analytics hook), `Custom` snackbar. Unknown
   actions never arrive (`sdk-android` drops them).
+- Top app bar title: the screen's `title` from the document, or `app_name` while loading/on error (never the raw screen id). T-043.
 - Frame colors: top app bar = primary (title black/white by luminance), loading/error background =
   background; status bar icons light/dark by the primary's luminance (`enableEdgeToEdge`). Content
   colors are the server's brand, painted by the RC document.

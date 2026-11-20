@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.composecast.android.ComposeCastClient
@@ -147,7 +148,7 @@ private fun ComposeCastApp(client: ComposeCastClient, serverUrl: String, onOpenU
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
                 title = {
-                    val title = screenState?.getOrNull()?.title ?: screenId
+                    val title = screenState?.getOrNull()?.title ?: stringResource(R.string.app_name)
                     Text(title)
                 },
             )
