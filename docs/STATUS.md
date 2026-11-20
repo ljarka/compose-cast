@@ -81,8 +81,8 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 ## Recent work (docs/history.md)
 
 - T-025 weather app prepared locally
+- T-043 app bar loading title
 - T-039 large files split
 - T-026 image fetch hardening
 - New feature tasks and module structure
 - Self-hosted only
-- Git rule changed
