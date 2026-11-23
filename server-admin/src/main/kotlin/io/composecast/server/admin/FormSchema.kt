@@ -1,6 +1,7 @@
 package io.composecast.server.admin
 
 import io.composecast.protocol.Component
+import io.composecast.protocol.DataSource
 import io.composecast.protocol.ScreenDefinition
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.PolymorphicKind
@@ -71,7 +72,16 @@ internal object FormSchema {
     fun componentFields(type: String): List<Field>? = componentTypes[type]?.let { fields(it, "") }
 
     /** Screen-level fields: everything but the id (fixed) and the component lists. */
-    val screenFields: List<Field> = fields(ScreenDefinition.serializer().descriptor, "", skip = setOf("id"))
+    val screenFields: List<Field> = fields(ScreenDefinition.serializer().descriptor, "", skip = setOf("id", "data"))
+
+    /** Fields of one data source (T-031 W3): the sources are nodes of the tree (`data.<name>`), not a JSON field. */
+    val sourceFields: List<Field> = fields(DataSource.serializer().descriptor, "")
+
+    /** A data source's JSON with its defaults written out, for [values]. */
+    fun sourceWithDefaults(source: JsonObject): JsonObject = withDefaults.encodeToJsonElement(
+        DataSource.serializer(),
+        Json.decodeFromJsonElement(DataSource.serializer(), source),
+    ) as JsonObject
 
     /** Component-list field names of [descriptor] (`children`, `content`, `template`, `empty`, `components`, `error`). */
     fun componentLists(descriptor: SerialDescriptor): List<String> =

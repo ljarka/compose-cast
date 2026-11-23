@@ -21,8 +21,8 @@ import kotlin.test.assertEquals
  * T-029 acceptance (C3): screens are built from empty with only what the visual editor offers —
  * "New screen", the screen form, "Add … to this list" and each component's form; no JSON editor.
  * The weather `main` of the T-025 app (fixtures/weather-main.json, ljarka/weather-app f0f729b) and
- * every demo screen come out byte-identical. The screen's maps (params, data, lookups) are JSON
- * fields of the screen form until the data source wizard (T-031).
+ * every demo screen come out byte-identical. Data sources are added with "Add data source" and their
+ * own form (T-031 W3); params and lookups are JSON fields of the screen form.
  */
 class BuildFromEmptyTest {
     private val host = AdminTestHost()
@@ -42,6 +42,18 @@ class BuildFromEmptyTest {
         val visual = "/admin/screens/$id/visual"
         submit(cookie, "/admin/screens", mapOf("id" to id))
         submit(cookie, "$visual?node=", FormSchema.values(FormSchema.screenFields, target))
+        // Data sources (T-031 W3): "Add data source" with a name and an address, then its form.
+        (target["data"] as? JsonObject)?.forEach { (name, source) ->
+            val url = ((source as JsonObject)["url"] as JsonPrimitive).content
+            val path =
+                submit(cookie, "$visual/edit?node=data", mapOf("op" to "add-source", "name" to name, "url" to url))
+            assertEquals("data.$name", path)
+            submit(
+                cookie,
+                "$visual?node=$path",
+                FormSchema.values(FormSchema.sourceFields, FormSchema.sourceWithDefaults(source)),
+            )
+        }
 
         suspend fun fill(list: String, items: JsonArray) {
             val current = (ScreenTree.get(currentDraft(id), list) as? JsonArray)?.size ?: 0

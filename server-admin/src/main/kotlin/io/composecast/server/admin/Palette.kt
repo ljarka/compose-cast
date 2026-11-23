@@ -153,6 +153,26 @@ internal object Palette {
         return Result(ScreenTree.set(screen, path, JsonObject(starter + (list to JsonArray(listOf(node))))), path)
     }
 
+    private val SOURCE_NAME = Regex("[A-Za-z][A-Za-z0-9_]{0,63}")
+
+    /** Adds the data source [name] with [url] (T-031 W3); its other fields have defaults. */
+    fun addSource(screen: JsonObject, name: String, url: String): Result {
+        require(SOURCE_NAME.matches(name)) { "a data source name uses letters, digits and _ (starting with a letter)" }
+        require(url.isNotBlank()) { "a data source needs an address" }
+        val sources = screen["data"] as? JsonObject ?: JsonObject(emptyMap())
+        require(name !in sources) { "there is already a data source '$name'" }
+        val added = JsonObject(sources + (name to JsonObject(mapOf("url" to JsonPrimitive(url.trim())))))
+        return Result(JsonObject(screen + ("data" to added)), "data.$name")
+    }
+
+    /** Removes the data source at `data.<name>`; components that still bind to it make the screen invalid. */
+    fun deleteSource(screen: JsonObject, path: String): Result {
+        val name = path.removePrefix("data.")
+        val sources = requireNotNull(screen["data"] as? JsonObject) { "no data sources" }
+        require(name in sources) { "no data source '$name'" }
+        return Result(JsonObject(screen + ("data" to JsonObject(sources - name))), "data")
+    }
+
     /** The component that owns a list path (`components.1.children` → `components.1`), `""` for the screen's lists. */
     private fun owner(list: String) = if ('.' in list) list.substringBeforeLast('.') else ""
 }

@@ -17,6 +17,18 @@ internal object ScreenTree {
     private val SCREEN_LISTS = listOf("components", "error")
 
     fun rows(screen: JsonObject): List<Row> = buildList {
+        // T-031 W3: data sources first (what the components bind to), each one a node `data.<name>`.
+        add(Row("data", 0, null, "Data sources"))
+        (screen["data"] as? JsonObject)?.forEach { (name, source) ->
+            add(
+                Row(
+                    "data.$name",
+                    1,
+                    "source",
+                    "$name · ${((source as? JsonObject)?.get("url") as? JsonPrimitive)?.content.orEmpty()}".take(48),
+                ),
+            )
+        }
         for (list in SCREEN_LISTS) {
             val items = screen[list] as? JsonArray
             // The error list matters only with data sources: shown (and fillable) once there are some.

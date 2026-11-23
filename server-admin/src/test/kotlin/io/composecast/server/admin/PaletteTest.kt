@@ -18,7 +18,10 @@ class PaletteTest {
     private val withData = screen("""{"id": "s", "data": {"shows": {"url": "https://api.tvmaze.com/shows"}}}""")
 
     /** Types of the screen's top-level components, nested ones in brackets. */
-    private fun shape(screen: JsonObject): String = ScreenTree.rows(screen).filter { it.type != null }
+    private fun shape(screen: JsonObject): String = ScreenTree.rows(screen).filter {
+        it.type != null &&
+            it.type != "source"
+    }
         .joinToString(" ") { "${"·".repeat(it.depth - 1)}${it.type}" }
 
     @Test
@@ -99,7 +102,7 @@ class PaletteTest {
         assertEquals(
             listOf("template", "empty"),
             ScreenTree.rows(s).filter {
-                it.type == null && it.path !in setOf("components", "error")
+                it.type == null && it.path !in setOf("data", "components", "error")
             }.map { it.label },
         )
         val filled = Palette.add(s, "components.0.empty", null, "text")

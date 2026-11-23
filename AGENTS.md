@@ -29,6 +29,7 @@ This file is the index. Keep it short (< 150 lines); details live where the tabl
 | What already works (feature inventory, ideas backlog) | [docs/feature-checklist.md](docs/feature-checklist.md) |
 | Why something is the way it is | [docs/decisions/](docs/decisions/README.md) (ADRs) |
 | Screen JSON format (every component, modifier, binding) | [docs/screen-json-format.md](docs/screen-json-format.md) |
+| Admin visual editor, palette, data source wizard, field picker (how + why) | [docs/admin-editor.md](docs/admin-editor.md) |
 | How Remote Compose actually behaves (per version) | [docs/remote-compose.md](docs/remote-compose.md) |
 | New RC release? (watch it: alpha, semantics change) | `./scripts/check-rc-release.sh`, [release notes](https://developer.android.com/jetpack/androidx/releases/compose-remote), [upgrade playbook](docs/playbooks/upgrade-remote-compose.md) |
 | What was done when | [docs/history.md](docs/history.md) |
@@ -123,7 +124,7 @@ maestro test app-template/maestro/smoke.yaml      # click through the demo app (
 ## Current focus
 
 [Roadmap](specs/roadmap.md) → [task queue](docs/tasks/README.md): T-007 admin panel, T-045 Preview app (B3 waits
-for the owner), T-029 visual editor done → **T-030 templates** → T-031 data wizard → T-010 export +
+for the owner), T-029 visual editor, T-031 data wizard done → **T-030 templates** → T-010 export +
 GitHub Actions build → T-027 → T-021 → **T-046 TV shows app built only in the admin** (mission:
 a non-developer ships an app). T-025 (weather app, `v0.2.0`) only waits for the owner's domain.
 Android only ([ADR 0022](docs/decisions/0022-android-only.md)).

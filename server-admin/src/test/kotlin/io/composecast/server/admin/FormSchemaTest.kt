@@ -41,7 +41,19 @@ class FormSchemaTest {
                 .filter { it.kind == FormSchema.Kind.JsonValue }.map { it.path }.toSet()
             assertTrue(jsonFields.containsAll(raw), "$type: unexpected JSON-value fields ${raw - jsonFields}")
         }
-        assertEquals(listOf("title", "params", "data", "lookups"), FormSchema.screenFields.map { it.key })
+        assertEquals(
+            listOf("title", "params", "lookups"),
+            FormSchema.screenFields.map {
+                it.key
+            },
+            "data sources are tree nodes (T-031 W3)",
+        )
+        assertEquals(
+            listOf("url", "headers", "timeoutMs", "cacheSeconds", "optional"),
+            FormSchema.sourceFields.map {
+                it.key
+            },
+        )
     }
 
     @Test

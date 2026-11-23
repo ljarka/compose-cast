@@ -1,6 +1,6 @@
 # T-031 — Data source wizard (URL → ready list/detail screens)
 
-Status: in progress — next step: W3 (W1, W2 done) · Roadmap: Etap 8 · Depends on: T-006, T-029 · Module: server-admin, sdk-server
+Status: done (W1–W3) · Roadmap: Etap 8 · Depends on: T-006, T-029 · Module: server-admin, sdk-server
 
 ## Goal
 A non-developer pastes an API URL. The panel fetches it, shows the JSON as a tree and asks "what
@@ -50,6 +50,12 @@ the server, so the wizard also runs on the server.
    on the device); the detail's `params.id` default is a real id so it renders in previews.
 3. **W3** Field picker in the visual editor (probe the screen's source, click a field → its
    `{{binding}}`), and a form for the screen's data sources instead of the JSON field.
+   **W3 result (2026-11-23):** `DataFields.kt`, `GET …/visual/fields`, `_fields.ftl`, data sources
+   as tree nodes (`Palette.addSource`/`deleteSource`, `FormSchema.sourceFields`), the insert script
+   in `visual.ftl`; `docs/admin-editor.md`. Tests: `DataFieldsTest` (3); `BuildFromEmptyTest` now
+   adds sources with "Add data source" (still byte-identical). Looked at with headless Chrome (picker
+   inside the TVMaze repeat with real values; a source's form). **Not checked:** the click-to-insert
+   script in a real browser (no clickable browser available) — try it once by hand.
 
 ## Acceptance criteria
 - With `https://api.tvmaze.com/shows`, the wizard produces list + detail screens that render on

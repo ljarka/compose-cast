@@ -58,6 +58,10 @@
     .toolbar button:disabled { opacity: .4; cursor: default; }
     button.danger { background: var(--error); }
     label.inline { display: inline-flex; gap: 8px; align-items: center; margin: 0; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    button.chip { margin: 0; padding: 4px 8px; background: var(--bg); color: var(--fg); border: 1px solid var(--line);
+                  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+    .fields-title { font-size: 15px; margin: 12px 0 6px; }
     fieldset.plain { border: 0; margin: 0; padding: 0; }
     .field { margin-bottom: 8px; }
     .help { font-size: 13px; }

@@ -32,8 +32,8 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-007 Admin panel MVP](T-007-admin-panel.md) | Etap 8 | done (`6ba75e7`) — A1–A5: `server-store`, admin mode, login + roles, editor + drafts, publish + history + rollback, settings, admin mode in Docker |
 | [T-045 Generic Preview app + draft preview](T-045-preview-app.md) | Roadmap B | waiting for the owner — B1 Preview app + `/connect`, B2 draft preview done; B3 needs a fresh VPS + signing secrets (T-029 goes on meanwhile) |
 | [T-029 Visual screen editor (no JSON)](T-029-visual-screen-editor.md) | Etap 8 | done (`69010e0`) — C1 ADR 0028, C2 tree + generated forms, C3 palette; acceptance test rebuilds the weather `main` |
-| [T-031 Data source wizard (URL → screens)](T-031-data-source-wizard.md) | Etap 8 | in progress — W1 probe + heuristics, W2 wizard page done (TVMaze list + detail on the emulator); next: W3 field picker + data source form |
-| [T-030 App templates](T-030-app-templates.md) | Etap 8 | queued (after T-031); roadmap D1 |
+| [T-031 Data source wizard (URL → screens)](T-031-data-source-wizard.md) | Etap 8 | done — W1 probe + heuristics, W2 wizard (TVMaze list + detail on the emulator), W3 field picker + data source form |
+| [T-030 App templates](T-030-app-templates.md) | Etap 8 | ready — roadmap D2 |
 | [T-010 Settings export (properties + icon)](T-010-app-export.md) | Etap 9 | queued (after T-030); roadmap E1–E3; rewrite the Design for ADR 0025 (GitHub Actions build) first |
 | [T-027 Images loaded by the SDK (lists)](T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-010); roadmap F1 |
 | [T-021 Native components via RC `Custom` (text input)](T-021-native-components.md) | Etap 10 | queued (after T-027); roadmap F2; spike first |

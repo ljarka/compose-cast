@@ -40,6 +40,16 @@
             <button name="op" value="delete" class="danger">Delete</button>
           </div>
         </#if>
+        <#if mode == "sources">
+          <div class="toolbar">
+            <label class="inline">Name <input name="name" placeholder="shows" style="width: 140px"></label>
+            <label class="inline">Address <input name="url" placeholder="https://api.tvmaze.com/shows" style="width: 320px"></label>
+            <button name="op" value="add-source">Add data source</button>
+          </div>
+          <p class="muted help">Bind to it as <code>{{name.field}}</code>; a key goes into the server's .env and here as <code>{{secret.NAME}}</code>. Or <a href="/admin/wizard">create screens from an API</a>.</p>
+        <#elseif mode == "source">
+          <div class="toolbar"><button name="op" value="delete-source" class="danger">Delete this data source</button></div>
+        <#else>
         <div class="toolbar">
           <label class="inline">Add <@typeSelect/></label>
           <#if mode == "component">
@@ -51,6 +61,7 @@
             <button name="op" value="add-end">to the screen</button>
           </#if>
         </div>
+        </#if>
         <#if mode == "component">
           <div class="toolbar">
             <label class="inline">Wrap in <@typeSelect name="type" only=containers/></label>
@@ -59,14 +70,24 @@
         </#if>
       </form>
       </#if>
-      <#if mode != "list">
-      <form class="card" method="post" action="/admin/screens/${id?url}/visual?node=${node?url}">
+      <#if mode != "list" && mode != "sources">
+      <form class="card panel-form" method="post" action="/admin/screens/${id?url}/visual?node=${node?url}">
         <h2 style="margin-top: 0">${nodeLabel}</h2>
         <fieldset class="plain"<#if !canEdit> disabled</#if>>
           <#include "_form.ftl">
         </fieldset>
         <#if canEdit><button type="submit">Save</button></#if>
       </form>
+      <#if canEdit && mode != "source">
+      <div class="card">
+        <button type="button" hx-get="/admin/screens/${id?url}/visual/fields?node=${node?url}" hx-target="#data-fields" hx-indicator="#data-fields">Show fields from the data</button>
+        <p class="muted help" id="picker-hint">Click a text field above, then a field below: its <code>{{binding}}</code> is inserted there.</p>
+        <div id="data-fields"></div>
+      </div>
+      </#if>
+      <#elseif mode == "sources">
+      <div class="card"><h2 style="margin-top: 0">${nodeLabel}</h2>
+        <p class="muted">The APIs this screen reads. Add one above, then select it in the tree to set headers, timeout and caching.</p></div>
       <#else>
       <div class="card"><h2 style="margin-top: 0">${nodeLabel}</h2>
         <p class="muted">A list of components. Add one above, or select a component in the tree.</p></div>
@@ -74,4 +95,23 @@
     </div>
   </div>
 </main>
+<script>
+  // T-031 W3 field picker: remember the last text field of the property form, insert a chip's
+  // binding at its cursor. No library (tech stack: small vanilla JS islands).
+  (function () {
+    let last = null;
+    document.addEventListener("focusin", function (e) {
+      if (e.target.closest(".panel-form") && e.target.matches("input:not([type=checkbox]):not([type=number]), textarea")) last = e.target;
+    });
+    document.addEventListener("click", function (e) {
+      const chip = e.target.closest("[data-binding]");
+      if (!chip) return;
+      if (!last) { document.getElementById("picker-hint").classList.add("error"); return; }
+      const text = chip.dataset.binding, start = last.selectionStart ?? last.value.length, end = last.selectionEnd ?? start;
+      last.value = last.value.slice(0, start) + text + last.value.slice(end);
+      last.focus();
+      last.setSelectionRange(start + text.length, start + text.length);
+    });
+  })();
+</script>
 </@layout.page>

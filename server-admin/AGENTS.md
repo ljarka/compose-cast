@@ -21,11 +21,12 @@ only in admin mode (`COMPOSECAST_MODE=admin`); files mode has no `/admin`.
 | `ApiShape.kt` | T-031: `lists` (arrays of objects, largest first), item `fields` (path, sample, `Kind`), `roles` (id/title/subtitle/image guesses) |
 | `WizardScreens.kt` | T-031 W2: `Plan` → `list(plan)` (column › repeat of cards: 72 dp image, title, 2-line subtitle, tap → detail; max 20 items) and `detail(plan)` (own source `…/{{params.id}}` with `params.id` default = a real id, or the list's fields passed as params); HTML fields through `plain` |
 | `WizardPages.kt` | `GET/POST /admin/wizard` (`step` = probe/create): probe → pick list + fields (guesses pre-filled, another list = its own guesses) → both screens as drafts → visual editor; refuses raw keys in headers/URL (`{{secret.NAME}}` only) and existing ids |
+| `DataFields.kt` | T-031 W3: the field picker's bindings at a node (`groups`: repeat alias items first, then each source, then params) from probed data |
 | `QrCode.kt` | `QrCode.svg(text)`: inline SVG QR code (`io.nayuki:qrcodegen`, ECC medium); the only template value rendered with `?no_esc` (generated, no user text) |
 | `ScreenPublishing.kt` | `ScreenPublishing` (publish, rollback, publishBrand, preview; implemented by `server-app`, which owns `LiveScreens`), `PublishException` (nothing changed) |
 | `AdminAuth.kt` | Accounts and sessions: `bootstrapAdmin`, `createUser`, `login` → token, `user(token)`, `logout`; bcrypt (`at.favre.lib:bcrypt`) |
 | `Role.kt` | `Role` (`viewer` < `editor` < `admin`, `canEdit`), `AdminUser` |
-| `resources/templates/admin/*.ftl` | `_layout.ftl` (`<@layout.page title user role htmx>`: page, header with nav + logout, inline CSS light/dark, HTMX 2.0.11 with SRI), `login.ftl`, `screens.ftl`, `screen.ftl` (editor + history), `revision.ftl`, `settings.ftl`, `wizard.ftl` (data source wizard), `visual.ftl` + `_form.ftl` (visual editor; groups are `<details>`, closed unless filled), `_problems.ftl` (validation result; also the HTMX fragment) |
+| `resources/templates/admin/*.ftl` | `_layout.ftl` (`<@layout.page title user role htmx>`: page, header with nav + logout, inline CSS light/dark, HTMX 2.0.11 with SRI), `login.ftl`, `screens.ftl`, `screen.ftl` (editor + history), `revision.ftl`, `settings.ftl`, `wizard.ftl` (data source wizard), `_fields.ftl` (field picker fragment), `visual.ftl` + `_form.ftl` (visual editor; groups are `<details>`, closed unless filled), `_problems.ftl` (validation result; also the HTMX fragment) |
 
 ## Rules for new routes (A3–A5)
 
@@ -75,24 +76,9 @@ only in admin mode (`COMPOSECAST_MODE=admin`); files mode has no `/admin`.
 - **Preview (T-045 B2, ADR 0027):** saves nothing; the QR and an "open on this phone" link go
   to `/connect?screen=…`; the server URL comes from `X-Forwarded-Proto` + `Host` (fallback: the
   request's host/port, e.g. the test engine sends no `Host`).
-- **Visual editor (T-029 C2, ADR 0028):** the form engine knows only kinds, never components: a
-  new component/field is editable without code; a new **custom serializer** needs a case in
-  `FormSchema.kind` (today: `Dimension`, `JsonElement`-described ones → JSON value). Values come
-  from the component with defaults written out; `parse` leaves unset optional fields out (and an
-  optional group nobody filled in, so a required field inside it cannot create it). Component lists
-  are never form fields — they are the tree, kept from the stored JSON on save. Saving = the whole
-  screen through `ScreenJson.check`, so the visual and JSON editors share one draft and one rule set.
-- **Palette (C3):** structural edits are pure functions on the JSON (`Palette`), then the same
-  check + save; a refused edit (`IllegalArgumentException`, or an invalid screen such as an
-  expandable without content) shows the message and changes nothing. A new component type needs a
-  starter in `Palette.starters` and a palette group (`PaletteTest` fails otherwise). The error list
-  shows in the tree once the screen has data sources. Renaming a repeat's alias renames
-  `{{alias…}}` in its lists (`Bindings.rename`).
-- **Wizard (T-031):** the probe's limit is the screens' own 2 MB; lists in generated screens are
-  capped at 20 items because images are embedded (ADR 0003; SDK-loaded images: T-027). A key in a
-  header or in a URL parameter named like a key (`key`, `apikey`, `token`, …) must be
-  `{{secret.NAME}}`, otherwise nothing is created. `ApplicationCall.screenId` reads the **path**
-  parameter only (Ktor's `parameters` also holds the query).
+- **Visual editor, palette, data source wizard, field picker:** how they work and why —
+  [docs/admin-editor.md](../docs/admin-editor.md) (read it before changing `FormSchema`, `Palette`,
+  `VisualPages`, `Wizard*`, `ApiProbe`, `ApiShape`, `DataFields`).
 - Not yet: login rate limiting (bcrypt cost is the only brake), password change, user management UI.
 
 Ktor 3.6.1 facts (sources jar, 2026-11-23): `Sessions` is route-scoped (installed on `/admin` only),
@@ -108,35 +94,12 @@ HTTP without error; `RoutingNode.getAllRoutes()` lists endpoints.
 
 ## Tests
 
-`AdminTestHost` (temp database + routes on the Ktor test host, `loginAs(role)`). `AdminPanelTest`
-(redirect without session, env admin login + cookie attributes, logout, wrong password/unknown
-email, viewer 403 / editor allowed on every mutating route found in the routing tree, HTTPS
-message, `allowHttp`, HTML escaping, bootstrap rules). `ScreenPagesTest` (list + statuses, create,
-invalid edit → problems with paths and nothing saved, canonical draft leaves `live()` unchanged,
-validate fragment, editor vs. viewer page, no textarea breakout, publish + who + draft cleared,
-invalid/failed publish changes nothing, rollback + revision page, preview QR + nothing saved). `WizardScreensTest` (generated screens render with the 3 fixture APIs' data via `composeCast` + fake loaders),
-`WizardPagesTest` (probe page, create → drafts + visual editor, raw keys refused, no list / HTTP 404
-explained; the test host's `apiResponses` fake the probe). `ApiShapeTest` (3 fixture APIs in `src/test/resources/fixtures/apis/`), `ApiProbeTest` (fake DNS + HTTP:
-private hosts and private redirects never contacted). `PaletteTest` (starters valid, edits keep the selection, nesting, repeat needs data).
-`BuildFromEmptyTest` (**acceptance**: the weather app's `main` — `src/test/resources/fixtures/weather-main.json`
-from ljarka/weather-app `f0f729b` — and every demo screen built from empty over HTTP with only
-New screen, forms and palette operations, byte-identical). `FormSchemaTest` (all component types known, no unexpected JSON-value fields, every component of
-`examples/demo` → form values → back unchanged). `VisualPagesTest` (tree, selected form, save one
-node, path-named errors keep the input, screen fields, action type switch, viewers disabled, every
-node of every demo screen opens and saves unchanged). `SettingsPagesTest` (save brand +
-app keys + logo, remove logo, field-named errors keep the input, failed rebuild saves nothing,
-admin-only). The host's fake `publishing`
-writes straight to the store (`failWith` simulates a build failure).
+`AdminTestHost` (temp database + routes on the Ktor test host, `loginAs(role)`, fake `publishing`
+and `apiResponses` for the probe). One test class per page/engine; the catalogue and the
+acceptance tests (`BuildFromEmptyTest`, TVMaze wizard) are in [docs/admin-editor.md](../docs/admin-editor.md#tests).
 
 ```bash
 ./gradlew :server-admin:test
 ```
 
-Looking at a page without a browser tool (2026-11-23): run admin mode, fetch the page with the
-session cookie and let headless Chrome draw it (the CSS is inline; HTMX loads from the CDN):
-
-```bash
-curl -s -b jar "localhost:8095/admin/screens/main/visual?node=components.0" > page.html
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --disable-gpu \
-  --hide-scrollbars --window-size=1280,1300 --screenshot=page.png "file://$PWD/page.html"
-```
+Looking at a page without a browser tool: headless Chrome screenshots — [docs/admin-editor.md](../docs/admin-editor.md#looking-at-a-page).

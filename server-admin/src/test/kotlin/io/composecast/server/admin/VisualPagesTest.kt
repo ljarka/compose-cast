@@ -239,19 +239,14 @@ class VisualPagesTest {
             for (path in listOf("") + ScreenTree.rows(root).filter { it.type != null }.map { it.path }) {
                 val url = "/admin/screens/$id/visual?node=$path"
                 assertEquals(HttpStatusCode.OK, client.page(cookie, url).status, url)
-                val fields = if (path.isEmpty()) {
-                    FormSchema.screenFields
-                } else {
-                    FormSchema.componentFields(
-                        (ScreenTree.get(root, path) as JsonObject)["type"].toString().trim('"'),
-                    )!!
-                }
                 val node = ScreenTree.get(root, path) as JsonObject
-                val values = if (path.isEmpty()) {
-                    FormSchema.values(fields, node)
-                } else {
-                    FormSchema.values(
-                        fields,
+                val values = when {
+                    path.isEmpty() -> FormSchema.values(FormSchema.screenFields, node)
+                    path.startsWith(
+                        "data.",
+                    ) -> FormSchema.values(FormSchema.sourceFields, FormSchema.sourceWithDefaults(node))
+                    else -> FormSchema.values(
+                        FormSchema.componentFields((node["type"] as JsonPrimitive).content)!!,
                         FormSchema.withDefaults(Json.decodeFromJsonElement(Component.serializer(), node)),
                     )
                 }

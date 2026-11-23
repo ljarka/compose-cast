@@ -356,3 +356,8 @@ README roadmap's "Etap" numbers.
     /screens/{id}?id=…` treated the query `id` as the screen id (Ktor `parameters` merges path and
     query) — every screen with a param named `id` was broken; now path parameters only. The probe
     limit is the screens' 2 MB (TVMaze `/shows` is 373 KB).
+74. **T-031 W3 — field picker + data source form (T-031 done)**: data sources are tree nodes with a
+    generated form (add/delete), the field picker probes the screen's sources and lists every
+    `{{binding}}` with its value (inside a repeat: the item's fields) — a chip inserts it at the
+    cursor (inline JS, ~15 lines). Found by the tests: saving the screen form would have dropped
+    the data sources once `data` left the form. Editor docs moved to `docs/admin-editor.md`.

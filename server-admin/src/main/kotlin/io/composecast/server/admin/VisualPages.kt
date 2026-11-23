@@ -24,7 +24,8 @@ import java.net.URLEncoder
  * change is checked as a whole screen and saved as the same draft the JSON editor shows; `?node=`
  * is the selection (a component, `""` for the screen, or a list such as `components.2.empty`).
  */
-internal fun Route.visualPages(screens: ScreenStore) {
+internal fun Route.visualPages(screens: ScreenStore, probe: ApiProbe) {
+    val dataFields = DataFields(probe)
     route("/screens/{id}/visual") {
         get {
             val editing = call.editing(screens) ?: return@get
@@ -74,6 +75,8 @@ internal fun Route.visualPages(screens: ScreenStore) {
                     "duplicate" -> Palette.duplicate(root, node)
                     "delete" -> Palette.delete(root, node)
                     "wrap" -> Palette.wrap(root, node, type)
+                    "add-source" -> Palette.addSource(root, params["name"].orEmpty(), params["url"].orEmpty())
+                    "delete-source" -> Palette.deleteSource(root, node)
                     else -> throw IllegalArgumentException("unknown operation '${params["op"]}'")
                 }
             } catch (e: IllegalArgumentException) {
@@ -87,6 +90,25 @@ internal fun Route.visualPages(screens: ScreenStore) {
                 )
             }
             call.saveOrShow(screens, editing, result.screen, result.select, emptyList()) { editing.values(node)[it] }
+        }
+        // T-031 W3, HTMX: the field picker — bindings usable at the node, with samples from the real data.
+        get("/fields") {
+            val editing = call.editing(screens) ?: return@get
+            val node = call.request.queryParameters["node"].orEmpty()
+            if (!editing.exists(node)) return@get call.respondText("No node '$node'", status = HttpStatusCode.NotFound)
+            val groups = dataFields.groups(editing.root, node)
+            call.respondTemplate(
+                "admin/_fields.ftl",
+                mapOf(
+                    "groups" to groups.map { g ->
+                        mapOf(
+                            "title" to g.title,
+                            "error" to g.error.orEmpty(),
+                            "fields" to g.fields.map { mapOf("binding" to it.binding, "sample" to it.sample) },
+                        )
+                    },
+                ),
+            )
         }
         // HTMX: re-render the form from what is typed (e.g. another action type picked); saves nothing.
         post("/panel") {
@@ -137,12 +159,17 @@ private class Editing(val stored: ScreenStore.StoredScreen) {
 
     private fun type(path: String) = (node(path)?.get("type") as? JsonPrimitive)?.content
 
+    /** A data source node `data.<name>` (T-031 W3). */
+    fun isSource(path: String) = path.startsWith("data.") && path.count { it == '.' } == 1
+
     /** A component list path (`components`, `components.2.empty`): its last segment is a name. */
-    fun isList(path: String) = path.isNotEmpty() && path.substringAfterLast('.').toIntOrNull() == null
+    fun isList(path: String) =
+        path != "data" && !isSource(path) && path.isNotEmpty() && path.substringAfterLast('.').toIntOrNull() == null
 
     /** The selection exists: the screen, a component, or a component list of the screen or a component. */
     fun exists(path: String): Boolean = when {
-        path.isEmpty() -> true
+        path.isEmpty() || path == "data" -> true
+        isSource(path) -> (root["data"] as? JsonObject)?.containsKey(path.removePrefix("data.")) == true
         isList(path) -> {
             val owner = if ('.' in path) path.substringBeforeLast('.') else ""
             val name = path.substringAfterLast('.')
@@ -159,6 +186,8 @@ private class Editing(val stored: ScreenStore.StoredScreen) {
     /** Form fields of the node at [path] (the screen for `""`); null for a list or nothing. */
     fun fields(path: String): List<FormSchema.Field>? = when {
         path.isEmpty() -> FormSchema.screenFields
+        path == "data" -> null
+        isSource(path) -> FormSchema.sourceFields.takeIf { node(path) != null }
         isList(path) || node(path) == null -> null
         else -> type(path)?.let(FormSchema::componentFields)
     }
@@ -167,6 +196,7 @@ private class Editing(val stored: ScreenStore.StoredScreen) {
     fun values(path: String): Map<String, String> {
         val fields = fields(path) ?: return emptyMap()
         if (path.isEmpty()) return FormSchema.values(fields, root)
+        if (isSource(path)) return FormSchema.values(fields, FormSchema.sourceWithDefaults(node(path)!!))
         val component = Json.decodeFromJsonElement(Component.serializer(), node(path)!!)
         return FormSchema.values(fields, FormSchema.withDefaults(component))
     }
@@ -177,8 +207,10 @@ private class Editing(val stored: ScreenStore.StoredScreen) {
      */
     fun rebuild(path: String, parsed: JsonObject): JsonObject {
         val node = node(path)!!
+        if (isSource(path)) return parsed
         val keep = if (path.isEmpty()) {
-            listOf("id", "components", "error")
+            // Not in the screen form: the id, the component lists and the data sources (own nodes).
+            listOf("id", "data", "components", "error")
         } else {
             listOf("type") + FormSchema.componentLists(FormSchema.componentTypes.getValue(type(path)!!))
         }
@@ -199,6 +231,8 @@ private class Editing(val stored: ScreenStore.StoredScreen) {
     /** What the panel offers for [path]: `screen`, `list` or `component`. */
     fun mode(path: String) = when {
         path.isEmpty() -> "screen"
+        path == "data" -> "sources"
+        isSource(path) -> "source"
         isList(path) -> "list"
         else -> "component"
     }
@@ -207,6 +241,8 @@ private class Editing(val stored: ScreenStore.StoredScreen) {
 
     fun label(path: String) = when (mode(path)) {
         "screen" -> "Screen"
+        "sources" -> "Data sources"
+        "source" -> "Data source: ${path.removePrefix("data.")}"
         "list" -> "List: ${path.substringAfterLast('.')}"
         else -> type(path).orEmpty()
     }
