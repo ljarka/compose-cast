@@ -33,7 +33,7 @@ internal fun Route.visualPages(screens: ScreenStore, probe: ApiProbe) {
             if (!editing.exists(node)) return@get call.respondText("No node '$node'", status = HttpStatusCode.NotFound)
             val saved = "saved" in call.request.queryParameters
             val notice = if (saved) "Saved as a draft. Apps still get the live version." else ""
-            call.visualPage(editing, node, editing.values(node)::get, emptyList(), notice)
+            call.visualPage(screens, editing, node, editing.values(node)::get, emptyList(), notice)
         }
         post {
             val editing = call.editing(screens) ?: return@post
@@ -82,6 +82,7 @@ internal fun Route.visualPages(screens: ScreenStore, probe: ApiProbe) {
             } catch (e: IllegalArgumentException) {
                 call.response.status(HttpStatusCode.UnprocessableEntity)
                 return@post call.visualPage(
+                    screens,
                     editing,
                     node,
                     editing.values(node)::get,
@@ -145,15 +146,18 @@ private suspend fun ApplicationCall.saveOrShow(
     val node = request.queryParameters["node"].orEmpty()
     if (all.isNotEmpty() || valid == null) {
         response.status(HttpStatusCode.UnprocessableEntity)
-        return visualPage(editing, node, value, all, "")
+        return visualPage(screens, editing, node, value, all, "")
     }
     screens.saveDraft(editing.stored.id, ScreenJson.encode(valid))
     seeOther("/admin/screens/${editing.stored.id.urlEncoded()}/visual?node=${select.urlEncoded()}&saved")
 }
 
 /** The screen being edited: the draft if there is one, else the live version. */
-private class Editing(val stored: ScreenStore.StoredScreen) {
-    val root: JsonObject = Json.parseToJsonElement(stored.draftJson ?: stored.liveJson.orEmpty()) as JsonObject
+internal class Editing(
+    val stored: ScreenStore.StoredScreen,
+    val json: String = stored.draftJson ?: stored.liveJson.orEmpty(),
+) {
+    val root: JsonObject = Json.parseToJsonElement(json) as JsonObject
 
     fun node(path: String): JsonObject? = ScreenTree.get(root, path) as? JsonObject
 
@@ -259,39 +263,65 @@ private suspend fun ApplicationCall.editing(screens: ScreenStore): Editing? {
 }
 
 private suspend fun ApplicationCall.visualPage(
+    screens: ScreenStore,
     editing: Editing,
     node: String,
     value: (String) -> String?,
-    problems: List<String>,
+    visualProblems: List<String>,
     notice: String,
-) {
+) = respondTemplate(
+    "admin/visual.ftl",
+    page("${editing.stored.id} · visual") + visualModel(
+        screens = screens,
+        editing = editing,
+        node = node,
+        value = value,
+        visualProblems = visualProblems,
+        notice = notice,
+    ),
+)
+
+internal fun visualModel(
+    screens: ScreenStore,
+    editing: Editing,
+    node: String = "",
+    value: (String) -> String? = editing.values(node)::get,
+    visualProblems: List<String> = emptyList(),
+    notice: String = "",
+    checked: ScreenJson.Checked = ScreenJson.check(editing.json),
+    preview: Map<String, String>? = null,
+): Map<String, Any> {
     val location = Palette.location(node)
-    respondTemplate(
-        "admin/visual.ftl",
-        page("${editing.stored.id} · visual") + mapOf(
-            "id" to editing.stored.id,
-            "node" to node,
-            "nodeLabel" to editing.label(node),
-            "mode" to editing.mode(node),
-            "isContainer" to editing.isContainer(node),
-            "isFirst" to (location?.second == 0),
-            "isLast" to
-                (
-                    location != null &&
-                        location.second == (ScreenTree.get(editing.root, location.first) as? JsonArray)?.lastIndex
-                    ),
-            "isTopLevel" to (location != null && '.' !in location.first),
-            "tree" to ScreenTree.rows(editing.root).map {
-                mapOf("path" to it.path, "depth" to it.depth, "type" to it.type.orEmpty(), "label" to it.label)
-            },
-            "rows" to (editing.fields(node)?.let { formRows(it, value) } ?: emptyList()),
-            "palette" to Palette.groups.map { (group, types) -> mapOf("name" to group, "types" to types) },
-            "containers" to Palette.containers,
-            "panelUrl" to panelUrl(node),
-            "problems" to problems,
-            "notice" to notice,
-            "isDraft" to (editing.stored.draftJson != null),
-        ),
+    return mapOf(
+        "id" to editing.stored.id,
+        "status" to screenStatus(editing.stored),
+        "publishedAt" to editing.stored.publishedAt?.toString().orEmpty(),
+        "publishedBy" to editing.stored.publishedBy.orEmpty(),
+        "json" to editing.json,
+        "problems" to checked.problems,
+        "warnings" to (checked.screen?.warnings() ?: emptyList()),
+        "preview" to (preview ?: emptyMap<String, String>()),
+        "history" to historyRows(screens, editing.stored.id),
+        "node" to node,
+        "nodeLabel" to editing.label(node),
+        "mode" to editing.mode(node),
+        "isContainer" to editing.isContainer(node),
+        "isFirst" to (location?.second == 0),
+        "isLast" to (
+            location != null &&
+                location.second == (ScreenTree.get(editing.root, location.first) as? JsonArray)?.lastIndex
+            ),
+        "isTopLevel" to (location != null && '.' !in location.first),
+        "tree" to ScreenTree.rows(editing.root).map {
+            mapOf("path" to it.path, "depth" to it.depth, "type" to it.type.orEmpty(), "label" to it.label)
+        },
+        "rows" to (editing.fields(node)?.let { formRows(it, value) } ?: emptyList()),
+        "palette" to Palette.groups.map { (group, types) -> mapOf("name" to group, "types" to types) },
+        "containers" to Palette.containers,
+        "panelUrl" to "/admin/screens/${editing.stored.id.urlEncoded()}/visual/panel?node=${node.urlEncoded()}",
+        "visualProblems" to visualProblems,
+        "notice" to notice,
+        "isDraft" to (editing.stored.draftJson != null),
     )
 }
 

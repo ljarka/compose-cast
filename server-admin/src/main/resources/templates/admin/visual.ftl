@@ -10,11 +10,35 @@
 </#macro>
 <@layout.page title=title user=user role=role htmx=canEdit>
 <main class="wide editor">
-  <p><a href="/admin/screens">← Screens</a> · <a href="/admin/screens/${id?url}">JSON editor, publish, history</a></p>
-  <h1><code>${id}</code> <span class="muted">visual editor</span></h1>
-  <p class="muted">Edits are saved as a draft (<#if isDraft>a draft exists<#else>from the live version</#if>);
-    publish or preview on a phone from the JSON editor page.</p>
+  <p><a href="/admin/screens">← Screens</a> · <a href="#json-editor">JSON</a> · <a href="#history">History</a></p>
+  <h1><code>${id}</code> <span class="status status-${status}">${status}</span></h1>
+  <p class="muted">
+    <#if publishedAt?has_content>Live since ${publishedAt} (${publishedBy}).<#else>Never published: apps do not see this screen.</#if>
+    <#if status == "draft"> The editor shows the draft; apps still get the live version.</#if>
+  </p>
   <#if notice?has_content><p class="ok" role="status">${notice}</p></#if>
+  <#if canEdit>
+  <div class="toolbar" style="margin-bottom: 16px">
+    <button type="submit" form="screen-json-form">Save draft</button>
+    <button type="submit" form="screen-json-form" formaction="/admin/screens/${id?url}/publish">Publish</button>
+    <button type="submit" form="screen-json-form" formaction="/admin/screens/${id?url}/preview">Preview on phone</button>
+    <span class="muted">Publish makes the current JSON live for apps.</span>
+  </div>
+  </#if>
+  <#if preview?has_content>
+  <div class="card" id="preview" style="margin-bottom: 16px">
+    <h2 style="margin-top: 0">Preview on your phone</h2>
+    <div class="row" style="align-items: center">
+      <div style="flex: 0 0 auto">${preview.qr?no_esc}</div>
+      <div>
+        <p>Scan with the phone's camera and tap <strong>Open in compose-cast Preview</strong>. It shows
+          the current JSON for 30 minutes; apps do not see it. Nothing was saved.</p>
+        <p class="muted">On this phone: <a href="${preview.url}">open the preview</a>.
+          No app yet? The page offers the download.</p>
+      </div>
+    </div>
+  </div>
+  </#if>
   <div class="split">
     <nav class="card tree" aria-label="Component tree">
       <a href="/admin/screens/${id?url}/visual?node="<#if node == ""> class="selected"</#if>>Screen</a>
@@ -24,9 +48,9 @@
       </#list>
     </nav>
     <div class="panel">
-      <#if problems?has_content>
+      <#if visualProblems?has_content>
         <div class="card"><p class="error" role="alert">Not changed:</p>
-          <ul class="problems"><#list problems as p><li><code>${p}</code></li></#list></ul></div>
+          <ul class="problems"><#list visualProblems as p><li><code>${p}</code></li></#list></ul></div>
       </#if>
       <#if canEdit>
       <form class="card tools" method="post" action="/admin/screens/${id?url}/visual/edit?node=${node?url}">
@@ -93,6 +117,43 @@
         <p class="muted">A list of components. Add one above, or select a component in the tree.</p></div>
       </#if>
     </div>
+  </div>
+
+  <h2 id="json-editor">JSON</h2>
+  <form id="screen-json-form" class="card" method="post" action="/admin/screens/${id?url}">
+    <label for="json">Screen JSON <span class="muted">(<a href="https://github.com/ljarka/compose-cast/blob/main/docs/screen-json-format.md">format</a>)</span></label>
+    <textarea id="json" name="json" spellcheck="false"<#if canEdit>
+      hx-post="/admin/screens/${id?url}/validate" hx-trigger="input changed delay:400ms" hx-target="#problems"<#else> readonly</#if>>${json}</textarea>
+    <div id="problems" aria-live="polite"><#include "_problems.ftl"></div>
+    <#if canEdit>
+      <button type="submit">Save draft</button>
+      <button type="submit" formaction="/admin/screens/${id?url}/publish">Publish</button>
+      <button type="submit" formaction="/admin/screens/${id?url}/preview">Preview on phone</button>
+    </#if>
+  </form>
+
+  <h2 id="history">History</h2>
+  <div class="card">
+    <table>
+      <thead><tr><th>Version</th><th>Published</th><th>By</th><th></th></tr></thead>
+      <tbody>
+      <#list history as h>
+        <tr>
+          <td><a href="/admin/screens/${id?url}/revisions/${h.revision?c}">#${h.revision?c}</a><#if h?is_first> <span class="status status-live">live</span></#if></td>
+          <td>${h.publishedAt}</td>
+          <td>${h.publishedBy}</td>
+          <td><#if canEdit && !h?is_first>
+            <form method="post" action="/admin/screens/${id?url}/rollback" style="margin:0">
+              <input type="hidden" name="revision" value="${h.revision?c}">
+              <button type="submit" style="margin:0">Roll back to this</button>
+            </form>
+          </#if></td>
+        </tr>
+      <#else>
+        <tr><td colspan="4" class="muted">Never published.</td></tr>
+      </#list>
+      </tbody>
+    </table>
   </div>
 </main>
 <script>

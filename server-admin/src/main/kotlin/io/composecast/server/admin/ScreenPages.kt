@@ -203,7 +203,7 @@ private fun rows(screens: ScreenStore, settings: SettingsStore): List<Map<String
         mapOf(
             "id" to stored.id,
             "title" to (json?.let { ScreenJson.check(it).screen?.title } ?: stored.id),
-            "status" to status(stored),
+            "status" to screenStatus(stored),
             "isHome" to (stored.id == home),
             "isLive" to (stored.liveJson != null),
             "publishedAt" to stored.publishedAt?.toString().orEmpty(),
@@ -216,10 +216,14 @@ private fun rows(screens: ScreenStore, settings: SettingsStore): List<Map<String
 private val ID = Regex("[a-z0-9][a-z0-9_-]{0,63}")
 
 /** `live` (published, no pending edit), `draft` (published + pending edit), `unpublished` (only a draft). */
-private fun status(screen: ScreenStore.StoredScreen) = when {
+internal fun screenStatus(screen: ScreenStore.StoredScreen) = when {
     screen.liveJson == null -> "unpublished"
     screen.draftJson != null -> "draft"
     else -> "live"
+}
+
+internal fun historyRows(screens: ScreenStore, id: String) = screens.history(id).map {
+    mapOf("revision" to it.id, "publishedAt" to it.publishedAt.toString(), "publishedBy" to it.publishedBy)
 }
 
 /** [ScreenJson.check] plus the rule that a screen keeps its id (the URL and the stored row). */
@@ -242,21 +246,34 @@ private suspend fun ApplicationCall.editor(
     checked: ScreenJson.Checked,
     notice: String? = null,
     preview: Map<String, String>? = null,
-) = respondTemplate(
-    "admin/screen.ftl",
-    page(stored.id) + problemsModel(checked) + mapOf(
-        "id" to stored.id,
-        "json" to json,
-        "status" to status(stored),
-        "publishedAt" to stored.publishedAt?.toString().orEmpty(),
-        "publishedBy" to stored.publishedBy.orEmpty(),
-        "notice" to notice.orEmpty(),
-        "preview" to (preview ?: emptyMap()),
-        "history" to screens.history(stored.id).map {
-            mapOf("revision" to it.id, "publishedAt" to it.publishedAt.toString(), "publishedBy" to it.publishedBy)
-        },
-    ),
-)
+) {
+    if (checked.screen != null) {
+        val editing = Editing(stored, json)
+        return respondTemplate(
+            "admin/visual.ftl",
+            page(stored.id) + visualModel(
+                screens = screens,
+                editing = editing,
+                notice = notice.orEmpty(),
+                checked = checked,
+                preview = preview,
+            ),
+        )
+    }
+    respondTemplate(
+        "admin/screen.ftl",
+        page(stored.id) + problemsModel(checked) + mapOf(
+            "id" to stored.id,
+            "json" to json,
+            "status" to screenStatus(stored),
+            "publishedAt" to stored.publishedAt?.toString().orEmpty(),
+            "publishedBy" to stored.publishedBy.orEmpty(),
+            "notice" to notice.orEmpty(),
+            "preview" to (preview ?: emptyMap()),
+            "history" to historyRows(screens, stored.id),
+        ),
+    )
+}
 
 /** The `{id}` path segment (not `parameters`, which also holds the query). */
 internal val ApplicationCall.screenId: String get() = (this as RoutingCall).pathParameters["id"].orEmpty()
