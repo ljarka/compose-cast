@@ -316,3 +316,8 @@ README roadmap's "Etap" numbers.
     restart; the registry is built with the change before anything is written (an unset secret
     → error, nothing changed); history per screen with read-only old versions; rollback = a new
     history row with the old JSON (keeps a pending draft) and restores the old bytes.
+66. **T-007 A5 — app settings, admin mode in Docker (T-007 done)**: `/admin/settings` (app name,
+    applicationId, server URL, brand colors with field-named errors, logo); saving rebuilds every
+    screen first. Image user fixed at UID 1000 owning `/data`, production volume writable, admin
+    mode refuses a read-only data dir with the `chown` fix; install playbook + `example.env` cover
+    admin mode; `verify.sh --docker` logs in to admin mode.

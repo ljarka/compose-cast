@@ -1,6 +1,7 @@
 package io.composecast.server.admin
 
 import io.composecast.server.store.ScreenStore
+import io.composecast.server.store.SettingsStore
 import io.composecast.server.store.StoreDatabase
 import io.composecast.server.store.UserStore
 import io.ktor.client.HttpClient
@@ -25,6 +26,7 @@ internal class AdminTestHost {
     private val database = StoreDatabase.open(Files.createTempDirectory("composecast-admin").resolve("compose-cast.db"))
     val auth = AdminAuth(UserStore(database), bcryptCost = 4) // the minimum: fast tests
     val screens = ScreenStore(database)
+    val settings = SettingsStore(database)
     val password = "correct horse battery"
 
     /** Publishes straight into [screens]; set [failWith] to make the next publishes fail. */
@@ -39,6 +41,11 @@ internal class AdminTestHost {
             failWith?.let { throw PublishException(it) }
             screens.rollback(id, revisionId, by)
         }
+
+        override fun publishBrand(brandJson: String) {
+            failWith?.let { throw PublishException(it) }
+            settings[SettingsStore.BRAND] = brandJson
+        }
     }
 
     /** The routing tree, set when the application starts. */
@@ -51,7 +58,7 @@ internal class AdminTestHost {
     ) = testApplication {
         application {
             install(FreeMarker) { adminFreeMarker() }
-            root = routing { adminRoutes(auth, screens, publishing, allowHttp, extra) }
+            root = routing { adminRoutes(auth, screens, settings, publishing, allowHttp, extra) }
         }
         startApplication()
         test(createClient { followRedirects = false })

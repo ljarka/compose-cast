@@ -30,7 +30,11 @@ RUN --mount=type=cache,target=/cache/gradle \
 
 # --- runtime: JRE on Alpine (busybox wget for the healthcheck) ------------------------------------
 FROM eclipse-temurin:21.0.13_9-jre-alpine
-RUN addgroup -S composecast && adduser -S -G composecast composecast
+# Fixed UID/GID 1000 (the usual first user on Linux): admin mode writes compose-cast.db into /data,
+# so a bind-mounted ./data must be writable by it (`chown -R 1000:1000 data`, install playbook).
+# /data exists and belongs to it, so a named volume starts out writable too.
+RUN addgroup -S -g 1000 composecast && adduser -S -u 1000 -G composecast composecast \
+    && mkdir -p /data && chown composecast:composecast /data
 COPY --from=build /src/server-app/build/install/server-app /opt/compose-cast
 ENV COMPOSECAST_DATA_DIR=/data \
     PORT=8080 \

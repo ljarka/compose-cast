@@ -50,8 +50,8 @@ Do not load the whole project: root `AGENTS.md` → task → the modules in its 
 | `app-template` | Demo app built like an app repository: `io.composecast.app` + `compose-cast.properties` | done |
 | `gradle-plugins` (included build) | `io.composecast.app` Gradle plugin: properties → branded app + shell | done |
 | `compat-tests` | Screenshot tests server → player; goldens = README images | done |
-| `server-store` | Admin database (SQLite/Exposed): screens with drafts + history, users + sessions, app settings (T-007) | in progress |
-| `server-admin` | Admin panel at `/admin` (Ktor + Freemarker): login, sessions, roles; screens/settings pages next (T-007) | in progress |
+| `server-store` | Admin database (SQLite/Exposed): screens with drafts + history, users + sessions, app settings (T-007) | done |
+| `server-admin` | Admin panel at `/admin` (Ktor + Freemarker): login + roles, screens (editor, drafts, publish, history, rollback), settings (T-007) | done (MVP) |
 | planned: `app-templates`, `server-ai`, `server-forms`, `server-auth`, `server-push`/`android-push`, `server-analytics`, `server-flags` | one feature = one module with its own `AGENTS.md` ([ADR 0023](docs/decisions/0023-module-structure.md)) | planned |
 
 ## Rules
@@ -121,8 +121,8 @@ maestro test app-template/maestro/smoke.yaml      # click through the demo app (
 
 ## Current focus
 
-[Roadmap](specs/roadmap.md) → [task queue](docs/tasks/README.md): **T-007 admin panel MVP (A1–A5)** →
-T-045 Preview app → T-029 visual editor → T-030 templates → T-031 data wizard → T-010 export +
+[Roadmap](specs/roadmap.md) → [task queue](docs/tasks/README.md): T-007 admin panel MVP done →
+**T-045 Preview app** → T-029 visual editor → T-030 templates → T-031 data wizard → T-010 export +
 GitHub Actions build → T-027 → T-021 → **T-046 TV shows app built only in the admin** (mission:
 a non-developer ships an app). T-025 (weather app, `v0.2.0`) only waits for the owner's domain.
 Android only ([ADR 0022](docs/decisions/0022-android-only.md)).

@@ -1,7 +1,7 @@
 package io.composecast.server.admin
 
 /**
- * Making screens live (T-007 A4). Implemented by `server-app`, which owns what apps are served
+ * Making screens and the brand live (T-007 A4, A5). Implemented by `server-app`, which owns what apps are served
  * (`LiveScreens`); this module only calls it. An implementation must leave both the database and the
  * served screens unchanged when it throws, and must not let two publishes interleave.
  */
@@ -11,6 +11,9 @@ interface ScreenPublishing {
 
     /** Publishes revision [revisionId] of [id] again; a pending draft is kept. */
     fun rollback(id: String, revisionId: Int, by: String)
+
+    /** Makes [brandJson] (`BrandConfig` JSON, already checked with `problems()`) the brand of `/brand` and every screen (A5). */
+    fun publishBrand(brandJson: String)
 }
 
 /** The screens would not build as a whole (e.g. a `{{secret.X}}` that is not set); nothing changed. */

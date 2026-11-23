@@ -1,6 +1,6 @@
 # T-045 — Generic "compose-cast Preview" app + draft preview
 
-Status: queued (after T-007) · Roadmap: specs/roadmap.md B1–B3 · Depends on: T-007 (admin panel, `__preview`) · Module: app-shell, app-template, server-admin
+Status: ready · Roadmap: specs/roadmap.md B1–B3 · Depends on: T-007 (admin panel, `__preview`) · Module: app-shell, app-template, server-admin
 
 ## Goal
 
@@ -17,6 +17,11 @@ from the latest GitHub Release, scan the admin's QR code, done ([ADR 0024](../de
    before publishing.
 3. **B3** Measure "first screen in under 30 minutes" on a fresh VPS following only the docs; fix the
    docs until it holds. Done when: the time is written into `specs/roadmap.md` and the history.
+
+Notes from T-007 for B2: add the preview route inside `loggedIn { }` in `server-admin`'s
+`adminRoutes` (POST → editors only, covered by `AdminPanelTest`'s route walk); render the draft
+without touching the database or `LiveScreens` (a separate one-screen registry built like
+`AdminScreens.build`, served under `__preview`); the editor template is `screen.ftl`.
 
 ## Open questions (decide in B1)
 

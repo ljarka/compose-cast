@@ -4,7 +4,7 @@
 #   mkdir my-app && cd my-app
 #   wget -O docker-compose.yml https://github.com/ljarka/compose-cast/releases/latest/download/docker-compose.yml
 #   wget -O .env https://github.com/ljarka/compose-cast/releases/latest/download/example.env
-#   # put screens/<id>.json (+ brand.json) into ./data, edit .env
+#   # put screens/<id>.json (+ brand.json) into ./data, edit .env (admin panel: COMPOSECAST_MODE=admin)
 #   docker compose up -d
 #
 # Update: docker compose pull && docker compose up -d
@@ -16,8 +16,10 @@ services:
   server:
     image: ghcr.io/ljarka/compose-cast-server:${COMPOSECAST_VERSION:-release}
     volumes:
-      # Screens, brand and data sources (ADR 0011). Read-only: the server never writes to it.
-      - ${COMPOSECAST_DATA_LOCATION:-./data}:/data:ro
+      # Screens, brand and data sources (ADR 0011). Files mode only reads it; admin mode
+      # (COMPOSECAST_MODE=admin) keeps its database compose-cast.db here, so it must be writable by
+      # UID 1000: sudo chown -R 1000:1000 data
+      - ${COMPOSECAST_DATA_LOCATION:-./data}:/data
     env_file:
       - .env
     ports:

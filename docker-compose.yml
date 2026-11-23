@@ -12,6 +12,8 @@ services:
     ports:
       - "8080:8080"
     volumes:
+      # Read-only: files mode. For the admin panel (COMPOSECAST_MODE=admin) mount a writable copy,
+      # never examples/demo itself (the database would land in the repository).
       - ${COMPOSECAST_SCREENS:-./examples/demo}:/data:ro
     # Optional: secrets for data sources (T-006), e.g. API keys. Copy .env.example to .env.
     env_file:

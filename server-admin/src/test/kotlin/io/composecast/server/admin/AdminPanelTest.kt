@@ -110,13 +110,13 @@ class AdminPanelTest {
     }
 
     @Test
-    fun `a viewer gets 403 on every mutating route, an editor does not`() = admin { client ->
+    fun `a viewer gets 403 on every mutating route, an admin gets through`() = admin { client ->
         auth.createUser("viewer@example.com", password, Role.VIEWER)
-        auth.createUser("editor@example.com", password, Role.EDITOR)
+        auth.createUser("admin@example.com", password, Role.ADMIN)
         val viewer = client.login("viewer@example.com", password).sessionCookie()
-        val editor = client.login("editor@example.com", password).sessionCookie()
+        val admin = client.login("admin@example.com", password).sessionCookie()
         val mutating = mutating()
-        assertTrue(mutating.size >= 7, "the 4 stand-ins + the screen routes; found: $mutating")
+        assertTrue(mutating.size >= 8, "the 4 stand-ins + screen and settings routes; found: $mutating")
 
         val screens = client.get("/admin/screens") { header(HttpHeaders.Cookie, viewer) }
         assertEquals(HttpStatusCode.OK, screens.status, "viewers read")
@@ -127,10 +127,11 @@ class AdminPanelTest {
             }.status
             assertEquals(HttpStatusCode.Unauthorized, call(null), "$method $path without a session")
             assertEquals(HttpStatusCode.Forbidden, call(viewer), "$method $path as a viewer")
-            val asEditor = call(editor)
+            // Editors may be refused per route (settings are admin-only); an admin never is.
+            val asAdmin = call(admin)
             assertTrue(
-                asEditor != HttpStatusCode.Unauthorized && asEditor != HttpStatusCode.Forbidden,
-                "$method $path as an editor: $asEditor",
+                asAdmin != HttpStatusCode.Unauthorized && asAdmin != HttpStatusCode.Forbidden,
+                "$method $path as an admin: $asAdmin",
             )
         }
         val logout = client.request("/admin/logout") {

@@ -47,7 +47,7 @@
 <body>
 <#if user?has_content>
 <header>
-  <nav><strong>compose-cast admin</strong>&nbsp;&nbsp;<a href="/admin/screens">Screens</a></nav>
+  <nav><strong>compose-cast admin</strong>&nbsp;&nbsp;<a href="/admin/screens">Screens</a><a href="/admin/settings">Settings</a></nav>
   <form method="post" action="/admin/logout">
     <span class="muted">${user.email} (${role})</span>
     <button type="submit">Log out</button>

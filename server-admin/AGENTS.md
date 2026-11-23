@@ -9,12 +9,13 @@ only in admin mode (`COMPOSECAST_MODE=admin`); files mode has no `/admin`.
 
 | File | Purpose |
 |---|---|
-| `AdminPanel.kt` | `Application.adminPanel(auth, screens, publishing, allowHttp)`: installs FreeMarker, mounts `adminRoutes`; `/admin/login` (GET/POST), `/admin/logout` (POST), `/admin` → `/admin/screens`, `loggedIn {}` (route-scoped `RequireUser`), `page(title)` (base template model), `seeOther`, `SecurityHeaders` |
+| `AdminPanel.kt` | `Application.adminPanel(auth, screens, settings, publishing, allowHttp)`: installs FreeMarker, mounts `adminRoutes`; `/admin/login` (GET/POST), `/admin/logout` (POST), `/admin` → `/admin/screens`, `loggedIn {}` (route-scoped `RequireUser`), `page(title)` (base template model), `seeOther`, `SecurityHeaders` |
 | `ScreenPages.kt` | A3: `GET /admin/screens` (id, title, status `live`/`draft`/`unpublished`, last published), `POST /admin/screens` (create: id + title → unpublished draft), `GET /admin/screens/{id}` (editor: draft, else live), `POST /admin/screens/{id}` (save draft: valid only, stored canonical; 422 + problems otherwise), `POST /admin/screens/{id}/validate` (HTMX fragment); A4: `POST …/{id}/publish` (publishes the submitted textarea), `POST …/{id}/rollback` (form `revision`), `GET …/{id}/revisions/{revision}` (read-only old version); history table in the editor |
-| `ScreenPublishing.kt` | `ScreenPublishing` (publish, rollback; implemented by `server-app`, which owns `LiveScreens`), `PublishException` (nothing changed) |
+| `SettingsPages.kt` | A5: `GET/POST /admin/settings` (multipart form: app name = brand name, applicationId, server URL, brand colors, logo upload/remove; POST admin-only), `GET /admin/settings/logo`; `AppKeys` (`app.name`, `app.applicationId`, `app.serverUrl`, `app.icon` base64 + `app.icon.type`: read by T-010 export) |
+| `ScreenPublishing.kt` | `ScreenPublishing` (publish, rollback, publishBrand; implemented by `server-app`, which owns `LiveScreens`), `PublishException` (nothing changed) |
 | `AdminAuth.kt` | Accounts and sessions: `bootstrapAdmin`, `createUser`, `login` → token, `user(token)`, `logout`; bcrypt (`at.favre.lib:bcrypt`) |
 | `Role.kt` | `Role` (`viewer` < `editor` < `admin`, `canEdit`), `AdminUser` |
-| `resources/templates/admin/*.ftl` | `_layout.ftl` (`<@layout.page title user role htmx>`: page, header with nav + logout, inline CSS light/dark, HTMX 2.0.11 with SRI), `login.ftl`, `screens.ftl`, `screen.ftl` (editor + history), `revision.ftl`, `_problems.ftl` (validation result; also the HTMX fragment) |
+| `resources/templates/admin/*.ftl` | `_layout.ftl` (`<@layout.page title user role htmx>`: page, header with nav + logout, inline CSS light/dark, HTMX 2.0.11 with SRI), `login.ftl`, `screens.ftl`, `screen.ftl` (editor + history), `revision.ftl`, `settings.ftl`, `_problems.ftl` (validation result; also the HTMX fragment) |
 
 ## Rules for new routes (A3–A5)
 
@@ -55,6 +56,12 @@ only in admin mode (`COMPOSECAST_MODE=admin`); files mode has no `/admin`.
   registry is `server-app`'s job (`AdminScreens.publish`): build with the change → write → swap,
   under one lock; any failure (unset `{{secret.X}}`, …) is a `PublishException` and changes
   nothing. Rollback keeps a pending draft. Editors may publish (roles: ADR 0016).
+- **Settings (A5):** one "App name" field is both `BrandConfig.name` (`/brand`) and `app.name`.
+  Validation names the field (`BrandConfig.problems()` from `protocol`, applicationId = the Gradle
+  plugin's rule, server URL http/https with a host, logo: square PNG/JPEG ≤ 1 MB, checked by
+  magic bytes + `ImageIO`). The brand goes live through `publishBrand` (server-app rebuilds every
+  screen first; failure = nothing saved); app keys are written only after that. No draft for
+  settings: saving is publishing. Without an imported brand the form shows the renderer's defaults.
 - Not yet: login rate limiting (bcrypt cost is the only brake), password change, user management UI.
 
 Ktor 3.6.1 facts (sources jar, 2026-11-23): `Sessions` is route-scoped (installed on `/admin` only),
@@ -76,7 +83,9 @@ email, viewer 403 / editor allowed on every mutating route found in the routing 
 message, `allowHttp`, HTML escaping, bootstrap rules). `ScreenPagesTest` (list + statuses, create,
 invalid edit → problems with paths and nothing saved, canonical draft leaves `live()` unchanged,
 validate fragment, editor vs. viewer page, no textarea breakout, publish + who + draft cleared,
-invalid/failed publish changes nothing, rollback + revision page). The host's fake `publishing`
+invalid/failed publish changes nothing, rollback + revision page). `SettingsPagesTest` (save brand +
+app keys + logo, remove logo, field-named errors keep the input, failed rebuild saves nothing,
+admin-only). The host's fake `publishing`
 writes straight to the store (`failWith` simulates a build failure).
 
 ```bash

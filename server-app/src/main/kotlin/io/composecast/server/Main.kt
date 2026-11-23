@@ -22,6 +22,7 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import kotlinx.serialization.json.Json
+import java.nio.file.Files
 import java.nio.file.Path
 
 /**
@@ -56,6 +57,10 @@ fun main() {
         }
         "admin" -> {
             requireNotNull(dataDir) { "COMPOSECAST_MODE=admin needs COMPOSECAST_DATA_DIR (the database lives there)" }
+            require(Files.isWritable(dataDir)) {
+                "COMPOSECAST_MODE=admin writes ${AdminScreens.DATABASE_FILE} into COMPOSECAST_DATA_DIR ($dataDir), " +
+                    "which is not writable: in Docker drop ':ro' from the volume and run 'sudo chown -R 1000:1000 <data dir>'"
+            }
             val database = AdminScreens.openDatabase(dataDir)
             val adminScreens = AdminScreens(ScreenStore(database), SettingsStore(database), imageLoader)
             adminScreens.importIfEmpty(dataDir)
@@ -65,6 +70,7 @@ fun main() {
                 admin = AdminPanelConfig(
                     auth,
                     ScreenStore(database),
+                    SettingsStore(database),
                     AdminPublishing(adminScreens, live),
                     allowHttp = System.getenv("COMPOSECAST_ADMIN_ALLOW_HTTP").toBoolean(),
                 )
@@ -79,6 +85,7 @@ fun main() {
 class AdminPanelConfig(
     val auth: AdminAuth,
     val screens: ScreenStore,
+    val settings: SettingsStore,
     val publishing: ScreenPublishing,
     val allowHttp: Boolean = false,
 )
@@ -110,5 +117,5 @@ fun Application.module(screens: LiveScreens, admin: AdminPanelConfig? = null) {
         }
     }
     configureRouting(screens)
-    admin?.let { adminPanel(it.auth, it.screens, it.publishing, it.allowHttp) }
+    admin?.let { adminPanel(it.auth, it.screens, it.settings, it.publishing, it.allowHttp) }
 }

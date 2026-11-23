@@ -1,5 +1,6 @@
 package io.composecast.server
 
+import io.composecast.protocol.BrandConfig
 import io.composecast.protocol.Headers
 import io.composecast.protocol.ScreenJson
 import io.composecast.server.admin.AdminAuth
@@ -8,9 +9,12 @@ import io.composecast.server.sdk.ImageLoader
 import io.composecast.server.sdk.RenderContext
 import io.composecast.server.sdk.ScreenRegistry
 import io.composecast.server.store.ScreenStore
+import io.composecast.server.store.SettingsStore
 import io.composecast.server.store.UserStore
 import io.ktor.client.HttpClient
+import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitForm
+import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
@@ -20,6 +24,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.parameters
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
+import kotlinx.serialization.json.Json
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.nio.file.Files
@@ -98,7 +103,8 @@ class AdminScreensTest {
         val auth = AdminAuth(UserStore(database), bcryptCost = 4)
         val screens = LiveScreens(loadScreens(dataDir, fakeImages, fixtureData))
         for ((admin, expected) in listOf(
-            AdminPanelConfig(auth, ScreenStore(database), AdminPublishing(admin(), screens)) to HttpStatusCode.SeeOther,
+            AdminPanelConfig(auth, ScreenStore(database), SettingsStore(database), AdminPublishing(admin(), screens)) to
+                HttpStatusCode.SeeOther,
             null to HttpStatusCode.NotFound,
         )) {
             testApplication {
@@ -120,7 +126,9 @@ class AdminScreensTest {
         val live = LiveScreens(admin.load())
         val store = ScreenStore(database)
         testApplication {
-            application { module(live, AdminPanelConfig(auth, store, AdminPublishing(admin, live))) }
+            application {
+                module(live, AdminPanelConfig(auth, store, SettingsStore(database), AdminPublishing(admin, live)))
+            }
             val client = createClient { followRedirects = false }
             val login = client.submitForm(
                 "/admin/login",
@@ -190,4 +198,35 @@ class AdminScreensTest {
         assertEquals(HttpStatusCode.OK, client.get("/screens/settings").status)
         assertContains(client.get("/screens").bodyAsText(), "settings")
     }
+
+    private suspend fun HttpClient.saveSettings(cookie: String, brand: BrandConfig) = submitFormWithBinaryData(
+        "/admin/settings",
+        formData {
+            append("name", brand.name)
+            append("primaryColor", brand.primaryColor)
+            append("secondaryColor", brand.secondaryColor)
+            append("backgroundColor", brand.backgroundColor)
+            append("surfaceColor", brand.surfaceColor.orEmpty())
+            append("textColor", brand.textColor.orEmpty())
+            append("outlineColor", brand.outlineColor.orEmpty())
+        },
+    ) { header(HttpHeaders.Cookie, cookie) }
+
+    @Test
+    fun `a brand change is served by brand and re-renders the screens without a restart`() =
+        adminMode { client, cookie, _ ->
+            val brand = Json.decodeFromString(BrandConfig.serializer(), client.get("/brand").bodyAsText())
+            val before = client.get("/screens/main").readRawBytes()
+
+            val changed = brand.copy(primaryColor = "#C2185B", surfaceColor = "#FFF0F5")
+            assertEquals(HttpStatusCode.SeeOther, client.saveSettings(cookie, changed).status)
+            assertEquals(changed, Json.decodeFromString(BrandConfig.serializer(), client.get("/brand").bodyAsText()))
+            assertFalse(before.contentEquals(client.get("/screens/main").readRawBytes()), "screens re-rendered")
+            assertEquals(changed, admin().load().brand, "a restart serves the same brand")
+
+            val invalid = client.saveSettings(cookie, changed.copy(secondaryColor = "pink"))
+            assertEquals(HttpStatusCode.UnprocessableEntity, invalid.status)
+            assertContains(invalid.bodyAsText(), "secondaryColor: expected #RRGGBB or #AARRGGBB, was &#39;pink&#39;")
+            assertEquals(changed, Json.decodeFromString(BrandConfig.serializer(), client.get("/brand").bodyAsText()))
+        }
 }

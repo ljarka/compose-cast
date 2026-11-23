@@ -65,11 +65,24 @@ class AdminScreens(
         serve(registry)
     }
 
-    /** Screens in id order, as [load] after a restart would serve them. */
-    private fun build(live: Map<String, String>): ScreenRegistry = composeCast(imageLoader, dataLoader, env) {
-        settings[SettingsStore.BRAND]?.let { brand(Json.decodeFromString(BrandConfig.serializer(), it)) }
-        live.toSortedMap().forEach { (id, json) -> screen(ScreenJson.decode(json, source = "screen '$id'")) }
+    /**
+     * T-007 A5: makes [brandJson] (`BrandConfig` JSON) the brand of every screen and `/brand`, like
+     * [publish]: built first (all static screens re-render with it), written only if that works.
+     */
+    fun publishBrand(brandJson: String, serve: (ScreenRegistry) -> Unit) = synchronized(publishLock) {
+        val brand = Json.decodeFromString(BrandConfig.serializer(), brandJson)
+        require(brand.problems().isEmpty()) { brand.problems().joinToString("; ") }
+        val registry = build(screens.live(), brandJson)
+        settings[SettingsStore.BRAND] = brandJson
+        serve(registry)
     }
+
+    /** Screens in id order, as [load] after a restart would serve them. */
+    private fun build(live: Map<String, String>, brandJson: String? = settings[SettingsStore.BRAND]): ScreenRegistry =
+        composeCast(imageLoader, dataLoader, env) {
+            brandJson?.let { brand(Json.decodeFromString(BrandConfig.serializer(), it)) }
+            live.toSortedMap().forEach { (id, json) -> screen(ScreenJson.decode(json, source = "screen '$id'")) }
+        }
 
     companion object {
         /** `published_by` of rows created by the first-start import. */
@@ -116,6 +129,10 @@ class AdminPublishing(private val admin: AdminScreens, private val live: LiveScr
 
     override fun rollback(id: String, revisionId: Int, by: String) = failsAsPublishException {
         admin.rollback(id, revisionId, by, live::replace)
+    }
+
+    override fun publishBrand(brandJson: String) = failsAsPublishException {
+        admin.publishBrand(brandJson, live::replace)
     }
 
     /** Building fails with IllegalArgumentException/IllegalStateException (validation, secrets, dates). */

@@ -1,6 +1,6 @@
 # T-007 — Admin panel MVP (roadmap A1–A5)
 
-Status: ready — next step: A5 (A1–A4 done) · Roadmap: [specs/roadmap.md A1–A5](../../specs/roadmap.md#a-admin-panel-mvp-t-007-split--the-smallest-vertical-slice), Etap 8 · Depends on: T-002 (JSON screen model), T-006 (data sources), T-042 (`LiveScreens` swap) · Module: server-store, server-admin, server-app
+Status: done (A1–A5) · Roadmap: [specs/roadmap.md A1–A5](../../specs/roadmap.md#a-admin-panel-mvp-t-007-split--the-smallest-vertical-slice), Etap 8 · Depends on: T-002 (JSON screen model), T-006 (data sources), T-042 (`LiveScreens` swap) · Module: server-store, server-admin, server-app
 
 ## Goal
 
@@ -113,6 +113,15 @@ them with A5 or right after.
   surface/text/outline), logo upload (stored for T-010); saving rebuilds the registry.
 - **Done when:** a brand color change is visible in `/brand` and in the rendered screens; invalid
   colors are rejected with the field named.
+
+**A5 result (2026-11-23):** `server-admin/SettingsPages.kt` + `settings.ftl`, `BrandConfig.problems()`,
+`AdminScreens.publishBrand` (build → write → serve, same lock). Docker: UID 1000 owning `/data`,
+writable production volume, fail-fast on a read-only data dir, install playbook + `example.env`,
+admin smoke test in `verify-docker.sh`. Tests: `SettingsPagesTest` (4), `BrandConfigTest`,
+`AdminScreensTest` (+1: a color change is in `/brand` and re-renders `main`; `pink` is refused
+naming `secondaryColor`). Not checked: the new colors on the emulator (renderer unchanged; brand
+rendering is covered by `compat-tests`) and the pages in a browser (no browser tool) — do both
+when T-045 puts the admin and the app side by side.
 
 ## Verification (every step)
 

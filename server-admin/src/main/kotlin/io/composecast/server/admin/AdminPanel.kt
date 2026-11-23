@@ -5,6 +5,7 @@ import freemarker.core.HTMLOutputFormat
 import freemarker.template.Configuration
 import freemarker.template.TemplateExceptionHandler
 import io.composecast.server.store.ScreenStore
+import io.composecast.server.store.SettingsStore
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -47,11 +48,12 @@ import kotlinx.serialization.Serializable
 fun Application.adminPanel(
     auth: AdminAuth,
     screens: ScreenStore,
+    settings: SettingsStore,
     publishing: ScreenPublishing,
     allowHttp: Boolean = false,
 ) {
     install(FreeMarker) { adminFreeMarker() }
-    routing { adminRoutes(auth, screens, publishing, allowHttp) }
+    routing { adminRoutes(auth, screens, settings, publishing, allowHttp) }
 }
 
 internal fun Configuration.adminFreeMarker() {
@@ -72,6 +74,7 @@ internal const val SESSION_COOKIE = "composecast_admin"
 internal fun Route.adminRoutes(
     auth: AdminAuth,
     screens: ScreenStore,
+    settings: SettingsStore,
     publishing: ScreenPublishing,
     allowHttp: Boolean,
     extra: Route.() -> Unit = {},
@@ -113,6 +116,7 @@ internal fun Route.adminRoutes(
         loggedIn(auth) {
             get { call.seeOther("/admin/screens") }
             screenPages(screens, publishing)
+            settingsPages(settings, publishing)
             extra()
         }
     }

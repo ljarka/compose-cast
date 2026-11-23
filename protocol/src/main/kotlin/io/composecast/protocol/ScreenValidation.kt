@@ -170,7 +170,7 @@ private fun modifierProblems(m: Modifier, at: String, parent: Parent): List<Stri
     }
 }
 
-private fun colorProblem(color: String): String? =
+internal fun colorProblem(color: String): String? =
     if (COLOR.matches(color)) null else "expected #RRGGBB or #AARRGGBB, was '$color'"
 
 private fun actionProblem(action: Action): String? {

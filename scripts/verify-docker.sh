@@ -54,6 +54,24 @@ screens=$(curl -fsS "http://127.0.0.1:$PORT/screens" | tr -d ' \n')
 [[ "$screens" == "$expected_screens" ]] || { echo "Unexpected /screens: $screens (expected $expected_screens)"; exit 1; }
 curl -fsS -o /dev/null "http://127.0.0.1:$PORT/screens/main"
 
+# --- admin mode (T-007): a named volume (writable by the image's UID 1000), the env admin logs in ---
+ADMIN_NAME="$NAME-admin"; ADMIN_VOLUME="$NAME-admin-data"; ADMIN_PORT="${VERIFY_DOCKER_ADMIN_PORT:-18082}"
+admin_cleanup() { docker rm -f "$ADMIN_NAME" >/dev/null 2>&1 || true; docker volume rm "$ADMIN_VOLUME" >/dev/null 2>&1 || true; }
+docker run -d --name "$ADMIN_NAME" -p "127.0.0.1:$ADMIN_PORT:8080" -v "$ADMIN_VOLUME:/data" \
+  -e COMPOSECAST_MODE=admin -e COMPOSECAST_ADMIN_EMAIL=verify@example.com \
+  -e COMPOSECAST_ADMIN_PASSWORD=verify-password-123 "$IMAGE" >/dev/null
+for _ in $(seq 1 30); do curl -fsS -o /dev/null "http://127.0.0.1:$ADMIN_PORT/health" 2>/dev/null && break; sleep 1; done
+login=$(curl -sS -o /dev/null -w '%{http_code}' -d email=verify@example.com -d password=verify-password-123 \
+  "http://127.0.0.1:$ADMIN_PORT/admin/login")
+[[ "$login" == 303 ]] || { echo "Admin login failed: HTTP $login"; docker logs "$ADMIN_NAME" 2>&1 | tail -20; admin_cleanup; exit 1; }
+admin_cleanup
+# A read-only data dir must stop admin mode with the fix in the message.
+if out=$(docker run --rm -e COMPOSECAST_MODE=admin -v "$PWD/examples/demo:/data:ro" "$IMAGE" 2>&1); then
+  echo "Admin mode started on a read-only /data"; exit 1
+fi
+grep -q "chown -R 1000:1000" <<<"$out" || { echo "Admin mode on read-only /data: unexpected error"; echo "$out" | tail -5; exit 1; }
+echo "Admin mode: login OK, read-only /data refused"
+
 size_mb=$(( $(docker run --rm --user root --entrypoint sh "$IMAGE" -c 'du -sxk /' | cut -f1) / 1024 ))
 # A bloat guard, not a budget: raised from 250 for T-007 (sqlite-jdbc bundles natives for every OS,
 # 12 MB; Freemarker 2 MB) at 251 MB. Raise it only for growth you can name.

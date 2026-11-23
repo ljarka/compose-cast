@@ -94,7 +94,7 @@ Android only ([ADR 0022](decisions/0022-android-only.md), owner 2026-11-16).
   draft/live status, full history; `<id>.json` import/export ([ADR 0016](decisions/0016-admin-storage-sqlite.md)) — done except export (T-007 A1–A4)
 - [x] User accounts (email + bcrypt password), roles: `admin` / `editor` / `viewer`; session cookie;
   first admin from `COMPOSECAST_ADMIN_EMAIL`/`_PASSWORD` env vars (no shared `ADMIN_PASSWORD`)
-- [ ] MVP: JSON editor with live validation, preview, publish, history — T-007
+- [ ] MVP: JSON editor with live validation, preview, publish, history — T-007 (done except preview: T-045)
 - [ ] Visual editor for non-developers: component palette, schema-driven property forms — T-029
 - [ ] Data source wizard: paste an API URL → list + detail screens, field picker — T-031
 - [ ] App templates (news, catalog, events, weather): a working app in 5 minutes — T-030

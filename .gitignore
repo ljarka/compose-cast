@@ -28,3 +28,6 @@ copilot/
 *.p12
 *.pem
 data/
+
+# Admin-mode database (T-007), e.g. after COMPOSECAST_DATA_DIR=examples/demo
+compose-cast.db*

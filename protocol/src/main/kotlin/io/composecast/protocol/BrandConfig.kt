@@ -28,4 +28,20 @@ data class BrandConfig(
     val surfaceColor: String? = null,
     val textColor: String? = null,
     val outlineColor: String? = null,
-)
+) {
+    /**
+     * Every problem, each starting with the field name (`primaryColor: expected #RRGGBB …`); empty
+     * when valid. Used by the admin panel's settings (T-007 A5).
+     */
+    fun problems(): List<String> = buildList {
+        if (name.isBlank()) add("name: must not be blank")
+        listOf(
+            "primaryColor" to primaryColor,
+            "secondaryColor" to secondaryColor,
+            "backgroundColor" to backgroundColor,
+            "surfaceColor" to surfaceColor,
+            "textColor" to textColor,
+            "outlineColor" to outlineColor,
+        ).forEach { (field, color) -> color?.let(::colorProblem)?.let { add("$field: $it") } }
+    }
+}
