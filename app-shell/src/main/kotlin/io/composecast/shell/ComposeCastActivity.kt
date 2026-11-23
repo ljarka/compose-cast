@@ -239,6 +239,10 @@ private fun ComposeCastApp(
         }
         value = runCatching { client.getScreen(target.screen, target.params) }
     }
+    var lastTitle by rememberSaveable { mutableStateOf("") }
+    LaunchedEffect(screenState) {
+        screenState?.getOrNull()?.title?.let { lastTitle = it }
+    }
 
     Scaffold(
         topBar = {
@@ -249,7 +253,12 @@ private fun ComposeCastApp(
                     actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
                 title = {
-                    val title = screenState?.getOrNull()?.title ?: stringResource(R.string.app_name)
+                    val title = screenState?.getOrNull()?.title
+                        ?: if (screenState?.isFailure == true) {
+                            lastTitle.ifEmpty { stringResource(R.string.app_name) }
+                        } else {
+                            lastTitle
+                        }
                     Text(title)
                 },
                 actions = {
