@@ -47,7 +47,7 @@ if ! gradle spotlessCheck; then
 fi
 
 step "JVM modules: build + tests"
-gradle :protocol:build :sdk-server:build :server-scripting:build :server-app:build
+gradle :protocol:build :sdk-server:build :server-scripting:build :server-store:build :server-app:build
 
 if $QUICK; then
   echo; echo "verify --quick: OK (Android and screenshots skipped)"

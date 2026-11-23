@@ -11,8 +11,9 @@ Do NOT load `sdk-android` or `app-template` unless cross-cutting.
 
 | File | Purpose |
 |---|---|
-| `Main.kt` | `main()` reads env (`PORT`, `COMPOSECAST_DATA_DIR`, `COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS` → `HttpImageLoader(allowPrivateHosts)`, T-026; `COMPOSECAST_RELOAD`, T-042), builds the registry **before** starting (fail fast); `Application.module(LiveScreens)`: CallLogging, ContentNegotiation, StatusPages (`ScreenParameterException` → 400, `DataSourceException` → 502, other → logged JSON 500) |
+| `Main.kt` | `main()` reads env (`PORT`, `COMPOSECAST_DATA_DIR`, `COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS` → `HttpImageLoader(allowPrivateHosts)`, T-026; `COMPOSECAST_RELOAD`, T-042; `COMPOSECAST_MODE=files|admin`, T-007), builds the registry **before** starting (fail fast); `Application.module(LiveScreens)`: CallLogging, ContentNegotiation, StatusPages (`ScreenParameterException` → 400, `DataSourceException` → 502, other → logged JSON 500) |
 | `Routing.kt` | All HTTP endpoints; `configureRouting(screens: LiveScreens)`; ETag / `If-None-Match`; renders in `Dispatchers.IO` (bound screens block on data sources) |
+| `AdminScreens.kt` | Admin mode (T-007 A1): opens `compose-cast.db` via `server-store`, imports the data dir on the first start (validated with `loadScreens`, one transaction), builds the registry from live rows + stored brand |
 | `DataDirReloader.kt` | Polls `COMPOSECAST_DATA_DIR` and swaps reloaded screens into `LiveScreens` (T-042); `reloadIfChanged()` is the testable step |
 | `LiveScreens.kt` | `AtomicReference` holder of the served `ScreenRegistry`; `replace()` swaps it atomically (admin publish, reloads) |
 | `Screens.kt` | `loadScreens(dataDir)` (JSON data dir or demo), `demoScreens()` (registers the demo screens in order), `demoBrand`; injectable `ImageLoader`/`DataLoader` for tests |

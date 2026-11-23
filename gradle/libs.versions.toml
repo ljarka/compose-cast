@@ -10,8 +10,13 @@ robolectric = "4.17"
 roborazzi = "1.77.0"
 spotless = "7.2.1"
 ktlint = "1.7.1"
+exposed = "1.6.1"
+sqlite-jdbc = "3.54.1.0"
 
 [libraries]
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
 # AGP as a library: the io.composecast.app plugin (gradle-plugins/) applies com.android.application.
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 remote-core = { module = "androidx.compose.remote:remote-core", version.ref = "remote-compose" }

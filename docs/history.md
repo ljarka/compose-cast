@@ -298,3 +298,6 @@ README roadmap's "Etap" numbers.
     Etap checklist moved to `docs/feature-checklist.md` (scripts follow). ADR 0024 (generic Preview
     app), ADR 0025 (owner's app built by GitHub Actions). Queue reordered; T-045, T-046 added;
     T-007 rewritten as steps A1–A5.
+62. **T-007 A1 — `server-store` + admin mode**: SQLite via Exposed 1.6 (`screens` with draft/live,
+    append-only `screen_history`, `app_settings`); `COMPOSECAST_MODE=admin` imports the data dir
+    once (one transaction) and serves from the database — byte-identical to files mode.

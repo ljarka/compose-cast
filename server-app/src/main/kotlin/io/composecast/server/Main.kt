@@ -26,7 +26,10 @@ import java.nio.file.Path
  * - `COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS=true`: allow image URLs on loopback/private/link-local
  *   hosts (local development only; default false, T-026).
  * - `COMPOSECAST_RELOAD=false`: do not reload the data directory when its files change (default:
- *   reload, polled every 2 s; T-042).
+ *   reload, polled every 2 s; T-042). Files mode only.
+ * - `COMPOSECAST_MODE`: `files` (default: serve `COMPOSECAST_DATA_DIR` read-only) or `admin`
+ *   (T-007: `compose-cast.db` in `COMPOSECAST_DATA_DIR` is the source of truth; the first start
+ *   imports the directory's screens and brand; the directory must be writable).
  */
 fun main() {
     val port = System.getenv("PORT")?.toInt() ?: 8080
@@ -34,9 +37,19 @@ fun main() {
     val allowPrivateImageHosts = System.getenv("COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS").toBoolean()
     val imageLoader = HttpImageLoader(allowPrivateHosts = allowPrivateImageHosts)
     val dataDir = System.getenv("COMPOSECAST_DATA_DIR")?.let(Path::of)
-    val screens = LiveScreens(loadScreens(dataDir, imageLoader = imageLoader))
-    if (dataDir != null && System.getenv("COMPOSECAST_RELOAD")?.toBoolean() != false) {
-        DataDirReloader(dataDir, screens, load = { loadScreens(it, imageLoader = imageLoader) }).start()
+    val screens = when (val mode = System.getenv("COMPOSECAST_MODE") ?: "files") {
+        "files" -> LiveScreens(loadScreens(dataDir, imageLoader = imageLoader)).also { screens ->
+            if (dataDir != null && System.getenv("COMPOSECAST_RELOAD")?.toBoolean() != false) {
+                DataDirReloader(dataDir, screens, load = { loadScreens(it, imageLoader = imageLoader) }).start()
+            }
+        }
+        "admin" -> {
+            requireNotNull(dataDir) { "COMPOSECAST_MODE=admin needs COMPOSECAST_DATA_DIR (the database lives there)" }
+            val admin = AdminScreens.open(dataDir, imageLoader)
+            admin.importIfEmpty(dataDir)
+            LiveScreens(admin.load())
+        }
+        else -> error("COMPOSECAST_MODE must be 'files' or 'admin', was '$mode'")
     }
     embeddedServer(Netty, port = port, host = "0.0.0.0") { module(screens) }.start(wait = true)
 }

@@ -50,7 +50,8 @@ Do not load the whole project: root `AGENTS.md` → task → the modules in its 
 | `app-template` | Demo app built like an app repository: `io.composecast.app` + `compose-cast.properties` | done |
 | `gradle-plugins` (included build) | `io.composecast.app` Gradle plugin: properties → branded app + shell | done |
 | `compat-tests` | Screenshot tests server → player; goldens = README images | done |
-| planned: `server-store`, `server-admin`, `app-templates`, `server-ai`, `server-forms`, `server-auth`, `server-push`/`android-push`, `server-analytics`, `server-flags` | one feature = one module with its own `AGENTS.md` ([ADR 0023](docs/decisions/0023-module-structure.md)) | planned |
+| `server-store` | Admin database (SQLite/Exposed): screens with drafts + history, app settings (T-007) | in progress |
+| planned: `server-admin`, `app-templates`, `server-ai`, `server-forms`, `server-auth`, `server-push`/`android-push`, `server-analytics`, `server-flags` | one feature = one module with its own `AGENTS.md` ([ADR 0023](docs/decisions/0023-module-structure.md)) | planned |
 
 ## Rules
 

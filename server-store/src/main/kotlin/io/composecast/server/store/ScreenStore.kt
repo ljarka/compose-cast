@@ -1,0 +1,144 @@
+package io.composecast.server.store
+
+import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.SortOrder
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.isNotNull
+import org.jetbrains.exposed.v1.jdbc.JdbcTransaction
+import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.update
+import java.time.Clock
+import java.time.Instant
+
+/**
+ * Screens of the admin mode (T-007). Stores screen JSON as text and never parses it: callers
+ * validate (`ScreenDefinition.problems()`) before [saveDraft] / [publish], so the store stays
+ * independent of the screen model and nothing invalid is ever stored as live.
+ */
+class ScreenStore(private val database: StoreDatabase, private val clock: Clock = Clock.systemUTC()) {
+    data class StoredScreen(
+        val id: String,
+        val draftJson: String?,
+        val liveJson: String?,
+        val updatedAt: Instant,
+        val publishedAt: Instant?,
+        val publishedBy: String?,
+    )
+
+    data class Revision(
+        val id: Int,
+        val screenId: String,
+        val json: String,
+        val publishedAt: Instant,
+        val publishedBy: String,
+    )
+
+    fun isEmpty(): Boolean = database.tx { Screens.selectAll().empty() }
+
+    /** All screens, ordered by id. */
+    fun list(): List<StoredScreen> = database.tx { Screens.selectAll().orderBy(Screens.id).map(::screen) }
+
+    fun get(id: String): StoredScreen? =
+        database.tx { Screens.selectAll().where { Screens.id eq id }.singleOrNull()?.let(::screen) }
+
+    /** Live JSON of every published screen, ordered by id: what apps are served. */
+    fun live(): Map<String, String> = database.tx {
+        Screens.selectAll().where { Screens.liveJson.isNotNull() }.orderBy(Screens.id)
+            .associate { it[Screens.id] to it[Screens.liveJson]!! }
+    }
+
+    /** Stores [json] as the pending edit of [id] (creating the screen if new); apps are unaffected. */
+    fun saveDraft(id: String, json: String) {
+        val now = now()
+        database.tx {
+            val updated = Screens.update({ Screens.id eq id }) {
+                it[draftJson] = json
+                it[updatedAt] = now
+            }
+            if (updated == 0) {
+                Screens.insert {
+                    it[Screens.id] = id
+                    it[draftJson] = json
+                    it[updatedAt] = now
+                }
+            }
+        }
+    }
+
+    /**
+     * Publishes all [screens] (id → JSON) in **one** transaction: an interrupted first-start import
+     * leaves the database empty, so the next start imports again.
+     */
+    fun publishAll(screens: Map<String, String>, by: String) {
+        database.tx { screens.forEach { (id, json) -> publishIn(id, json, by, now()) } }
+    }
+
+    /** Makes [json] the live version of [id], clears its draft and appends a history row. */
+    fun publish(id: String, json: String, by: String) {
+        database.tx { publishIn(id, json, by, now()) }
+    }
+
+    /** Runs inside the caller's transaction ([StoreDatabase.tx]). */
+    private fun JdbcTransaction.publishIn(id: String, json: String, by: String, now: String) {
+        val updated = Screens.update({ Screens.id eq id }) {
+            it[liveJson] = json
+            it[draftJson] = null
+            it[updatedAt] = now
+            it[publishedAt] = now
+            it[publishedBy] = by
+        }
+        if (updated == 0) {
+            Screens.insert {
+                it[Screens.id] = id
+                it[liveJson] = json
+                it[updatedAt] = now
+                it[publishedAt] = now
+                it[publishedBy] = by
+            }
+        }
+        ScreenHistory.insert {
+            it[screenId] = id
+            it[ScreenHistory.json] = json
+            it[publishedAt] = now
+            it[publishedBy] = by
+        }
+    }
+
+    /** Published versions of [id], newest first. */
+    fun history(id: String): List<Revision> = database.tx {
+        ScreenHistory.selectAll().where { ScreenHistory.screenId eq id }
+            .orderBy(ScreenHistory.id, SortOrder.DESC)
+            .map(::revision)
+    }
+
+    /** Publishes revision [revisionId] of [id] again (a new history row; the old one stays). */
+    fun rollback(id: String, revisionId: Int, by: String) {
+        val revision = database.tx {
+            ScreenHistory.selectAll()
+                .where { (ScreenHistory.screenId eq id) and (ScreenHistory.id eq revisionId) }
+                .singleOrNull()?.let(::revision)
+        } ?: throw IllegalArgumentException("Screen '$id' has no revision $revisionId")
+        publish(id, revision.json, by)
+    }
+
+    private fun now() = Instant.now(clock).toString()
+
+    private fun screen(row: ResultRow) = StoredScreen(
+        id = row[Screens.id],
+        draftJson = row[Screens.draftJson],
+        liveJson = row[Screens.liveJson],
+        updatedAt = Instant.parse(row[Screens.updatedAt]),
+        publishedAt = row[Screens.publishedAt]?.let(Instant::parse),
+        publishedBy = row[Screens.publishedBy],
+    )
+
+    private fun revision(row: ResultRow) = Revision(
+        id = row[ScreenHistory.id],
+        screenId = row[ScreenHistory.screenId],
+        json = row[ScreenHistory.json],
+        publishedAt = Instant.parse(row[ScreenHistory.publishedAt]),
+        publishedBy = row[ScreenHistory.publishedBy],
+    )
+}

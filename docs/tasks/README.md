@@ -29,7 +29,7 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-041 Lookups keyed by more than one value (day/night)](T-041-compound-lookup-keys.md) | Etap 4 | done (`9689de6`) |
 | [T-042 Reload the data directory without a restart](T-042-reload-data-dir.md) | Etap 6 | done (`383c443`) |
 | [T-044 Release signing configured by the app repository](T-044-release-signing.md) | Etap 6 | done (`72bb93c`) |
-| [T-007 Admin panel MVP](T-007-admin-panel.md) | Etap 8 | ready — roadmap A1–A5 (one step per session, see Steps) |
+| [T-007 Admin panel MVP](T-007-admin-panel.md) | Etap 8 | ready — roadmap A1–A5, next: A2 (A1 done: `server-store`, admin mode) |
 | [T-045 Generic Preview app + draft preview](T-045-preview-app.md) | Roadmap B | queued (after T-007); roadmap B1–B3 (ADR 0024) |
 | [T-029 Visual screen editor (no JSON)](T-029-visual-screen-editor.md) | Etap 8 | queued (after T-045); roadmap C1–C3 (C1: ADR on the admin UI technology) |
 | [T-030 App templates](T-030-app-templates.md) | Etap 8 | queued (after T-029); roadmap D1 |

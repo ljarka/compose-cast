@@ -1,6 +1,6 @@
 # T-007 — Admin panel MVP (roadmap A1–A5)
 
-Status: ready — next step: A1 · Roadmap: [specs/roadmap.md A1–A5](../../specs/roadmap.md#a-admin-panel-mvp-t-007-split--the-smallest-vertical-slice), Etap 8 · Depends on: T-002 (JSON screen model), T-006 (data sources), T-042 (`LiveScreens` swap) · Module: server-store, server-admin, server-app
+Status: ready — next step: A2 (A1 done) · Roadmap: [specs/roadmap.md A1–A5](../../specs/roadmap.md#a-admin-panel-mvp-t-007-split--the-smallest-vertical-slice), Etap 8 · Depends on: T-002 (JSON screen model), T-006 (data sources), T-042 (`LiveScreens` swap) · Module: server-store, server-admin, server-app
 
 ## Goal
 
@@ -45,6 +45,13 @@ CREATE TABLE app_settings (key TEXT PRIMARY KEY, value TEXT);          -- brand.
   serve through `LiveScreens`; the T-042 reloader runs only in files mode.
 - **Done when:** a test imports `examples/demo` into a temp database and the served documents are
   byte-identical to files mode; restart keeps the data; files mode tests unchanged.
+
+**A1 result (2026-11-23):** `server-store` (`StoreDatabase`, `ScreenStore`, `SettingsStore`;
+Exposed 1.6.1, sqlite-jdbc 3.54.1.0), `server-app/AdminScreens.kt`, `COMPOSECAST_MODE`. Tests:
+`ScreenStoreTest`, `AdminScreensTest` (all `examples/demo` screens byte-identical to files mode;
+a restart never re-imports). Open for A2: the Docker data volume is mounted `:ro` in both
+compose files — admin mode needs it writable (and owned by the image's `composecast` user);
+change it together with the install docs when the admin is usable.
 
 ### A2 — Login and roles
 - `users` + `sessions` tables; bcrypt; first admin from env (only when `users` is empty);

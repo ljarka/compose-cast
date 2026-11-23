@@ -11,6 +11,7 @@ dependencies {
     implementation(project(":protocol"))
     implementation(project(":sdk-server"))
     implementation(project(":server-scripting"))
+    implementation(project(":server-store"))
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)
     implementation(libs.ktor.server.content.negotiation)
