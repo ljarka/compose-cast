@@ -25,6 +25,7 @@ include(":protocol")
 include(":sdk-server")
 include(":server-scripting")
 include(":server-store")
+include(":server-admin")
 include(":server-app")
 
 // `-Pcomposecast.serverOnly=true` (server-app/Dockerfile): JVM modules only, so the server image

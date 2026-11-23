@@ -2,6 +2,7 @@ package io.composecast.server
 
 import io.composecast.protocol.BrandConfig
 import io.composecast.protocol.ScreenJson
+import io.composecast.server.admin.AdminAuth
 import io.composecast.server.sdk.DataLoader
 import io.composecast.server.sdk.HttpDataLoader
 import io.composecast.server.sdk.HttpImageLoader
@@ -49,13 +50,33 @@ class AdminScreens(
         const val DATABASE_FILE = "compose-cast.db"
         private val log = LoggerFactory.getLogger(AdminScreens::class.java)
 
+        fun openDatabase(dataDir: Path): StoreDatabase = StoreDatabase.open(dataDir.resolve(DATABASE_FILE))
+
         fun open(
             dataDir: Path,
             imageLoader: ImageLoader = HttpImageLoader(),
             dataLoader: DataLoader = HttpDataLoader,
         ): AdminScreens {
-            val database = StoreDatabase.open(dataDir.resolve(DATABASE_FILE))
+            val database = openDatabase(dataDir)
             return AdminScreens(ScreenStore(database), SettingsStore(database), imageLoader, dataLoader)
         }
     }
+}
+
+/**
+ * The first admin account from `COMPOSECAST_ADMIN_EMAIL` / `COMPOSECAST_ADMIN_PASSWORD` (ADR 0016):
+ * required while there is no account (fail fast: nobody could log in), ignored afterwards.
+ */
+internal fun AdminAuth.bootstrapFromEnv(email: String?, password: String?) {
+    val log = LoggerFactory.getLogger(AdminScreens::class.java)
+    if (hasAccounts()) {
+        if (email != null) log.info("Admin accounts exist; COMPOSECAST_ADMIN_EMAIL/PASSWORD are ignored")
+        return
+    }
+    require(!email.isNullOrBlank() && !password.isNullOrEmpty()) {
+        "COMPOSECAST_MODE=admin has no account yet: set COMPOSECAST_ADMIN_EMAIL and COMPOSECAST_ADMIN_PASSWORD " +
+            "(at least ${AdminAuth.MIN_PASSWORD_LENGTH} characters) for the first admin"
+    }
+    bootstrapAdmin(email, password)
+    log.info("Created the first admin account {}", email.trim().lowercase())
 }

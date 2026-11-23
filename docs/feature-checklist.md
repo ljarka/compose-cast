@@ -92,7 +92,7 @@ Android only ([ADR 0022](decisions/0022-android-only.md), owner 2026-11-16).
 
 - [ ] Ktor-served web UI; SQLite storage (Exposed) — one row per screen (canonical screen JSON),
   draft/live status, full history; `<id>.json` import/export ([ADR 0016](decisions/0016-admin-storage-sqlite.md))
-- [ ] User accounts (email + bcrypt password), roles: `admin` / `editor` / `viewer`; session cookie;
+- [x] User accounts (email + bcrypt password), roles: `admin` / `editor` / `viewer`; session cookie;
   first admin from `COMPOSECAST_ADMIN_EMAIL`/`_PASSWORD` env vars (no shared `ADMIN_PASSWORD`)
 - [ ] MVP: JSON editor with live validation, preview, publish, history — T-007
 - [ ] Visual editor for non-developers: component palette, schema-driven property forms — T-029

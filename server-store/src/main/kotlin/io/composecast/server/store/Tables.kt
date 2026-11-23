@@ -33,3 +33,22 @@ internal object AppSettings : Table("app_settings") {
     val value = text("value")
     override val primaryKey = PrimaryKey(key)
 }
+
+/** Admin accounts (T-007 A2). `hash` is a bcrypt hash; the store never sees passwords. */
+internal object Users : Table("users") {
+    val id = integer("id").autoIncrement()
+    val email = varchar("email", 255).uniqueIndex()
+    val hash = varchar("hash", 100)
+
+    /** `admin` | `editor` | `viewer`; interpreted by `server-admin`. */
+    val role = varchar("role", 16)
+    override val primaryKey = PrimaryKey(id)
+}
+
+/** Login sessions. `id` is a hash of the cookie token, so a copied database grants no logins. */
+internal object Sessions : Table("sessions") {
+    val id = varchar("id", 64)
+    val userId = integer("user_id").references(Users.id).index()
+    val expiresAt = varchar("expires_at", 40)
+    override val primaryKey = PrimaryKey(id)
+}

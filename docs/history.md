@@ -301,3 +301,10 @@ README roadmap's "Etap" numbers.
 62. **T-007 A1 — `server-store` + admin mode**: SQLite via Exposed 1.6 (`screens` with draft/live,
     append-only `screen_history`, `app_settings`); `COMPOSECAST_MODE=admin` imports the data dir
     once (one transaction) and serves from the database — byte-identical to files mode.
+    `7ea7fae`: the Dockerfile never copied `server-store` (image build failed); architecture rule
+    R11 now checks it.
+63. **T-007 A2 — login and roles**: new module `server-admin` (Ktor + Freemarker) at `/admin`;
+    `users` + `sessions` in `server-store`; bcrypt, session tokens stored hashed, cookie
+    `Secure; HttpOnly; SameSite=Strict` (the CSRF protection); first admin from
+    `COMPOSECAST_ADMIN_EMAIL`/`_PASSWORD` (startup fails without them while there is no account);
+    a viewer gets 403 on every mutating route (checked over the whole routing tree).

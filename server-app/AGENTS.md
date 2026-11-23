@@ -11,9 +11,9 @@ Do NOT load `sdk-android` or `app-template` unless cross-cutting.
 
 | File | Purpose |
 |---|---|
-| `Main.kt` | `main()` reads env (`PORT`, `COMPOSECAST_DATA_DIR`, `COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS` → `HttpImageLoader(allowPrivateHosts)`, T-026; `COMPOSECAST_RELOAD`, T-042; `COMPOSECAST_MODE=files|admin`, T-007), builds the registry **before** starting (fail fast); `Application.module(LiveScreens)`: CallLogging, ContentNegotiation, StatusPages (`ScreenParameterException` → 400, `DataSourceException` → 502, other → logged JSON 500) |
+| `Main.kt` | `main()` reads env (`PORT`, `COMPOSECAST_DATA_DIR`, `COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS` → `HttpImageLoader(allowPrivateHosts)`, T-026; `COMPOSECAST_RELOAD`, T-042; `COMPOSECAST_MODE=files|admin`, T-007; admin mode: `COMPOSECAST_ADMIN_EMAIL`/`_PASSWORD`, `COMPOSECAST_ADMIN_ALLOW_HTTP`), builds the registry **before** starting (fail fast); `Application.module(LiveScreens, AdminPanelConfig?)` (admin mode mounts `server-admin`'s `adminPanel`): CallLogging, ContentNegotiation, StatusPages (`ScreenParameterException` → 400, `DataSourceException` → 502, other → logged JSON 500) |
 | `Routing.kt` | All HTTP endpoints; `configureRouting(screens: LiveScreens)`; ETag / `If-None-Match`; renders in `Dispatchers.IO` (bound screens block on data sources) |
-| `AdminScreens.kt` | Admin mode (T-007 A1): opens `compose-cast.db` via `server-store`, imports the data dir on the first start (validated with `loadScreens`, one transaction), builds the registry from live rows + stored brand |
+| `AdminScreens.kt` | Admin mode (T-007 A1): opens `compose-cast.db` via `server-store`, imports the data dir on the first start (validated with `loadScreens`, one transaction), builds the registry from live rows + stored brand; `openDatabase`; `bootstrapFromEnv` (first admin, required while there is no account) |
 | `DataDirReloader.kt` | Polls `COMPOSECAST_DATA_DIR` and swaps reloaded screens into `LiveScreens` (T-042); `reloadIfChanged()` is the testable step |
 | `LiveScreens.kt` | `AtomicReference` holder of the served `ScreenRegistry`; `replace()` swaps it atomically (admin publish, reloads) |
 | `Screens.kt` | `loadScreens(dataDir)` (JSON data dir or demo), `demoScreens()` (registers the demo screens in order), `demoBrand`; injectable `ImageLoader`/`DataLoader` for tests |
@@ -33,7 +33,7 @@ copy of `demoScreens()`. `./gradlew :server-app:run` runs from the repo root, so
 | `Dockerfile` | Multi-stage: `gradle:9.6.0-jdk21-noble` (Gradle preinstalled — **not** the wrapper, whose download from GitHub Releases failed with 504 on 2026-11-08; version must equal the wrapper's, checked by `verify-docker.sh`) runs `installDist` with `-Pcomposecast.serverOnly=true` (no Android SDK) on `$BUILDPLATFORM` → `eclipse-temurin:21.0.13_9-jre-alpine`, non-root `composecast`, `COMPOSECAST_DATA_DIR=/data` (no demo fallback), healthcheck = busybox `wget /health` |
 | `/docker-compose.yml` (root) | Dev/demo: builds the image, mounts `${COMPOSECAST_SCREENS:-./examples/demo}:/data:ro`, optional `.env` |
 | `/.dockerignore` (root) | Context = repo root; excludes Android modules, docs, build output, PNGs |
-| `/scripts/verify-docker.sh` | `verify.sh --docker`: build, healthy < 30 s, `/screens`, size < 250 MB; then installs `distribution/docker-compose.yml` into an empty dir against the built image (retagged `ghcr.io/…:verify`) + `config` of the `https` profile |
+| `/scripts/verify-docker.sh` | `verify.sh --docker`: build, healthy < 30 s, `/screens`, size < 275 MB (bloat guard; see the script); then installs `distribution/docker-compose.yml` into an empty dir against the built image (retagged `ghcr.io/…:verify`) + `config` of the `https` profile |
 | `/distribution/docker-compose.yml`, `/distribution/example.env` | Production install (T-023): pulls `ghcr.io/ljarka/compose-cast-server:${COMPOSECAST_VERSION:-release}`, data dir read-only, whole `.env` → container (secrets), profile `https` = Caddy `reverse-proxy`; no fixed project/container names (several apps per host). Playbook: `docs/playbooks/install-server.md` |
 | `/.github/workflows/release.yml` | Push to `main` → `:main`; published release → `:<tag>` + `:release` + the two distribution files as release assets; buildx amd64 + arm64 (QEMU for the runtime stage), OCI labels via `metadata-action` |
 
@@ -51,6 +51,7 @@ copy of `demoScreens()`. `./gradlew :server-app:run` runs from the repo root, so
 | GET | `/screens/{id}/debug?k=v` | Plain-text decoded RC tree + etag (dev/debug only) |
 | GET | `/screens` | JSON list of screen ids (static and dynamic) |
 | GET | `/brand` | JSON `BrandConfig` |
+| GET/POST | `/admin/**` | Admin mode only: the admin panel ([server-admin](../server-admin/AGENTS.md)) |
 
 ## Rules
 
@@ -75,6 +76,7 @@ copy of `demoScreens()`. `./gradlew :server-app:run` runs from the repo root, so
 
 - `:sdk-server` (api) — `composeCast {}`, `ScreenRegistry`, `ImageLoader`
 - `:protocol` (api) — `Headers`, `BrandConfig`
+- `:server-store`, `:server-admin` — admin mode (T-007)
 - Ktor Netty, ContentNegotiation, CallLogging, StatusPages, kotlinx-serialization-json; logback (runtime)
 
 ## Test / run

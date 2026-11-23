@@ -9,8 +9,9 @@ mode** (`COMPOSECAST_MODE=admin`, wired in `server-app`); files mode never opens
 | File | Purpose |
 |---|---|
 | `StoreDatabase.kt` | `StoreDatabase.open(file)`: connects (WAL, `busy_timeout` 5 s), creates the tables; `tx {}` runs one transaction; `createTables()` for feature modules' own tables |
-| `Tables.kt` | `screens` (id, draft_json, live_json, timestamps, published_by), `screen_history` (append-only), `app_settings` (key/value) |
+| `Tables.kt` | `screens` (id, draft_json, live_json, timestamps, published_by), `screen_history` (append-only), `app_settings` (key/value), `users` (unique email, bcrypt hash, role text), `sessions` (id = token hash, user, expiry) |
 | `ScreenStore.kt` | `list`, `get`, `live()` (what apps are served), `saveDraft`, `publish`, `publishAll` (one transaction: first-start import), `history`, `rollback` (= publish an old revision again) |
+| `UserStore.kt` | Admin accounts + sessions (A2): `findByEmail`, `create`, `createIfNone` (atomic first-admin bootstrap), `createSession`, `sessionUser` (deletes an expired one), `deleteSession`, `deleteExpiredSessions`; stores bcrypt hashes and session-id hashes made by `server-admin` |
 | `SettingsStore.kt` | `settings[key]` get/set; `BRAND` = the brand as `brand.json` text |
 
 ## Decisions
@@ -19,7 +20,8 @@ mode** (`COMPOSECAST_MODE=admin`, wired in `server-app`); files mode never opens
   canonical `ScreenJson.encode` text; the module depends on no compose-cast module (ADR 0023: feature
   modules may depend on it, never the other way round).
 - **History is append-only:** a rollback publishes the old JSON again as a new row (ADR 0014 semantics).
-- Timestamps are ISO-8601 UTC strings (`Instant.toString()`); `Clock` injectable for tests.
+- Timestamps are ISO-8601 UTC strings (`Instant.toString()`); `Clock` injectable for tests. Session
+  expiries are truncated to whole seconds so the strings compare chronologically in SQL.
 - Exposed 1.x packages are `org.jetbrains.exposed.v1.core` / `.v1.jdbc` (`eq`, `and` are top-level
   functions; `SchemaUtils.create` = `CREATE TABLE IF NOT EXISTS`). Verified in the 1.6.1 sources
   jar, 2026-11-23. SQLite does not enforce `varchar` lengths; Exposed checks them before writing.
@@ -30,7 +32,7 @@ mode** (`COMPOSECAST_MODE=admin`, wired in `server-app`); files mode never opens
 
 ## Tests
 
-`ScreenStoreTest` (temp file per test: drafts vs. live, publish/history, `publishAll` atomicity,
+`ScreenStoreTest`, `UserStoreTest` (temp file per test: drafts vs. live, publish/history, `publishAll` atomicity,
 rollback, reopen). `server-app`'s `AdminScreensTest` covers the import + byte-identical serving.
 
 ```bash

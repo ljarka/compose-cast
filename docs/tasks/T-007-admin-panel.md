@@ -1,6 +1,6 @@
 # T-007 — Admin panel MVP (roadmap A1–A5)
 
-Status: ready — next step: A2 (A1 done) · Roadmap: [specs/roadmap.md A1–A5](../../specs/roadmap.md#a-admin-panel-mvp-t-007-split--the-smallest-vertical-slice), Etap 8 · Depends on: T-002 (JSON screen model), T-006 (data sources), T-042 (`LiveScreens` swap) · Module: server-store, server-admin, server-app
+Status: ready — next step: A3 (A1, A2 done) · Roadmap: [specs/roadmap.md A1–A5](../../specs/roadmap.md#a-admin-panel-mvp-t-007-split--the-smallest-vertical-slice), Etap 8 · Depends on: T-002 (JSON screen model), T-006 (data sources), T-042 (`LiveScreens` swap) · Module: server-store, server-admin, server-app
 
 ## Goal
 
@@ -58,6 +58,15 @@ change it together with the install docs when the admin is usable.
   `server-admin` module with `/admin/login`, logout, an empty `/admin` page; Ktor sessions.
 - **Done when:** `/admin` redirects to login without a session; the env admin logs in; wrong
   password → error; a `viewer` gets 403 on every mutating route (tests with the Ktor test host).
+
+**A2 result (2026-11-23):** module `server-admin` (`AdminPanel.kt`, `AdminAuth.kt`, `Role.kt`,
+Freemarker templates), `UserStore` in `server-store`, `COMPOSECAST_ADMIN_EMAIL`/`_PASSWORD`/
+`_ALLOW_HTTP` in `server-app`. Tests: `AdminPanelTest` (8), `UserStoreTest` (3), `AdminScreensTest`
+(+2: bootstrap from env, `/admin` only in admin mode); checked by hand with curl against a real
+admin-mode server. Session/cookie/password decisions: [server-admin/AGENTS.md](../../server-admin/AGENTS.md).
+Notes for A3: add pages inside `loggedIn { }` in `adminRoutes` (the role policy and its test cover
+them); HTMX is not loaded yet (pin the unpkg URL + integrity hash, ADR 0012); the `:ro` data volume
+(A1 note) is still open.
 
 ### A3 — Screen list + JSON editor + drafts
 - `/admin/screens` (id, title, status live/draft/unpublished, last published);

@@ -55,8 +55,10 @@ screens=$(curl -fsS "http://127.0.0.1:$PORT/screens" | tr -d ' \n')
 curl -fsS -o /dev/null "http://127.0.0.1:$PORT/screens/main"
 
 size_mb=$(( $(docker run --rm --user root --entrypoint sh "$IMAGE" -c 'du -sxk /' | cut -f1) / 1024 ))
-echo "Image filesystem: ${size_mb} MB (limit 250)"
-(( size_mb < 250 )) || { echo "Image too large"; exit 1; }
+# A bloat guard, not a budget: raised from 250 for T-007 (sqlite-jdbc bundles natives for every OS,
+# 12 MB; Freemarker 2 MB) at 251 MB. Raise it only for growth you can name.
+echo "Image filesystem: ${size_mb} MB (limit 275)"
+(( size_mb < 275 )) || { echo "Image too large"; exit 1; }
 
 # --- distribution/docker-compose.yml (T-023): the install users run, against the image just built ---
 # Installed like a user would (compose file + example.env as .env in an empty directory); the
