@@ -1,6 +1,6 @@
 # T-044 — Release signing configured by the app repository
 
-Status: done (commit pending) · Roadmap: Etap 6 · Depends on: — · Module: gradle-plugins
+Status: done (`72bb93c`) · Roadmap: Etap 6 · Depends on: — · Module: gradle-plugins
 
 ## Goal
 

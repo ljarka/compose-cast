@@ -33,7 +33,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-040 Brand theme colors for component defaults](tasks/T-040-brand-theme-colors.md) | Etap 5 | done (`a88be28`) |
 | [T-041 Lookups keyed by more than one value (day/night)](tasks/T-041-compound-lookup-keys.md) | Etap 4 | done (`9689de6`) |
 | [T-042 Reload the data directory without a restart](tasks/T-042-reload-data-dir.md) | Etap 6 | done (`383c443`) |
-| [T-044 Release signing configured by the app repository](tasks/T-044-release-signing.md) | Etap 6 | done (commit pending) |
+| [T-044 Release signing configured by the app repository](tasks/T-044-release-signing.md) | Etap 6 | done (`72bb93c`) |
 | [T-007 Admin panel MVP](tasks/T-007-admin-panel.md) | Etap 8 | ready (T-025 only waits for the owner's domain); **core of the product**; first step: write the MVP cut into the task file |
 | [T-029 Visual screen editor (no JSON)](tasks/T-029-visual-screen-editor.md) | Etap 8 | queued (after T-007) |
 | [T-031 Data source wizard (URL → screens)](tasks/T-031-data-source-wizard.md) | Etap 8 | queued (after T-029) |
