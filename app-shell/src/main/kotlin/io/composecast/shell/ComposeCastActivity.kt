@@ -186,16 +186,25 @@ private fun ComposeCastApp(
     openRequest: OpenRequest?,
     onOpenUrl: (String) -> Boolean,
 ) {
+    var homeScreen by rememberSaveable { mutableStateOf<String?>(null) }
     // Back stack of (screen, params) entries; survives rotation. System back pops it.
     var backStack by rememberSaveable(stateSaver = BackStackSaver) {
-        mutableStateOf(listOf(Action.Navigate("main")))
+        mutableStateOf(emptyList())
     }
-    val entry = backStack.last()
-    val screenId = entry.screen
+    LaunchedEffect(Unit) {
+        if (backStack.isEmpty()) {
+            val start = runCatching { client.getBrand().homeScreen }.getOrNull()?.takeIf { it.isNotBlank() } ?: "main"
+            homeScreen = start
+            backStack = listOf(Action.Navigate(start))
+        }
+    }
+    val entry = backStack.lastOrNull()
+    val screenId = entry?.screen ?: homeScreen ?: "main"
     BackHandler(enabled = backStack.size > 1) { backStack = backStack.dropLast(1) }
     // A linked screen (draft preview) opens on top; rememberSaveable: not again after a rotation.
     var handledRequest by rememberSaveable { mutableIntStateOf(-1) }
-    LaunchedEffect(openRequest) {
+    LaunchedEffect(openRequest, homeScreen) {
+        if (homeScreen == null) return@LaunchedEffect
         val request = openRequest ?: return@LaunchedEffect
         if (request.seq == handledRequest) return@LaunchedEffect
         handledRequest = request.seq
@@ -215,8 +224,20 @@ private fun ComposeCastApp(
         return
     }
     val screenState by produceState<Result<ScreenDocument>?>(initialValue = null, key1 = entry, key2 = reloadKey) {
+        val current = entry ?: return@produceState
         value = null
-        value = runCatching { client.getScreen(entry.screen, entry.params) }
+        val target = if (reloadKey > 0 && backStack.size == 1 && current.screen == homeScreen) {
+            val latest = runCatching { client.getBrand().homeScreen }.getOrNull()?.takeIf { it.isNotBlank() } ?: "main"
+            if (latest != current.screen) {
+                homeScreen = latest
+                backStack = listOf(Action.Navigate(latest))
+                return@produceState
+            }
+            current
+        } else {
+            current
+        }
+        value = runCatching { client.getScreen(target.screen, target.params) }
     }
 
     Scaffold(

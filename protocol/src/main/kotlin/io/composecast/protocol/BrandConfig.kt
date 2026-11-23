@@ -28,6 +28,7 @@ data class BrandConfig(
     val surfaceColor: String? = null,
     val textColor: String? = null,
     val outlineColor: String? = null,
+    val homeScreen: String? = null,
 ) {
     /**
      * Every problem, each starting with the field name (`primaryColor: expected #RRGGBB …`); empty

@@ -257,7 +257,7 @@ class AdminScreensTest {
     }
 
     @Test
-    fun `setting a home screen serves it for main`() = adminMode { client, cookie, store ->
+    fun `setting a home screen exposes it in brand and keeps main distinct`() = adminMode { client, cookie, store ->
         store.saveDraft("shows", """{"id": "shows", "title": "TV Shows"}""")
         val shows = client.post(
             cookie,
@@ -269,22 +269,24 @@ class AdminScreensTest {
         val setHome = client.post(cookie, "/admin/screens/shows/home", "x", "1")
         assertEquals(HttpStatusCode.SeeOther, setHome.status)
 
-        val main = client.get("/screens/main")
-        assertEquals(HttpStatusCode.OK, main.status)
-        assertEquals("TV+Shows", main.headers[Headers.SCREEN_TITLE])
+        val brand = Json.decodeFromString(BrandConfig.serializer(), client.get("/brand").bodyAsText())
+        assertEquals("shows", brand.homeScreen)
+        assertEquals("Home", client.get("/screens/main").headers[Headers.SCREEN_TITLE])
+        assertEquals("TV+Shows", client.get("/screens/shows").headers[Headers.SCREEN_TITLE])
 
-        // Switching home to another screen with identical body but different title must change the ETag (no 304).
-        store.saveDraft("other", """{"id": "other", "title": "Other"}""")
-        client.post(cookie, "/admin/screens/other/publish", "json", """{"id": "other", "title": "Other"}""")
-        client.post(cookie, "/admin/screens/other/home", "x", "1")
-        val updated = client.get("/screens/main") {
-            header(HttpHeaders.IfNoneMatch, main.headers[HttpHeaders.ETag]!!)
+        // Re-publishing a screen with identical body but different title must change the ETag (no 304).
+        val before = client.get("/screens/shows")
+        client.post(cookie, "/admin/screens/shows/publish", "json", """{"id": "shows", "title": "Shows v2"}""")
+        val updated = client.get("/screens/shows") {
+            header(HttpHeaders.IfNoneMatch, before.headers[HttpHeaders.ETag]!!)
         }
         assertEquals(HttpStatusCode.OK, updated.status)
-        assertEquals("Other", updated.headers[Headers.SCREEN_TITLE])
+        assertEquals("Shows+v2", updated.headers[Headers.SCREEN_TITLE])
 
         val removed = client.post(cookie, "/admin/screens/shows/delete", "x", "1")
-        assertEquals(HttpStatusCode.SeeOther, removed.status)
+        assertEquals(HttpStatusCode.UnprocessableEntity, removed.status, "cannot delete active home screen")
+        client.post(cookie, "/admin/screens/main/home", "x", "1")
+        assertEquals(HttpStatusCode.SeeOther, client.post(cookie, "/admin/screens/shows/delete", "x", "1").status)
         assertEquals(HttpStatusCode.NotFound, client.get("/screens/shows").status)
         assertFalse("shows" in client.get("/screens").bodyAsText())
     }

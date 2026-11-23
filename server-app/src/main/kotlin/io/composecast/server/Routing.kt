@@ -1,5 +1,6 @@
 package io.composecast.server
 
+import io.composecast.protocol.BrandConfig
 import io.composecast.protocol.ErrorResponse
 import io.composecast.protocol.Headers
 import io.composecast.protocol.VersionInfo
@@ -73,11 +74,22 @@ fun Application.configureRouting(screens: LiveScreens) {
         }
         get("/brand") {
             val brand = screens.current.brand
-                ?: return@get call.respond(
+            val home = screens.homeScreen
+            val response = when {
+                brand != null && home != null -> brand.copy(homeScreen = home)
+                brand != null -> brand
+                home != null -> BrandConfig(
+                    name = "compose-cast",
+                    primaryColor = "#3B5BDB",
+                    secondaryColor = "#3B5BDB",
+                    homeScreen = home,
+                )
+                else -> return@get call.respond(
                     HttpStatusCode.NotFound,
                     ErrorResponse("brand_not_configured", "No brand configured"),
                 )
-            call.respond(brand)
+            }
+            call.respond(response)
         }
         get("/screens") {
             call.respond(screens.current.ids())
@@ -89,7 +101,7 @@ fun Application.configureRouting(screens: LiveScreens) {
 private suspend fun ApplicationCall.renderScreen(screens: LiveScreens): RemoteScreen? {
     // Path only: `parameters` also holds the query, where a screen param named `id` (a detail
     // screen's `?id=82`) would win over the screen id (T-031).
-    val id = screens.resolveId((this as RoutingCall).pathParameters["id"]!!)
+    val id = (this as RoutingCall).pathParameters["id"]!!
     val params = request.queryParameters.entries().associate { (name, values) -> name to values.first() }
     val rawApiLevel = request.headers[Headers.RC_API_LEVEL]
     val rcApiLevel = rawApiLevel?.toIntOrNull()

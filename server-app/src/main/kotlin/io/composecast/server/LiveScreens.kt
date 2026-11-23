@@ -21,9 +21,6 @@ class LiveScreens(
     /** The registry that serves screen [id]: a draft preview's (T-045 B2) or the live one. */
     fun registryFor(id: String): ScreenRegistry? = if (PreviewScreens.isPreview(id)) previews[id] else current
 
-    /** Maps `main` to the configured [homeScreen] when one is set; other ids pass through unchanged. */
-    fun resolveId(id: String): String = if (id == "main") homeRef.get() ?: "main" else id
-
     /** Atomically serves [registry] from the next request on. Build (and so validate) it first. */
     fun replace(registry: ScreenRegistry) = ref.set(registry)
 
