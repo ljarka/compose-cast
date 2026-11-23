@@ -75,7 +75,7 @@ them); HTMX is not loaded yet (pin the unpkg URL + integrity hash, ADR 0012); th
 - **Done when:** an invalid edit shows the errors and cannot be saved as publishable; a saved draft
   does not change `GET /screens/{id}` (test + manual check in the browser).
 
-**A3 result (2026-11-23):** `server-admin/ScreenPages.kt` + `screens.ftl`, `screen.ftl`,
+**A3 result (2026-11-23, `4cad7b9`):** `server-admin/ScreenPages.kt` + `screens.ftl`, `screen.ftl`,
 `_problems.ftl`; `ScreenJson.check` in `protocol`. Invalid edits are not saved at all (422, text
 kept); valid drafts are stored canonical. Tests: `ScreenPagesTest` (7), `ScreenJsonTest` (+1),
 `AdminScreensTest` (+1: a draft saved through `/admin` leaves `GET /screens/main` byte-identical).
