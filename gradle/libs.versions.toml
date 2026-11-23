@@ -10,6 +10,9 @@ robolectric = "4.17"
 roborazzi = "1.77.0"
 spotless = "7.2.1"
 ktlint = "1.7.1"
+exposed = "0.56.0"
+sqlite-jdbc = "3.47.0.0"
+bcrypt = "0.10.2"
 
 [libraries]
 # AGP as a library: the io.composecast.app plugin (gradle-plugins/) applies com.android.application.
@@ -48,6 +51,10 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
 roborazzi-compose = { module = "io.github.takahirom.roborazzi:roborazzi-compose", version.ref = "roborazzi" }
 junit = { module = "junit:junit", version = "4.13.2" }
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite-jdbc" }
+bcrypt = { module = "at.favre.lib:bcrypt", version.ref = "bcrypt" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
