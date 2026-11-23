@@ -13,7 +13,7 @@ from the latest GitHub Release, scan the admin's QR code, done ([ADR 0024](../de
    in this flavor; the release workflow attaches `compose-cast-preview.apk` to every release.
    Done when: scanning a QR with a server URL shows that server's `main` screen.
 
-   **B1 result (2026-11-23):** module `app-preview` (not a flavor, see its AGENTS.md); plugin key
+   **B1 result (2026-11-23, `b94299d`):** module `app-preview` (not a flavor, see its AGENTS.md); plugin key
    `app.preview`; shell `PreviewConnection.kt` + `ConnectScreen.kt` + `ConnectLink` alias;
    `server-app` `GET /connect` (ADR 0026 decides the open question below: QR → https `/connect`
    page → `intent://` link, no camera permission); release job `preview-apk`. Checked on the
