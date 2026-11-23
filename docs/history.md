@@ -285,3 +285,7 @@ README roadmap's "Etap" numbers.
 57. **T-041 lookups by two values**: filter `append:` and path filter arguments (`append:h.is_day`,
     `default:w.other`); the weather app's hourly list shows 🌙 at night (branch `next`, after the
     next release).
+58. **Release `v0.2.0`** (T-040 brand colors, T-041 `append` + path arguments); the weather app
+    moved to it (`surfaceColor`, night icons).
+59. **T-042 data dir reload**: `DataDirReloader` polls `data/` every 2 s and swaps reloaded screens
+    into `LiveScreens`; invalid edits keep the previous screens. `COMPOSECAST_RELOAD=false` opts out.

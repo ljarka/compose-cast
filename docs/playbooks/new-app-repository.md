@@ -28,8 +28,9 @@ Follow [install-server.md](install-server.md) in `server/`, with `COMPOSECAST_DA
 Pin `COMPOSECAST_VERSION` to the same release as the Android plugin version, and set
 `JAVA_OPTS=-Xmx256m` on a small VPS (the heap otherwise grows to 75% of RAM).
 
-- The server reads `data/` **at startup only**: `docker compose restart server` after editing a
-  screen (until the admin panel publishes, T-007).
+- Edits in `data/` are served within ~3 s (T-042, server ≥ v0.3.0; older servers read `data/` at
+  startup only: `docker compose restart server`). An invalid edit keeps the previous screens and is
+  logged: `docker compose logs server`.
 - Check a screen without the app: `curl localhost:8080/screens/<id>/debug` (texts after binding);
   validation errors stop startup with the file and JSON path (`docker compose logs server`).
 

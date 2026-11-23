@@ -1,6 +1,6 @@
 # T-042 — Reload the data directory without a restart
 
-Status: ready · Roadmap: Etap 6 · Depends on: — · Module: server-app
+Status: done (commit pending) · Roadmap: Etap 6 · Depends on: — · Module: server-app
 
 ## Goal
 
@@ -26,3 +26,14 @@ the weather app (T-025): an edited screen silently kept serving the old version 
 
 `server-app/AGENTS.md` (Rules: "nothing swaps it yet" changes), install-server env table,
 `new-app-repository.md` (drop the restart note), history.
+
+## Result (2026-11-23)
+
+- `server-app/DataDirReloader.kt`: polling on a daemon thread (no coroutine scope needed), every
+  2 s, fingerprint = relative path + mtime + size of every file; on change waits 500 ms, then
+  `loadScreens` + `LiveScreens.replace()`; a failed version is logged once and not retried until the
+  files change again. `COMPOSECAST_RELOAD=false` disables it; nothing to do without a data dir.
+- Test: `DataDirReloaderTest` (edit, add, delete, invalid file keeps the old screens, fix).
+- A reload re-renders every screen and re-fetches its images (new registry = new image cache).
+- Manual (weather app in Docker, local image): edited `cities.json` title served after 2 s; an
+  invalid file logged, previous screen still served; restoring it reloaded again.

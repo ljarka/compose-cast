@@ -25,16 +25,20 @@ import java.nio.file.Path
  *   instead of the built-in demo screens (layout: ADR 0011).
  * - `COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS=true`: allow image URLs on loopback/private/link-local
  *   hosts (local development only; default false, T-026).
+ * - `COMPOSECAST_RELOAD=false`: do not reload the data directory when its files change (default:
+ *   reload, polled every 2 s; T-042).
  */
 fun main() {
     val port = System.getenv("PORT")?.toInt() ?: 8080
     // Built before the server starts: an invalid screen stops startup with a clear message.
     val allowPrivateImageHosts = System.getenv("COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS").toBoolean()
-    val registry = loadScreens(
-        System.getenv("COMPOSECAST_DATA_DIR")?.let(Path::of),
-        imageLoader = HttpImageLoader(allowPrivateHosts = allowPrivateImageHosts),
-    )
-    embeddedServer(Netty, port = port, host = "0.0.0.0") { module(LiveScreens(registry)) }.start(wait = true)
+    val imageLoader = HttpImageLoader(allowPrivateHosts = allowPrivateImageHosts)
+    val dataDir = System.getenv("COMPOSECAST_DATA_DIR")?.let(Path::of)
+    val screens = LiveScreens(loadScreens(dataDir, imageLoader = imageLoader))
+    if (dataDir != null && System.getenv("COMPOSECAST_RELOAD")?.toBoolean() != false) {
+        DataDirReloader(dataDir, screens, load = { loadScreens(it, imageLoader = imageLoader) }).start()
+    }
+    embeddedServer(Netty, port = port, host = "0.0.0.0") { module(screens) }.start(wait = true)
 }
 
 fun Application.module(screens: LiveScreens) {

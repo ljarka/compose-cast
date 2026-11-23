@@ -56,6 +56,8 @@ tick the README Etap 6 boxes, set this task `done`.
   `assembleRelease`); server from image `v0.1.0`; Maestro flow green on the emulator.
 
 - Repository pushed to https://github.com/ljarka/weather-app (public, created by the owner).
+- 2026-11-23: moved to `v0.2.0` (brand `surfaceColor` instead of card backgrounds, night icons via
+  T-041); Maestro flow green on the emulator, screenshots refreshed.
 
 Remaining (needs the owner): a domain; then deploy `server/` on
 the VPS (https), set the domain in `compose-cast.properties`, run the app against it, tick Etap 6

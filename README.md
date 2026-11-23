@@ -267,8 +267,7 @@ Server with Docker — no JDK, Gradle or Kotlin needed (serves the JSON screens 
 docker compose up -d
 curl http://localhost:8080/screens                 # ["actions","adaptive","collections","components","data","layouts","main","onboarding"]
 COMPOSECAST_SCREENS=/path/to/data docker compose up -d   # your own screens/<id>.json + brand.json
-docker compose restart                             # after editing a screen file
-docker compose logs server                         # an invalid file is reported here (file + JSON path)
+docker compose logs server                         # edits are reloaded within ~3 s; an invalid file is reported here (file + JSON path)
 ```
 
 The image (`server-app/Dockerfile`) is multi-arch: `docker buildx build --platform

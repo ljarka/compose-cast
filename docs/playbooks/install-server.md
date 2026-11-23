@@ -34,6 +34,7 @@ names the file and the JSON path.
 | `COMPOSECAST_DOMAIN` | `localhost` | Domain Caddy serves and obtains the certificate for |
 | `JAVA_OPTS` | — (image: `-XX:MaxRAMPercentage=75`) | JVM options. On a small VPS cap the heap, e.g. `-Xmx256m`: by default the heap grows to 75% of RAM under load (T-025 measurements in the README) |
 | `COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS` | `false` | `true` lets screens load images from loopback/private/link-local hosts (local development only; keep `false` in production — SSRF) |
+| `COMPOSECAST_RELOAD` | `true` | Reload `data/` when its files change (polled every 2 s; an invalid edit is logged and the previous screens stay served). `false`: read once at startup |
 | `COMPOSECAST_SECRET_<NAME>` | — | Secret for data sources, read by `{{secret.NAME}}` in a data source URL/header (never sent to the app) |
 
 The whole `.env` is passed to the server container, so secrets only need to be added there.
@@ -55,7 +56,7 @@ Verified locally with `COMPOSECAST_DOMAIN=localhost` (Caddy's internal CA, `curl
 ## Edit screens, update, back up
 
 ```bash
-docker compose restart server                       # after editing files in ./data (read at start)
+docker compose logs -f server                       # edits in ./data are served within ~3 s ("Reloaded …"; errors here)
 docker compose pull && docker compose up -d         # update to the newest image of COMPOSECAST_VERSION
 docker image prune                                  # remove old images afterwards
 ```

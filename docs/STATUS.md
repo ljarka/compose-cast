@@ -5,7 +5,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Next
 
-- **[T-042 Reload the data directory without a restart](tasks/T-042-reload-data-dir.md)** (Etap 6) — the `ready` task.
+- **[T-044 Release signing configured by the app repository](tasks/T-044-release-signing.md)** (Etap 6) — the `ready` task.
 
 ## Task queue (priority order)
 
@@ -32,8 +32,8 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-043 App bar shows the screen id while loading](tasks/T-043-shell-loading-title.md) | Etap 7 | done (`7241097`) |
 | [T-040 Brand theme colors for component defaults](tasks/T-040-brand-theme-colors.md) | Etap 5 | done (`a88be28`) |
 | [T-041 Lookups keyed by more than one value (day/night)](tasks/T-041-compound-lookup-keys.md) | Etap 4 | done (`9689de6`) |
-| [T-042 Reload the data directory without a restart](tasks/T-042-reload-data-dir.md) | Etap 6 | ready — gap from T-025 |
-| [T-044 Release signing configured by the app repository](tasks/T-044-release-signing.md) | Etap 6 | queued (after T-042) — gap from T-025 |
+| [T-042 Reload the data directory without a restart](tasks/T-042-reload-data-dir.md) | Etap 6 | done (commit pending) |
+| [T-044 Release signing configured by the app repository](tasks/T-044-release-signing.md) | Etap 6 | ready — gap from T-025 |
 | [T-007 Admin panel MVP](tasks/T-007-admin-panel.md) | Etap 8 | queued (after T-044 and T-025); **core of the product**; first step: write the MVP cut into the task file |
 | [T-029 Visual screen editor (no JSON)](tasks/T-029-visual-screen-editor.md) | Etap 8 | queued (after T-007) |
 | [T-031 Data source wizard (URL → screens)](tasks/T-031-data-source-wizard.md) | Etap 8 | queued (after T-029) |
@@ -80,9 +80,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- T-042 data dir reload
+- Release `v0.2.0`
 - T-041 lookups by two values
 - T-040 brand theme colors
 - Release `v0.1.0`
 - T-025 weather app prepared locally
-- T-043 app bar loading title
-- T-039 large files split
