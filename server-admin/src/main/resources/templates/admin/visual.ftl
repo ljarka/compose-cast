@@ -86,12 +86,6 @@
           </#if>
         </div>
         </#if>
-        <#if mode == "component">
-          <div class="toolbar">
-            <label class="inline">Wrap in <@typeSelect name="type" only=containers/></label>
-            <button name="op" value="wrap">Wrap</button>
-          </div>
-        </#if>
       </form>
       </#if>
       <#if mode != "list" && mode != "sources">
