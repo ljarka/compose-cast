@@ -332,3 +332,6 @@ README roadmap's "Etap" numbers.
     (in memory, 30 min, live brand, nothing saved) + an SVG QR of `/connect?screen=…`; the Preview
     app opens it on top of `main` — ADR 0027 (amends 0013). Emulator: draft visible while apps
     still get the live screen; rotation, back and a second scan with the app open work.
+69. **T-029 C1 — visual editor technology** (owner): HTMX with the editor state on the server
+    (the stored draft), property forms generated from the model's `SerialDescriptor`s — ADR 0028.
+    T-045 B3 waits for the owner (fresh VPS, signing secrets).

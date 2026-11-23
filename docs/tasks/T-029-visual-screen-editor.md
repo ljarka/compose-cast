@@ -1,6 +1,6 @@
 # T-029 — Visual screen editor in the admin panel (no JSON)
 
-Status: queued (after T-045) · Roadmap: Etap 8 · Depends on: T-007 (admin MVP), ADR 0015, ADR 0013 · Module: server-admin, protocol (component schema)
+Status: in progress — next step: C2 (C1 done: ADR 0028) · Roadmap: Etap 8 · Depends on: T-007 (admin MVP), ADR 0015, ADR 0013 · Module: server-admin, protocol (component schema)
 
 ## Goal
 
@@ -29,6 +29,16 @@ in an admin panel. ADR 0017 point 4: everything app-specific must be editable th
   Clicking a field inserts `{{source.path}}`. Filters are picked from a list.
 - **Templates:** starter screens (list, detail, form, onboarding) for a quick start.
 - Admin UI technology: ADR 0012.
+
+## Steps (roadmap C1–C3)
+
+1. **C1** ADR on the UI technology. **Done (2026-11-23): [ADR 0028](../decisions/0028-visual-editor-htmx-server-state.md)**
+   — HTMX, state on the server (the stored draft), forms from `SerialDescriptor`s.
+2. **C2** Component tree + schema-driven property forms for existing screens. Done when: every
+   property of every component is editable in a form (test over all `Component` subtypes); the
+   JSON editor shows the same draft.
+3. **C3** Palette: add, remove, reorder, nest. Done when: a screen is built from empty without JSON
+   (the weather `main` from T-025 is the acceptance test).
 
 ## Acceptance criteria
 

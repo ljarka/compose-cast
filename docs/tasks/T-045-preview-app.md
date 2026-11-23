@@ -1,6 +1,6 @@
 # T-045 — Generic "compose-cast Preview" app + draft preview
 
-Status: in progress — next step: B3 (B1, B2 done) · Roadmap: specs/roadmap.md B1–B3 · Depends on: T-007 (admin panel, `__preview`) · Module: app-shell, app-template, server-admin
+Status: waiting for the owner (B3: fresh VPS, signing secrets) — B1, B2 done · Roadmap: specs/roadmap.md B1–B3 · Depends on: T-007 (admin panel, `__preview`) · Module: app-shell, app-template, server-admin
 
 ## Goal
 

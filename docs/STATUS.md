@@ -35,8 +35,8 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-042 Reload the data directory without a restart](tasks/T-042-reload-data-dir.md) | Etap 6 | done (`383c443`) |
 | [T-044 Release signing configured by the app repository](tasks/T-044-release-signing.md) | Etap 6 | done (`72bb93c`) |
 | [T-007 Admin panel MVP](tasks/T-007-admin-panel.md) | Etap 8 | done (`6ba75e7`) — A1–A5: `server-store`, admin mode, login + roles, editor + drafts, publish + history + rollback, settings, admin mode in Docker |
-| [T-045 Generic Preview app + draft preview](tasks/T-045-preview-app.md) | Roadmap B | in progress — B1 Preview app + `/connect`, B2 draft preview done; next: B3 (needs the owner: fresh VPS, signing secrets) |
-| [T-029 Visual screen editor (no JSON)](tasks/T-029-visual-screen-editor.md) | Etap 8 | queued (after T-045); roadmap C1–C3 (C1: ADR on the admin UI technology) |
+| [T-045 Generic Preview app + draft preview](tasks/T-045-preview-app.md) | Roadmap B | waiting for the owner — B1 Preview app + `/connect`, B2 draft preview done; B3 needs a fresh VPS + signing secrets (T-029 goes on meanwhile) |
+| [T-029 Visual screen editor (no JSON)](tasks/T-029-visual-screen-editor.md) | Etap 8 | in progress — C1 done (ADR 0028: HTMX, state on the server), next: C2 tree + forms |
 | [T-030 App templates](tasks/T-030-app-templates.md) | Etap 8 | queued (after T-029); roadmap D1 |
 | [T-031 Data source wizard (URL → screens)](tasks/T-031-data-source-wizard.md) | Etap 8 | queued (after T-030); roadmap D2 |
 | [T-010 Settings export (properties + icon)](tasks/T-010-app-export.md) | Etap 9 | queued (after T-031); roadmap E1–E3; rewrite the Design for ADR 0025 (GitHub Actions build) first |
@@ -81,9 +81,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- T-029 C1 — visual editor technology
 - T-045 B2 — draft preview
 - T-045 B1 — the compose-cast Preview app
 - T-007 A5 — app settings, admin mode in Docker (T-007 done)
 - T-007 A4 — publish, history, rollback
 - T-007 A3 — screen list, JSON editor, drafts
-- T-007 A2 — login and roles
