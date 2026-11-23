@@ -272,5 +272,15 @@ class AdminScreensTest {
         val main = client.get("/screens/main")
         assertEquals(HttpStatusCode.OK, main.status)
         assertEquals("TV+Shows", main.headers[Headers.SCREEN_TITLE])
+
+        // Switching home to another screen with identical body but different title must change the ETag (no 304).
+        store.saveDraft("other", """{"id": "other", "title": "Other"}""")
+        client.post(cookie, "/admin/screens/other/publish", "json", """{"id": "other", "title": "Other"}""")
+        client.post(cookie, "/admin/screens/other/home", "x", "1")
+        val updated = client.get("/screens/main") {
+            header(HttpHeaders.IfNoneMatch, main.headers[HttpHeaders.ETag]!!)
+        }
+        assertEquals(HttpStatusCode.OK, updated.status)
+        assertEquals("Other", updated.headers[Headers.SCREEN_TITLE])
     }
 }

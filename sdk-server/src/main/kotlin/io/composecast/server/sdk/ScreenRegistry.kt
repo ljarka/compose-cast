@@ -27,11 +27,15 @@ class RemoteScreen internal constructor(
     val size: Int get() = bytes.size
 
     /**
-     * Strong HTTP entity tag (without quotes): a hash of the document bytes, so it changes whenever
-     * anything that rendering read (params, data, brand, images) changes the output.
+     * Strong HTTP entity tag (without quotes): a hash of the title and document bytes, so it
+     * changes whenever anything that rendering read (title, params, data, brand, images) changes.
      */
     val etag: String by lazy {
-        MessageDigest.getInstance("SHA-256").digest(bytes).take(16).joinToString("") { "%02x".format(it) }
+        MessageDigest.getInstance("SHA-256").apply {
+            update(title.toByteArray(Charsets.UTF_8))
+            update(0)
+            update(bytes)
+        }.digest().take(16).joinToString("") { "%02x".format(it) }
     }
 
     /** Human-readable dump of the decoded document, for debugging. */
