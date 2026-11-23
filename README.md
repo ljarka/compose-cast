@@ -385,23 +385,21 @@ Android only ([ADR 0022](docs/decisions/0022-android-only.md), owner 2026-11-16)
 > weather-specific code in this project.
 
 - [x] Image fetches never reach private/loopback addresses (SSRF) — T-026
-- [ ] Example weather app on [Open-Meteo](https://open-meteo.com) (no API key): current conditions,
+- [x] Example weather app on [Open-Meteo](https://open-meteo.com) (no API key): current conditions,
   hourly/daily forecast, city list — screens as JSON, data via data sources — built as a separate
-  example repository using the published compose-cast artifacts (built locally against a publish
-  dry run, 2026-11-18; waits for the first release)
+  example repository using the published compose-cast artifacts (`v0.1.0`, 2026-11-23)
 - [ ] Server install like [Immich](https://immich.app/docs/install/docker-compose): `docker-compose.yml`
   + `example.env` from GitHub Releases, image on GHCR (amd64 + arm64), optional HTTPS (Caddy) — T-023
   ([ADR 0018](docs/decisions/0018-distribution-like-immich.md)); files and workflow done, ticked
-  after the first GitHub Release is installed on a VPS
-- [ ] Android app without Kotlin: `sdk-android`, `app-shell` and the `io.composecast.app` Gradle
+  after the first GitHub Release is installed on a VPS (release `v0.1.0` published 2026-11-23, image public)
+- [x] Android app without Kotlin: `sdk-android`, `app-shell` and the `io.composecast.app` Gradle
   plugin on a self-hosted Maven repository (Reposilite, [ADR 0019](docs/decisions/0019-self-hosted-maven-reposilite.md)) — T-024;
-  plugin, shell and publishing done (verified with a local Reposilite), ticked after the first
-  release is on the owner's Reposilite
+  `0.1.0` on `maven.jarka.club` (2026-11-23)
 - [x] Server serves JSON screens from a directory (`COMPOSECAST_DATA_DIR`, `PORT`), request logging
 - [x] Backend in one command: Docker image (amd64 + arm64) + `docker-compose.yml`, screens on a
   volume, secrets in `.env`, healthcheck — T-009
 - [ ] Weather app repository, screenshots in this README; RAM/latency measured with per-request rendering — T-025;
-  repository, screenshots and measurements done locally (2026-11-18), ticked when it runs from the release on a VPS over https
+  repository, screenshots and measurements done (runs on `v0.1.0`, 2026-11-23), ticked when it runs on a VPS over https
 
 ### Etap 7 — App shells & SDKs
 - [x] Android SDK: `RemoteComposePlayer` in `AndroidView`, Ktor fetch, loading/error, action router
@@ -463,7 +461,8 @@ Android only ([ADR 0022](docs/decisions/0022-android-only.md), owner 2026-11-16)
 ### Etap 11 — Release 0.1.0-alpha
 - [ ] Docs: quick start, components reference, data sources, action protocol, compatibility policy
 - [ ] Publish the Android SDK and plugin (Reposilite, ADR 0019) + server image (GHCR); tag, CHANGELOG, GitHub Release
-  (server image and Android SDK are pulled forward into Milestone 1: T-023, T-024)
+  (server image and Android SDK are pulled forward into Milestone 1: T-023, T-024; `v0.1.0` published
+  2026-11-23 without a CHANGELOG)
 
 ### Etap 12 — Feature flags, A/B tests, analytics, push
 - [ ] Feature flags on elements and screens, A/B tests with traffic split — T-038

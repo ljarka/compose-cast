@@ -5,7 +5,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Next
 
-- **[T-043 App bar shows the screen id while loading](tasks/T-043-shell-loading-title.md)** (Etap 7) — the `ready` task.
+- **[T-040 Brand theme colors for component defaults](tasks/T-040-brand-theme-colors.md)** (Etap 5) — the `ready` task.
 
 ## Task queue (priority order)
 
@@ -28,9 +28,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-016 Accessibility semantics](tasks/T-016-accessibility.md) | Etap 5 | done (`bd3cd2c`) |
 | [T-026 Image fetch hardening (no private addresses)](tasks/T-026-image-fetch-hardening.md) | Etap 6 | done (`3c81c74`) |
 | [T-039 Split large files and long AGENTS.md](tasks/T-039-split-large-files.md) | chores | done (`5c145b0`) — renderer → `render/` package, protocol model in 4 files, demo screens one per file |
-| [T-025 Milestone 1: weather app in its own repo + measurements](tasks/T-025-weather-app-milestone.md) | Etap 6 | in progress (waiting for owner: release) — app prepared locally in `../weather-app` |
-| [T-043 App bar shows the screen id while loading](tasks/T-043-shell-loading-title.md) | Etap 7 | ready — gap from T-025 (tiny) |
-| [T-040 Brand theme colors for component defaults](tasks/T-040-brand-theme-colors.md) | Etap 5 | queued (after T-043) — gap from T-025 |
+| [T-025 Milestone 1: weather app in its own repo + measurements](tasks/T-025-weather-app-milestone.md) | Etap 6 | in progress (waiting for owner: domain, push target) — `v0.1.0` released, app runs on it in `../weather-app` |
+| [T-043 App bar shows the screen id while loading](tasks/T-043-shell-loading-title.md) | Etap 7 | done (`7241097`) |
+| [T-040 Brand theme colors for component defaults](tasks/T-040-brand-theme-colors.md) | Etap 5 | ready — gap from T-025 |
 | [T-041 Lookups keyed by more than one value (day/night)](tasks/T-041-compound-lookup-keys.md) | Etap 4 | queued (after T-040) — gap from T-025 |
 | [T-042 Reload the data directory without a restart](tasks/T-042-reload-data-dir.md) | Etap 6 | queued (after T-041) — gap from T-025 |
 | [T-044 Release signing configured by the app repository](tasks/T-044-release-signing.md) | Etap 6 | queued (after T-042) — gap from T-025 |
@@ -66,7 +66,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | Etap 3 — iOS spike: dropped | 0/0 |
 | Etap 4 — Data sources (APIs) — ADR 0008 | 3/3 |
 | Etap 5 — Components for real apps | 7/11 |
-| Etap 6 — Milestone 1: Example weather app (external project) | 3/7 |
+| Etap 6 — Milestone 1: Example weather app (external project) | 5/7 |
 | Etap 7 — App shells & SDKs | 3/7 |
 | Etap 8 — Admin panel MVP | 0/11 |
 | Etap 9 — White-label app export + TV shows milestone | 1/6 |
@@ -80,9 +80,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- Release `v0.1.0`
 - T-025 weather app prepared locally
 - T-043 app bar loading title
 - T-039 large files split
 - T-026 image fetch hardening
 - New feature tasks and module structure
-- Self-hosted only

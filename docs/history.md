@@ -276,3 +276,6 @@ README roadmap's "Etap" numbers.
     JSON screens on Open-Meteo, Android app without Kotlin built against a publish dry run
     (`scripts/local-maven.init.gradle.kts`), Maestro on the emulator, measurements in the README
     (Performance); gaps → T-040…T-044; `JAVA_OPTS` documented after the heap-growth measurement.
+55. **Release `v0.1.0`** (T-025): GitHub Release via `gh` (now available, AGENTS.md); server image on
+    GHCR (public), Android artifacts `0.1.0` on `maven.jarka.club` after `COMPOSECAST_MAVEN_URL` moved
+    from a secret to a repository variable. The weather app builds and runs on it (Maestro green).

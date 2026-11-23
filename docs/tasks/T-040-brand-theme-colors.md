@@ -1,6 +1,6 @@
 # T-040 — Brand theme colors for component defaults (surface, text)
 
-Status: queued (after T-043) · Roadmap: Etap 5 · Depends on: — · Module: protocol, sdk-server
+Status: ready · Roadmap: Etap 5 · Depends on: — · Module: protocol, sdk-server
 
 ## Goal
 

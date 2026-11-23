@@ -23,9 +23,9 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-016 Accessibility semantics](T-016-accessibility.md) | Etap 5 | done (`bd3cd2c`) |
 | [T-026 Image fetch hardening (no private addresses)](T-026-image-fetch-hardening.md) | Etap 6 | done (`3c81c74`) |
 | [T-039 Split large files and long AGENTS.md](T-039-split-large-files.md) | chores | done (`5c145b0`) — renderer → `render/` package, protocol model in 4 files, demo screens one per file |
-| [T-025 Milestone 1: weather app in its own repo + measurements](T-025-weather-app-milestone.md) | Etap 6 | in progress (waiting for owner: release) — app prepared locally in `../weather-app` |
-| [T-043 App bar shows the screen id while loading](T-043-shell-loading-title.md) | Etap 7 | ready — gap from T-025 (tiny) |
-| [T-040 Brand theme colors for component defaults](T-040-brand-theme-colors.md) | Etap 5 | queued (after T-043) — gap from T-025 |
+| [T-025 Milestone 1: weather app in its own repo + measurements](T-025-weather-app-milestone.md) | Etap 6 | in progress (waiting for owner: domain, push target) — `v0.1.0` released, app runs on it in `../weather-app` |
+| [T-043 App bar shows the screen id while loading](T-043-shell-loading-title.md) | Etap 7 | done (`7241097`) |
+| [T-040 Brand theme colors for component defaults](T-040-brand-theme-colors.md) | Etap 5 | ready — gap from T-025 |
 | [T-041 Lookups keyed by more than one value (day/night)](T-041-compound-lookup-keys.md) | Etap 4 | queued (after T-040) — gap from T-025 |
 | [T-042 Reload the data directory without a restart](T-042-reload-data-dir.md) | Etap 6 | queued (after T-041) — gap from T-025 |
 | [T-044 Release signing configured by the app repository](T-044-release-signing.md) | Etap 6 | queued (after T-042) — gap from T-025 |
@@ -51,7 +51,7 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-022 Advanced RC features (templates, drag, sensors)](T-022-advanced-rc-features.md) | Etap 10 | later (pick by real use case) |
 | [T-005 iOS spike](T-005-ios-spike.md) | Etap 3 | dropped (Android only, ADR 0022) |
 
-Rows are in priority order. **T-025 gaps (2026-11-18):** T-025 waits for the owner's release steps;
+Rows are in priority order. **T-025 gaps (2026-11-18):** T-025 waits for the owner (domain, push target; `v0.1.0` released 2026-11-23);
 the small gaps it found (T-043, T-040, T-041, T-042, T-044) run meanwhile, before the admin panel. **Re-prioritized 2026-11-16 (owner):** real apps before catalog
 breadth. **The admin panel is the core of the product** (owner: anyone can create the screens
 of their mobile app in the admin panel). Order: Milestone 1 (T-025) proves the runtime → admin panel MVP

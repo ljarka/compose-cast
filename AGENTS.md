@@ -119,8 +119,8 @@ maestro test app-template/maestro/smoke.yaml      # click through the demo app (
 ## Current focus
 
 [Task queue](docs/tasks/README.md) (priority order, re-prioritized 2026-11-16): T-025 Milestone 1 weather app
-(in progress: prepared locally in `../weather-app`, **waits for owner: release, Reposilite, domain**) →
-**T-043 → T-040 → T-041 → T-042 → T-044 (gaps found by the weather app)** → **T-007 admin panel MVP → T-029 visual editor (the core of the product:
+(in progress: `v0.1.0` released, app in `../weather-app`, **waits for owner: domain, push target**) →
+**T-040 → T-041 → T-042 → T-044 (gaps found by the weather app)** → **T-007 admin panel MVP → T-029 visual editor (the core of the product:
 anyone builds app screens in the admin panel)** → T-031 wizard → T-030 templates → T-032 live
 preview → T-038 flags/A-B → T-037 analytics → T-033 AI → T-027 SDK-loaded images → T-028 offline cache → T-018 → T-021 → T-034 forms → T-035 Supabase auth → T-036 push → T-017.
 Real apps decide the catalog; T-019/T-020/T-022 are `later`. Android only

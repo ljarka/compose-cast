@@ -1,6 +1,6 @@
 # T-025 — Milestone 1: example weather app (external repository) + measurements
 
-Status: in progress (waiting for owner: release) · Roadmap: Etap 6 · Depends on: T-023, T-024 (owner steps below) · Module: external repository (+ fixes in existing modules)
+Status: in progress (waiting for owner: domain, push target) · Roadmap: Etap 6 · Depends on: T-023, T-024 (owner steps below) · Module: external repository (+ fixes in existing modules)
 
 ## Goal
 
@@ -45,6 +45,19 @@ Done locally, without the owner steps:
 Remaining (needs the owner): owner steps 1–3, then ask where to push `../weather-app`, set the real
 domain in `compose-cast.properties`, deploy `server/` on the VPS (https), run the app against it,
 tick the README Etap 6 boxes, set this task `done`.
+
+## Progress (2026-11-23, agent)
+
+- Release `v0.1.0` published with `gh release create` after the owner set the repository
+  variable `COMPOSECAST_MAVEN_URL` (it had been a secret; `release.yml` reads `vars.`). Jobs image,
+  assets, maven green; `0.1.0` of protocol, sdk-android, app-shell and the plugin on
+  `maven.jarka.club`; the GHCR image pulls anonymously (already public).
+- `../weather-app` builds from the published artifacts without the init script (`assembleDebug`,
+  `assembleRelease`); server from image `v0.1.0`; Maestro flow green on the emulator.
+
+Remaining (needs the owner): a domain and where to push `../weather-app`; then deploy `server/` on
+the VPS (https), set the domain in `compose-cast.properties`, run the app against it, tick Etap 6
+(T-023 and weather boxes), set this task `done`.
 
 ## Design
 

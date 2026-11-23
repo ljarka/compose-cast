@@ -1,6 +1,6 @@
 # T-043 — App bar shows the screen id while loading
 
-Status: ready · Roadmap: Etap 7 · Depends on: — · Module: app-shell
+Status: done (`7241097`) · Roadmap: Etap 7 · Depends on: — · Module: app-shell
 
 ## Goal
 
