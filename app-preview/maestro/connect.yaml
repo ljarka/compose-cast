@@ -7,8 +7,9 @@ appId: io.composecast.preview
 - launchApp
 - runFlow:
     when:
-      visible: "Change server"
+      visible: "Settings"
     commands:
+      - tapOn: "Settings"
       - tapOn: "Change server"
 - assertVisible: "Connect to your server"
 - openLink:
@@ -52,4 +53,4 @@ appId: io.composecast.preview
 - extendedWaitUntil:
     visible: "Get started"
     timeout: 20000
-- assertVisible: "Change server"
+- assertVisible: "Settings"

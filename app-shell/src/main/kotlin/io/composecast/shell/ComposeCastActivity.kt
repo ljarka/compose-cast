@@ -15,16 +15,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.lightColorScheme
@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -204,6 +205,15 @@ private fun ComposeCastApp(
     val scope = rememberCoroutineScope()
 
     var reloadKey by remember { mutableIntStateOf(0) }
+    var showSettings by rememberSaveable { mutableStateOf(false) }
+    if (showSettings && onChangeServer != null) {
+        PreviewSettingsScreen(
+            serverUrl = serverUrl,
+            onBack = { showSettings = false },
+            onChangeServer = onChangeServer,
+        )
+        return
+    }
     val screenState by produceState<Result<ScreenDocument>?>(initialValue = null, key1 = entry, key2 = reloadKey) {
         value = null
         value = runCatching { client.getScreen(entry.screen, entry.params) }
@@ -215,19 +225,20 @@ private fun ComposeCastApp(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
                 title = {
                     val title = screenState?.getOrNull()?.title ?: stringResource(R.string.app_name)
                     Text(title)
                 },
                 actions = {
+                    IconButton(onClick = { reloadKey++ }) {
+                        Icon(painterResource(R.drawable.ic_refresh), contentDescription = "Refresh")
+                    }
                     if (onChangeServer != null) {
-                        TextButton(
-                            onClick = onChangeServer,
-                            colors = ButtonDefaults.textButtonColors(
-                                contentColor = MaterialTheme.colorScheme.onPrimary,
-                            ),
-                        ) { Text("Change server") }
+                        IconButton(onClick = { showSettings = true }) {
+                            Icon(painterResource(R.drawable.ic_settings), contentDescription = "Settings")
+                        }
                     }
                 },
             )
@@ -290,3 +301,39 @@ private val BackStackSaver = listSaver<List<Action.Navigate>, String>(
     save = { stack -> stack.map(ActionCodec::encode) },
     restore = { saved -> saved.mapNotNull { ActionCodec.decode(it) as? Action.Navigate } },
 )
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PreviewSettingsScreen(serverUrl: String, onBack: () -> Unit, onChangeServer: () -> Unit) {
+    BackHandler(onBack = onBack)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                ),
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(painterResource(R.drawable.ic_arrow_back), contentDescription = "Back")
+                    }
+                },
+                title = { Text("Settings") },
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.background,
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Text("Connected server", style = MaterialTheme.typography.labelLarge)
+            Text(serverUrl, style = MaterialTheme.typography.bodyLarge)
+            Button(onClick = onChangeServer) { Text("Change server") }
+        }
+    }
+}
