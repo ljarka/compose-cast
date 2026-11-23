@@ -1,6 +1,6 @@
 # T-034 — Forms: input fields, validation, submit to an API/webhook
 
-Status: queued (after T-021) · Roadmap: Etap 10 · Depends on: T-021 (text input via RC `Custom`) · Module: server-forms, protocol, sdk-server, app-shell
+Status: queued (after T-018) · Roadmap: Etap 10 · Depends on: T-021 (text input via RC `Custom`) · Module: server-forms, protocol, sdk-server, app-shell
 
 ## Goal
 Apps can collect data: contact forms, sign-ups, surveys, comments. Components: `textField`

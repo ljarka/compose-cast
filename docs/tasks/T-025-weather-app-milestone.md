@@ -44,7 +44,7 @@ Done locally, without the owner steps:
 
 Remaining (needs the owner): owner steps 1–3, then ask where to push `../weather-app`, set the real
 domain in `compose-cast.properties`, deploy `server/` on the VPS (https), run the app against it,
-tick the README Etap 6 boxes, set this task `done`.
+tick the Etap 6 boxes in `docs/feature-checklist.md`, set this task `done`.
 
 ## Progress (2026-11-23, agent)
 
@@ -93,7 +93,7 @@ cities → `navigate:main?lat=…&lon=…&city=…`).
 
 - The weather app repository builds with `./gradlew assembleRelease` with no Kotlin sources and
   talks to an `https://` server.
-- The README Etap 6 boxes are ticked. Screenshots and measurements are in this README
+- The Etap 6 boxes in `docs/feature-checklist.md` are ticked. Screenshots and measurements are in this README
   ("Screenshots" and a new "Performance" note).
 - The gap list is turned into tasks in `docs/tasks/README.md`.
 

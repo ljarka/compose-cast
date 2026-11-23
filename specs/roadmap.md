@@ -22,7 +22,7 @@ release signing), data-dir hot reload, releases `v0.1.0` and `v0.2.0`. Milestone
 
 | # | Step | Done when… |
 |---|---|---|
-| 0.1 | Deploy the weather app on a VPS over HTTPS (T-025; waits for the owner's domain) | The app built with the release config runs against `https://<domain>`; README Etap 6 ticked |
+| 0.1 | Deploy the weather app on a VPS over HTTPS (T-025; waits for the owner's domain) | The app built with the release config runs against `https://<domain>`; Etap 6 ticked in the [feature checklist](../docs/feature-checklist.md) |
 
 ### A. Admin panel MVP (T-007, split) — the smallest vertical slice
 
@@ -38,7 +38,7 @@ release signing), data-dir hot reload, releases `v0.1.0` and `v0.2.0`. Milestone
 
 | # | Step | Done when… |
 |---|---|---|
-| B1 | Generic **compose-cast Preview** app (built from `app-template`, published in GitHub Releases; new ADR superseding ADR 0013's preview flow) | Scanning the admin's QR code connects the installed preview app to the owner's server |
+| B1 | Generic **compose-cast Preview** app (built from `app-template`, published in GitHub Releases; [ADR 0024](../docs/decisions/0024-generic-preview-app.md)) | Scanning the admin's QR code connects the installed preview app to the owner's server |
 | B2 | Draft preview: `__preview` screen per session, QR in the editor (ADR 0013 mechanics) | A saved draft is visible in the preview app before publishing |
 | B3 | **Measure "first screen in under 30 minutes"** with the install docs | Fresh VPS → own screen on a phone, time written down; docs fixed until it is < 30 min |
 
@@ -62,7 +62,7 @@ release signing), data-dir hot reload, releases `v0.1.0` and `v0.2.0`. Milestone
 | # | Step | Done when… |
 |---|---|---|
 | E1 | Export the app repository from App Settings: `compose-cast.properties`, launcher icon, `.gitignore` (T-010) | The exported repository builds unchanged with `./gradlew assembleRelease` |
-| E2 | GitHub Actions workflow in the export: signed AAB from keystore + passwords in GitHub secrets (new ADR; T-044 signing) | Pushing the exported repository to GitHub produces a signed AAB artifact |
+| E2 | GitHub Actions workflow in the export: signed AAB from keystore + passwords in GitHub secrets ([ADR 0025](../docs/decisions/0025-owner-app-built-by-github-actions.md); T-044 signing) | Pushing the exported repository to GitHub produces a signed AAB artifact |
 | E3 | Guided docs: create keystore, GitHub secrets, upload to Google Play | A non-developer follows them without help |
 
 ### F. Proof: a non-developer ships an app

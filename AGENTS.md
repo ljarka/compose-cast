@@ -3,7 +3,7 @@
 Server-driven UI framework: the **whole app UI is defined on the server** (Kotlin DSL now, admin
 panel later), data comes from external HTTP APIs bound on the server, and apps play the result
 natively. **Android only** ([ADR 0022](docs/decisions/0022-android-only.md)): **Remote Compose**
-documents played by the RC player. Plan and vision: [README](README.md#vision).
+documents played by the RC player. Mission, tech stack, roadmap: [specs/](specs/mission.md).
 
 This file is the index. Keep it short (< 150 lines); details live where the table below says.
 
@@ -25,7 +25,8 @@ This file is the index. Keep it short (< 150 lines); details live where the tabl
 | **What to do next, exactly** | [docs/tasks/](docs/tasks/README.md) (task queue) |
 | One-page overview (generated, never edit) | [docs/STATUS.md](docs/STATUS.md) — `./scripts/gen-status.sh` |
 | How to do recurring things (add component, upgrades, emulator) | [docs/playbooks/](docs/playbooks/README.md) |
-| Vision, principles, roadmap | [README → Vision, Roadmap](README.md#vision) |
+| **Mission, principles, non-goals · tech stack · roadmap (the plan)** | [specs/mission.md](specs/mission.md) · [specs/tech-stack.md](specs/tech-stack.md) · [specs/roadmap.md](specs/roadmap.md) — read before any feature; change them together |
+| What already works (feature inventory, ideas backlog) | [docs/feature-checklist.md](docs/feature-checklist.md) |
 | Why something is the way it is | [docs/decisions/](docs/decisions/README.md) (ADRs) |
 | Screen JSON format (every component, modifier, binding) | [docs/screen-json-format.md](docs/screen-json-format.md) |
 | How Remote Compose actually behaves (per version) | [docs/remote-compose.md](docs/remote-compose.md) |
@@ -78,7 +79,7 @@ Do not load the whole project: root `AGENTS.md` → task → the modules in its 
 - [ ] `./scripts/verify.sh` green (same as CI: docs, architecture, formatting, builds, lint, screenshots).
 - [ ] Module `AGENTS.md` updated (files, decisions) for every module touched.
 - [ ] New decision → ADR; new RC fact → `docs/remote-compose.md`; entry in `docs/history.md`.
-- [ ] README roadmap boxes ticked / adjusted; README screenshots current.
+- [ ] `docs/feature-checklist.md` boxes ticked; `specs/` updated if the step, a choice or a principle changed; README screenshots current.
 - [ ] Task queue updated (then `./scripts/gen-status.sh`): task `done` (add the commit hash after committing), next
   task specified enough to start.
 
@@ -118,10 +119,8 @@ maestro test app-template/maestro/smoke.yaml      # click through the demo app (
 
 ## Current focus
 
-[Task queue](docs/tasks/README.md) (priority order, re-prioritized 2026-11-16): T-025 Milestone 1 weather app
-(in progress: `v0.2.0` released, app in [ljarka/weather-app](https://github.com/ljarka/weather-app), **waits for owner: domain**; its gaps T-040…T-044 done) →
-**T-007 admin panel MVP → T-029 visual editor (the core of the product:
-anyone builds app screens in the admin panel)** → T-031 wizard → T-030 templates → T-032 live
-preview → T-038 flags/A-B → T-037 analytics → T-033 AI → T-027 SDK-loaded images → T-028 offline cache → T-018 → T-021 → T-034 forms → T-035 Supabase auth → T-036 push → T-017.
-Real apps decide the catalog; T-019/T-020/T-022 are `later`. Android only
-([ADR 0022](docs/decisions/0022-android-only.md)).
+[Roadmap](specs/roadmap.md) → [task queue](docs/tasks/README.md): **T-007 admin panel MVP (A1–A5)** →
+T-045 Preview app → T-029 visual editor → T-030 templates → T-031 data wizard → T-010 export +
+GitHub Actions build → T-027 → T-021 → **T-046 TV shows app built only in the admin** (mission:
+a non-developer ships an app). T-025 (weather app, `v0.2.0`) only waits for the owner's domain.
+Android only ([ADR 0022](docs/decisions/0022-android-only.md)).

@@ -292,3 +292,9 @@ README roadmap's "Etap" numbers.
 60. **T-044 release signing**: `app.signing.storeFile` / `keyAlias` in `compose-cast.properties`,
     passwords from env/Gradle properties only; signed `assembleRelease` without Kotlin. First unit
     tests of `gradle-plugins`, now part of `verify.sh`. All gaps from the weather app are closed.
+61. **Project constitution** (`specs/`: mission, tech stack, roadmap; owner interview 2026-11-23):
+    primary user = non-developer app owner; success = a non-developer ships an app without Android
+    Studio, first screen in < 30 min. `specs/` is the source of truth for the plan; the old README
+    Etap checklist moved to `docs/feature-checklist.md` (scripts follow). ADR 0024 (generic Preview
+    app), ADR 0025 (owner's app built by GitHub Actions). Queue reordered; T-045, T-046 added;
+    T-007 rewritten as steps A1–A5.

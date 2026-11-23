@@ -1,6 +1,6 @@
 # T-032 — Live preview on a phone (instant refresh while editing)
 
-Status: queued (after T-030) · Roadmap: Etap 8 · Depends on: T-007, ADR 0013 · Module: server-admin, sdk-android, app-shell
+Status: queued (after T-046) · Roadmap: Etap 8 · Depends on: T-007, ADR 0013 · Module: server-admin, sdk-android, app-shell
 
 ## Goal
 A phone running the app in **preview mode** shows the screen being edited in the panel and

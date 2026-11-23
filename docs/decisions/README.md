@@ -29,6 +29,8 @@ one (never silently contradict an accepted ADR).
 | [0021](0021-version-negotiation.md) | Client–server version negotiation (compatibility policy) | Accepted |
 | [0022](0022-android-only.md) | Android only: iOS is out of scope | Accepted |
 | [0023](0023-module-structure.md) | Small modules, each with its own AGENTS.md; dependency direction | Accepted |
+| [0024](0024-generic-preview-app.md) | Preview in a generic "compose-cast Preview" app | Accepted (amends 0013) |
+| [0025](0025-owner-app-built-by-github-actions.md) | The owner's app is built by GitHub Actions in its exported repository | Accepted |
 
 ## Template
 

@@ -1,6 +1,6 @@
 # T-029 — Visual screen editor in the admin panel (no JSON)
 
-Status: queued (after T-007) · Roadmap: Etap 8 · Depends on: T-007 (admin MVP), ADR 0015, ADR 0013 · Module: server-admin, protocol (component schema)
+Status: queued (after T-045) · Roadmap: Etap 8 · Depends on: T-007 (admin MVP), ADR 0015, ADR 0013 · Module: server-admin, protocol (component schema)
 
 ## Goal
 

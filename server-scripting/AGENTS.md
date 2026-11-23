@@ -1,7 +1,7 @@
 # server-scripting — AGENTS.md
 
 Planned: host for `.screen.kts` scripts so screens can be edited and hot-reloaded without
-restarting the server (README roadmap, dev loop). **Empty module** — only `build.gradle.kts`.
+restarting the server (docs/feature-checklist.md, dev loop). **Empty module** — only `build.gradle.kts`.
 
 ## Constraints for whoever starts it
 

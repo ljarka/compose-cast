@@ -2,7 +2,7 @@
 
 **If you are an agent without a specific request from the owner: take the task below whose status
 is exactly `ready` (there is at most one), read its file and do exactly that.** Tasks implement the
-[README roadmap](../../README.md#roadmap) in dependency order.
+[roadmap](../../specs/roadmap.md) in its order.
 
 | Task | Roadmap | Status |
 |---|---|---|
@@ -29,35 +29,37 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-041 Lookups keyed by more than one value (day/night)](T-041-compound-lookup-keys.md) | Etap 4 | done (`9689de6`) |
 | [T-042 Reload the data directory without a restart](T-042-reload-data-dir.md) | Etap 6 | done (`383c443`) |
 | [T-044 Release signing configured by the app repository](T-044-release-signing.md) | Etap 6 | done (`72bb93c`) |
-| [T-007 Admin panel MVP](T-007-admin-panel.md) | Etap 8 | ready (T-025 only waits for the owner's domain); **core of the product**; first step: write the MVP cut into the task file |
-| [T-029 Visual screen editor (no JSON)](T-029-visual-screen-editor.md) | Etap 8 | queued (after T-007) |
-| [T-031 Data source wizard (URL → screens)](T-031-data-source-wizard.md) | Etap 8 | queued (after T-029) |
-| [T-030 App templates](T-030-app-templates.md) | Etap 8 | queued (after T-031) |
-| [T-032 Live preview on a phone](T-032-live-preview.md) | Etap 8 | queued (after T-030) |
+| [T-007 Admin panel MVP](T-007-admin-panel.md) | Etap 8 | ready — roadmap A1–A5 (one step per session, see Steps) |
+| [T-045 Generic Preview app + draft preview](T-045-preview-app.md) | Roadmap B | queued (after T-007); roadmap B1–B3 (ADR 0024) |
+| [T-029 Visual screen editor (no JSON)](T-029-visual-screen-editor.md) | Etap 8 | queued (after T-045); roadmap C1–C3 (C1: ADR on the admin UI technology) |
+| [T-030 App templates](T-030-app-templates.md) | Etap 8 | queued (after T-029); roadmap D1 |
+| [T-031 Data source wizard (URL → screens)](T-031-data-source-wizard.md) | Etap 8 | queued (after T-030); roadmap D2 |
+| [T-010 Settings export (properties + icon)](T-010-app-export.md) | Etap 9 | queued (after T-031); roadmap E1–E3; rewrite the Design for ADR 0025 (GitHub Actions build) first |
+| [T-027 Images loaded by the SDK (lists)](T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-010); roadmap F1 |
+| [T-021 Native components via RC `Custom` (text input)](T-021-native-components.md) | Etap 10 | queued (after T-027); roadmap F2; spike first |
+| [T-046 Milestone 2: TV shows app built only in the admin](T-046-tv-shows-milestone.md) | Roadmap F | queued (after T-021); roadmap F3 — success criterion 1 |
+| [T-032 Live preview on a phone](T-032-live-preview.md) | Etap 8 | queued (after T-046); after the success criteria (roadmap: not ordered yet) |
 | [T-038 Feature flags and A/B tests](T-038-feature-flags-ab.md) | Etap 12 | queued (after T-032) |
 | [T-037 Analytics in the panel](T-037-analytics.md) | Etap 12 | queued (after T-038) |
 | [T-033 AI assistant in the panel](T-033-ai-assistant.md) | Etap 8 | queued (after T-037) |
-| [T-027 Images loaded by the SDK (lists)](T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-033); blocks the TV shows milestone |
-| [T-028 Offline: disk cache of the last screen](T-028-offline-disk-cache.md) | Etap 7 | queued (after T-027) |
-| [T-018 Canvas: progress, charts, gradients](T-018-canvas-charts.md) | Etap 5 | queued (after T-028; pull it forward if T-025 needs an hourly chart) |
-| [T-021 Native components via RC `Custom` (text input)](T-021-native-components.md) | Etap 10 | queued (after T-018); spike first; needed for TV shows search |
-| [T-034 Forms and submit](T-034-forms-submit.md) | Etap 10 | queued (after T-021) |
+| [T-028 Offline: disk cache of the last screen](T-028-offline-disk-cache.md) | Etap 7 | queued (after T-033) |
+| [T-018 Canvas: progress, charts, gradients](T-018-canvas-charts.md) | Etap 5 | queued (after T-028) |
+| [T-034 Forms and submit](T-034-forms-submit.md) | Etap 10 | queued (after T-018) |
 | [T-035 App user accounts (Supabase)](T-035-app-user-auth-supabase.md) | Etap 10 | queued (after T-034) |
 | [T-036 Push notifications (FCM)](T-036-push-notifications.md) | Etap 12 | queued (after T-035) |
 | [T-017 Stateful components (tabs, toggles, visibility)](T-017-stateful-components.md) | Etap 10 | queued (after T-036) |
-| [T-010 Settings export (properties + icon)](T-010-app-export.md) | Etap 9 | needs design detail (after T-007; much smaller since the plugin, see the note in the task file) |
 | [T-019 Gestures and visual effects](T-019-gestures-effects.md) | Etap 5 | later (only when a real app needs it) |
 | [T-020 Dynamic values (clock, light/dark, conditions)](T-020-dynamic-values.md) | Etap 7/10 | later (light/dark may be pulled forward by a real app) |
 | [T-022 Advanced RC features (templates, drag, sensors)](T-022-advanced-rc-features.md) | Etap 10 | later (pick by real use case) |
 | [T-005 iOS spike](T-005-ios-spike.md) | Etap 3 | dropped (Android only, ADR 0022) |
 
-Rows are in priority order. **T-025 gaps (2026-11-18):** T-025 waits for the owner (domain, push target; `v0.1.0` released 2026-11-23);
-the small gaps it found (T-043, T-040, T-041, T-042, T-044) run meanwhile, before the admin panel. **Re-prioritized 2026-11-16 (owner):** real apps before catalog
-breadth. **The admin panel is the core of the product** (owner: anyone can create the screens
-of their mobile app in the admin panel). Order: Milestone 1 (T-025) proves the runtime → admin panel MVP
-(T-007) → visual editor (T-029). The gap lists and its gap list decides what follows. Catalog tasks
-without a real use case (T-019, T-020, T-022) are `later`. Statuses `later` and `dropped` are never
-picked automatically.
+Rows are in priority order, mirroring [specs/roadmap.md](../../specs/roadmap.md) (constitution,
+owner 2026-11-23): admin panel MVP (T-007, steps A1–A5) → Preview app (T-045) → visual editor
+(T-029) → templates (T-030) → data wizard (T-031) → export + GitHub Actions build (T-010) → SDK
+images (T-027) → text input (T-021) → TV shows app built only in the admin (T-046, success
+criterion 1). Rows after T-046 are not ordered yet. T-025 only waits for the owner's domain.
+Reorder the roadmap first, then this table. Statuses `later` and `dropped` are never picked
+automatically.
 Owner, 2026-11-08 / 2026-11-11 ([ADR 0017](../decisions/0017-apps-in-own-repositories.md)): the
 weather app is an **external example of using compose-cast** (in its own separate repository, not
 part of this project) and needs no framework code changes — server from the published
@@ -84,7 +86,7 @@ Read only: root `AGENTS.md` → the task file → the `AGENTS.md` of the modules
 2. Follow the task file; when reality differs from the plan, update the task file first, then code.
 3. Finish with the [Definition of Done](../../AGENTS.md#definition-of-done-every-task) and
    `./scripts/verify.sh`.
-4. Mark it `done`, set the next task to `ready`, tick the README roadmap boxes, and make sure the
+4. Mark it `done`, set the next task to `ready`, tick the [feature checklist](../feature-checklist.md) boxes, and make sure the
    next task is specified well enough to start (files, acceptance criteria) — a fresh agent must be
    able to continue without asking. Commit the finished work (AGENTS.md rule 7); push only when the owner asks.
 

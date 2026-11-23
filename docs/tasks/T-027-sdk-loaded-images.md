@@ -1,6 +1,6 @@
 # T-027 — Images loaded by the Android SDK (named bitmaps) for lists
 
-Status: queued (after T-033) · Roadmap: Etap 5 · Depends on: — (blocks the TV shows milestone) · Module: protocol, sdk-server, sdk-android
+Status: queued (after T-010) · Roadmap: Etap 5 · Depends on: — (blocks the TV shows milestone) · Module: protocol, sdk-server, sdk-android
 
 ## Goal
 

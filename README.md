@@ -16,43 +16,14 @@ screen.
 
 ## Vision
 
-**A self-hosted platform where anyone builds the screens of their Android app in an admin panel** —
-a DivKit-style framework for apps whose entire UI is controlled by the server — screens,
-navigation and content are defined on the server (Kotlin DSL, later an admin panel), data comes
-from any HTTP API bound on the server, and Android apps render it natively.
+**A self-hosted platform where anyone builds their own Android app without writing code:**
+screens, navigation, data and brand are defined in an admin panel on the owner's own server
+(today: JSON files and a Kotlin DSL), data comes from any HTTP API bound on the server, and a thin
+Android app renders it natively with AndroidX Remote Compose. **Android only**
+([ADR 0022](docs/decisions/0022-android-only.md)), open source, one server = one product.
 
-[DivKit](https://divkit.tech) defines its own JSON format and ships a renderer per platform.
-compose-cast builds on **AndroidX Remote Compose** instead: on Android the server sends RC binary
-documents and the official RC player renders them, including the runtime primitives DivKit is
-known for (variables, expressions, states, local actions, animation). compose-cast targets
-**Android only** ([ADR 0022](docs/decisions/0022-android-only.md)).
-
-compose-cast is the product layer around the renderers:
-
-- **Authoring** — Kotlin DSL and JSON files (✅); later `.screen.kts` scripts and an admin panel, all
-  producing one serializable screen model (`ScreenDefinition`).
-- **Data** — screens bind to external HTTP APIs through server-side data sources; the APIs are not
-  part of the project and their keys never reach the app
-  ([ADR 0008](docs/decisions/0008-server-side-data-sources.md)).
-- **Delivery** — server renders per request and per client capability; starts with one command.
-- **Apps** — thin Android shells whose UI is entirely server-driven.
-- **Tooling** — debug dump, screenshot tests, preview, dev loop.
-
-Principles:
-
-1. The server's screen model is the product; wire formats are adapters. Android = Remote Compose,
-   never a custom Android renderer ([ADR 0001](docs/decisions/0001-remote-compose-wire-format.md)).
-2. A screen change must never break an app already in users' hands: the server renders for the
-   capabilities the client reports.
-3. Interaction runs on the device where possible (RC variables, expressions, states).
-4. Backend starts with one command (`docker compose up`).
-5. Self-hosted, one server = one product: everyone runs their own compose-cast server with its own
-   admin panel (owner, 2026-11-16; no shared multi-tenant service). No backend code per app: everything that differs between apps (screens, data sources, brand,
-   app settings) is configuration, editable in the admin panel; apps live in their own repositories
-   and install the server like Immich ([ADR 0017](docs/decisions/0017-apps-in-own-repositories.md),
-   [ADR 0018](docs/decisions/0018-distribution-like-immich.md)).
-6. Everything visual is screenshot-tested; every decision is written down, so AI agents can
-   maintain the project long-term ([ADR 0009](docs/decisions/0009-documentation-for-agents.md)).
+Mission, audience, principles and non-goals: **[specs/mission.md](specs/mission.md)** · how it is
+built: [specs/tech-stack.md](specs/tech-stack.md) · what comes next: [specs/roadmap.md](specs/roadmap.md).
 
 ### DivKit concepts → Remote Compose → compose-cast
 
@@ -330,164 +301,10 @@ from the server's brand (`GET /brand`), not from this file.
 
 ## Roadmap
 
-Ordered for the fastest path to real use: two milestones validate the framework by building
-external example apps (weather, TV shows — each in its own repository, not part of this project)
-that force every layer to work end to end. Details and reasoning: [docs/decisions](docs/decisions/README.md).
-
-### Etap 0 — Technical Spike ✅
-- [x] Verify `remote-creation-jvm` works on plain JVM
-- [x] Generate and serve Remote Compose binary documents
-- [x] Play `.rc` documents in Android with `RemoteComposePlayer`
-
-### Etap 1 — Repository, CI, Tests & Docs ✅
-- [x] Gradle multi-module structure; current toolchain (AGP 9.5, Gradle 9.6, Kotlin 2.4, Compose BOM)
-- [x] GitHub Actions CI: build, lint, screenshot verification, docs check
-- [x] Screenshot tests server → player (`compat-tests`), images in this README
-- [x] Agent documentation: index `AGENTS.md`, ADRs, Remote Compose knowledge base, history
-- [x] ktlint (Spotless, rules in `.editorconfig`, checked by `verify.sh`) + CI badge
-
-### Etap 2 — Foundations ✅
-- [x] Remote Compose alpha20 → alpha23 (units revised, [ADR 0004](docs/decisions/0004-units-dp-and-sp.md))
-- [x] Typed actions with parameters (`navigate` with params, `open_url`, `reload`, `track`) — T-001
-- [x] **Serializable screen model** (JSON) — one model for the DSL, JSON files, scripts and the admin panel — T-002 ([ADR 0015](docs/decisions/0015-screen-model-is-the-product.md))
-- [x] **Per-request rendering** with parameters (`dynamicScreen`, `/screens/movie?id=42`); static
-  screens pre-rendered and validated at start — T-003
-- [x] `ETag` / `If-None-Match` (`304`), in-memory revalidation cache in the Android SDK — T-003
-
-### Etap 3 — iOS spike: dropped
-Android only ([ADR 0022](docs/decisions/0022-android-only.md), owner 2026-11-16).
-
-### Etap 4 — Data sources (APIs) — [ADR 0008](docs/decisions/0008-server-side-data-sources.md)
-- [x] HTTP data sources: URL templates with route/query params, secrets from env — T-006
-- [x] Bind JSON fields to components (`{{weather.current.temperature}}`); repeat over arrays — T-006
-- [x] Loading / error / empty states; per-source timeouts and caching — T-006
-- [x] Lookups by more than one value (`append:` with path arguments, day/night icons) — T-041
-
-### Etap 5 — Components for real apps
-- [x] Text, Image, Button, Spacer, Expandable (local state PoC — T-008)
-- [x] Row, Column, Box; size, weight, alignment, padding, background, border, rounded clip, click on anything — T-012
-- [x] Text color/weight/align/lines/ellipsis/marquee; Icon, Divider, Card, button variants — T-013
-- [x] Image sizing (aspect, crop, rounded) — T-013
-- [ ] Large/many images loaded by the SDK as named bitmaps — T-027
-- [x] Horizontal gallery, Flow (chips), grids, scroll on any container — T-014; lists from data — T-006
-- [x] Adaptive layouts: FitBox, collapsible rows/columns, min/max sizes — T-015
-- [x] Accessibility: content descriptions, roles — T-016
-- [ ] Canvas: progress bar/ring, line/bar charts, rating, gradients — T-018
-- [ ] Long-press, double-tap, ripple, haptics; alpha/scale/rotation/offset/z-order — T-019
-- [ ] Tabs / bottom navigation defined by the server (app structure, not only screens)
-- [x] Brand surface/text/outline colors for component defaults (`brand.json`) — T-040
-
-### Etap 6 — Milestone 1: Example weather app (external project)
-
-> **External example, not part of this repository** ([ADR 0017](docs/decisions/0017-apps-in-own-repositories.md)):
-> the weather app is an example of using compose-cast in its own separate repository — screens JSON
-> + data sources + `docker-compose.yml` for a VPS (published image, HTTPS) + the Android app
-> configured from `app-template`. Anything missing is added to the framework generically, never as
-> weather-specific code in this project.
-
-- [x] Image fetches never reach private/loopback addresses (SSRF) — T-026
-- [x] Example weather app on [Open-Meteo](https://open-meteo.com) (no API key): current conditions,
-  hourly/daily forecast, city list — screens as JSON, data via data sources — built as a separate
-  example repository using the published compose-cast artifacts (`v0.1.0`, 2026-11-23)
-- [ ] Server install like [Immich](https://immich.app/docs/install/docker-compose): `docker-compose.yml`
-  + `example.env` from GitHub Releases, image on GHCR (amd64 + arm64), optional HTTPS (Caddy) — T-023
-  ([ADR 0018](docs/decisions/0018-distribution-like-immich.md)); files and workflow done, ticked
-  after the first GitHub Release is installed on a VPS (release `v0.1.0` published 2026-11-23, image public)
-- [x] Android app without Kotlin: `sdk-android`, `app-shell` and the `io.composecast.app` Gradle
-  plugin on a self-hosted Maven repository (Reposilite, [ADR 0019](docs/decisions/0019-self-hosted-maven-reposilite.md)) — T-024;
-  `0.1.0` on `maven.jarka.club` (2026-11-23)
-- [x] Server serves JSON screens from a directory (`COMPOSECAST_DATA_DIR`, `PORT`), request logging
-- [x] Backend in one command: Docker image (amd64 + arm64) + `docker-compose.yml`, screens on a
-  volume, secrets in `.env`, healthcheck — T-009
-- [ ] Weather app repository, screenshots in this README; RAM/latency measured with per-request rendering — T-025;
-  repository, screenshots and measurements done (runs on `v0.1.0`, 2026-11-23), ticked when it runs on a VPS over https
-
-### Etap 7 — App shells & SDKs
-- [x] Android SDK: `RemoteComposePlayer` in `AndroidView`, Ktor fetch, loading/error, action router
-- [x] `app-template` configured by one `compose-cast.properties` (name, `applicationId`, server URL,
-  frame colors, icon; release = https only) — T-011
-- [ ] Navigation/tabs from the server, deep links
-- [ ] Disk cache, offline last-known screen — T-028; prefetch; analytics hooks (actions, visibility)
-- [ ] Locale: `Accept-Language` → `RenderContext`, localized screen texts
-- [ ] Brand tokens → document colors (surface/text/outline done — T-040); light/dark via RC themed colors; native frame theming
-- [x] **Version negotiation** (T-004, [ADR 0021](docs/decisions/0021-version-negotiation.md)): client reports the RC document API level;
-  server renders for it or answers `426` "update required" (minimum level 8)
-
-### Etap 8 — Admin panel MVP
-
-> **Deployment model:** a user buys a VPS, deploys compose-cast, configures their app in the admin
-> panel, and publishes a branded Android app to Google Play. One server = one product.
-
-- [ ] Ktor-served web UI; SQLite storage (Exposed) — one row per screen (canonical screen JSON),
-  draft/live status, full history; `<id>.json` import/export ([ADR 0016](docs/decisions/0016-admin-storage-sqlite.md))
-- [ ] User accounts (email + bcrypt password), roles: `admin` / `editor` / `viewer`; session cookie;
-  first admin from `COMPOSECAST_ADMIN_EMAIL`/`_PASSWORD` env vars (no shared `ADMIN_PASSWORD`)
-- [ ] MVP: JSON editor with live validation, preview, publish, history — T-007
-- [ ] Visual editor for non-developers: component palette, schema-driven property forms — T-029
-- [ ] Data source wizard: paste an API URL → list + detail screens, field picker — T-031
-- [ ] App templates (news, catalog, events, weather): a working app in 5 minutes — T-030
-- [ ] Live preview on a phone, refreshed on every edit — T-032
-- [ ] AI assistant (optional, own API key): describe a screen → draft; brand palette — T-033
-- [ ] Preview on a device: temporary `__preview` screen + QR code ([ADR 0013](docs/decisions/0013-admin-preview.md));
-  in-browser RC player later, if one matures
-- [ ] Publish (screen goes live); change history per screen (who published, when); one-click rollback
-- [ ] **App Settings page:** app name, `applicationId`, server URL, `BrandConfig` (primary colour,
-  background colour, logo upload)
-
-### Etap 9 — White-label app export + TV shows milestone
-
-> **App export:** user fills in App Settings, clicks “Export Android project”. The server
-> generates a configured ZIP of `app-template` (server URL, app name, applicationId, frame colors,
-> launcher icon from the uploaded logo — screen colors come from the server's `BrandConfig`). User unzips, builds in Android Studio, submits to
-> Google Play. **No APK is generated server-side** — only a ready-to-build Gradle project.
-
-- [ ] Export writes `compose-cast.properties` + icon from App Settings — T-010 (SDK comes from Reposilite, ADR 0019)
-- [x] HTTPS for the VPS: reverse proxy with automatic certificates in `docker-compose.yml` (store builds are https-only) — Caddy profile, T-023
-- [ ] Admin panel “Export project” endpoint: generates a ZIP of the configured template
-- [ ] Prerequisites: SDK-loaded images (T-027), text input for search (T-021)
-- [ ] TV shows app on [TVMaze](https://www.tvmaze.com/api) (no API key): search results, show
-  detail, episodes — built **only** in the admin panel; exported as a branded app
-- [ ] Screenshots of the TV shows app in this README
-
-### Etap 10 — Interactivity (DivKit core)
-- [x] Local state PoC in procedural RC API (`StateLayout` + `setValue` on tap: `Component.Expandable`) — T-008
-- [ ] Host → document variables (RC named variables); general local state (`StateLayout`): toggles, tabs — T-017
-- [ ] Device-side values: live clock, formatted numbers, light/dark colors, conditions — T-020
-- [ ] Forms: fields, validation, submit to API/webhook/database — T-034
-- [ ] App user accounts via Supabase (login, per-user data with RLS) — T-035
-- [ ] Text input / search (native views via RC `Custom`) — T-021; expressions (conditional visibility, computed text) — T-017, T-020
-- [ ] Templates: reusable components; RC macros to shrink documents — T-022
-- [ ] Drag/swipe, sensors, particles, sound — T-022
-
-### Etap 11 — Release 0.1.0-alpha
-- [ ] Docs: quick start, components reference, data sources, action protocol, compatibility policy
-- [ ] Publish the Android SDK and plugin (Reposilite, ADR 0019) + server image (GHCR); tag, CHANGELOG, GitHub Release
-  (server image and Android SDK are pulled forward into Milestone 1: T-023, T-024; `v0.1.0` published
-  2026-11-23 without a CHANGELOG)
-
-### Etap 12 — Feature flags, A/B tests, analytics, push
-- [ ] Feature flags on elements and screens, A/B tests with traffic split — T-038
-- [ ] Analytics in the panel (screen views, taps, events; self-hosted) — T-037
-- [ ] Push notifications from the panel (FCM) — T-036
-
-Original ideas (detailed by T-038/T-037):
-Production SDUI systems (Nubank, Yelp, RevenueCat) treat server-driven screens as an
-experimentation platform — no release needed to change what a user sees.
-
-- [ ] Screen targeting: serve a different screen variant based on a user attribute (plan, country,
-  app version, platform) passed in the request header or JWT claim
-- [ ] A/B experiment definition: two or more screen variants with traffic split %; server records
-  which variant was served; client tracks which actions happened
-- [ ] Gradual rollout: expose a new screen to X% of requests; ramp up / roll back via the admin panel
-- [ ] Feature flags: boolean or string flags embedded in the screen response — the DSL can gate
-  components behind a flag, the server resolves them without a client release
-- [ ] Experiment results dashboard (conversion per variant, action counts)
-
-### Later / chores
-- [ ] `.screen.kts` hot reload (`server-scripting`) + dev-loop push refresh
-- [ ] GIF for README; Gradle configuration cache
-
----
+The plan — small steps toward "a non-developer ships an app" — is in
+**[specs/roadmap.md](specs/roadmap.md)** (with the [mission](specs/mission.md) and the
+[tech stack](specs/tech-stack.md)). What already works, feature by feature:
+[docs/feature-checklist.md](docs/feature-checklist.md).
 
 ## References
 

@@ -1,6 +1,6 @@
 # T-031 — Data source wizard (URL → ready list/detail screens)
 
-Status: queued (after T-029) · Roadmap: Etap 8 · Depends on: T-006, T-029 · Module: server-admin, sdk-server
+Status: queued (after T-030) · Roadmap: Etap 8 · Depends on: T-006, T-029 · Module: server-admin, sdk-server
 
 ## Goal
 A non-developer pastes an API URL. The panel fetches it, shows the JSON as a tree and asks "what

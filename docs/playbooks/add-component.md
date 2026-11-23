@@ -28,6 +28,6 @@ Example: `divider(thickness = 1)`. Read first: [ADR 0002](../decisions/0002-conf
 6. **Device** — [verify-on-emulator.md](verify-on-emulator.md).
 7. **JSON** — if the demo screens use it, update the JSON copy in
    `examples/demo/screens/` (`JsonScreensTest` prints the expected content).
-8. **Docs** — `sdk-server/AGENTS.md` (usage), README "Defining screens" and roadmap box,
+8. **Docs** — `sdk-server/AGENTS.md` (usage), README "Defining screens", `docs/feature-checklist.md` box,
    `docs/history.md`.
 9. `./scripts/verify.sh`.
