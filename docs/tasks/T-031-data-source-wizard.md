@@ -40,7 +40,7 @@ the server, so the wizard also runs on the server.
    detail screen (a detail URL template such as `…/shows/{{params.id}}`, or the item's fields
    passed as params) as drafts, opened in the visual editor. Done when: TVMaze list + detail
    render on the emulator without editing JSON.
-   **W2 result (2026-11-23):** `WizardScreens.kt`, `WizardPages.kt`, `wizard.ftl`, entry on the
+   **W2 result (2026-11-23, `2b0a4bd`):** `WizardScreens.kt`, `WizardPages.kt`, `wizard.ftl`, entry on the
    Screens page. **Acceptance met:** the real `https://api.tvmaze.com/shows` (240 items, 373 KB)
    → wizard with its guesses → both screens published → in the Preview app on the emulator the
    list shows 20 shows with posters and two-line plain summaries; tapping "Person of Interest"
