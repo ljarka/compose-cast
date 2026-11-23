@@ -38,7 +38,7 @@ in an admin panel. ADR 0017 point 4: everything app-specific must be editable th
    property of every component is editable in a form (test over all `Component` subtypes); the
    JSON editor shows the same draft.
 
-   **C2 result (2026-11-23):** `server-admin` `FormSchema.kt` (forms from `SerialDescriptor`s),
+   **C2 result (2026-11-23, `ad259d6`):** `server-admin` `FormSchema.kt` (forms from `SerialDescriptor`s),
    `ScreenTree.kt`, `VisualPages.kt`, `visual.ftl` + `_form.ftl`; link "Visual editor" on the JSON
    editor page. Tests: `FormSchemaTest` (all 15 component types; every component of
    `examples/demo` → form → back unchanged), `VisualPagesTest` (8, incl. every node of every demo
