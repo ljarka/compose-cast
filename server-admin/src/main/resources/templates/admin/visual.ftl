@@ -19,10 +19,9 @@
   <#if notice?has_content><p class="ok" role="status">${notice}</p></#if>
   <#if canEdit>
   <div class="toolbar" style="margin-bottom: 16px">
-    <button type="submit" form="screen-json-form">Save draft</button>
     <button type="submit" form="screen-json-form" formaction="/admin/screens/${id?url}/publish">Publish</button>
     <button type="submit" form="screen-json-form" formaction="/admin/screens/${id?url}/preview">Preview on phone</button>
-    <span class="muted">Publish makes the current JSON live for apps.</span>
+    <span class="muted">Publish makes the current draft live for apps.</span>
   </div>
   </#if>
   <#if preview?has_content>
