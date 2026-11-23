@@ -1,6 +1,6 @@
 # T-025 — Milestone 1: example weather app (external repository) + measurements
 
-Status: in progress (waiting for owner: domain, push target) · Roadmap: Etap 6 · Depends on: T-023, T-024 (owner steps below) · Module: external repository (+ fixes in existing modules)
+Status: in progress (waiting for owner: domain) · Roadmap: Etap 6 · Depends on: T-023, T-024 (owner steps below) · Module: external repository (+ fixes in existing modules)
 
 ## Goal
 
@@ -55,7 +55,9 @@ tick the README Etap 6 boxes, set this task `done`.
 - `../weather-app` builds from the published artifacts without the init script (`assembleDebug`,
   `assembleRelease`); server from image `v0.1.0`; Maestro flow green on the emulator.
 
-Remaining (needs the owner): a domain and where to push `../weather-app`; then deploy `server/` on
+- Repository pushed to https://github.com/ljarka/weather-app (public, created by the owner).
+
+Remaining (needs the owner): a domain; then deploy `server/` on
 the VPS (https), set the domain in `compose-cast.properties`, run the app against it, tick Etap 6
 (T-023 and weather boxes), set this task `done`.
 

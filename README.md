@@ -103,7 +103,7 @@ remote images are replaced by a generated gradient). CI fails when rendering cha
 
 ### Example app: Weather (Milestone 1, T-025)
 
-A separate app repository using compose-cast like any product would: 4 JSON screens, live
+A separate app repository, [ljarka/weather-app](https://github.com/ljarka/weather-app), using compose-cast like any product would: 4 JSON screens, live
 [Open-Meteo](https://open-meteo.com) data through data sources, an Android app with no Kotlin
 (`compose-cast.properties` + the `io.composecast.app` plugin). On the emulator against the server
 in Docker, 2026-11-18:

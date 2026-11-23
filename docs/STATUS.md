@@ -28,7 +28,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-016 Accessibility semantics](tasks/T-016-accessibility.md) | Etap 5 | done (`bd3cd2c`) |
 | [T-026 Image fetch hardening (no private addresses)](tasks/T-026-image-fetch-hardening.md) | Etap 6 | done (`3c81c74`) |
 | [T-039 Split large files and long AGENTS.md](tasks/T-039-split-large-files.md) | chores | done (`5c145b0`) — renderer → `render/` package, protocol model in 4 files, demo screens one per file |
-| [T-025 Milestone 1: weather app in its own repo + measurements](tasks/T-025-weather-app-milestone.md) | Etap 6 | in progress (waiting for owner: domain, push target) — `v0.1.0` released, app runs on it in `../weather-app` |
+| [T-025 Milestone 1: weather app in its own repo + measurements](tasks/T-025-weather-app-milestone.md) | Etap 6 | in progress (waiting for owner: domain) — `v0.1.0` released, app runs on it: [ljarka/weather-app](https://github.com/ljarka/weather-app) |
 | [T-043 App bar shows the screen id while loading](tasks/T-043-shell-loading-title.md) | Etap 7 | done (`7241097`) |
 | [T-040 Brand theme colors for component defaults](tasks/T-040-brand-theme-colors.md) | Etap 5 | ready — gap from T-025 |
 | [T-041 Lookups keyed by more than one value (day/night)](tasks/T-041-compound-lookup-keys.md) | Etap 4 | queued (after T-040) — gap from T-025 |

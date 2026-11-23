@@ -80,7 +80,7 @@ Bump the plugin version in `build.gradle.kts` and `COMPOSECAST_VERSION` on the s
 
 ## Verified
 
-2026-11-18 (T-025): the weather app (`../weather-app`, 4 screens) built exactly this way —
+2026-11-18 (T-025): the weather app ([ljarka/weather-app](https://github.com/ljarka/weather-app), 4 screens) built exactly this way —
 `assembleDebug` and `assembleRelease` with no Kotlin, installed on the emulator against the local
 image, Maestro flow through all screens passed.
 
