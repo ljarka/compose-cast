@@ -119,16 +119,20 @@
     </div>
   </div>
 
-  <h2 id="json-editor">JSON</h2>
+  <h2 id="json-editor">Code</h2>
   <form id="screen-json-form" class="card" method="post" action="/admin/screens/${id?url}">
-    <label for="json">Screen JSON <span class="muted">(<a href="https://github.com/ljarka/compose-cast/blob/main/docs/screen-json-format.md">format</a>)</span></label>
-    <textarea id="json" name="json" spellcheck="false"<#if canEdit>
-      hx-post="/admin/screens/${id?url}/validate" hx-trigger="input changed delay:400ms" hx-target="#problems"<#else> readonly</#if>>${json}</textarea>
-    <div id="problems" aria-live="polite"><#include "_problems.ftl"></div>
-    <div style="margin-top: 8px">
-      <button type="button" class="chip" hx-post="/admin/screens/${id?url}/describe" hx-include="#json" hx-target="#rc-output">Show Remote Compose output</button>
+    <div class="toolbar" role="tablist" aria-label="Code view">
+      <button type="button" id="tab-json" class="chip" role="tab" aria-selected="true">JSON</button>
+      <button type="button" id="tab-rc" class="chip" role="tab" aria-selected="false"
+        hx-post="/admin/screens/${id?url}/describe" hx-include="#json" hx-target="#rc-output">Remote Compose</button>
     </div>
-    <div id="rc-output"></div>
+    <div id="json-pane">
+      <label for="json">Screen JSON <span class="muted">(<a href="https://github.com/ljarka/compose-cast/blob/main/docs/screen-json-format.md">format</a>)</span></label>
+      <textarea id="json" name="json" spellcheck="false"<#if canEdit>
+        hx-post="/admin/screens/${id?url}/validate" hx-trigger="input changed delay:400ms" hx-target="#problems"<#else> readonly</#if>>${json}</textarea>
+      <div id="problems" aria-live="polite"><#include "_problems.ftl"></div>
+    </div>
+    <div id="rc-output" hidden></div>
     <#if canEdit>
       <button type="submit">Save draft</button>
       <button type="submit" formaction="/admin/screens/${id?url}/publish">Publish</button>
@@ -169,6 +173,14 @@
       if (e.target.closest(".panel-form") && e.target.matches("input:not([type=checkbox]):not([type=number]), textarea")) last = e.target;
     });
     document.addEventListener("click", function (e) {
+      if (e.target.id === "tab-json" || e.target.id === "tab-rc") {
+        const showRc = e.target.id === "tab-rc";
+        document.getElementById("json-pane").hidden = showRc;
+        document.getElementById("rc-output").hidden = !showRc;
+        document.getElementById("tab-json").setAttribute("aria-selected", String(!showRc));
+        document.getElementById("tab-rc").setAttribute("aria-selected", String(showRc));
+        return;
+      }
       const chip = e.target.closest("[data-binding]");
       if (!chip) return;
       if (!last) { document.getElementById("picker-hint").classList.add("error"); return; }

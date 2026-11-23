@@ -61,6 +61,7 @@
     .chips { display: flex; flex-wrap: wrap; gap: 6px; }
     button.chip { margin: 0; padding: 4px 8px; background: var(--bg); color: var(--fg); border: 1px solid var(--line);
                   max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+    button.chip[aria-selected="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
     .fields-title { font-size: 15px; margin: 12px 0 6px; }
     fieldset.plain { border: 0; margin: 0; padding: 0; }
     details.menu { position: relative; display: inline-block; }
