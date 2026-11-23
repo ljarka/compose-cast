@@ -1,13 +1,20 @@
 package io.composecast.server
 
+import io.composecast.protocol.ScreenJson
 import io.composecast.server.admin.AdminAuth
 import io.composecast.server.sdk.DataLoader
 import io.composecast.server.sdk.ImageLoader
 import io.composecast.server.sdk.RenderContext
 import io.composecast.server.sdk.ScreenRegistry
+import io.composecast.server.store.ScreenStore
 import io.composecast.server.store.UserStore
+import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.statement.readRawBytes
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.parameters
 import io.ktor.server.testing.testApplication
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
@@ -82,10 +89,11 @@ class AdminScreensTest {
 
     @Test
     fun `admin mode mounts the panel at admin, files mode does not`() {
-        val auth = AdminAuth(UserStore(AdminScreens.openDatabase(dataDir)), bcryptCost = 4)
+        val database = AdminScreens.openDatabase(dataDir)
+        val auth = AdminAuth(UserStore(database), bcryptCost = 4)
         val screens = LiveScreens(loadScreens(dataDir, fakeImages, fixtureData))
         for ((admin, expected) in listOf(
-            AdminPanelConfig(auth) to HttpStatusCode.SeeOther,
+            AdminPanelConfig(auth, ScreenStore(database)) to HttpStatusCode.SeeOther,
             null to HttpStatusCode.NotFound,
         )) {
             testApplication {
@@ -94,6 +102,35 @@ class AdminScreensTest {
                 assertEquals(expected, client.get("/admin").status, "admin = $admin")
                 assertEquals(HttpStatusCode.OK, client.get("/screens/main").status)
             }
+        }
+    }
+
+    @Test
+    fun `a draft saved in the admin panel does not change what apps get`() {
+        val admin = admin()
+        admin.importIfEmpty(dataDir)
+        val database = AdminScreens.openDatabase(dataDir)
+        val auth = AdminAuth(UserStore(database), bcryptCost = 4)
+        auth.bootstrapAdmin("owner@example.com", "correct horse battery")
+        val screens = LiveScreens(admin.load())
+        testApplication {
+            application { module(screens, AdminPanelConfig(auth, ScreenStore(database))) }
+            val client = createClient { followRedirects = false }
+            val before = client.get("/screens/main").readRawBytes()
+
+            val login = client.submitForm(
+                "/admin/login",
+                parameters {
+                    append("email", "owner@example.com")
+                    append("password", "correct horse battery")
+                },
+            )
+            val cookie = login.headers[HttpHeaders.SetCookie]!!.substringBefore(';')
+            val draft = parameters { append("json", """{"id": "main", "title": "Draft"}""") }
+            val saved = client.submitForm("/admin/screens/main", draft) { header(HttpHeaders.Cookie, cookie) }
+            assertEquals(HttpStatusCode.SeeOther, saved.status)
+            assertEquals("Draft", ScreenJson.decode(ScreenStore(database).get("main")!!.draftJson!!, "draft").title)
+            assertContentEquals(before, client.get("/screens/main").readRawBytes())
         }
     }
 }

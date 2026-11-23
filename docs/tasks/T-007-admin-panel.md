@@ -1,6 +1,6 @@
 # T-007 — Admin panel MVP (roadmap A1–A5)
 
-Status: ready — next step: A3 (A1, A2 done) · Roadmap: [specs/roadmap.md A1–A5](../../specs/roadmap.md#a-admin-panel-mvp-t-007-split--the-smallest-vertical-slice), Etap 8 · Depends on: T-002 (JSON screen model), T-006 (data sources), T-042 (`LiveScreens` swap) · Module: server-store, server-admin, server-app
+Status: ready — next step: A4 (A1–A3 done) · Roadmap: [specs/roadmap.md A1–A5](../../specs/roadmap.md#a-admin-panel-mvp-t-007-split--the-smallest-vertical-slice), Etap 8 · Depends on: T-002 (JSON screen model), T-006 (data sources), T-042 (`LiveScreens` swap) · Module: server-store, server-admin, server-app
 
 ## Goal
 
@@ -74,6 +74,18 @@ them); HTMX is not loaded yet (pin the unpkg URL + integrity hash, ADR 0012); th
   "Save draft"; create a new screen.
 - **Done when:** an invalid edit shows the errors and cannot be saved as publishable; a saved draft
   does not change `GET /screens/{id}` (test + manual check in the browser).
+
+**A3 result (2026-11-23):** `server-admin/ScreenPages.kt` + `screens.ftl`, `screen.ftl`,
+`_problems.ftl`; `ScreenJson.check` in `protocol`. Invalid edits are not saved at all (422, text
+kept); valid drafts are stored canonical. Tests: `ScreenPagesTest` (7), `ScreenJsonTest` (+1),
+`AdminScreensTest` (+1: a draft saved through `/admin` leaves `GET /screens/main` byte-identical).
+Checked with curl against a real admin-mode server (list, validate, save, create). **Not done: the
+browser check** — no browser tool was available to the agent; open `/admin/screens/main` on
+`localhost`, type invalid JSON and see the problems appear (HTMX) before relying on it.
+Notes for A4: publish = validate the draft again, `ScreenStore.publish`, rebuild the registry
+(`AdminScreens.load()`) and `LiveScreens.replace()`; `server-admin` cannot see `LiveScreens`
+(R10), so pass a callback (e.g. `onPublished: () -> Unit`) through `adminPanel` from `server-app`.
+The `:ro` data volume (A1 note) is still open.
 
 ### A4 — Publish, history, rollback
 - "Publish" validates, writes live + a history row, rebuilds the registry and `replace()`s it;

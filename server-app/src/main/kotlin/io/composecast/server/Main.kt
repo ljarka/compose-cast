@@ -60,7 +60,12 @@ fun main() {
             adminScreens.importIfEmpty(dataDir)
             val auth = AdminAuth(UserStore(database))
             auth.bootstrapFromEnv(System.getenv("COMPOSECAST_ADMIN_EMAIL"), System.getenv("COMPOSECAST_ADMIN_PASSWORD"))
-            admin = AdminPanelConfig(auth, allowHttp = System.getenv("COMPOSECAST_ADMIN_ALLOW_HTTP").toBoolean())
+            admin =
+                AdminPanelConfig(
+                    auth,
+                    ScreenStore(database),
+                    allowHttp = System.getenv("COMPOSECAST_ADMIN_ALLOW_HTTP").toBoolean(),
+                )
             LiveScreens(adminScreens.load())
         }
         else -> error("COMPOSECAST_MODE must be 'files' or 'admin', was '$mode'")
@@ -69,7 +74,7 @@ fun main() {
 }
 
 /** The admin panel of admin mode (T-007); `null` in files mode, where `/admin` does not exist. */
-class AdminPanelConfig(val auth: AdminAuth, val allowHttp: Boolean = false)
+class AdminPanelConfig(val auth: AdminAuth, val screens: ScreenStore, val allowHttp: Boolean = false)
 
 fun Application.module(screens: LiveScreens, admin: AdminPanelConfig? = null) {
     install(CallLogging)
@@ -98,5 +103,5 @@ fun Application.module(screens: LiveScreens, admin: AdminPanelConfig? = null) {
         }
     }
     configureRouting(screens)
-    admin?.let { adminPanel(it.auth, it.allowHttp) }
+    admin?.let { adminPanel(it.auth, it.screens, it.allowHttp) }
 }

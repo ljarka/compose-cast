@@ -328,4 +328,22 @@ class ScreenJsonTest {
         assertEquals(1, warnings.size)
         assertTrue("components[0]" in warnings.single())
     }
+
+    @Test
+    fun `check returns every problem with its path instead of throwing`() {
+        assertEquals(ScreenJson.Checked(screen, emptyList()), ScreenJson.check(ScreenJson.encode(screen)))
+
+        val syntax = ScreenJson.check("""{"id": "a", """)
+        assertEquals(null, syntax.screen)
+        assertEquals(1, syntax.problems.size)
+
+        val unknownKey = ScreenJson.check("""{"id": "a", "components": [{"type": "text", "txt": "x"}]}""")
+        assertTrue("txt" in unknownKey.problems.single(), unknownKey.problems.single())
+
+        val invalid = ScreenJson.check("""{"id": " ", "components": [{"type": "text", "text": "x", "color": "red"}]}""")
+        assertEquals(null, invalid.screen)
+        assertTrue(invalid.problems.size >= 2, invalid.problems.toString())
+        assertTrue(invalid.problems.any { it.startsWith("id:") })
+        assertTrue(invalid.problems.any { it.startsWith("components[0]") }, invalid.problems.toString())
+    }
 }

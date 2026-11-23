@@ -308,3 +308,7 @@ README roadmap's "Etap" numbers.
     `Secure; HttpOnly; SameSite=Strict` (the CSRF protection); first admin from
     `COMPOSECAST_ADMIN_EMAIL`/`_PASSWORD` (startup fails without them while there is no account);
     a viewer gets 403 on every mutating route (checked over the whole routing tree).
+64. **T-007 A3 — screen list, JSON editor, drafts**: `/admin/screens` (status live/draft/
+    unpublished), editor with HTMX 2.0.11 validation while typing (`ScreenJson.check`: the same
+    `problems()` as file loading, with JSON paths), create screen, save draft (valid only, canonical);
+    a draft never changes what apps get (tested through `GET /screens/main`).

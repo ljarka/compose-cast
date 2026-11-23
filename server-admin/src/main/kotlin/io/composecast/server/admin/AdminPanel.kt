@@ -4,6 +4,7 @@ import freemarker.cache.ClassTemplateLoader
 import freemarker.core.HTMLOutputFormat
 import freemarker.template.Configuration
 import freemarker.template.TemplateExceptionHandler
+import io.composecast.server.store.ScreenStore
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -43,15 +44,16 @@ import kotlinx.serialization.Serializable
  * [allowHttp]: the cookie is `Secure` unless true, so browsers keep it only over HTTPS (and on
  * `localhost`). Set it only for local development without TLS.
  */
-fun Application.adminPanel(auth: AdminAuth, allowHttp: Boolean = false) {
+fun Application.adminPanel(auth: AdminAuth, screens: ScreenStore, allowHttp: Boolean = false) {
     install(FreeMarker) { adminFreeMarker() }
-    routing { adminRoutes(auth, allowHttp) }
+    routing { adminRoutes(auth, screens, allowHttp) }
 }
 
 internal fun Configuration.adminFreeMarker() {
     templateLoader = ClassTemplateLoader(AdminAuth::class.java.classLoader, "templates")
     outputFormat = HTMLOutputFormat.INSTANCE // ${…} is HTML-escaped in every template
     defaultEncoding = "UTF-8"
+    urlEscapingCharset = "UTF-8" // ${id?url} fails without it
     templateExceptionHandler = TemplateExceptionHandler.RETHROW_HANDLER
 }
 
@@ -62,7 +64,12 @@ internal data class AdminSession(val token: String)
 internal const val SESSION_COOKIE = "composecast_admin"
 
 /** [extra] adds routes behind the login (tests use it to check the role policy on mutating routes). */
-internal fun Route.adminRoutes(auth: AdminAuth, allowHttp: Boolean, extra: Route.() -> Unit = {}) {
+internal fun Route.adminRoutes(
+    auth: AdminAuth,
+    screens: ScreenStore,
+    allowHttp: Boolean,
+    extra: Route.() -> Unit = {},
+) {
     route("/admin") {
         install(SecurityHeaders)
         install(Sessions) {
@@ -98,13 +105,16 @@ internal fun Route.adminRoutes(auth: AdminAuth, allowHttp: Boolean, extra: Route
         }
 
         loggedIn(auth) {
-            get {
-                val user = call.adminUser
-                call.respondTemplate("admin/home.ftl", mapOf("user" to user, "role" to user.role.id))
-            }
+            get { call.seeOther("/admin/screens") }
+            screenPages(screens)
             extra()
         }
     }
+}
+
+/** The template model every logged-in page starts from (`_layout.ftl`: title, user, role, canEdit). */
+internal fun ApplicationCall.page(title: String): Map<String, Any> = adminUser.let {
+    mapOf("title" to title, "user" to it, "role" to it.role.id, "canEdit" to it.role.canEdit)
 }
 
 /** The user of the current request inside [loggedIn]. */
@@ -184,7 +194,7 @@ private suspend fun ApplicationCall.loginPage(
 }
 
 /** 303: the browser follows a POST's redirect with a GET. */
-private suspend fun ApplicationCall.seeOther(path: String) {
+internal suspend fun ApplicationCall.seeOther(path: String) {
     response.header(HttpHeaders.Location, path)
     respond(HttpStatusCode.SeeOther)
 }

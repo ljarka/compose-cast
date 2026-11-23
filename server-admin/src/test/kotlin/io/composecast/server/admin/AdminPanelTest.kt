@@ -1,33 +1,24 @@
 package io.composecast.server.admin
 
-import io.composecast.server.store.StoreDatabase
-import io.composecast.server.store.UserStore
 import io.ktor.client.HttpClient
-import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.request
-import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.parameters
-import io.ktor.server.application.install
-import io.ktor.server.freemarker.FreeMarker
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.HttpMethodRouteSelector
 import io.ktor.server.routing.PathSegmentConstantRouteSelector
+import io.ktor.server.routing.PathSegmentParameterRouteSelector
 import io.ktor.server.routing.RoutingNode
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.getAllRoutes
 import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
-import io.ktor.server.routing.routing
 import io.ktor.server.testing.ApplicationTestBuilder
-import io.ktor.server.testing.testApplication
-import java.nio.file.Files
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -37,34 +28,24 @@ import kotlin.test.assertTrue
 
 /** T-007 A2: login, logout, sessions and the role policy, through the Ktor test host. */
 class AdminPanelTest {
-    private val auth = AdminAuth(
-        UserStore(StoreDatabase.open(Files.createTempDirectory("composecast-admin").resolve("compose-cast.db"))),
-        bcryptCost = 4, // the minimum: fast tests
-    )
-    private val password = "correct horse battery"
+    private val host = AdminTestHost()
+    private val auth = host.auth
+    private val password = host.password
 
-    /** Mutating routes found in the routing tree (method, path); filled when the app starts. */
-    private val mutating = mutableListOf<Pair<HttpMethod, String>>()
+    /** Stand-ins for future mutating routes: the policy must cover any route added inside `loggedIn`. */
+    private val extra: io.ktor.server.routing.Route.() -> Unit = {
+        post("/test") { call.respondText("changed") }
+        put("/test") { call.respondText("changed") }
+        patch("/test") { call.respondText("changed") }
+        delete("/test") { call.respondText("changed") }
+    }
 
     private fun admin(allowHttp: Boolean = false, test: suspend ApplicationTestBuilder.(HttpClient) -> Unit) =
-        testApplication {
-            application {
-                install(FreeMarker) { adminFreeMarker() }
-                val root = routing {
-                    adminRoutes(auth, allowHttp) {
-                        // Stand-ins for A3–A5's mutating routes: the policy must cover any route added here.
-                        post("/test") { call.respondText("changed") }
-                        put("/test") { call.respondText("changed") }
-                        patch("/test") { call.respondText("changed") }
-                        delete("/test") { call.respondText("changed") }
-                    }
-                }
-                mutating += root.getAllRoutes().mapNotNull(::methodAndPath)
-                    .filter { (method, path) -> method !in setOf(HttpMethod.Get, HttpMethod.Head) && path !in PUBLIC }
-            }
-            startApplication()
-            test(createClient { followRedirects = false })
-        }
+        host.run(allowHttp, extra, test)
+
+    /** Mutating routes in the routing tree (method, path with `x` for parameters), minus the public ones. */
+    private fun mutating() = host.root.getAllRoutes().mapNotNull(::methodAndPath)
+        .filter { (method, path) -> method !in setOf(HttpMethod.Get, HttpMethod.Head) && path !in PUBLIC }
 
     @Test
     fun `admin pages redirect to the login page without a session`() = admin { client ->
@@ -87,7 +68,13 @@ class AdminPanelTest {
         }
 
         val cookie = login.sessionCookie()
-        val home = client.get("/admin") { header(HttpHeaders.Cookie, cookie) }
+        assertEquals(
+            "/admin/screens",
+            client.get("/admin") {
+                header(HttpHeaders.Cookie, cookie)
+            }.headers[HttpHeaders.Location],
+        )
+        val home = client.get("/admin/screens") { header(HttpHeaders.Cookie, cookie) }
         assertEquals(HttpStatusCode.OK, home.status)
         assertContains(home.bodyAsText(), "owner@example.com (admin)")
         assertEquals(
@@ -128,15 +115,11 @@ class AdminPanelTest {
         auth.createUser("editor@example.com", password, Role.EDITOR)
         val viewer = client.login("viewer@example.com", password).sessionCookie()
         val editor = client.login("editor@example.com", password).sessionCookie()
-        assertEquals(4, mutating.size, "found: $mutating")
+        val mutating = mutating()
+        assertTrue(mutating.size >= 7, "the 4 stand-ins + the screen routes; found: $mutating")
 
-        assertEquals(
-            HttpStatusCode.OK,
-            client.get("/admin") {
-                header(HttpHeaders.Cookie, viewer)
-            }.status,
-            "viewers read",
-        )
+        val screens = client.get("/admin/screens") { header(HttpHeaders.Cookie, viewer) }
+        assertEquals(HttpStatusCode.OK, screens.status, "viewers read")
         for ((method, path) in mutating) {
             suspend fun call(cookie: String?) = client.request(path) {
                 this.method = method
@@ -144,7 +127,11 @@ class AdminPanelTest {
             }.status
             assertEquals(HttpStatusCode.Unauthorized, call(null), "$method $path without a session")
             assertEquals(HttpStatusCode.Forbidden, call(viewer), "$method $path as a viewer")
-            assertEquals(HttpStatusCode.OK, call(editor), "$method $path as an editor")
+            val asEditor = call(editor)
+            assertTrue(
+                asEditor != HttpStatusCode.Unauthorized && asEditor != HttpStatusCode.Forbidden,
+                "$method $path as an editor: $asEditor",
+            )
         }
         val logout = client.request("/admin/logout") {
             method = HttpMethod.Post
@@ -188,27 +175,6 @@ class AdminPanelTest {
         assertEquals(null, auth.login("someone@example.com", password))
     }
 
-    private suspend fun HttpClient.login(
-        email: String,
-        password: String,
-        host: String? = null,
-        forwardedProto: String? = null,
-    ) = submitForm(
-        "/admin/login",
-        parameters {
-            append("email", email)
-            append("password", password)
-        },
-    ) {
-        host?.let { header(HttpHeaders.Host, it) }
-        forwardedProto?.let { header("X-Forwarded-Proto", it) }
-    }
-
-    private fun HttpResponse.sessionCookie(): String {
-        assertEquals(HttpStatusCode.SeeOther, status, "login failed")
-        return headers[HttpHeaders.SetCookie]!!.substringBefore(';')
-    }
-
     private companion object {
         /** Mutating routes that work without a session or for every role. */
         val PUBLIC = setOf("/admin/login", "/admin/logout")
@@ -216,7 +182,13 @@ class AdminPanelTest {
         fun methodAndPath(node: RoutingNode): Pair<HttpMethod, String>? {
             val method = (node.selector as? HttpMethodRouteSelector)?.method ?: return null
             val segments = generateSequence(node) { it.parent }.toList().reversed()
-                .mapNotNull { (it.selector as? PathSegmentConstantRouteSelector)?.value }
+                .mapNotNull {
+                    when (val selector = it.selector) {
+                        is PathSegmentConstantRouteSelector -> selector.value
+                        is PathSegmentParameterRouteSelector -> "x"
+                        else -> null
+                    }
+                }
             return method to segments.joinToString("/", prefix = "/")
         }
     }

@@ -14,7 +14,7 @@ This module only. **Do not** import `sdk-server`, `server-app`, or `sdk-android`
 | File | Purpose |
 |---|---|
 | `Layout.kt` | `Modifier` (box model, ADR 0020, incl. `scroll`, `semantics`), `Padding` (number or sides), `Dimension` (dp / `fill` / `wrap`), `Border`, `Shape`, `Alignment`, `Arrangement`, `ScrollDirection`, `Semantics`, `SemanticsRole` + their JSON serializers |
-| `Screen.kt` | `ScreenDefinition` (+ `params`, `data`, `lookups`, `error`; `problems()`/`contentProblems()`/`warnings()`/`validate()`), `ScreenJson` |
+| `Screen.kt` | `ScreenDefinition` (+ `params`, `data`, `lookups`, `error`; `problems()`/`contentProblems()`/`warnings()`/`validate()`), `ScreenJson` (`encode`, `decode` throws, `check` returns `Checked(screen, problems)` for the admin editor) |
 | `ScreenValidation.kt` | All screen validation (structure, modifiers, colors, actions, bindings, source URLs), called by the `ScreenDefinition` members |
 | `Component.kt` | `Component` (Text, Image, Icon, Divider, Card, Button, Spacer, Repeat, Expandable, Column, Row, Box, FitBox, Flow, Grid), `strings()`/`childLists()`/`hasBindings()`, `Action.strings()` |
 | `ComponentOptions.kt` | `TextStyle`, `FontWeight`, `TextAlign`, `TextOverflow`, `ContentScale`, `ButtonVariant` |

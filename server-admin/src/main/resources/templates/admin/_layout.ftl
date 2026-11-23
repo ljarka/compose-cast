@@ -1,4 +1,5 @@
-<#macro page title>
+<#-- page: the HTML page. With `user` (logged-in pages) a header with navigation and logout; with htmx=true HTMX 2.0.11 (ADR 0012: CDN + integrity hash). -->
+<#macro page title user="" role="" htmx=false>
 <!doctype html>
 <html lang="en">
 <head>
@@ -26,9 +27,33 @@
     header button { margin: 0; background: transparent; color: var(--accent); border: 1px solid var(--line); }
     .error { color: var(--error); font-weight: 600; }
     .muted { color: var(--muted); }
+    nav a { margin-right: 16px; color: var(--accent); text-decoration: none; font-weight: 600; }
+    .wide { max-width: 1100px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); }
+    td a { color: var(--accent); }
+    .status { display: inline-block; padding: 0 8px; border-radius: 999px; font-size: 14px; border: 1px solid var(--line); }
+    .status-live { color: #2b8a3e; } .status-draft { color: #e67700; } .status-unpublished { color: var(--muted); }
+    textarea { width: 100%; min-height: 60vh; padding: 12px; font: 14px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+               color: inherit; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; tab-size: 2; }
+    .problems { margin: 12px 0 0; padding-left: 20px; }
+    .ok { color: #2b8a3e; font-weight: 600; } .warning { color: #e67700; }
+    .row { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; }
+    .row > div { flex: 1 1 200px; }
+    code { font: 14px ui-monospace, SFMono-Regular, Menlo, monospace; }
   </style>
+  <#if htmx><script src="https://unpkg.com/htmx.org@2.0.11/dist/htmx.min.js" integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg" crossorigin="anonymous"></script></#if>
 </head>
 <body>
+<#if user?has_content>
+<header>
+  <nav><strong>compose-cast admin</strong>&nbsp;&nbsp;<a href="/admin/screens">Screens</a></nav>
+  <form method="post" action="/admin/logout">
+    <span class="muted">${user.email} (${role})</span>
+    <button type="submit">Log out</button>
+  </form>
+</header>
+</#if>
 <#nested>
 </body>
 </html>

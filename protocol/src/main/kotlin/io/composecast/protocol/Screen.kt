@@ -82,4 +82,24 @@ object ScreenJson {
         require(problems.isEmpty()) { "$source: ${problems.joinToString("; ")}" }
         return screen
     }
+
+    /** The result of [check]: [screen] when [problems] is empty. */
+    data class Checked(val screen: ScreenDefinition?, val problems: List<String>)
+
+    /**
+     * Checks [text] like [decode] without throwing (the admin editor, T-007): a JSON syntax or
+     * schema error is one problem (kotlinx's message, with the JSON path); otherwise every
+     * [ScreenDefinition.problems] entry.
+     */
+    fun check(text: String): Checked {
+        val screen = try {
+            json.decodeFromString(ScreenDefinition.serializer(), text)
+        } catch (e: SerializationException) {
+            return Checked(null, listOf(e.message ?: "invalid JSON"))
+        } catch (e: IllegalArgumentException) {
+            return Checked(null, listOf(e.message ?: "invalid value"))
+        }
+        val problems = screen.problems()
+        return Checked(screen.takeIf { problems.isEmpty() }, problems)
+    }
 }
