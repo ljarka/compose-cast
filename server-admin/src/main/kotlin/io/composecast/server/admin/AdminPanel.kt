@@ -44,9 +44,14 @@ import kotlinx.serialization.Serializable
  * [allowHttp]: the cookie is `Secure` unless true, so browsers keep it only over HTTPS (and on
  * `localhost`). Set it only for local development without TLS.
  */
-fun Application.adminPanel(auth: AdminAuth, screens: ScreenStore, allowHttp: Boolean = false) {
+fun Application.adminPanel(
+    auth: AdminAuth,
+    screens: ScreenStore,
+    publishing: ScreenPublishing,
+    allowHttp: Boolean = false,
+) {
     install(FreeMarker) { adminFreeMarker() }
-    routing { adminRoutes(auth, screens, allowHttp) }
+    routing { adminRoutes(auth, screens, publishing, allowHttp) }
 }
 
 internal fun Configuration.adminFreeMarker() {
@@ -67,6 +72,7 @@ internal const val SESSION_COOKIE = "composecast_admin"
 internal fun Route.adminRoutes(
     auth: AdminAuth,
     screens: ScreenStore,
+    publishing: ScreenPublishing,
     allowHttp: Boolean,
     extra: Route.() -> Unit = {},
 ) {
@@ -106,7 +112,7 @@ internal fun Route.adminRoutes(
 
         loggedIn(auth) {
             get { call.seeOther("/admin/screens") }
-            screenPages(screens)
+            screenPages(screens, publishing)
             extra()
         }
     }

@@ -2,6 +2,7 @@ package io.composecast.server
 
 import io.composecast.protocol.UpgradeRequiredResponse
 import io.composecast.server.admin.AdminAuth
+import io.composecast.server.admin.ScreenPublishing
 import io.composecast.server.admin.adminPanel
 import io.composecast.server.sdk.DataSourceException
 import io.composecast.server.sdk.HttpImageLoader
@@ -60,13 +61,14 @@ fun main() {
             adminScreens.importIfEmpty(dataDir)
             val auth = AdminAuth(UserStore(database))
             auth.bootstrapFromEnv(System.getenv("COMPOSECAST_ADMIN_EMAIL"), System.getenv("COMPOSECAST_ADMIN_PASSWORD"))
-            admin =
-                AdminPanelConfig(
+            LiveScreens(adminScreens.load()).also { live ->
+                admin = AdminPanelConfig(
                     auth,
                     ScreenStore(database),
+                    AdminPublishing(adminScreens, live),
                     allowHttp = System.getenv("COMPOSECAST_ADMIN_ALLOW_HTTP").toBoolean(),
                 )
-            LiveScreens(adminScreens.load())
+            }
         }
         else -> error("COMPOSECAST_MODE must be 'files' or 'admin', was '$mode'")
     }
@@ -74,7 +76,12 @@ fun main() {
 }
 
 /** The admin panel of admin mode (T-007); `null` in files mode, where `/admin` does not exist. */
-class AdminPanelConfig(val auth: AdminAuth, val screens: ScreenStore, val allowHttp: Boolean = false)
+class AdminPanelConfig(
+    val auth: AdminAuth,
+    val screens: ScreenStore,
+    val publishing: ScreenPublishing,
+    val allowHttp: Boolean = false,
+)
 
 fun Application.module(screens: LiveScreens, admin: AdminPanelConfig? = null) {
     install(CallLogging)
@@ -103,5 +110,5 @@ fun Application.module(screens: LiveScreens, admin: AdminPanelConfig? = null) {
         }
     }
     configureRouting(screens)
-    admin?.let { adminPanel(it.auth, it.screens, it.allowHttp) }
+    admin?.let { adminPanel(it.auth, it.screens, it.publishing, it.allowHttp) }
 }

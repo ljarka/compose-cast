@@ -164,4 +164,67 @@ class ScreenPagesTest {
         assertFalse("<script>alert" in body)
         assertTrue("&lt;/textarea&gt;" in body)
     }
+
+    @Test
+    fun `publish makes the textarea live, records who, and clears the draft`() = host.run { client ->
+        screens.publish("main", homeJson, by = "import")
+        screens.saveDraft("main", ScreenJson.encode(home.copy(title = "Old draft")))
+        val cookie = with(host) { client.loginAs(Role.EDITOR) }
+        val shown = """{"id": "main", "title": "Home v2"}"""
+
+        val published = client.form(cookie, "/admin/screens/main/publish", "json" to shown)
+        assertEquals(HttpStatusCode.SeeOther, published.status)
+        assertEquals("/admin/screens/main?published", published.headers[HttpHeaders.Location])
+        val stored = screens.get("main")!!
+        assertEquals(ScreenJson.encode(ScreenDefinition("main", title = "Home v2")), stored.liveJson)
+        assertNull(stored.draftJson)
+        assertEquals("editor@example.com", stored.publishedBy)
+
+        val editor = client.page(cookie, "/admin/screens/main?published").bodyAsText()
+        assertContains(editor, "Published: apps get this version")
+        assertContains(editor, "#2")
+        assertContains(editor, "Roll back to this")
+    }
+
+    @Test
+    fun `an invalid or unbuildable publish changes nothing and says why`() = host.run { client ->
+        screens.publish("main", homeJson, by = "import")
+        val cookie = with(host) { client.loginAs(Role.EDITOR) }
+
+        val invalid = client.form(cookie, "/admin/screens/main/publish", "json" to """{"id": " "}""")
+        assertEquals(HttpStatusCode.UnprocessableEntity, invalid.status)
+        assertContains(invalid.bodyAsText(), "id: must not be blank")
+
+        host.failWith = "screen 'main': COMPOSECAST_SECRET_KEY is not set"
+        val failed = client.form(cookie, "/admin/screens/main/publish", "json" to homeJson)
+        assertEquals(HttpStatusCode.UnprocessableEntity, failed.status)
+        assertContains(
+            failed.bodyAsText(),
+            "Not published, nothing changed: screen &#39;main&#39;: COMPOSECAST_SECRET_KEY",
+        )
+        assertEquals(mapOf("main" to homeJson), screens.live())
+        assertEquals(1, screens.history("main").size)
+    }
+
+    @Test
+    fun `rollback republishes an old version and old versions can be viewed`() = host.run { client ->
+        screens.publish("main", homeJson, by = "import")
+        screens.publish("main", ScreenJson.encode(home.copy(title = "v2")), by = "import")
+        val first = screens.history("main").last()
+        val cookie = with(host) { client.loginAs(Role.EDITOR) }
+
+        val revision = client.page(cookie, "/admin/screens/main/revisions/${first.id}")
+        assertEquals(HttpStatusCode.OK, revision.status)
+        assertContains(revision.bodyAsText(), "Hello")
+        assertEquals(HttpStatusCode.NotFound, client.page(cookie, "/admin/screens/main/revisions/999").status)
+
+        val rolledBack = client.form(cookie, "/admin/screens/main/rollback", "revision" to first.id.toString())
+        assertEquals("/admin/screens/main?rolledback", rolledBack.headers[HttpHeaders.Location])
+        assertEquals(homeJson, screens.live()["main"])
+        assertEquals(3, screens.history("main").size, "append-only")
+        assertEquals(
+            HttpStatusCode.NotFound,
+            client.form(cookie, "/admin/screens/main/rollback", "revision" to "999").status,
+        )
+    }
 }

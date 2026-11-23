@@ -50,10 +50,15 @@ class ScreenStoreTest {
     fun `rollback publishes an old revision as a new history row`() {
         store.publish("main", "v1", by = "a")
         store.publish("main", "v2", by = "a")
+        store.saveDraft("main", "v3-draft")
         val first = store.history("main").last()
+        assertEquals(first, store.revision("main", first.id))
+        assertNull(store.revision("other", first.id))
         store.rollback("main", first.id, by = "b")
 
         assertEquals("v1", store.live()["main"])
+        assertEquals("v3-draft", store.get("main")!!.draftJson, "a rollback keeps unpublished work")
+        assertEquals("b", store.get("main")!!.publishedBy)
         assertEquals(listOf("v1", "v2", "v1"), store.history("main").map { it.json }, "history is append-only")
         assertFailsWith<IllegalArgumentException> { store.rollback("main", 999, by = "b") }
         assertFailsWith<IllegalArgumentException> { store.rollback("other", first.id, by = "b") }

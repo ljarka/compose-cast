@@ -27,6 +27,20 @@ internal class AdminTestHost {
     val screens = ScreenStore(database)
     val password = "correct horse battery"
 
+    /** Publishes straight into [screens]; set [failWith] to make the next publishes fail. */
+    var failWith: String? = null
+    val publishing = object : ScreenPublishing {
+        override fun publish(id: String, json: String, by: String) {
+            failWith?.let { throw PublishException(it) }
+            screens.publish(id, json, by)
+        }
+
+        override fun rollback(id: String, revisionId: Int, by: String) {
+            failWith?.let { throw PublishException(it) }
+            screens.rollback(id, revisionId, by)
+        }
+    }
+
     /** The routing tree, set when the application starts. */
     lateinit var root: RoutingNode
 
@@ -37,7 +51,7 @@ internal class AdminTestHost {
     ) = testApplication {
         application {
             install(FreeMarker) { adminFreeMarker() }
-            root = routing { adminRoutes(auth, screens, allowHttp, extra) }
+            root = routing { adminRoutes(auth, screens, publishing, allowHttp, extra) }
         }
         startApplication()
         test(createClient { followRedirects = false })

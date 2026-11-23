@@ -3,6 +3,8 @@ package io.composecast.server
 import io.composecast.protocol.BrandConfig
 import io.composecast.protocol.ScreenJson
 import io.composecast.server.admin.AdminAuth
+import io.composecast.server.admin.PublishException
+import io.composecast.server.admin.ScreenPublishing
 import io.composecast.server.sdk.DataLoader
 import io.composecast.server.sdk.HttpDataLoader
 import io.composecast.server.sdk.HttpImageLoader
@@ -27,6 +29,7 @@ class AdminScreens(
     private val settings: SettingsStore,
     private val imageLoader: ImageLoader = HttpImageLoader(),
     private val dataLoader: DataLoader = HttpDataLoader,
+    private val env: (String) -> String? = System::getenv,
 ) {
     /** Imports [dataDir] when the database has no screens yet; returns the number of imported screens. */
     fun importIfEmpty(dataDir: Path): Int {
@@ -39,9 +42,33 @@ class AdminScreens(
     }
 
     /** The registry of the live screens and brand in the database. */
-    fun load(): ScreenRegistry = composeCast(imageLoader, dataLoader) {
+    fun load(): ScreenRegistry = build(screens.live())
+
+    /** Serializes publishes: build → write → serve must not interleave (a slower one would win with stale data). */
+    private val publishLock = Any()
+
+    /**
+     * T-007 A4: makes [json] the live version of [id] **only if** all live screens still build with
+     * it (e.g. a `{{secret.X}}` must be set); then [serve]s the new registry. On failure nothing changed.
+     */
+    fun publish(id: String, json: String, by: String, serve: (ScreenRegistry) -> Unit) = synchronized(publishLock) {
+        val registry = build(screens.live() + (id to json))
+        screens.publish(id, json, by)
+        serve(registry)
+    }
+
+    /** Like [publish] for revision [revisionId] of [id] (a pending draft is kept). */
+    fun rollback(id: String, revisionId: Int, by: String, serve: (ScreenRegistry) -> Unit) = synchronized(publishLock) {
+        val revision = requireNotNull(screens.revision(id, revisionId)) { "Screen '$id' has no revision $revisionId" }
+        val registry = build(screens.live() + (id to revision.json))
+        screens.rollback(id, revisionId, by)
+        serve(registry)
+    }
+
+    /** Screens in id order, as [load] after a restart would serve them. */
+    private fun build(live: Map<String, String>): ScreenRegistry = composeCast(imageLoader, dataLoader, env) {
         settings[SettingsStore.BRAND]?.let { brand(Json.decodeFromString(BrandConfig.serializer(), it)) }
-        screens.live().forEach { (id, json) -> screen(ScreenJson.decode(json, source = "database screen '$id'")) }
+        live.toSortedMap().forEach { (id, json) -> screen(ScreenJson.decode(json, source = "screen '$id'")) }
     }
 
     companion object {
@@ -79,4 +106,24 @@ internal fun AdminAuth.bootstrapFromEnv(email: String?, password: String?) {
     }
     bootstrapAdmin(email, password)
     log.info("Created the first admin account {}", email.trim().lowercase())
+}
+
+/** [ScreenPublishing] for `server-admin`: publishes through [AdminScreens] and swaps [live]. */
+class AdminPublishing(private val admin: AdminScreens, private val live: LiveScreens) : ScreenPublishing {
+    override fun publish(id: String, json: String, by: String) = failsAsPublishException {
+        admin.publish(id, json, by, live::replace)
+    }
+
+    override fun rollback(id: String, revisionId: Int, by: String) = failsAsPublishException {
+        admin.rollback(id, revisionId, by, live::replace)
+    }
+
+    /** Building fails with IllegalArgumentException/IllegalStateException (validation, secrets, dates). */
+    private inline fun failsAsPublishException(block: () -> Unit) = try {
+        block()
+    } catch (e: IllegalArgumentException) {
+        throw PublishException(e.message ?: "invalid screen", e)
+    } catch (e: IllegalStateException) {
+        throw PublishException(e.message ?: "invalid screen", e)
+    }
 }

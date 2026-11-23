@@ -9,11 +9,12 @@ only in admin mode (`COMPOSECAST_MODE=admin`); files mode has no `/admin`.
 
 | File | Purpose |
 |---|---|
-| `AdminPanel.kt` | `Application.adminPanel(auth, screens, allowHttp)`: installs FreeMarker, mounts `adminRoutes`; `/admin/login` (GET/POST), `/admin/logout` (POST), `/admin` → `/admin/screens`, `loggedIn {}` (route-scoped `RequireUser`), `page(title)` (base template model), `seeOther`, `SecurityHeaders` |
-| `ScreenPages.kt` | A3: `GET /admin/screens` (id, title, status `live`/`draft`/`unpublished`, last published), `POST /admin/screens` (create: id + title → unpublished draft), `GET /admin/screens/{id}` (editor: draft, else live), `POST /admin/screens/{id}` (save draft: valid only, stored canonical; 422 + problems otherwise), `POST /admin/screens/{id}/validate` (HTMX fragment) |
+| `AdminPanel.kt` | `Application.adminPanel(auth, screens, publishing, allowHttp)`: installs FreeMarker, mounts `adminRoutes`; `/admin/login` (GET/POST), `/admin/logout` (POST), `/admin` → `/admin/screens`, `loggedIn {}` (route-scoped `RequireUser`), `page(title)` (base template model), `seeOther`, `SecurityHeaders` |
+| `ScreenPages.kt` | A3: `GET /admin/screens` (id, title, status `live`/`draft`/`unpublished`, last published), `POST /admin/screens` (create: id + title → unpublished draft), `GET /admin/screens/{id}` (editor: draft, else live), `POST /admin/screens/{id}` (save draft: valid only, stored canonical; 422 + problems otherwise), `POST /admin/screens/{id}/validate` (HTMX fragment); A4: `POST …/{id}/publish` (publishes the submitted textarea), `POST …/{id}/rollback` (form `revision`), `GET …/{id}/revisions/{revision}` (read-only old version); history table in the editor |
+| `ScreenPublishing.kt` | `ScreenPublishing` (publish, rollback; implemented by `server-app`, which owns `LiveScreens`), `PublishException` (nothing changed) |
 | `AdminAuth.kt` | Accounts and sessions: `bootstrapAdmin`, `createUser`, `login` → token, `user(token)`, `logout`; bcrypt (`at.favre.lib:bcrypt`) |
 | `Role.kt` | `Role` (`viewer` < `editor` < `admin`, `canEdit`), `AdminUser` |
-| `resources/templates/admin/*.ftl` | `_layout.ftl` (`<@layout.page title user role htmx>`: page, header with nav + logout, inline CSS light/dark, HTMX 2.0.11 with SRI), `login.ftl`, `screens.ftl`, `screen.ftl` (editor), `_problems.ftl` (validation result; also the HTMX fragment) |
+| `resources/templates/admin/*.ftl` | `_layout.ftl` (`<@layout.page title user role htmx>`: page, header with nav + logout, inline CSS light/dark, HTMX 2.0.11 with SRI), `login.ftl`, `screens.ftl`, `screen.ftl` (editor + history), `revision.ftl`, `_problems.ftl` (validation result; also the HTMX fragment) |
 
 ## Rules for new routes (A3–A5)
 
@@ -49,6 +50,11 @@ only in admin mode (`COMPOSECAST_MODE=admin`); files mode has no `/admin`.
   in the textarea); valid ones are stored re-encoded (`ScreenJson.encode`), so the editor shows
   formatted JSON after saving. New ids: `[a-z0-9][a-z0-9_-]{0,63}`. Saving a draft never touches
   `live_json`, so apps are unaffected until A4's publish. Viewers get a read-only editor without HTMX.
+- **Publish (A4):** the "Publish" button submits the textarea (`formaction`), so exactly what is
+  shown goes live (and the draft is cleared); it is checked like a draft first. Building the whole
+  registry is `server-app`'s job (`AdminScreens.publish`): build with the change → write → swap,
+  under one lock; any failure (unset `{{secret.X}}`, …) is a `PublishException` and changes
+  nothing. Rollback keeps a pending draft. Editors may publish (roles: ADR 0016).
 - Not yet: login rate limiting (bcrypt cost is the only brake), password change, user management UI.
 
 Ktor 3.6.1 facts (sources jar, 2026-11-23): `Sessions` is route-scoped (installed on `/admin` only),
@@ -69,7 +75,9 @@ HTTP without error; `RoutingNode.getAllRoutes()` lists endpoints.
 email, viewer 403 / editor allowed on every mutating route found in the routing tree, HTTPS
 message, `allowHttp`, HTML escaping, bootstrap rules). `ScreenPagesTest` (list + statuses, create,
 invalid edit → problems with paths and nothing saved, canonical draft leaves `live()` unchanged,
-validate fragment, editor vs. viewer page, no textarea breakout).
+validate fragment, editor vs. viewer page, no textarea breakout, publish + who + draft cleared,
+invalid/failed publish changes nothing, rollback + revision page). The host's fake `publishing`
+writes straight to the store (`failWith` simulates a build failure).
 
 ```bash
 ./gradlew :server-admin:test

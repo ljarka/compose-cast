@@ -7,13 +7,40 @@
     <#if publishedAt?has_content>Live since ${publishedAt} (${publishedBy}).<#else>Never published: apps do not see this screen.</#if>
     <#if status == "draft"> The editor shows the draft; apps still get the live version.</#if>
   </p>
-  <#if saved><p class="ok" role="status">Draft saved (as formatted JSON). Apps still get the live version.</p></#if>
+  <#if notice?has_content><p class="ok" role="status">${notice}</p></#if>
   <form class="card" method="post" action="/admin/screens/${id?url}">
     <label for="json">Screen JSON <span class="muted">(<a href="https://github.com/ljarka/compose-cast/blob/main/docs/screen-json-format.md">format</a>)</span></label>
     <textarea id="json" name="json" spellcheck="false"<#if canEdit>
       hx-post="/admin/screens/${id?url}/validate" hx-trigger="input changed delay:400ms" hx-target="#problems"<#else> readonly</#if>>${json}</textarea>
     <div id="problems" aria-live="polite"><#include "_problems.ftl"></div>
-    <#if canEdit><button type="submit">Save draft</button></#if>
+    <#if canEdit>
+      <button type="submit">Save draft</button>
+      <button type="submit" formaction="/admin/screens/${id?url}/publish">Publish</button>
+      <span class="muted">Publish makes exactly this text live for apps.</span>
+    </#if>
   </form>
+  <h2>History</h2>
+  <div class="card">
+    <table>
+      <thead><tr><th>Version</th><th>Published</th><th>By</th><th></th></tr></thead>
+      <tbody>
+      <#list history as h>
+        <tr>
+          <td><a href="/admin/screens/${id?url}/revisions/${h.revision?c}">#${h.revision?c}</a><#if h?is_first> <span class="status status-live">live</span></#if></td>
+          <td>${h.publishedAt}</td>
+          <td>${h.publishedBy}</td>
+          <td><#if canEdit && !h?is_first>
+            <form method="post" action="/admin/screens/${id?url}/rollback" style="margin:0">
+              <input type="hidden" name="revision" value="${h.revision?c}">
+              <button type="submit" style="margin:0">Roll back to this</button>
+            </form>
+          </#if></td>
+        </tr>
+      <#else>
+        <tr><td colspan="4" class="muted">Never published.</td></tr>
+      </#list>
+      </tbody>
+    </table>
+  </div>
 </main>
 </@layout.page>

@@ -91,7 +91,7 @@ Android only ([ADR 0022](decisions/0022-android-only.md), owner 2026-11-16).
 > panel, and publishes a branded Android app to Google Play. One server = one product.
 
 - [ ] Ktor-served web UI; SQLite storage (Exposed) — one row per screen (canonical screen JSON),
-  draft/live status, full history; `<id>.json` import/export ([ADR 0016](decisions/0016-admin-storage-sqlite.md))
+  draft/live status, full history; `<id>.json` import/export ([ADR 0016](decisions/0016-admin-storage-sqlite.md)) — done except export (T-007 A1–A4)
 - [x] User accounts (email + bcrypt password), roles: `admin` / `editor` / `viewer`; session cookie;
   first admin from `COMPOSECAST_ADMIN_EMAIL`/`_PASSWORD` env vars (no shared `ADMIN_PASSWORD`)
 - [ ] MVP: JSON editor with live validation, preview, publish, history — T-007

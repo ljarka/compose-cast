@@ -15,11 +15,12 @@ import io.ktor.server.routing.route
 import java.net.URLEncoder
 
 /**
- * Screens in the admin panel (T-007 A3): the list, the JSON editor with validation while typing
- * (HTMX → [validate]) and drafts. Only valid screens are saved, as canonical JSON (ADR 0016); a
- * draft never changes what apps are served (`ScreenStore.live`).
+ * Screens in the admin panel (T-007 A3, A4): the list, the JSON editor with validation while typing
+ * (HTMX → `validate`), drafts, publish, history and rollback. Only valid screens are saved, as
+ * canonical JSON (ADR 0016); a draft never changes what apps are served (`ScreenStore.live`);
+ * publishing goes through [ScreenPublishing], which changes nothing when the screens would not build.
  */
-internal fun Route.screenPages(screens: ScreenStore) {
+internal fun Route.screenPages(screens: ScreenStore, publishing: ScreenPublishing) {
     route("/screens") {
         get {
             call.respondTemplate("admin/screens.ftl", call.page("Screens") + mapOf("screens" to rows(screens)))
@@ -48,12 +49,8 @@ internal fun Route.screenPages(screens: ScreenStore) {
             get {
                 val stored = screens.get(call.screenId) ?: return@get call.notFound()
                 val json = stored.draftJson ?: stored.liveJson.orEmpty()
-                call.editor(
-                    stored,
-                    json,
-                    problems(call.screenId, json),
-                    saved = "saved" in call.request.queryParameters,
-                )
+                val notice = NOTICES.entries.firstOrNull { it.key in call.request.queryParameters }?.value
+                call.editor(screens, stored, json, problems(call.screenId, json), notice)
             }
             post {
                 val stored = screens.get(call.screenId) ?: return@post call.notFound()
@@ -61,7 +58,7 @@ internal fun Route.screenPages(screens: ScreenStore) {
                 val checked = problems(stored.id, json)
                 if (checked.problems.isNotEmpty()) {
                     call.response.status(HttpStatusCode.UnprocessableEntity)
-                    return@post call.editor(stored, json, checked, saved = false)
+                    return@post call.editor(screens, stored, json, checked)
                 }
                 screens.saveDraft(stored.id, ScreenJson.encode(checked.screen!!))
                 call.seeOther("/admin/screens/${stored.id.urlEncoded()}?saved")
@@ -70,8 +67,65 @@ internal fun Route.screenPages(screens: ScreenStore) {
                 val json = call.receiveParameters()["json"].orEmpty()
                 call.respondTemplate("admin/_problems.ftl", problemsModel(problems(call.screenId, json)))
             }
+            // The editor's "Publish" submits the textarea: exactly what is shown goes live.
+            post("/publish") {
+                val stored = screens.get(call.screenId) ?: return@post call.notFound()
+                val json = call.receiveParameters()["json"].orEmpty()
+                val checked = problems(stored.id, json)
+                val shown = checked.screen?.let { screen ->
+                    val failure = publishOrProblem {
+                        publishing.publish(stored.id, ScreenJson.encode(screen), call.adminUser.email)
+                    }
+                    failure?.let { ScreenJson.Checked(null, listOf(it)) }
+                } ?: checked.takeIf { it.problems.isNotEmpty() }
+                if (shown != null) {
+                    call.response.status(HttpStatusCode.UnprocessableEntity)
+                    return@post call.editor(screens, stored, json, shown)
+                }
+                call.seeOther("/admin/screens/${stored.id.urlEncoded()}?published")
+            }
+            post("/rollback") {
+                val stored = screens.get(call.screenId) ?: return@post call.notFound()
+                val revision = call.receiveParameters()["revision"]?.toIntOrNull()
+                    ?.let { screens.revision(stored.id, it) } ?: return@post call.notFound()
+                val failure = publishOrProblem { publishing.rollback(stored.id, revision.id, call.adminUser.email) }
+                if (failure != null) {
+                    call.response.status(HttpStatusCode.UnprocessableEntity)
+                    val json = stored.draftJson ?: stored.liveJson.orEmpty()
+                    return@post call.editor(screens, stored, json, ScreenJson.Checked(null, listOf(failure)))
+                }
+                call.seeOther("/admin/screens/${stored.id.urlEncoded()}?rolledback")
+            }
+            get("/revisions/{revision}") {
+                val revision = call.parameters["revision"]?.toIntOrNull()?.let { screens.revision(call.screenId, it) }
+                    ?: return@get call.notFound()
+                call.respondTemplate(
+                    "admin/revision.ftl",
+                    call.page("${revision.screenId} #${revision.id}") + mapOf(
+                        "id" to revision.screenId,
+                        "revision" to revision.id,
+                        "json" to revision.json,
+                        "publishedAt" to revision.publishedAt.toString(),
+                        "publishedBy" to revision.publishedBy,
+                    ),
+                )
+            }
         }
     }
+}
+
+private val NOTICES = mapOf(
+    "saved" to "Draft saved (as formatted JSON). Apps still get the live version.",
+    "published" to "Published: apps get this version from their next request.",
+    "rolledback" to "Rolled back: apps get the chosen version from their next request. A pending draft was kept.",
+)
+
+/** Runs a publish; its failure becomes a message for the editor (null = success). */
+private inline fun publishOrProblem(publish: () -> Unit): String? = try {
+    publish()
+    null
+} catch (e: PublishException) {
+    "Not published, nothing changed: ${e.message}"
 }
 
 private fun rows(screens: ScreenStore) = screens.list().map { stored ->
@@ -109,10 +163,11 @@ private fun problemsModel(checked: ScreenJson.Checked) = mapOf(
 )
 
 private suspend fun ApplicationCall.editor(
+    screens: ScreenStore,
     stored: ScreenStore.StoredScreen,
     json: String,
     checked: ScreenJson.Checked,
-    saved: Boolean,
+    notice: String? = null,
 ) = respondTemplate(
     "admin/screen.ftl",
     page(stored.id) + problemsModel(checked) + mapOf(
@@ -121,7 +176,10 @@ private suspend fun ApplicationCall.editor(
         "status" to status(stored),
         "publishedAt" to stored.publishedAt?.toString().orEmpty(),
         "publishedBy" to stored.publishedBy.orEmpty(),
-        "saved" to saved,
+        "notice" to notice.orEmpty(),
+        "history" to screens.history(stored.id).map {
+            mapOf("revision" to it.id, "publishedAt" to it.publishedAt.toString(), "publishedBy" to it.publishedBy)
+        },
     ),
 )
 

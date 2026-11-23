@@ -11,9 +11,9 @@ Do NOT load `sdk-android` or `app-template` unless cross-cutting.
 
 | File | Purpose |
 |---|---|
-| `Main.kt` | `main()` reads env (`PORT`, `COMPOSECAST_DATA_DIR`, `COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS` → `HttpImageLoader(allowPrivateHosts)`, T-026; `COMPOSECAST_RELOAD`, T-042; `COMPOSECAST_MODE=files|admin`, T-007; admin mode: `COMPOSECAST_ADMIN_EMAIL`/`_PASSWORD`, `COMPOSECAST_ADMIN_ALLOW_HTTP`), builds the registry **before** starting (fail fast); `Application.module(LiveScreens, AdminPanelConfig?)` (`AdminPanelConfig(auth, screens, allowHttp)`) (admin mode mounts `server-admin`'s `adminPanel`): CallLogging, ContentNegotiation, StatusPages (`ScreenParameterException` → 400, `DataSourceException` → 502, other → logged JSON 500) |
+| `Main.kt` | `main()` reads env (`PORT`, `COMPOSECAST_DATA_DIR`, `COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS` → `HttpImageLoader(allowPrivateHosts)`, T-026; `COMPOSECAST_RELOAD`, T-042; `COMPOSECAST_MODE=files|admin`, T-007; admin mode: `COMPOSECAST_ADMIN_EMAIL`/`_PASSWORD`, `COMPOSECAST_ADMIN_ALLOW_HTTP`), builds the registry **before** starting (fail fast); `Application.module(LiveScreens, AdminPanelConfig?)` (`AdminPanelConfig(auth, screens, publishing, allowHttp)`) (admin mode mounts `server-admin`'s `adminPanel`): CallLogging, ContentNegotiation, StatusPages (`ScreenParameterException` → 400, `DataSourceException` → 502, other → logged JSON 500) |
 | `Routing.kt` | All HTTP endpoints; `configureRouting(screens: LiveScreens)`; ETag / `If-None-Match`; renders in `Dispatchers.IO` (bound screens block on data sources) |
-| `AdminScreens.kt` | Admin mode (T-007 A1): opens `compose-cast.db` via `server-store`, imports the data dir on the first start (validated with `loadScreens`, one transaction), builds the registry from live rows + stored brand; `openDatabase`; `bootstrapFromEnv` (first admin, required while there is no account) |
+| `AdminScreens.kt` | Admin mode (T-007 A1): opens `compose-cast.db` via `server-store`, imports the data dir on the first start (validated with `loadScreens`, one transaction), builds the registry from live rows + stored brand; `openDatabase`; `bootstrapFromEnv` (first admin, required while there is no account); A4: `publish`/`rollback` build the registry with the change **before** writing (one lock: build → write → `serve`), `AdminPublishing` (`ScreenPublishing` → `LiveScreens.replace`) |
 | `DataDirReloader.kt` | Polls `COMPOSECAST_DATA_DIR` and swaps reloaded screens into `LiveScreens` (T-042); `reloadIfChanged()` is the testable step |
 | `LiveScreens.kt` | `AtomicReference` holder of the served `ScreenRegistry`; `replace()` swaps it atomically (admin publish, reloads) |
 | `Screens.kt` | `loadScreens(dataDir)` (JSON data dir or demo), `demoScreens()` (registers the demo screens in order), `demoBrand`; injectable `ImageLoader`/`DataLoader` for tests |
@@ -62,7 +62,7 @@ copy of `demoScreens()`. `./gradlew :server-app:run` runs from the repo root, so
 - Routing reads `LiveScreens.current` per request. `DataDirReloader` (T-042) polls the data dir
   every 2 s (files + mtimes + sizes; inotify is unreliable on Docker bind mounts), waits 500 ms,
   builds a new registry and `replace()`s it; a failing load is logged once and the old registry
-  stays. `COMPOSECAST_RELOAD=false` turns it off. Admin publish (T-007) will `replace()` the same way.
+  stays. `COMPOSECAST_RELOAD=false` turns it off. Admin publish (T-007 A4) `replace()`s the same way, after building the new registry.
 - `examples/demo` has no JSON for `echo`: it stays the DSL `dynamicScreen` example; JSON screens
   get request params through `params` + `{{params.x}}` (T-006, see `data.json`).
 - The demo `data` screen calls the live Open-Meteo API (keyless); tests and screenshots use a fake

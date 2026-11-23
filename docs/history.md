@@ -312,3 +312,7 @@ README roadmap's "Etap" numbers.
     unpublished), editor with HTMX 2.0.11 validation while typing (`ScreenJson.check`: the same
     `problems()` as file loading, with JSON paths), create screen, save draft (valid only, canonical);
     a draft never changes what apps get (tested through `GET /screens/main`).
+65. **T-007 A4 — publish, history, rollback**: "Publish" makes the editor's text live without a
+    restart; the registry is built with the change before anything is written (an unset secret
+    → error, nothing changed); history per screen with read-only old versions; rollback = a new
+    history row with the old JSON (keeps a pending draft) and restores the old bytes.

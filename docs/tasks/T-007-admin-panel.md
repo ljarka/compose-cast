@@ -1,6 +1,6 @@
 # T-007 — Admin panel MVP (roadmap A1–A5)
 
-Status: ready — next step: A4 (A1–A3 done) · Roadmap: [specs/roadmap.md A1–A5](../../specs/roadmap.md#a-admin-panel-mvp-t-007-split--the-smallest-vertical-slice), Etap 8 · Depends on: T-002 (JSON screen model), T-006 (data sources), T-042 (`LiveScreens` swap) · Module: server-store, server-admin, server-app
+Status: ready — next step: A5 (A1–A4 done) · Roadmap: [specs/roadmap.md A1–A5](../../specs/roadmap.md#a-admin-panel-mvp-t-007-split--the-smallest-vertical-slice), Etap 8 · Depends on: T-002 (JSON screen model), T-006 (data sources), T-042 (`LiveScreens` swap) · Module: server-store, server-admin, server-app
 
 ## Goal
 
@@ -92,6 +92,21 @@ The `:ro` data volume (A1 note) is still open.
   history list per screen (who, when); "Roll back" publishes an old version.
 - **Done when:** after publish, `GET /screens/{id}` serves the new document without a restart; a
   rollback restores the previous bytes; history is append-only (tests).
+
+**A4 result (2026-11-23):** `server-admin/ScreenPublishing.kt` (interface) + publish/rollback/revision
+routes, `AdminScreens.publish`/`rollback` + `AdminPublishing` in `server-app`, `ScreenStore.revision`
+and draft-keeping rollback. Tests: `AdminScreensTest` (+3 over HTTP: publish serves the new
+document, rollback restores the imported bytes, a screen with an unset secret is refused and
+nothing changes, a new screen appears for apps once published), `ScreenPagesTest` (+3),
+`ScreenStoreTest` (rollback keeps the draft). Real admin-mode server checked with curl: publish →
+new title without restart; rollback; restart keeps it. (The demo `main` embeds
+`picsum.photos`, a random image, so its bytes change on every rebuild in any mode — not a bug.)
+Notes for A5: a brand change must rebuild the registry the same way (build → write → serve,
+same lock: add `AdminScreens.saveBrand(..., serve)` and extend `ScreenPublishing` or add a
+`SettingsPublishing`); every publish re-renders all static screens and re-fetches their images
+(fine for tens of screens; cache images if it gets slow). Still open: the `:ro` data volume
+(A1 note) and install docs (`COMPOSECAST_MODE=admin`, admin env) — the admin is now usable, so do
+them with A5 or right after.
 
 ### A5 — App Settings
 - `/admin/settings`: app name, applicationId, server URL, brand colors (BrandConfig incl. T-040

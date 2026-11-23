@@ -81,10 +81,16 @@ class ScreenStore(private val database: StoreDatabase, private val clock: Clock 
     }
 
     /** Runs inside the caller's transaction ([StoreDatabase.tx]). */
-    private fun JdbcTransaction.publishIn(id: String, json: String, by: String, now: String) {
+    private fun JdbcTransaction.publishIn(
+        id: String,
+        json: String,
+        by: String,
+        now: String,
+        keepDraft: Boolean = false,
+    ) {
         val updated = Screens.update({ Screens.id eq id }) {
             it[liveJson] = json
-            it[draftJson] = null
+            if (!keepDraft) it[draftJson] = null
             it[updatedAt] = now
             it[publishedAt] = now
             it[publishedBy] = by
@@ -113,14 +119,21 @@ class ScreenStore(private val database: StoreDatabase, private val clock: Clock 
             .map(::revision)
     }
 
-    /** Publishes revision [revisionId] of [id] again (a new history row; the old one stays). */
+    /** Revision [revisionId] of [id], or null. */
+    fun revision(id: String, revisionId: Int): Revision? = database.tx {
+        ScreenHistory.selectAll()
+            .where { (ScreenHistory.screenId eq id) and (ScreenHistory.id eq revisionId) }
+            .singleOrNull()?.let(::revision)
+    }
+
+    /**
+     * Publishes revision [revisionId] of [id] again (a new history row; the old one stays). A pending
+     * draft is kept: rolling back the live version never throws away unpublished work.
+     */
     fun rollback(id: String, revisionId: Int, by: String) {
-        val revision = database.tx {
-            ScreenHistory.selectAll()
-                .where { (ScreenHistory.screenId eq id) and (ScreenHistory.id eq revisionId) }
-                .singleOrNull()?.let(::revision)
-        } ?: throw IllegalArgumentException("Screen '$id' has no revision $revisionId")
-        publish(id, revision.json, by)
+        val revision =
+            revision(id, revisionId) ?: throw IllegalArgumentException("Screen '$id' has no revision $revisionId")
+        database.tx { publishIn(id, revision.json, by, now(), keepDraft = true) }
     }
 
     private fun now() = Instant.now(clock).toString()

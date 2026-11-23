@@ -10,7 +10,7 @@ mode** (`COMPOSECAST_MODE=admin`, wired in `server-app`); files mode never opens
 |---|---|
 | `StoreDatabase.kt` | `StoreDatabase.open(file)`: connects (WAL, `busy_timeout` 5 s), creates the tables; `tx {}` runs one transaction; `createTables()` for feature modules' own tables |
 | `Tables.kt` | `screens` (id, draft_json, live_json, timestamps, published_by), `screen_history` (append-only), `app_settings` (key/value), `users` (unique email, bcrypt hash, role text), `sessions` (id = token hash, user, expiry) |
-| `ScreenStore.kt` | `list`, `get`, `live()` (what apps are served), `saveDraft`, `publish`, `publishAll` (one transaction: first-start import), `history`, `rollback` (= publish an old revision again) |
+| `ScreenStore.kt` | `list`, `get`, `live()` (what apps are served), `saveDraft`, `publish`, `publishAll` (one transaction: first-start import), `history`, `revision`, `rollback` (= publish an old revision again; keeps a pending draft) |
 | `UserStore.kt` | Admin accounts + sessions (A2): `findByEmail`, `create`, `createIfNone` (atomic first-admin bootstrap), `createSession`, `sessionUser` (deletes an expired one), `deleteSession`, `deleteExpiredSessions`; stores bcrypt hashes and session-id hashes made by `server-admin` |
 | `SettingsStore.kt` | `settings[key]` get/set; `BRAND` = the brand as `brand.json` text |
 
