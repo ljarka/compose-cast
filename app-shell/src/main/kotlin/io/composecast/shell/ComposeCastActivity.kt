@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,11 +24,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -57,20 +61,26 @@ import kotlinx.coroutines.launch
  * The whole app of a compose-cast Android app: fetches the server's screens and plays them, with a
  * back stack, loading/error states and action routing. Configured only through resources that the
  * `io.composecast.app` Gradle plugin sets from `compose-cast.properties` (T-011, T-024):
- * `composecast_server_url`, `composecast_frame_primary`, `composecast_frame_background`, `app_name`.
+ * `composecast_server_url`, `composecast_frame_primary`, `composecast_frame_background`, `app_name`,
+ * `composecast_preview` (the Preview app: server chosen at runtime, [PreviewLink]).
  */
 class ComposeCastActivity : ComponentActivity() {
 
-    private val serverUrl by lazy { getString(R.string.composecast_server_url) }
     private val framePrimary by lazy { Color(getColor(R.color.composecast_frame_primary)) }
     private val frameBackground by lazy { Color(getColor(R.color.composecast_frame_background)) }
+    private val preview by lazy { resources.getBoolean(R.bool.composecast_preview) }
+    private val previewStore by lazy { PreviewServerStore(this) }
 
-    private val client by lazy {
-        ComposeCastClient(ComposeCastConfig(serverUrl = serverUrl, logEnabled = true))
-    }
+    /** The server: `app.serverUrl`, or in the Preview app the linked/typed one (null = not chosen yet). */
+    private var serverUrl by mutableStateOf<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        serverUrl = if (preview) {
+            linkedServer(intent) ?: previewStore.serverUrl
+        } else {
+            getString(R.string.composecast_server_url)
+        }
         // Status bar sits on the top app bar (frame primary color): light or dark icons to match.
         val statusBar = framePrimary.let {
             if (it.luminance() > 0.5f) {
@@ -82,27 +92,55 @@ class ComposeCastActivity : ComponentActivity() {
         enableEdgeToEdge(statusBarStyle = statusBar)
         setContent {
             MaterialTheme(colorScheme = frameColorScheme(framePrimary, frameBackground)) {
-                ComposeCastApp(
-                    client = client,
-                    serverUrl = serverUrl,
-                    onOpenUrl = { url ->
-                        // false = no app can open it (would otherwise crash with ActivityNotFoundException).
-                        try {
-                            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-                            true
-                        } catch (e: ActivityNotFoundException) {
-                            false
+                val url = serverUrl
+                if (url == null) {
+                    ConnectScreen(onConnect = ::connect)
+                } else {
+                    // A new server starts over: new client, empty back stack.
+                    key(url) {
+                        val client = remember {
+                            ComposeCastClient(ComposeCastConfig(serverUrl = url, logEnabled = true))
                         }
-                    },
-                )
+                        DisposableEffect(client) { onDispose { client.close() } }
+                        ComposeCastApp(
+                            client = client,
+                            serverUrl = url,
+                            unreachableHint = if (preview) {
+                                "Check the server address (Change server)."
+                            } else {
+                                "Check app.serverUrl in compose-cast.properties."
+                            },
+                            onChangeServer = if (preview) ({ connect(null) }) else null,
+                            onOpenUrl = { link ->
+                                // false = no app can open it (would otherwise crash with ActivityNotFoundException).
+                                try {
+                                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(link)))
+                                    true
+                                } catch (e: ActivityNotFoundException) {
+                                    false
+                                }
+                            },
+                        )
+                    }
+                }
             }
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        client.close()
+    /** A connect link while running (the activity is `singleTop`): switch to that server. */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (preview) linkedServer(intent)?.let(::connect)
     }
+
+    /** Preview app: remember [url] (null = forget it and show the connect screen). */
+    private fun connect(url: String?) {
+        previewStore.serverUrl = url
+        serverUrl = url
+    }
+
+    private fun linkedServer(intent: Intent?): String? =
+        intent?.takeIf { it.action == Intent.ACTION_VIEW }?.dataString?.let(PreviewLink::serverUrl)
 }
 
 /**
@@ -123,7 +161,13 @@ private fun contentColorFor(color: Color): Color = if (color.luminance() > 0.5f)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ComposeCastApp(client: ComposeCastClient, serverUrl: String, onOpenUrl: (String) -> Boolean) {
+private fun ComposeCastApp(
+    client: ComposeCastClient,
+    serverUrl: String,
+    unreachableHint: String,
+    onChangeServer: (() -> Unit)?,
+    onOpenUrl: (String) -> Boolean,
+) {
     // Back stack of (screen, params) entries; survives rotation. System back pops it.
     var backStack by rememberSaveable(stateSaver = BackStackSaver) {
         mutableStateOf(listOf(Action.Navigate("main")))
@@ -150,6 +194,16 @@ private fun ComposeCastApp(client: ComposeCastClient, serverUrl: String, onOpenU
                 title = {
                     val title = screenState?.getOrNull()?.title ?: stringResource(R.string.app_name)
                     Text(title)
+                },
+                actions = {
+                    if (onChangeServer != null) {
+                        TextButton(
+                            onClick = onChangeServer,
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onPrimary,
+                            ),
+                        ) { Text("Change server") }
+                    }
                 },
             )
         },
@@ -179,7 +233,7 @@ private fun ComposeCastApp(client: ComposeCastClient, serverUrl: String, onOpenU
                                 // The server answered (e.g. 404 unknown screen): not a connectivity problem.
                                 "Server error ${error.status} for screen '$screenId'."
                             else ->
-                                "Cannot reach $serverUrl.\nCheck app.serverUrl in compose-cast.properties.\n\n${error?.message}"
+                                "Cannot reach $serverUrl.\n$unreachableHint\n\n${error?.message}"
                         },
                         textAlign = TextAlign.Center,
                     )

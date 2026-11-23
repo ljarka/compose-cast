@@ -170,4 +170,27 @@ class RoutingTest {
         assertTrue("warnings:" in debug, debug)
         assertTrue("components[0]" in debug, debug)
     }
+
+    @Test
+    fun `connect page hands this server to the Preview app (T-045)`() = test {
+        val page = client.get("/connect") {
+            header(HttpHeaders.Host, "app.example.com")
+            header("X-Forwarded-Proto", "https")
+        }
+        assertEquals(HttpStatusCode.OK, page.status)
+        assertEquals("no-store", page.headers[HttpHeaders.CacheControl])
+        val html = page.bodyAsText()
+        assertTrue(
+            "intent://connect?url=https%3A%2F%2Fapp.example.com#Intent;scheme=composecast;" +
+                "package=io.composecast.preview;S.browser_fallback_url=https%3A%2F%2Fgithub.com" in html,
+            html,
+        )
+        assertTrue("composecast://connect?url=https%3A%2F%2Fapp.example.com" in html)
+        assertTrue("<code>https://app.example.com</code>" in html)
+
+        val local = client.get("/connect") { header(HttpHeaders.Host, "10.0.2.2:8080") }.bodyAsText()
+        assertTrue("url=http%3A%2F%2F10.0.2.2%3A8080" in local, "no proxy: the connection's scheme")
+        val hostile = client.get("/connect") { header(HttpHeaders.Host, "\"><script>x</script>") }
+        assertEquals(HttpStatusCode.BadRequest, hostile.status)
+    }
 }

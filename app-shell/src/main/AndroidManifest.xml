@@ -15,12 +15,28 @@
 
         <activity
             android:name="io.composecast.shell.ComposeCastActivity"
+            android:launchMode="singleTop"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- composecast://connect?url=… (T-045): enabled only in the Preview app (app.preview), so
+             branded apps never accept another server. -->
+        <activity-alias
+            android:name="io.composecast.shell.ConnectLink"
+            android:targetActivity="io.composecast.shell.ComposeCastActivity"
+            android:enabled="@bool/composecast_preview"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="composecast" android:host="connect" />
+            </intent-filter>
+        </activity-alias>
 
     </application>
 

@@ -11,8 +11,10 @@ contain no Kotlin. For SDK details read `sdk-android/AGENTS.md`.
 | File | Purpose |
 |---|---|
 | `ComposeCastActivity.kt` | Launcher activity; reads config from resources; `ComposeCastApp` composable (back stack, states, action routing), frame color scheme, status bar style |
-| `AndroidManifest.xml` | `INTERNET`, application label/icon/theme/`networkSecurityConfig`, the launcher activity — merged into every app |
-| `res/values/composecast_config.xml` | **Defaults** of the values the plugin overrides: `app_name`, `composecast_server_url`, `composecast_frame_primary`, `composecast_frame_background` |
+| `PreviewConnection.kt` | Preview app (T-045): `PreviewLink.serverUrl` (`composecast://connect?url=…`), `PreviewLink.normalize` (typed address; no scheme = https), `PreviewServerStore` (SharedPreferences) |
+| `ConnectScreen.kt` | Preview app without a server: how to connect + address field |
+| `AndroidManifest.xml` | `INTERNET`, application label/icon/theme/`networkSecurityConfig`, the launcher activity (`singleTop`), the `ConnectLink` alias (`composecast://connect`, enabled only by `@bool/composecast_preview`) — merged into every app |
+| `res/values/composecast_config.xml` | **Defaults** of the values the plugin overrides: `app_name`, `composecast_server_url`, `composecast_frame_primary`, `composecast_frame_background`, `composecast_preview` (bool) |
 | `res/values/themes.xml` | `Theme.ComposeCast`: window/splash background = `composecast_frame_background` |
 | `res/xml/composecast_network_security_config.xml` | https only; the plugin overrides it in debug builds (cleartext to 10.0.2.2/localhost/127.0.0.1) |
 | `res/mipmap-anydpi/ic_launcher.xml`, `res/drawable/ic_launcher_foreground.xml` | Default adaptive icon (cast glyph on `composecast_frame_primary`); overridden by `app.icon` |
@@ -46,12 +48,15 @@ ComposeCastActivity (config: getString/getColor of the resources above)
 - Frame colors: top app bar = primary (title black/white by luminance), loading/error background =
   background; status bar icons light/dark by the primary's luminance (`enableEdgeToEdge`). Content
   colors are the server's brand, painted by the RC document.
-- `client` and config are `lazy`: resources are not available before `onCreate`.
+- Server URL is state: `app.serverUrl`, or in the Preview app the linked/typed one (null → `ConnectScreen`).
+  `key(url)` gives each server a new client and back stack; "Change server" (Preview only) forgets
+  it. A connect link while running arrives in `onNewIntent` (`singleTop`).
+- Config is `lazy`: resources are not available before `onCreate`.
 
 ## Build
 
 ```bash
-./gradlew :app-shell:assembleDebug :app-shell:lintDebug
+./gradlew :app-shell:assembleDebug :app-shell:lintDebug :app-shell:testDebugUnitTest   # PreviewLinkTest
 ./gradlew :app-template:installDebug     # the shell runs in the demo app
 ```
 

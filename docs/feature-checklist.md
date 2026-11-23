@@ -100,7 +100,7 @@ Android only ([ADR 0022](decisions/0022-android-only.md), owner 2026-11-16).
 - [ ] App templates (news, catalog, events, weather): a working app in 5 minutes — T-030
 - [ ] Live preview on a phone, refreshed on every edit — T-032
 - [ ] AI assistant (optional, own API key): describe a screen → draft; brand palette — T-033
-- [ ] Preview on a device: temporary `__preview` screen + QR code ([ADR 0013](decisions/0013-admin-preview.md));
+- [ ] Preview on a device: temporary `__preview` screen + QR code ([ADR 0013](decisions/0013-admin-preview.md)); Preview app + `/connect` done (T-045 B1), drafts next (B2);
   in-browser RC player later, if one matures
 - [ ] Publish (screen goes live); change history per screen (who published, when); one-click rollback
 - [ ] **App Settings page:** app name, `applicationId`, server URL, `BrandConfig` (primary colour,

@@ -6,4 +6,7 @@
     <string name="composecast_server_url" translatable="false">http://10.0.2.2:8080</string>
     <color name="composecast_frame_primary">#6200EE</color>
     <color name="composecast_frame_background">#FAFAFA</color>
+    <!-- true only in the compose-cast Preview app (app.preview, T-045): server chosen at runtime,
+         composecast://connect links enabled. -->
+    <bool name="composecast_preview">false</bool>
 </resources>

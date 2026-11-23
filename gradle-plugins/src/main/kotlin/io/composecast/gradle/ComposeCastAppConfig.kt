@@ -16,6 +16,12 @@ data class ComposeCastAppConfig(
     val versionCode: Int,
     val versionName: String,
     val signing: Signing? = null,
+    /**
+     * `app.preview=true`: the generic compose-cast Preview app (T-045, ADR 0024) — the server URL is
+     * chosen at runtime (`composecast://connect` link or typed in), so `app.serverUrl` is optional,
+     * and plain HTTP is allowed in every build. Never for a branded app.
+     */
+    val preview: Boolean = false,
 ) {
     /**
      * Release signing (T-044): keystore and alias from the properties file; passwords only from env
@@ -53,8 +59,23 @@ data class ComposeCastAppConfig(
             if (!applicationIdPattern.matches(applicationId)) {
                 invalid("app.applicationId", "is not a valid application id: '$applicationId'")
             }
-            val serverUrl = required("app.serverUrl").trimEnd('/')
-            if (!serverUrl.startsWith("http://") && !serverUrl.startsWith("https://")) {
+            val preview = when (val value = optional("app.preview")) {
+                null, "false" -> false
+                "true" -> true
+                else -> invalid("app.preview", "must be true or false (is '$value')")
+            }
+            val serverUrl = (
+                if (preview) {
+                    optional(
+                        "app.serverUrl",
+                    ).orEmpty()
+                } else {
+                    required("app.serverUrl")
+                }
+                ).trimEnd('/')
+            if (!(preview && serverUrl.isEmpty()) && !serverUrl.startsWith("http://") &&
+                !serverUrl.startsWith("https://")
+            ) {
                 invalid("app.serverUrl", "must start with http:// or https:// (is '$serverUrl')")
             }
             val framePrimary = color("app.frame.primaryColor", required("app.frame.primaryColor"))
@@ -101,6 +122,7 @@ data class ComposeCastAppConfig(
                 versionCode = versionCode,
                 versionName = optional("app.versionName") ?: "1.0",
                 signing = signing,
+                preview = preview,
             )
         }
     }

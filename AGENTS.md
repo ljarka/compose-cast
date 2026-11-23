@@ -48,6 +48,7 @@ Do not load the whole project: root `AGENTS.md` → task → the modules in its 
 | `sdk-android` | Fetch RC documents, play with `remote-player-view` (`ComposeCastScreen`) | done |
 | `app-shell` | The Android app itself (activity, back stack, states, action routing), configured via resources | done |
 | `app-template` | Demo app built like an app repository: `io.composecast.app` + `compose-cast.properties` | done |
+| `app-preview` | The generic compose-cast Preview app (`app.preview=true`): any server via `/connect` link or typed (T-045) | in progress |
 | `gradle-plugins` (included build) | `io.composecast.app` Gradle plugin: properties → branded app + shell | done |
 | `compat-tests` | Screenshot tests server → player; goldens = README images | done |
 | `server-store` | Admin database (SQLite/Exposed): screens with drafts + history, users + sessions, app settings (T-007) | done |

@@ -58,4 +58,28 @@ class ComposeCastAppConfigTest {
         assertTrue("file not found" in message("app.signing.storeFile=missing.jks\napp.signing.keyAlias=a"))
         assertTrue("must not be in the file" in message("app.signing.storePassword=secret"))
     }
+
+    @Test
+    fun `preview - server URL optional, only true or false (T-045)`() {
+        assertEquals(false, config("").preview)
+        val file = dir.resolve("preview.properties")
+        file.writeText(
+            """
+            app.name=compose-cast Preview
+            app.applicationId=io.composecast.preview
+            app.preview=true
+            app.frame.primaryColor=#1D1D1F
+            app.frame.backgroundColor=#FFFFFF
+            """.trimIndent(),
+        )
+        val preview = ComposeCastAppConfig.load(file)
+        assertTrue(preview.preview)
+        assertEquals("", preview.serverUrl)
+        val message = assertFailsWith<GradleException> { config("app.preview=yes") }.message!!
+        assertTrue("'app.preview'" in message, message)
+        assertFailsWith<GradleException>("a branded app still needs its server") {
+            file.writeText(file.readText().replace("app.preview=true", "app.preview=false"))
+            ComposeCastAppConfig.load(file)
+        }
+    }
 }

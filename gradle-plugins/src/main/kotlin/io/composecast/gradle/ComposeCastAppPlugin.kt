@@ -39,6 +39,7 @@ class ComposeCastAppPlugin : Plugin<Project> {
                 // App resources override app-shell's defaults (composecast_config.xml).
                 resValue("string", "app_name", config.name)
                 resValue("string", "composecast_server_url", config.serverUrl)
+                resValue("bool", "composecast_preview", config.preview.toString())
                 resValue("color", "composecast_frame_primary", config.framePrimaryColor)
                 resValue("color", "composecast_frame_background", config.frameBackgroundColor)
             }
@@ -83,15 +84,25 @@ class ComposeCastAppPlugin : Plugin<Project> {
 
         // Plain HTTP only in debug builds and only to local dev hosts; every other build type
         // needs an https:// server, checked before it builds (debug builds stay usable meanwhile).
+        // The Preview app (app.preview) connects to whatever server the owner runs, often plain
+        // http during setup: cleartext everywhere, in every build (ADR 0024).
         val networkConfig = project.tasks.register(
             "generateComposeCastDebugNetworkConfig",
             GenerateDebugNetworkConfigTask::class.java,
         ) {
+            it.allowAllHosts.set(config.preview)
             it.outputDir.set(project.layout.buildDirectory.dir("generated/composecast/debugNetwork"))
         }
         androidComponents.onVariants { variant ->
             val variantName = variant.name.replaceFirstChar(Char::uppercase)
+            if (config.preview) {
+                variant.sources.res?.addGeneratedSourceDirectory(
+                    networkConfig,
+                    GenerateDebugNetworkConfigTask::outputDir,
+                )
+            }
             if (variant.buildType == "debug") {
+                if (config.preview) return@onVariants
                 variant.sources.res?.addGeneratedSourceDirectory(
                     networkConfig,
                     GenerateDebugNetworkConfigTask::outputDir,
@@ -111,7 +122,7 @@ class ComposeCastAppPlugin : Plugin<Project> {
             }.orEmpty()
             val check = project.tasks.register("check${variantName}ComposeCastConfig") { task ->
                 task.doLast {
-                    if (!serverUrl.startsWith("https://")) {
+                    if (!config.preview && !serverUrl.startsWith("https://")) {
                         throw GradleException(
                             "app.serverUrl must start with https:// for ${variant.name} builds (is '$serverUrl' in $source).",
                         )

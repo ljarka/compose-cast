@@ -13,7 +13,7 @@ plugin marker `io.composecast.app:io.composecast.app.gradle.plugin`.
 | `ComposeCastAppPlugin.kt` | Applies `com.android.application`; reads the config; sets namespace (default = applicationId), SDK levels, applicationId, version, `resValue`s; placeholder main manifest if the project has none; icon + debug network config tasks; release https check; adds the shell |
 | `ComposeCastAppConfig.kt` | Parses/validates `compose-cast.properties` (missing/invalid key → `GradleException` naming it) |
 | `GenerateLauncherIconTask.kt` | `app.icon` → `mipmap-anydpi/ic_launcher.xml` (overrides the shell's) + foreground PNG per density, fit into the 72dp safe zone |
-| `GenerateDebugNetworkConfigTask.kt` | Debug variants: `xml/composecast_network_security_config.xml` allowing cleartext to local dev hosts |
+| `GenerateDebugNetworkConfigTask.kt` | Debug variants: `xml/composecast_network_security_config.xml` allowing cleartext to local dev hosts; `allowAllHosts` (Preview app, all variants): cleartext everywhere |
 | `src/test/.../ComposeCastAppConfigTest.kt` | Unit tests of the properties parsing (signing keys, T-044); run by `verify.sh` as `./gradlew -p gradle-plugins test` |
 | `build.gradle.kts` | `java-gradle-plugin`, `implementation(libs.android.gradle)` (AGP comes with the plugin), version resource, publishing (mirrors the root block) |
 
@@ -26,6 +26,7 @@ plugin marker `io.composecast.app:io.composecast.app.gradle.plugin`.
 | `app.versionCode`, `app.versionName` (optional) | default `1`, `1.0` |
 | `app.serverUrl` | `resValue string composecast_server_url`; non-debug variants: `check<Variant>ComposeCastConfig` before `pre<Variant>Build` fails unless `https://` |
 | `app.frame.primaryColor`, `app.frame.backgroundColor` | `resValue color composecast_frame_primary` / `composecast_frame_background` |
+| `app.preview` (optional, `true`/`false`) | **Only the compose-cast Preview app** (T-045): `resValue bool composecast_preview`; `app.serverUrl` becomes optional; every build type gets the generated network config with plain HTTP to any host (`GenerateDebugNetworkConfigTask.allowAllHosts`); no https check |
 | `app.icon`, `app.icon.backgroundColor` (optional) | generated launcher icon; background default = frame primary |
 | `app.signing.storeFile`, `app.signing.keyAlias` (optional, both or none) | signing config `composecastRelease` on the `release` build type (T-044); keystore path relative to the file. Passwords: env `COMPOSECAST_SIGNING_STORE_PASSWORD` / `COMPOSECAST_SIGNING_KEY_PASSWORD` or `-Pcomposecast.signing.storePassword` / `keyPassword`; missing → `check<Variant>ComposeCastConfig` fails release builds only. Password keys in the file are rejected |
 

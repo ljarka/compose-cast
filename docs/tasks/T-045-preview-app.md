@@ -1,6 +1,6 @@
 # T-045 — Generic "compose-cast Preview" app + draft preview
 
-Status: ready · Roadmap: specs/roadmap.md B1–B3 · Depends on: T-007 (admin panel, `__preview`) · Module: app-shell, app-template, server-admin
+Status: in progress — next step: B2 (B1 done) · Roadmap: specs/roadmap.md B1–B3 · Depends on: T-007 (admin panel, `__preview`) · Module: app-shell, app-template, server-admin
 
 ## Goal
 
@@ -12,6 +12,17 @@ from the latest GitHub Release, scan the admin's QR code, done ([ADR 0024](../de
 1. **B1** Preview flavor of `app-template`: server URL from a QR scan (remembered), http allowed only
    in this flavor; the release workflow attaches `compose-cast-preview.apk` to every release.
    Done when: scanning a QR with a server URL shows that server's `main` screen.
+
+   **B1 result (2026-11-23):** module `app-preview` (not a flavor, see its AGENTS.md); plugin key
+   `app.preview`; shell `PreviewConnection.kt` + `ConnectScreen.kt` + `ConnectLink` alias;
+   `server-app` `GET /connect` (ADR 0026 decides the open question below: QR → https `/connect`
+   page → `intent://` link, no camera permission); release job `preview-apk`. Checked on the
+   emulator: fresh app → connect screen; the page's `intent://` link (fired with `am start`) →
+   connected → demo `main`; restart keeps the server; Change server → connect screen; only
+   `io.composecast.preview` handles the link; demo app smoke flow passes. **Not checked:** the
+   tap in Chrome (the emulator ran without `-gpu host`, Chrome drew black; `maestro/connect.yaml`
+   is ready) and a real phone camera scan. **Owner:** create the signing secrets
+   ([playbook](../playbooks/preview-app.md)) before the next release, or it has no APK.
 2. **B2** Draft preview (ADR 0013 mechanics): `POST /admin/api/screens/{id}/preview` → `__preview`
    per session; the editor shows the QR. Done when: a saved draft is visible in the Preview app
    before publishing.

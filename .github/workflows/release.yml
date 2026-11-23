@@ -9,6 +9,11 @@ name: Release
 #                       in version <tag without v> to the Reposilite repository (T-024, ADR 0019);
 #                       skipped until the variable COMPOSECAST_MAVEN_URL is set
 #                       (docs/playbooks/maven-repository.md).
+# - release published → compose-cast-preview.apk (the generic Preview app, T-045, ADR 0024) as a
+#                       release asset, signed with the secrets COMPOSECAST_PREVIEW_KEYSTORE_BASE64,
+#                       COMPOSECAST_PREVIEW_STORE_PASSWORD, COMPOSECAST_PREVIEW_KEY_PASSWORD (alias
+#                       "preview"); skipped with a warning while they are missing
+#                       (docs/playbooks/preview-app.md).
 
 on:
   push:
@@ -98,3 +103,54 @@ jobs:
           ORG_GRADLE_PROJECT_composecastUsername: ${{ secrets.COMPOSECAST_MAVEN_USERNAME }}
           ORG_GRADLE_PROJECT_composecastPassword: ${{ secrets.COMPOSECAST_MAVEN_PASSWORD }}
         run: ./gradlew --console=plain -PcomposecastVersion="${TAG#v}" publish :gradle-plugins:publish
+
+  preview-apk:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      KEYSTORE_BASE64: ${{ secrets.COMPOSECAST_PREVIEW_KEYSTORE_BASE64 }}
+      COMPOSECAST_SIGNING_STORE_PASSWORD: ${{ secrets.COMPOSECAST_PREVIEW_STORE_PASSWORD }}
+      COMPOSECAST_SIGNING_KEY_PASSWORD: ${{ secrets.COMPOSECAST_PREVIEW_KEY_PASSWORD }}
+    steps:
+      - name: Signing secrets present?
+        id: secrets
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::warning::COMPOSECAST_PREVIEW_KEYSTORE_BASE64 is not set: no compose-cast-preview.apk for this release (docs/playbooks/preview-app.md)"
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.secrets.outputs.ok == 'true'
+      - uses: actions/setup-java@v4
+        if: steps.secrets.outputs.ok == 'true'
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - uses: gradle/actions/setup-gradle@v4
+        if: steps.secrets.outputs.ok == 'true'
+      - name: Build the signed Preview APK
+        if: steps.secrets.outputs.ok == 'true'
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          # The keystore stays outside the repository; a copy of the properties adds the signing keys.
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/preview.jks"
+          config="$RUNNER_TEMP/compose-cast.properties"
+          grep -v '^app.version' app-preview/compose-cast.properties > "$config"
+          {
+            echo "app.versionName=${TAG#v}"
+            echo "app.versionCode=${{ github.run_number }}"
+            echo "app.signing.storeFile=$RUNNER_TEMP/preview.jks"
+            echo "app.signing.keyAlias=preview"
+          } >> "$config"
+          ./gradlew --console=plain -Pcomposecast.appConfig="$config" :app-preview:assembleRelease
+          cp app-preview/build/outputs/apk/release/app-preview-release.apk "$RUNNER_TEMP/compose-cast-preview.apk"
+      - name: Upload compose-cast-preview.apk
+        if: steps.secrets.outputs.ok == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.event.release.tag_name }}" "$RUNNER_TEMP/compose-cast-preview.apk" --clobber

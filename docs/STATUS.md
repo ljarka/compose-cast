@@ -5,7 +5,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Next
 
-- **[T-045 Generic Preview app + draft preview](tasks/T-045-preview-app.md)** (Roadmap B) — the `ready` task.
+- No `ready` task: specify one.
 
 ## Task queue (priority order)
 
@@ -35,7 +35,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-042 Reload the data directory without a restart](tasks/T-042-reload-data-dir.md) | Etap 6 | done (`383c443`) |
 | [T-044 Release signing configured by the app repository](tasks/T-044-release-signing.md) | Etap 6 | done (`72bb93c`) |
 | [T-007 Admin panel MVP](tasks/T-007-admin-panel.md) | Etap 8 | done (`6ba75e7`) — A1–A5: `server-store`, admin mode, login + roles, editor + drafts, publish + history + rollback, settings, admin mode in Docker |
-| [T-045 Generic Preview app + draft preview](tasks/T-045-preview-app.md) | Roadmap B | ready — roadmap B1–B3 (ADR 0024) |
+| [T-045 Generic Preview app + draft preview](tasks/T-045-preview-app.md) | Roadmap B | in progress — B1 done (Preview app, `/connect`), next: B2 draft preview (ADR 0024, 0026) |
 | [T-029 Visual screen editor (no JSON)](tasks/T-029-visual-screen-editor.md) | Etap 8 | queued (after T-045); roadmap C1–C3 (C1: ADR on the admin UI technology) |
 | [T-030 App templates](tasks/T-030-app-templates.md) | Etap 8 | queued (after T-029); roadmap D1 |
 | [T-031 Data source wizard (URL → screens)](tasks/T-031-data-source-wizard.md) | Etap 8 | queued (after T-030); roadmap D2 |
@@ -81,9 +81,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- T-045 B1 — the compose-cast Preview app
 - T-007 A5 — app settings, admin mode in Docker (T-007 done)
 - T-007 A4 — publish, history, rollback
 - T-007 A3 — screen list, JSON editor, drafts
 - T-007 A2 — login and roles
 - T-007 A1 — `server-store` + admin mode
-- Project constitution

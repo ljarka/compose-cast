@@ -39,4 +39,6 @@ dependencies {
     implementation(platform(libs.compose.bom))
     implementation(libs.activity.compose)
     implementation(libs.compose.material3)
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.junit)
 }

@@ -1,0 +1,55 @@
+# compose-cast Preview (T-045): "Change server" → connect screen; the server's /connect page in the
+# browser (where the admin's QR code points) → "Open in compose-cast Preview" → the server's main.
+# Run with a server on the host: maestro test -e SERVER=http://10.0.2.2:8080 app-preview/maestro/connect.yaml
+# (SERVER is required: Maestro 2.12.1 lets a flow's own env: block win over -e, so no default here.)
+appId: io.composecast.preview
+---
+- launchApp
+- runFlow:
+    when:
+      visible: "Change server"
+    commands:
+      - tapOn: "Change server"
+- assertVisible: "Connect to your server"
+- openLink:
+    link: ${SERVER}/connect
+    browser: true
+# Chrome's first-run screens on a fresh emulator (labels differ by Chrome version)
+- runFlow:
+    when:
+      visible: "Accept & continue"
+    commands:
+      - tapOn: "Accept & continue"
+- runFlow:
+    when:
+      visible: "Use without an account"
+    commands:
+      - tapOn: "Use without an account"
+- runFlow:
+    when:
+      visible: "Stay signed out"
+    commands:
+      - tapOn: "Stay signed out"
+- runFlow:
+    when:
+      visible: "No thanks"
+    commands:
+      - tapOn: "No thanks"
+- runFlow:
+    when:
+      visible: "Got it"
+    commands:
+      - tapOn: "Got it"
+- runFlow:
+    when:
+      visible: "No, thanks"
+    commands:
+      - tapOn: "No, thanks"
+- extendedWaitUntil:
+    visible: "Open in compose-cast Preview"
+    timeout: 20000
+- tapOn: "Open in compose-cast Preview"
+- extendedWaitUntil:
+    visible: "Get started"
+    timeout: 20000
+- assertVisible: "Change server"

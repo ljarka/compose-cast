@@ -25,6 +25,12 @@ fun Application.configureRouting(screens: LiveScreens) {
         get("/health") {
             call.respondText("ok")
         }
+        // Where the admin's QR code points: hands this server to the compose-cast Preview app (T-045).
+        get("/connect") {
+            val serverUrl = ConnectPage.serverUrl(call) ?: return@get call.respond(HttpStatusCode.BadRequest)
+            call.response.header(HttpHeaders.CacheControl, "no-store")
+            call.respondText(ConnectPage.html(serverUrl), ContentType.Text.Html)
+        }
         get("/version") {
             call.respond(VersionInfo(serverVersion = "1.0.0", protocolVersion = "1.0"))
         }

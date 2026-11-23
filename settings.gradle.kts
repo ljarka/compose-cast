@@ -34,5 +34,6 @@ if (providers.gradleProperty("composecast.serverOnly").orNull != "true") {
     include(":sdk-android")
     include(":app-shell")
     include(":app-template")
+    include(":app-preview")
     include(":compat-tests")
 }

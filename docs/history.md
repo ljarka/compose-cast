@@ -321,3 +321,10 @@ README roadmap's "Etap" numbers.
     screen first. Image user fixed at UID 1000 owning `/data`, production volume writable, admin
     mode refuses a read-only data dir with the `chown` fix; install playbook + `example.env` cover
     admin mode; `verify.sh --docker` logs in to admin mode.
+67. **T-045 B1 — the compose-cast Preview app**: module `app-preview` (`app.preview=true` in the
+    plugin: server optional, http everywhere); the shell takes the server from a
+    `composecast://connect` link (alias enabled only in the Preview app) or a typed address and
+    remembers it; `GET /connect` on the server is the QR target (`intent://` to the app, APK as
+    fallback) — ADR 0026. Release job `preview-apk` signs it with secrets (owner sets them).
+    Emulator: connect link → demo `main`; only the Preview app handles the link; branded demo app
+    smoke flow still passes.
