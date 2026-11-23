@@ -52,19 +52,7 @@
         <div class="card"><p class="error" role="alert">Not changed:</p>
           <ul class="problems"><#list visualProblems as p><li><code>${p}</code></li></#list></ul></div>
       </#if>
-      <#if canEdit>
-      <#if mode == "component">
-      <form class="card tools" method="post" action="/admin/screens/${id?url}/visual/edit?node=${node?url}">
-        <div class="toolbar" role="group" aria-label="Move and edit" style="margin-bottom: 0">
-          <button name="op" value="up"<#if isFirst> disabled</#if> title="Move up">↑ Up</button>
-          <button name="op" value="down"<#if isLast> disabled</#if> title="Move down">↓ Down</button>
-          <button name="op" value="into-previous"<#if isFirst> disabled</#if> title="Into the container above">→ Into above</button>
-          <button name="op" value="out"<#if isTopLevel> disabled</#if> title="Out of its container">← Out</button>
-          <button name="op" value="duplicate">Duplicate</button>
-          <button name="op" value="delete" class="danger">Delete</button>
-        </div>
-      </form>
-      </#if>
+      <#if canEdit && mode != "source">
       <form class="card tools" method="post" action="/admin/screens/${id?url}/visual/edit?node=${node?url}">
         <#if mode == "sources">
           <div class="toolbar">
@@ -73,8 +61,6 @@
             <button name="op" value="add-source">Add data source</button>
           </div>
           <p class="muted help">Bind to it as <code>{{name.field}}</code>; a key goes into the server's .env and here as <code>{{secret.NAME}}</code>. Or <a href="/admin/wizard">create screens from an API</a>.</p>
-        <#elseif mode == "source">
-          <div class="toolbar" style="margin-bottom: 0"><button name="op" value="delete-source" class="danger">Delete this data source</button></div>
         <#else>
         <div class="toolbar" style="margin-bottom: 0">
           <label class="inline">Add <@typeSelect/></label>
@@ -91,13 +77,31 @@
       </form>
       </#if>
       <#if mode != "list" && mode != "sources">
-      <form class="card panel-form" method="post" action="/admin/screens/${id?url}/visual?node=${node?url}">
+      <div class="card">
         <h2 style="margin-top: 0">${nodeLabel}</h2>
-        <fieldset class="plain"<#if !canEdit> disabled</#if>>
-          <#include "_form.ftl">
-        </fieldset>
-        <#if canEdit><button type="submit">Save</button></#if>
-      </form>
+        <#if canEdit && (mode == "component" || mode == "source")>
+        <form class="tools" method="post" action="/admin/screens/${id?url}/visual/edit?node=${node?url}" style="margin-bottom: 12px">
+          <#if mode == "component">
+            <div class="toolbar" role="group" aria-label="Move and edit" style="margin-bottom: 0">
+              <button name="op" value="up"<#if isFirst> disabled</#if> title="Move up">↑ Up</button>
+              <button name="op" value="down"<#if isLast> disabled</#if> title="Move down">↓ Down</button>
+              <button name="op" value="into-previous"<#if isFirst> disabled</#if> title="Into the container above">→ Into above</button>
+              <button name="op" value="out"<#if isTopLevel> disabled</#if> title="Out of its container">← Out</button>
+              <button name="op" value="duplicate">Duplicate</button>
+              <button name="op" value="delete" class="danger">Delete</button>
+            </div>
+          <#else>
+            <div class="toolbar" style="margin-bottom: 0"><button name="op" value="delete-source" class="danger">Delete this data source</button></div>
+          </#if>
+        </form>
+        </#if>
+        <form class="panel-form" method="post" action="/admin/screens/${id?url}/visual?node=${node?url}">
+          <fieldset class="plain"<#if !canEdit> disabled</#if>>
+            <#include "_form.ftl">
+          </fieldset>
+          <#if canEdit><button type="submit">Save</button></#if>
+        </form>
+      </div>
       <#if canEdit && mode != "source">
       <div class="card">
         <button type="button" hx-get="/admin/screens/${id?url}/visual/fields?node=${node?url}" hx-target="#data-fields" hx-indicator="#data-fields">Show fields from the data</button>
