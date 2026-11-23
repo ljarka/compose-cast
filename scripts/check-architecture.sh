@@ -115,10 +115,24 @@ for f in gradle:
             fail("R10", ADR23, rel(f), f"feature module '{name}' depends on '{dep}'",
                  "depend only on protocol, sdk-server, server-store; wire features together in server-app")
 
+# R11 — the server image copies every module server-app needs (transitively), or the build fails in Docker only.
+def project_deps(name, seen):
+    bf = root / name / "build.gradle.kts"
+    for dep in re.findall(r'project\(\s*"[:]([\w-]+)"\s*\)', bf.read_text() if bf.exists() else ""):
+        if dep not in seen:
+            seen.add(dep)
+            project_deps(dep, seen)
+    return seen
+dockerfile = (root / "server-app/Dockerfile").read_text()
+for dep in sorted(project_deps("server-app", {"server-app"})):
+    if not re.search(rf"^COPY {re.escape(dep)} {re.escape(dep)}$", dockerfile, re.M):
+        fail("R11", "server-app/AGENTS.md → Docker", "server-app/Dockerfile",
+             f"module '{dep}' is not copied into the build stage", f"add 'COPY {dep} {dep}'")
+
 if errors:
     print(f"Architecture check failed ({len(errors)}):")
     for e in errors:
         print(" -", e)
     sys.exit(1)
-print(f"Architecture OK: 10 rules, {len(kotlin)} Kotlin files, {len(gradle)} build files")
+print(f"Architecture OK: 11 rules, {len(kotlin)} Kotlin files, {len(gradle)} build files")
 PY

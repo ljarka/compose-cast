@@ -19,6 +19,7 @@ COPY gradle gradle
 COPY protocol protocol
 COPY sdk-server sdk-server
 COPY server-scripting server-scripting
+COPY server-store server-store
 COPY server-app server-app
 # Dependency downloads are cached across builds (BuildKit cache mount).
 RUN --mount=type=cache,target=/cache/gradle \
