@@ -114,7 +114,7 @@ them with A5 or right after.
 - **Done when:** a brand color change is visible in `/brand` and in the rendered screens; invalid
   colors are rejected with the field named.
 
-**A5 result (2026-11-23):** `server-admin/SettingsPages.kt` + `settings.ftl`, `BrandConfig.problems()`,
+**A5 result (2026-11-23, `6ba75e7`):** `server-admin/SettingsPages.kt` + `settings.ftl`, `BrandConfig.problems()`,
 `AdminScreens.publishBrand` (build → write → serve, same lock). Docker: UID 1000 owning `/data`,
 writable production volume, fail-fast on a read-only data dir, install playbook + `example.env`,
 admin smoke test in `verify-docker.sh`. Tests: `SettingsPagesTest` (4), `BrandConfigTest`,
