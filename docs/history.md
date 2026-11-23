@@ -345,3 +345,7 @@ README roadmap's "Etap" numbers.
     and saved as the draft. Starters per component type (test); a repeat takes the screen's data
     source; renaming its alias renames the uses. Acceptance: the weather app's `main` and every
     demo screen are rebuilt from empty over HTTP with only editor operations, byte-identical.
+72. **T-031 W1 — API probe + heuristics** (owner: T-031 before T-030): `ApiProbe` (public hosts
+    only, each redirect hop checked, 256 KB), `ApiShape` (lists of objects, field kinds, role
+    guesses) tested on TVMaze, Rick and Morty and JSONPlaceholder; new filter `plain` (API HTML →
+    text).

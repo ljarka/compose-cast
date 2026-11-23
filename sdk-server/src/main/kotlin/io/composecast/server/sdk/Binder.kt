@@ -347,8 +347,33 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
             "upper" -> value?.let { JsonPrimitive(text(it).uppercase(Locale.ROOT)) }
             "lower" -> value?.let { JsonPrimitive(text(it).lowercase(Locale.ROOT)) }
             "append" -> JsonPrimitive(text(value) + args.single())
+            "plain" -> value?.let { JsonPrimitive(plain(text(it))) }
             else -> error("unknown filter '$name'") // rejected by ScreenDefinition.problems()
         }
+
+        /** HTML → text: paragraphs and line breaks become newlines, tags go, entities are decoded. */
+        internal fun plain(html: String): String = html
+            .replace(Regex("(?i)<br\\s*/?>"), "\n")
+            .replace(Regex("(?i)</p>\\s*<p[^>]*>"), "\n\n")
+            .replace(Regex("<[^>]*>"), "")
+            .replace(Regex("&(#\\d+|#x[0-9a-fA-F]+|[a-zA-Z]+);")) { match ->
+                val entity = match.groupValues[1]
+                when {
+                    entity.startsWith("#x") -> entity.drop(2).toIntOrNull(16)?.let { String(Character.toChars(it)) }
+                    entity.startsWith("#") -> entity.drop(1).toIntOrNull()?.let { String(Character.toChars(it)) }
+                    else -> ENTITIES[entity]
+                } ?: match.value
+            }
+            .trim()
+
+        private val ENTITIES = mapOf(
+            "amp" to "&",
+            "lt" to "<",
+            "gt" to ">",
+            "quot" to "\"",
+            "apos" to "'",
+            "nbsp" to "\u00A0",
+        )
 
         private fun number(value: JsonElement) = (value as? JsonPrimitive)?.content?.toBigDecimalOrNull()
 

@@ -269,4 +269,14 @@ class DataBindingTest {
         assertEquals(dsl, io.composecast.protocol.ScreenJson.decode(json, "s.json"))
         assertEquals(ScreenDefinition::class, dsl::class)
     }
+
+    @Test
+    fun `plain turns API HTML into text (T-031)`() {
+        assertEquals(
+            "Under the Dome is the story & more.\n\nSecond <paragraph>.\nNew line ’",
+            BoundScreen.Filters.plain(
+                "<p><b>Under the Dome</b> is the story &amp; more.</p><p>Second &lt;paragraph&gt;.<br/>New line &#8217;</p>",
+            ),
+        )
+    }
 }

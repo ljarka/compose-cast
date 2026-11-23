@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     implementation(project(":protocol"))
+    implementation(project(":sdk-server")) // HttpImageLoader.isPrivateAddress (T-031 probe)
     implementation(project(":server-store"))
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.sessions)

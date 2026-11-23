@@ -1,6 +1,6 @@
 # T-031 — Data source wizard (URL → ready list/detail screens)
 
-Status: queued (after T-030) · Roadmap: Etap 8 · Depends on: T-006, T-029 · Module: server-admin, sdk-server
+Status: in progress — next step: W2 (W1 done) · Roadmap: Etap 8 · Depends on: T-006, T-029 · Module: server-admin, sdk-server
 
 ## Goal
 A non-developer pastes an API URL. The panel fetches it, shows the JSON as a tree and asks "what
@@ -24,6 +24,24 @@ the server, so the wizard also runs on the server.
 - Secrets: a header value can reference `{{secret.NAME}}`; the wizard never stores raw keys in
   screen JSON (it offers "save as secret" → instructions for `.env`, or the T-007 settings store
   if one exists).
+
+## Steps
+
+1. **W1** Probe + heuristics: `ApiProbe` (server-side GET, public hosts only — every redirect hop
+   checked —, 256 KB, `{{secret.NAME}}` from env), `ApiShape` (lists of objects, fields with
+   kinds, roles id/title/subtitle/image), filter `plain` (API HTML → text). Done when: heuristics
+   tested on 3 fixture APIs, the probe refuses private addresses.
+   **W1 result (2026-11-23):** done — `ApiShapeTest` (TVMaze shows, Rick and Morty characters,
+   JSONPlaceholder posts; trimmed copies in `server-admin/src/test/resources/fixtures/apis/`),
+   `ApiProbeTest` (private/loopback/link-local refused before any request, also after a redirect),
+   `DataBindingTest` (`plain`).
+2. **W2** Wizard page `/admin/wizard`: URL (+ headers) → probe → pick the list and the fields
+   (pre-filled with the guesses) → generates a list screen (`repeat` of cards, tap → detail) and a
+   detail screen (a detail URL template such as `…/shows/{{params.id}}`, or the item's fields
+   passed as params) as drafts, opened in the visual editor. Done when: TVMaze list + detail
+   render on the emulator without editing JSON.
+3. **W3** Field picker in the visual editor (probe the screen's source, click a field → its
+   `{{binding}}`), and a form for the screen's data sources instead of the JSON field.
 
 ## Acceptance criteria
 - With `https://api.tvmaze.com/shows`, the wizard produces list + detail screens that render on

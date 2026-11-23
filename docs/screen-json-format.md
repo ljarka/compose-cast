@@ -71,7 +71,7 @@ source fails; without them the server answers 502). String fields (`title`, `tex
 `image.url/alt`, `button.label`, action strings incl. `modifier.action`) may contain `{{path | filter:arg}}`:
 - roots: `params`, a source name, a repeat `as` name, `$index`; steps `.key`, `[n]`;
 - filters: `round[:digits]`, `date:'EEE'`, `lookup:table`, `default:'text'`, `upper`, `lower`,
-  `append:'text'`;
+  `append:'text'`, `plain` (HTML from an API → text: tags removed, `<p>`/`<br>` → line breaks, entities decoded);
 - a filter argument that is unquoted and has `.` or `[` is a **path** in the same scope (T-041),
   allowed in `append` and `default`: `{{h.code | append:'-' | append:h.is_day | lookup:icon}}` picks
   `"0-1": "☀️"` / `"0-0": "🌙"` (a lookup by two values); a missing path appends `""`;

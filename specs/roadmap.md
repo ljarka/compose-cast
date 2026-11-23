@@ -54,8 +54,8 @@ release signing), data-dir hot reload, releases `v0.1.0` and `v0.2.0`. Milestone
 
 | # | Step | Done when… |
 |---|---|---|
-| D1 | App templates in the admin: news, catalog, events, weather (T-030) | Choosing a template creates a working multi-screen app in one click |
-| D2 | Data source wizard: paste an API URL → field picker → list + detail screens (T-031) | A public API (e.g. TVMaze) becomes a list and a detail screen without JSON |
+| D1 | Data source wizard: paste an API URL → field picker → list + detail screens (T-031; before the templates, which need data sources — owner 2026-11-23) | A public API (e.g. TVMaze) becomes a list and a detail screen without JSON |
+| D2 | App templates in the admin: news, catalog, events, weather (T-030) | Choosing a template creates a working multi-screen app in one click |
 
 ### E. Ship the owner's app
 

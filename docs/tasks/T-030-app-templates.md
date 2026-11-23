@@ -1,6 +1,6 @@
 # T-030 — App templates (whole apps, not single screens)
 
-Status: ready (note: depends on T-031 per the line below, but is queued before it — settle the order first) · Roadmap: Etap 8 · Depends on: T-007, T-029, T-031 · Module: app-templates, server-admin
+Status: queued (after T-031, owner 2026-11-23) · Roadmap: Etap 8 · Depends on: T-007, T-029, T-031 · Module: app-templates, server-admin
 
 ## Goal
 On first login (and in "New app"), the admin picks a ready app: **News**, **Product catalog**,

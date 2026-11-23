@@ -17,6 +17,8 @@ only in admin mode (`COMPOSECAST_MODE=admin`); files mode has no `/admin`.
 | `VisualPages.kt` | `GET/POST /admin/screens/{id}/visual?node=` (tree + form; save = whole screen checked, then `saveDraft`), `POST …/visual/panel` (HTMX re-render, e.g. another action type; saves nothing), `POST …/visual/edit` (C3: `op` = add-after/add-inside/add-end/up/down/into-previous/out/duplicate/delete/wrap, `type`), `?node=` may be a list (`components.2.empty`), `formRows` (flat rows for `_form.ftl`), `HELP` texts |
 | `Palette.kt` | T-029 C3: `starters` (smallest valid component per type; a repeat gets the screen's first data source), `groups`, `containers`, structural edits on node paths: `add`, `delete`, `duplicate`, `move`, `intoPrevious`, `outOfParent`, `wrap` → `Result(screen, select)` |
 | `Bindings.kt` | `rename` of a binding root in JSON strings (renaming a repeat's `as`) |
+| `ApiProbe.kt` | T-031: server-side GET of an API for the wizard: public hosts only (each redirect hop resolved + `HttpImageLoader.isPrivateAddress`), ≤ 256 KB, object/array JSON only, `{{secret.NAME}}` from env; `Result(status, contentType, millis, json, error)` |
+| `ApiShape.kt` | T-031: `lists` (arrays of objects, largest first), item `fields` (path, sample, `Kind`), `roles` (id/title/subtitle/image guesses) |
 | `QrCode.kt` | `QrCode.svg(text)`: inline SVG QR code (`io.nayuki:qrcodegen`, ECC medium); the only template value rendered with `?no_esc` (generated, no user text) |
 | `ScreenPublishing.kt` | `ScreenPublishing` (publish, rollback, publishBrand, preview; implemented by `server-app`, which owns `LiveScreens`), `PublishException` (nothing changed) |
 | `AdminAuth.kt` | Accounts and sessions: `bootstrapAdmin`, `createUser`, `login` → token, `user(token)`, `logout`; bcrypt (`at.favre.lib:bcrypt`) |
@@ -94,7 +96,7 @@ HTTP without error; `RoutingNode.getAllRoutes()` lists endpoints.
 
 ## Dependencies
 
-`:protocol` (`ScreenJson`), `:server-store` (users, sessions, screens); Ktor core, sessions, freemarker; bcrypt. Versions in
+`:protocol` (`ScreenJson`), `:server-store` (users, sessions, screens), `:sdk-server` (only `HttpImageLoader.isPrivateAddress` for the probe); Ktor core, sessions, freemarker; bcrypt. Versions in
 `gradle/libs.versions.toml`. Never depends on `server-app` (R10).
 
 ## Tests
@@ -105,7 +107,8 @@ email, viewer 403 / editor allowed on every mutating route found in the routing 
 message, `allowHttp`, HTML escaping, bootstrap rules). `ScreenPagesTest` (list + statuses, create,
 invalid edit → problems with paths and nothing saved, canonical draft leaves `live()` unchanged,
 validate fragment, editor vs. viewer page, no textarea breakout, publish + who + draft cleared,
-invalid/failed publish changes nothing, rollback + revision page, preview QR + nothing saved). `PaletteTest` (starters valid, edits keep the selection, nesting, repeat needs data).
+invalid/failed publish changes nothing, rollback + revision page, preview QR + nothing saved). `ApiShapeTest` (3 fixture APIs in `src/test/resources/fixtures/apis/`), `ApiProbeTest` (fake DNS + HTTP:
+private hosts and private redirects never contacted). `PaletteTest` (starters valid, edits keep the selection, nesting, repeat needs data).
 `BuildFromEmptyTest` (**acceptance**: the weather app's `main` — `src/test/resources/fixtures/weather-main.json`
 from ljarka/weather-app `f0f729b` — and every demo screen built from empty over HTTP with only
 New screen, forms and palette operations, byte-identical). `FormSchemaTest` (all component types known, no unexpected JSON-value fields, every component of

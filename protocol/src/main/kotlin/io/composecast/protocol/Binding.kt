@@ -106,6 +106,8 @@ object Filters {
         "upper" to 0..0,
         "lower" to 0..0,
         "append" to 1..1,
+        // HTML from an API (e.g. TVMaze summaries) as plain text: tags removed, entities decoded (T-031).
+        "plain" to 0..0,
     )
 
     /** Filters whose argument may be a path (T-041); the others take literals only. */
