@@ -74,6 +74,7 @@ class ComposeCastActivity : ComponentActivity() {
 
     /** The server: `app.serverUrl`, or in the Preview app the linked/typed one (null = not chosen yet). */
     private var serverUrl by mutableStateOf<String?>(null)
+    private var lastServerUrl by mutableStateOf<String?>(null)
 
     /** Preview app (T-045 B2): a linked screen to open on top (a draft preview); [OpenRequest.seq] makes each link count. */
     private var openRequest by mutableStateOf<OpenRequest?>(null)
@@ -88,6 +89,7 @@ class ComposeCastActivity : ComponentActivity() {
         } else {
             getString(R.string.composecast_server_url)
         }
+        lastServerUrl = serverUrl
         // Status bar sits on the top app bar (frame primary color): light or dark icons to match.
         val statusBar = framePrimary.let {
             if (it.luminance() > 0.5f) {
@@ -101,7 +103,7 @@ class ComposeCastActivity : ComponentActivity() {
             MaterialTheme(colorScheme = frameColorScheme(framePrimary, frameBackground)) {
                 val url = serverUrl
                 if (url == null) {
-                    ConnectScreen(onConnect = ::connect)
+                    ConnectScreen(initialAddress = lastServerUrl.orEmpty(), onConnect = ::connect)
                 } else {
                     // A new server starts over: new client, empty back stack.
                     key(url) {
@@ -146,6 +148,7 @@ class ComposeCastActivity : ComponentActivity() {
 
     /** Preview app: remember [url] (null = forget it and show the connect screen). */
     private fun connect(url: String?) {
+        if (url != null) lastServerUrl = url
         previewStore.serverUrl = url
         serverUrl = url
     }

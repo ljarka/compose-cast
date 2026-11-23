@@ -32,8 +32,8 @@ import androidx.compose.ui.unit.dp
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun ConnectScreen(onConnect: (String) -> Unit) {
-    var address by rememberSaveable { mutableStateOf("") }
+internal fun ConnectScreen(initialAddress: String = "", onConnect: (String) -> Unit) {
+    var address by rememberSaveable(initialAddress) { mutableStateOf(initialAddress) }
     var invalid by rememberSaveable { mutableStateOf(false) }
     fun connect() {
         val url = PreviewLink.normalize(address)
