@@ -173,6 +173,35 @@ class RemoteComposeRendererTest {
     }
 
     @Test
+    fun `brand surface, text and outline colors replace the component defaults (T-040)`() {
+        // The decoded tree does not print colors, so compare documents: every field changes the
+        // bytes on its own, and leaving them out (or setting today's defaults) changes nothing.
+        fun document(surface: String? = null, text: String? = null, outline: String? = null) = composeCast(fakeImages) {
+            brand(
+                name = "B",
+                primaryColor = "#6200EE",
+                secondaryColor = "#000000",
+                surfaceColor = surface,
+                textColor = text,
+                outlineColor = outline,
+            )
+            screen("a") {
+                card { text("Hello") }
+                expandable("More") { text("Body") }
+                divider()
+            }
+        }.get("a")!!.document
+        val defaults = document()
+        assertContentEquals(defaults, document(surface = "#F3EDF7", text = "#1C1B1F", outline = "#D0C8DC"))
+        listOf(
+            document(surface = "#FFFFFF"),
+            document(text = "#0D47A1"),
+            document(outline = "#90CAF9"),
+        ).forEach { assertTrue(!it.contentEquals(defaults)) }
+        assertFailsWith<IllegalArgumentException> { document(surface = "white") }
+    }
+
+    @Test
     fun `parses colors`() {
         assertEquals(0xFF6200EE.toInt(), RemoteComposeRenderer.parseColor("#6200EE"))
         assertEquals(0x806200EE.toInt(), RemoteComposeRenderer.parseColor("#806200EE"))

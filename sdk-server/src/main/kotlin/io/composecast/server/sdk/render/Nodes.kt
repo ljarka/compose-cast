@@ -31,7 +31,7 @@ internal fun RcScope.renderChildren(env: RenderEnv, children: List<Component>, s
 /** One component → RC operations. Groups live in Containers.kt, Images.kt and Interactive.kt. */
 internal fun RcScope.renderNode(env: RenderEnv, node: Component, slot: Slot) {
     when (node) {
-        is Component.Text -> renderText(node, slot)
+        is Component.Text -> renderText(env, node, slot)
         is Component.Image -> renderImage(env, node, slot)
         is Component.Icon -> renderIcon(env, node, slot)
         is Component.Divider -> Box(
@@ -40,7 +40,7 @@ internal fun RcScope.renderNode(env: RenderEnv, node: Component, slot: Slot) {
                 slot,
                 defaultWidth = Dimension.Fill,
                 defaultHeight = Dimension.Dp(node.thickness),
-                defaultBackground = node.color?.let(::parseColor) ?: DIVIDER_COLOR,
+                defaultBackground = node.color?.let(::parseColor) ?: env.outline,
             ),
         ) {}
         is Component.Spacer -> {
@@ -67,7 +67,7 @@ internal fun RcScope.renderNode(env: RenderEnv, node: Component, slot: Slot) {
     }
 }
 
-private fun RcScope.renderText(node: Component.Text, slot: Slot) {
+private fun RcScope.renderText(env: RenderEnv, node: Component.Text, slot: Slot) {
     val (styleSize, styleWeight) = when (node.style) {
         TextStyle.H1 -> 32 to RcFontWeight.W700
         TextStyle.H2 -> 24 to RcFontWeight.W700
@@ -91,7 +91,7 @@ private fun RcScope.renderText(node: Component.Text, slot: Slot) {
                 m
             }
         },
-        color = node.color?.let(::parseColor) ?: TEXT_COLOR,
+        color = node.color?.let(::parseColor) ?: env.text,
         fontSize = sp(node.fontSize ?: styleSize),
         fontWeight = node.fontWeight?.toRc() ?: styleWeight,
         textAlign = node.textAlign?.toRc() ?: RcTextAlign.Start,

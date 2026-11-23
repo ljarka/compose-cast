@@ -375,6 +375,7 @@ Android only ([ADR 0022](docs/decisions/0022-android-only.md), owner 2026-11-16)
 - [ ] Canvas: progress bar/ring, line/bar charts, rating, gradients — T-018
 - [ ] Long-press, double-tap, ripple, haptics; alpha/scale/rotation/offset/z-order — T-019
 - [ ] Tabs / bottom navigation defined by the server (app structure, not only screens)
+- [x] Brand surface/text/outline colors for component defaults (`brand.json`) — T-040
 
 ### Etap 6 — Milestone 1: Example weather app (external project)
 
@@ -408,7 +409,7 @@ Android only ([ADR 0022](docs/decisions/0022-android-only.md), owner 2026-11-16)
 - [ ] Navigation/tabs from the server, deep links
 - [ ] Disk cache, offline last-known screen — T-028; prefetch; analytics hooks (actions, visibility)
 - [ ] Locale: `Accept-Language` → `RenderContext`, localized screen texts
-- [ ] Brand tokens → document colors; light/dark via RC themed colors; native frame theming
+- [ ] Brand tokens → document colors (surface/text/outline done — T-040); light/dark via RC themed colors; native frame theming
 - [x] **Version negotiation** (T-004, [ADR 0021](docs/decisions/0021-version-negotiation.md)): client reports the RC document API level;
   server renders for it or answers `426` "update required" (minimum level 8)
 

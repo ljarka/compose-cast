@@ -41,7 +41,12 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
     private val images = ImageCache<EncodedImage>()
     private val profiles = ConcurrentHashMap<Pair<Int, Int>, RcProfile>()
 
-    private val env = RenderEnv(primary = parseColor(brand?.primaryColor ?: DEFAULT_PRIMARY)) { url ->
+    private val env = RenderEnv(
+        primary = parseColor(brand?.primaryColor ?: DEFAULT_PRIMARY),
+        surface = brand?.surfaceColor?.let(::parseColor) ?: SURFACE_COLOR,
+        text = brand?.textColor?.let(::parseColor) ?: TEXT_COLOR,
+        outline = brand?.outlineColor?.let(::parseColor) ?: DIVIDER_COLOR,
+    ) { url ->
         images.get(url, ::fetch)
     }
 
@@ -134,8 +139,17 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
     }
 }
 
-/** What node renderers need from the renderer: the brand's primary color and the image cache. */
-internal class RenderEnv(val primary: Int, private val loadImage: (String) -> EncodedImage?) {
+/**
+ * What node renderers need from the renderer: the brand's colors (defaults from `Style.kt` when the
+ * brand leaves them out, T-040) and the image cache.
+ */
+internal class RenderEnv(
+    val primary: Int,
+    val surface: Int,
+    val text: Int,
+    val outline: Int,
+    private val loadImage: (String) -> EncodedImage?,
+) {
     /** The fetched image, or null (failed or rejected: callers render the alt text). */
     fun image(url: String): EncodedImage? = loadImage(url)
 }

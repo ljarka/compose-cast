@@ -49,7 +49,10 @@ Full examples: `examples/demo/screens/`; cases: `ScreenJsonTest`, `LayoutTest`, 
   (2026-11-07). New shared constants (action types, header names) go here, not in
   `sdk-server` or `sdk-android`.
 - Adding a field to `BrandConfig` is a protocol change — update both the server
-  DSL and the Android client.
+  DSL and the Android client. New fields are optional with a default (the app decodes with
+  `ignoreUnknownKeys`; null fields are not encoded): `surfaceColor`, `textColor`, `outlineColor`
+  (T-040) are only used by the renderer, so the app needed no change. `server-app` decodes
+  `brand.json` strictly: a file with new fields needs a server at least that version.
 
 ## Dependencies
 

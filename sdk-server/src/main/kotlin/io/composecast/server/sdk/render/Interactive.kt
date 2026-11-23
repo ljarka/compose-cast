@@ -87,7 +87,7 @@ internal fun RcScope.renderExpandable(env: RenderEnv, node: Component.Expandable
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedRectShape(BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS))
-                .background(SURFACE_COLOR)
+                .background(env.surface)
                 .onClick { setValue(state, nextState) }
                 .padding(14f),
             vertical = RcVerticalPositioning.Center,
@@ -95,7 +95,7 @@ internal fun RcScope.renderExpandable(env: RenderEnv, node: Component.Expandable
             Text(
                 node.title,
                 modifier = Modifier.weight(1f),
-                color = TEXT_COLOR,
+                color = env.text,
                 fontSize = sp(16),
                 fontWeight = RcFontWeight.W500,
             )
@@ -108,7 +108,7 @@ internal fun RcScope.renderExpandable(env: RenderEnv, node: Component.Expandable
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedRectShape(BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS))
-                .background(SURFACE_COLOR),
+                .background(env.surface),
         ) {
             Row(
                 modifier = Modifier
@@ -120,7 +120,7 @@ internal fun RcScope.renderExpandable(env: RenderEnv, node: Component.Expandable
                 Text(
                     node.title,
                     modifier = Modifier.weight(1f),
-                    color = TEXT_COLOR,
+                    color = env.text,
                     fontSize = sp(16),
                     fontWeight = RcFontWeight.W500,
                 )

@@ -79,3 +79,17 @@ source fails; without them the server answers 502). String fields (`title`, `tex
 "limit": 7, "template": […], "empty": […]}` — an object of paths zips parallel arrays by index.
 Everything is checked at load (unknown root/filter/lookup, misplaced secret) with the JSON path.
 Full example: `examples/demo/screens/data.json`; cases: `BindingTest`, `DataBindingTest`.
+
+## brand.json
+
+`<data dir>/brand.json` (optional) = `BrandConfig`, served by `GET /brand` and used by the renderer:
+
+```json
+{"name": "Weather", "primaryColor": "#1565C0", "secondaryColor": "#90CAF9",
+ "backgroundColor": "#F4F8FC", "surfaceColor": "#FFFFFF", "textColor": "#0D2A4A", "outlineColor": "#BBDEFB"}
+```
+
+Colors are `#RRGGBB` or `#AARRGGBB`. `primaryColor`: buttons, expandable `+`/`−`; `backgroundColor`:
+the screen (default `#FFFFFF`); optional (T-040) `surfaceColor`: card and expandable background
+(default `#F3EDF7`), `textColor`: text without `color` (default `#1C1B1F`), `outlineColor`: divider
+without `color` (default `#D0C8DC`). A component's own `color` / `modifier.background` wins.

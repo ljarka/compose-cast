@@ -4,6 +4,8 @@ package io.composecast.server.sdk.render
 
 internal const val DEFAULT_PRIMARY = "#6200EE"
 internal const val DEFAULT_BACKGROUND = "#FFFFFF"
+
+// TEXT, SURFACE and DIVIDER are the defaults of the brand's textColor, surfaceColor, outlineColor (T-040).
 internal const val TEXT_COLOR = 0xFF1C1B1F.toInt()
 internal const val SURFACE_COLOR = 0xFFF3EDF7.toInt()
 internal const val DIVIDER_COLOR = 0xFFD0C8DC.toInt()

@@ -16,6 +16,7 @@ and the only place where these two modules are allowed to be on the same classpa
 | `src/test/screenshots/main.png` | Golden for the `main` screen (README image) |
 | `src/test/screenshots/onboarding.png` | Golden for the `onboarding` screen (README image) |
 | `src/test/screenshots/actions.png` | Golden for the `actions` screen: one button per action type (README image) |
+| `src/test/screenshots/brand-colors.png` | Golden for a DSL screen with brand surface/text/outline colors (T-040) |
 | `src/test/screenshots/echo.png` | Golden for the dynamic `echo` screen rendered with `word=zażółć gęślą jaźń` (README image) |
 
 ## Rules (ADR 0006)

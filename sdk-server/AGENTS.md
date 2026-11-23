@@ -78,7 +78,9 @@ file and the JSON path; a file must be named `<id>.json`.
 
 - RC creation API is confined to the `render` package ([ADR 0002](../docs/decisions/0002-confine-restricted-remote-compose-api.md)).
 - Buttons are a clickable `Box` with brand `primaryColor` background; click = `hostAction(action)`.
-- Node renderers are `RcScope` extensions taking a `RenderEnv` (brand primary color + image cache);
+- Node renderers are `RcScope` extensions taking a `RenderEnv` (brand colors + image cache);
+  card/expandable background, default text and divider colors come from the brand's `surfaceColor`,
+  `textColor`, `outlineColor`, falling back to `Style.kt` (T-040; unset = byte-identical documents);
   each new component group goes in its own file (keep files < ~400 lines, T-039).
 - Containers/modifiers (T-012, [ADR 0020](../docs/decisions/0020-component-tree-and-modifiers.md)):
   `renderChildren(env, list, Slot, spacing)` — the `Slot` carries the parent's axis (default width: fill

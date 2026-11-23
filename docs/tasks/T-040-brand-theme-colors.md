@@ -1,6 +1,6 @@
 # T-040 — Brand theme colors for component defaults (surface, text)
 
-Status: ready · Roadmap: Etap 5 · Depends on: — · Module: protocol, sdk-server
+Status: done (commit pending) · Roadmap: Etap 5 · Depends on: — · Module: protocol, sdk-server
 
 ## Goal
 
@@ -44,3 +44,15 @@ ADR 0017: app-specific looks are configuration, not per-screen workarounds. Toda
 ## Out of scope
 
 Dark mode (T-020), per-component style presets.
+
+## Result (2026-11-23)
+
+- `BrandConfig.surfaceColor` / `textColor` / `outlineColor` (optional, null = defaults, not encoded
+  in `/brand`); one `textColor` instead of `onSurfaceColor` + `textColor` (no on-surface/on-background
+  split exists in the renderer yet). Placeholder (alt text) color stays fixed.
+- `RenderEnv` carries surface/text/outline; card, expandable, text, divider use them.
+- Tests: `RemoteComposeRendererTest` compares documents (the decoded tree does not print colors):
+  defaults = unset = byte-identical, each field changes the document, invalid color fails the build.
+  Screenshot `brand-colors.png` (white cards, navy text, blue divider). Demo goldens unchanged.
+- Weather app: `brand.json` with `surfaceColor` needs a server with T-040 — `server-app` decodes
+  `brand.json` strictly, so v0.1.0 rejects the new keys. Switch the weather app after the next release.

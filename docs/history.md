@@ -279,3 +279,6 @@ README roadmap's "Etap" numbers.
 55. **Release `v0.1.0`** (T-025): GitHub Release via `gh` (now available, AGENTS.md); server image on
     GHCR (public), Android artifacts `0.1.0` on `maven.jarka.club` after `COMPOSECAST_MAVEN_URL` moved
     from a secret to a repository variable. The weather app builds and runs on it (Maestro green).
+56. **T-040 brand theme colors**: `BrandConfig.surfaceColor`, `textColor`, `outlineColor` replace the
+    fixed purple-tinted defaults of card/expandable/text/divider; unset = byte-identical documents.
+    New golden `brand-colors.png`. Note: `server-app` decodes `brand.json` strictly.

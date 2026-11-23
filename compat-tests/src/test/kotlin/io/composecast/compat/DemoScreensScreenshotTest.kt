@@ -22,6 +22,7 @@ import io.composecast.server.sdk.DataRequest
 import io.composecast.server.sdk.ImageLoader
 import io.composecast.server.sdk.RenderContext
 import io.composecast.server.sdk.ScreenRegistry
+import io.composecast.server.sdk.composeCast
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -93,6 +94,34 @@ class DemoScreensScreenshotTest {
         "data",
         file = "data-error",
         registry = demoScreens(imageLoader = GeneratedImage, dataLoader = { error("HTTP 503") }),
+    )
+
+    /** Brand surface, text and outline colors (T-040) replace the default purple-tinted look. */
+    @Test
+    fun brandColors() = capture(
+        "brand",
+        file = "brand-colors",
+        registry = composeCast(GeneratedImage) {
+            brand(
+                name = "Weather",
+                primaryColor = "#1565C0",
+                secondaryColor = "#90CAF9",
+                backgroundColor = "#F4F8FC",
+                surfaceColor = "#FFFFFF",
+                textColor = "#0D2A4A",
+                outlineColor = "#BBDEFB",
+            )
+            screen("brand") {
+                title = "Brand colors"
+                card(spacing = 8) {
+                    text("Warsaw", style = "h2")
+                    text("Partly cloudy, 21°")
+                }
+                divider()
+                expandable("Details") { text("Wind 12 km/h") }
+                button("Refresh", io.composecast.protocol.Action.Reload)
+            }
+        },
     )
 
     @OptIn(ExperimentalMaterial3Api::class)

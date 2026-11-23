@@ -1,6 +1,6 @@
 # T-041 — Lookups keyed by more than one value (day/night icons)
 
-Status: queued (after T-040) · Roadmap: Etap 4 · Depends on: — · Module: protocol, sdk-server
+Status: ready · Roadmap: Etap 4 · Depends on: — · Module: protocol, sdk-server
 
 ## Goal
 

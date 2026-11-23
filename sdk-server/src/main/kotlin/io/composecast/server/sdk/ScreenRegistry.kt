@@ -205,8 +205,22 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader,
         secondaryColor: String,
         backgroundColor: String = "#FFFFFF",
         fontFamily: String = "default",
+        surfaceColor: String? = null,
+        textColor: String? = null,
+        outlineColor: String? = null,
     ) {
-        brand(BrandConfig(name, primaryColor, secondaryColor, backgroundColor, fontFamily))
+        brand(
+            BrandConfig(
+                name,
+                primaryColor,
+                secondaryColor,
+                backgroundColor,
+                fontFamily,
+                surfaceColor,
+                textColor,
+                outlineColor,
+            ),
+        )
     }
 
     fun brand(config: BrandConfig) {
