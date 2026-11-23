@@ -253,9 +253,25 @@
         document.getElementById("move-target").value = overLink.dataset.path;
         document.getElementById("move-position").value = dropPos;
         clearDrop();
+        saveScroll();
         moveForm.submit();
       });
     }
+    function saveScroll() {
+      sessionStorage.setItem("composecast.scrollY", String(window.scrollY));
+      sessionStorage.setItem("composecast.scrollPath", location.pathname);
+    }
+    if (!location.hash && sessionStorage.getItem("composecast.scrollPath") === location.pathname) {
+      const y = sessionStorage.getItem("composecast.scrollY");
+      sessionStorage.removeItem("composecast.scrollY");
+      if (y !== null) window.scrollTo(0, Number(y));
+    }
+    document.addEventListener("click", function (e) {
+      if (e.target.closest(".tree a")) saveScroll();
+    });
+    document.addEventListener("submit", function (e) {
+      if (e.target.closest(".editor")) saveScroll();
+    });
   })();
 </script>
 </@layout.page>
