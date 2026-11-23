@@ -17,13 +17,15 @@ only in admin mode (`COMPOSECAST_MODE=admin`); files mode has no `/admin`.
 | `VisualPages.kt` | `GET/POST /admin/screens/{id}/visual?node=` (tree + form; save = whole screen checked, then `saveDraft`), `POST …/visual/panel` (HTMX re-render, e.g. another action type; saves nothing), `POST …/visual/edit` (C3: `op` = add-after/add-inside/add-end/up/down/into-previous/out/duplicate/delete/wrap, `type`), `?node=` may be a list (`components.2.empty`), `formRows` (flat rows for `_form.ftl`), `HELP` texts |
 | `Palette.kt` | T-029 C3: `starters` (smallest valid component per type; a repeat gets the screen's first data source), `groups`, `containers`, structural edits on node paths: `add`, `delete`, `duplicate`, `move`, `intoPrevious`, `outOfParent`, `wrap` → `Result(screen, select)` |
 | `Bindings.kt` | `rename` of a binding root in JSON strings (renaming a repeat's `as`) |
-| `ApiProbe.kt` | T-031: server-side GET of an API for the wizard: public hosts only (each redirect hop resolved + `HttpImageLoader.isPrivateAddress`), ≤ 256 KB, object/array JSON only, `{{secret.NAME}}` from env; `Result(status, contentType, millis, json, error)` |
+| `ApiProbe.kt` | T-031: server-side GET of an API for the wizard: public hosts only (each redirect hop resolved + `HttpImageLoader.isPrivateAddress`), ≤ 2 MB (the screens' limit; TVMaze `/shows` is 373 KB), object/array JSON only, `{{secret.NAME}}` from env; `Result(status, contentType, millis, json, error)` |
 | `ApiShape.kt` | T-031: `lists` (arrays of objects, largest first), item `fields` (path, sample, `Kind`), `roles` (id/title/subtitle/image guesses) |
+| `WizardScreens.kt` | T-031 W2: `Plan` → `list(plan)` (column › repeat of cards: 72 dp image, title, 2-line subtitle, tap → detail; max 20 items) and `detail(plan)` (own source `…/{{params.id}}` with `params.id` default = a real id, or the list's fields passed as params); HTML fields through `plain` |
+| `WizardPages.kt` | `GET/POST /admin/wizard` (`step` = probe/create): probe → pick list + fields (guesses pre-filled, another list = its own guesses) → both screens as drafts → visual editor; refuses raw keys in headers/URL (`{{secret.NAME}}` only) and existing ids |
 | `QrCode.kt` | `QrCode.svg(text)`: inline SVG QR code (`io.nayuki:qrcodegen`, ECC medium); the only template value rendered with `?no_esc` (generated, no user text) |
 | `ScreenPublishing.kt` | `ScreenPublishing` (publish, rollback, publishBrand, preview; implemented by `server-app`, which owns `LiveScreens`), `PublishException` (nothing changed) |
 | `AdminAuth.kt` | Accounts and sessions: `bootstrapAdmin`, `createUser`, `login` → token, `user(token)`, `logout`; bcrypt (`at.favre.lib:bcrypt`) |
 | `Role.kt` | `Role` (`viewer` < `editor` < `admin`, `canEdit`), `AdminUser` |
-| `resources/templates/admin/*.ftl` | `_layout.ftl` (`<@layout.page title user role htmx>`: page, header with nav + logout, inline CSS light/dark, HTMX 2.0.11 with SRI), `login.ftl`, `screens.ftl`, `screen.ftl` (editor + history), `revision.ftl`, `settings.ftl`, `visual.ftl` + `_form.ftl` (visual editor; groups are `<details>`, closed unless filled), `_problems.ftl` (validation result; also the HTMX fragment) |
+| `resources/templates/admin/*.ftl` | `_layout.ftl` (`<@layout.page title user role htmx>`: page, header with nav + logout, inline CSS light/dark, HTMX 2.0.11 with SRI), `login.ftl`, `screens.ftl`, `screen.ftl` (editor + history), `revision.ftl`, `settings.ftl`, `wizard.ftl` (data source wizard), `visual.ftl` + `_form.ftl` (visual editor; groups are `<details>`, closed unless filled), `_problems.ftl` (validation result; also the HTMX fragment) |
 
 ## Rules for new routes (A3–A5)
 
@@ -86,6 +88,11 @@ only in admin mode (`COMPOSECAST_MODE=admin`); files mode has no `/admin`.
   starter in `Palette.starters` and a palette group (`PaletteTest` fails otherwise). The error list
   shows in the tree once the screen has data sources. Renaming a repeat's alias renames
   `{{alias…}}` in its lists (`Bindings.rename`).
+- **Wizard (T-031):** the probe's limit is the screens' own 2 MB; lists in generated screens are
+  capped at 20 items because images are embedded (ADR 0003; SDK-loaded images: T-027). A key in a
+  header or in a URL parameter named like a key (`key`, `apikey`, `token`, …) must be
+  `{{secret.NAME}}`, otherwise nothing is created. `ApplicationCall.screenId` reads the **path**
+  parameter only (Ktor's `parameters` also holds the query).
 - Not yet: login rate limiting (bcrypt cost is the only brake), password change, user management UI.
 
 Ktor 3.6.1 facts (sources jar, 2026-11-23): `Sessions` is route-scoped (installed on `/admin` only),
@@ -107,7 +114,9 @@ email, viewer 403 / editor allowed on every mutating route found in the routing 
 message, `allowHttp`, HTML escaping, bootstrap rules). `ScreenPagesTest` (list + statuses, create,
 invalid edit → problems with paths and nothing saved, canonical draft leaves `live()` unchanged,
 validate fragment, editor vs. viewer page, no textarea breakout, publish + who + draft cleared,
-invalid/failed publish changes nothing, rollback + revision page, preview QR + nothing saved). `ApiShapeTest` (3 fixture APIs in `src/test/resources/fixtures/apis/`), `ApiProbeTest` (fake DNS + HTTP:
+invalid/failed publish changes nothing, rollback + revision page, preview QR + nothing saved). `WizardScreensTest` (generated screens render with the 3 fixture APIs' data via `composeCast` + fake loaders),
+`WizardPagesTest` (probe page, create → drafts + visual editor, raw keys refused, no list / HTTP 404
+explained; the test host's `apiResponses` fake the probe). `ApiShapeTest` (3 fixture APIs in `src/test/resources/fixtures/apis/`), `ApiProbeTest` (fake DNS + HTTP:
 private hosts and private redirects never contacted). `PaletteTest` (starters valid, edits keep the selection, nesting, repeat needs data).
 `BuildFromEmptyTest` (**acceptance**: the weather app's `main` — `src/test/resources/fixtures/weather-main.json`
 from ljarka/weather-app `f0f729b` — and every demo screen built from empty over HTTP with only

@@ -13,6 +13,7 @@ import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.RoutingCall
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
@@ -219,7 +220,8 @@ private suspend fun ApplicationCall.editor(
     ),
 )
 
-private val ApplicationCall.screenId: String get() = parameters["id"].orEmpty()
+/** The `{id}` path segment (not `parameters`, which also holds the query). */
+internal val ApplicationCall.screenId: String get() = (this as RoutingCall).pathParameters["id"].orEmpty()
 
 /** Host header characters of a hostname, IPv4/IPv6 address and port. */
 private val HOST = Regex("[A-Za-z0-9.\\-:\\[\\]]{1,255}")

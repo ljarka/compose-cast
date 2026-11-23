@@ -193,4 +193,21 @@ class RoutingTest {
         val hostile = client.get("/connect") { header(HttpHeaders.Host, "\"><script>x</script>") }
         assertEquals(HttpStatusCode.BadRequest, hostile.status)
     }
+
+    @Test
+    fun `a screen param named id does not replace the screen id (T-031)`() = testApplication {
+        val registry = io.composecast.server.sdk.composeCast {
+            screen(
+                io.composecast.protocol.ScreenDefinition(
+                    id = "detail",
+                    title = "Show {{params.id}}",
+                    params = mapOf("id" to io.composecast.protocol.ParamSpec(default = "1")),
+                ),
+            )
+        }
+        application { module(LiveScreens(registry)) }
+        val response = client.get("/screens/detail?id=82")
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals("Show+82", response.headers[Headers.SCREEN_TITLE])
+    }
 }

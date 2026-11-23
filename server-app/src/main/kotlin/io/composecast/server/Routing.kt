@@ -14,6 +14,7 @@ import io.ktor.server.response.header
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondBytes
 import io.ktor.server.response.respondText
+import io.ktor.server.routing.RoutingCall
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import kotlinx.coroutines.Dispatchers
@@ -86,7 +87,9 @@ fun Application.configureRouting(screens: LiveScreens) {
 
 /** Renders `{id}` with the query parameters; responds 404 itself and returns null when unknown. */
 private suspend fun ApplicationCall.renderScreen(screens: LiveScreens): RemoteScreen? {
-    val id = parameters["id"]!!
+    // Path only: `parameters` also holds the query, where a screen param named `id` (a detail
+    // screen's `?id=82`) would win over the screen id (T-031).
+    val id = (this as RoutingCall).pathParameters["id"]!!
     val params = request.queryParameters.entries().associate { (name, values) -> name to values.first() }
     val rawApiLevel = request.headers[Headers.RC_API_LEVEL]
     val rcApiLevel = rawApiLevel?.toIntOrNull()

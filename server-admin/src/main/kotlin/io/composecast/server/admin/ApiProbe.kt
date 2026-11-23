@@ -1,5 +1,6 @@
 package io.composecast.server.admin
 
+import io.composecast.server.sdk.HttpDataLoader
 import io.composecast.server.sdk.HttpImageLoader
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -60,7 +61,7 @@ internal class ApiProbe(
             if (response.status !in 200..299) {
                 return Result(response.status, type, elapsed(), null, "the API answered HTTP ${response.status}")
             }
-            check(response.body.size <= MAX_BYTES) { "the response is larger than ${MAX_BYTES / 1024} KB" }
+            check(response.body.size <= MAX_BYTES) { "the response is larger than ${MAX_BYTES / 1024 / 1024} MB" }
             val json = runCatching { Json.parseToJsonElement(String(response.body, Charsets.UTF_8)) }
                 // An object or an array: a bare word such as <html> is not an API response.
                 .getOrNull()?.takeIf { it is JsonObject || it is JsonArray }
@@ -84,8 +85,11 @@ internal class ApiProbe(
     }
 
     companion object {
-        /** Enough for the wizard to see the shape; the screens fetch the whole response later. */
-        const val MAX_BYTES = 256 * 1024
+        /**
+         * The screens' own limit (`HttpDataLoader.MAX_BYTES`, 2 MB): what a screen can load, the wizard
+         * can look at. (T-031 said 256 KB; TVMaze's `/shows` alone is 373 KB.)
+         */
+        const val MAX_BYTES = HttpDataLoader.MAX_BYTES
         private val REDIRECTS = setOf(301, 302, 303, 307, 308)
         private val SECRET = Regex("""\{\{\s*secret\.([A-Za-z0-9_]+)\s*}}""")
         private val client: HttpClient = HttpClient.newBuilder()

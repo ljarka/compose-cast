@@ -82,7 +82,7 @@ class ApiProbeTest {
         val big = json("[" + "1,".repeat(ApiProbe.MAX_BYTES) + "1]")
         assertContains(
             probe("https://api.example.com/b" to big).probe("https://api.example.com/b").error!!,
-            "larger than 256 KB",
+            "larger than 2 MB",
         )
         assertContains(probe().probe("ftp://api.example.com/x").error!!, "only http")
     }

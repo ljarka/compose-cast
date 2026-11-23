@@ -2,6 +2,7 @@
 <@layout.page title=title user=user role=role>
 <main class="wide">
   <h1>Screens</h1>
+  <#if canEdit><p><a href="/admin/wizard">Create screens from an API…</a> <span class="muted">— paste a JSON API's address, get a list and a detail screen</span></p></#if>
   <div class="card">
     <table>
       <thead><tr><th>Id</th><th>Title</th><th>Status</th><th>Last published</th></tr></thead>

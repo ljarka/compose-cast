@@ -73,6 +73,8 @@ fun main() {
                     SettingsStore(database),
                     AdminPublishing(adminScreens, live),
                     allowHttp = System.getenv("COMPOSECAST_ADMIN_ALLOW_HTTP").toBoolean(),
+                    // The wizard's API probe follows the image rule (T-026): private hosts only for local development.
+                    allowPrivateApiHosts = allowPrivateImageHosts,
                 )
             }
         }
@@ -88,6 +90,7 @@ class AdminPanelConfig(
     val settings: SettingsStore,
     val publishing: ScreenPublishing,
     val allowHttp: Boolean = false,
+    val allowPrivateApiHosts: Boolean = false,
 )
 
 fun Application.module(screens: LiveScreens, admin: AdminPanelConfig? = null) {
@@ -117,5 +120,5 @@ fun Application.module(screens: LiveScreens, admin: AdminPanelConfig? = null) {
         }
     }
     configureRouting(screens)
-    admin?.let { adminPanel(it.auth, it.screens, it.settings, it.publishing, it.allowHttp) }
+    admin?.let { adminPanel(it.auth, it.screens, it.settings, it.publishing, it.allowHttp, it.allowPrivateApiHosts) }
 }

@@ -346,6 +346,13 @@ README roadmap's "Etap" numbers.
     source; renaming its alias renames the uses. Acceptance: the weather app's `main` and every
     demo screen are rebuilt from empty over HTTP with only editor operations, byte-identical.
 72. **T-031 W1 — API probe + heuristics** (owner: T-031 before T-030): `ApiProbe` (public hosts
-    only, each redirect hop checked, 256 KB), `ApiShape` (lists of objects, field kinds, role
+    only, each redirect hop checked, 2 MB like the screens), `ApiShape` (lists of objects, field kinds, role
     guesses) tested on TVMaze, Rick and Morty and JSONPlaceholder; new filter `plain` (API HTML →
     text).
+73. **T-031 W2 — the wizard page**: `/admin/wizard` probes an API, offers its lists and fields with
+    the guesses pre-filled, and creates a list screen (cards, max 20) and a detail screen (own
+    source `…/{{params.id}}` or fields passed from the list) as drafts; raw keys are refused. Real
+    TVMaze on the emulator: list with posters → tap → detail. Found on the way: `GET
+    /screens/{id}?id=…` treated the query `id` as the screen id (Ktor `parameters` merges path and
+    query) — every screen with a param named `id` was broken; now path parameters only. The probe
+    limit is the screens' 2 MB (TVMaze `/shows` is 373 KB).

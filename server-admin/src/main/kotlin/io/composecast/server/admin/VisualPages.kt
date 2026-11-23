@@ -213,7 +213,7 @@ private class Editing(val stored: ScreenStore.StoredScreen) {
 }
 
 private suspend fun ApplicationCall.editing(screens: ScreenStore): Editing? {
-    val id = parameters["id"].orEmpty()
+    val id = screenId
     val stored = screens.get(id)
     if (stored == null) {
         respondText("No screen '$id'", status = HttpStatusCode.NotFound)
@@ -336,6 +336,6 @@ private val HELP = mapOf(
 
 /** Where the form re-renders itself (HTMX, variant changes). */
 private fun ApplicationCall.panelUrl(node: String) =
-    "/admin/screens/${parameters["id"].orEmpty().urlEncoded()}/visual/panel?node=${node.urlEncoded()}"
+    "/admin/screens/${screenId.urlEncoded()}/visual/panel?node=${node.urlEncoded()}"
 
 private fun String.urlEncoded() = URLEncoder.encode(this, Charsets.UTF_8).replace("+", "%20")

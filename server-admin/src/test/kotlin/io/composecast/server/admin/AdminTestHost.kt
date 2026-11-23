@@ -57,6 +57,22 @@ internal class AdminTestHost {
         }
     }
 
+    /** API answers for the wizard's probe by URL (no network); every host resolves to a public address. */
+    val apiResponses = mutableMapOf<String, String>()
+    val probe = ApiProbe(
+        resolve = { listOf(java.net.InetAddress.getByName("93.184.216.34")) },
+        send = { request ->
+            val body = apiResponses[request.uri().toString()]
+            if (body ==
+                null
+            ) {
+                ApiProbe.Raw(404, emptyMap(), ByteArray(0))
+            } else {
+                ApiProbe.Raw(200, emptyMap(), body.toByteArray())
+            }
+        },
+    )
+
     /** The routing tree, set when the application starts. */
     lateinit var root: RoutingNode
 
@@ -67,7 +83,7 @@ internal class AdminTestHost {
     ) = testApplication {
         application {
             install(FreeMarker) { adminFreeMarker() }
-            root = routing { adminRoutes(auth, screens, settings, publishing, allowHttp, extra) }
+            root = routing { adminRoutes(auth, screens, settings, publishing, allowHttp, probe = probe, extra = extra) }
         }
         startApplication()
         test(createClient { followRedirects = false })

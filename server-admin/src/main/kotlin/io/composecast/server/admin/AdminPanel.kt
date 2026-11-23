@@ -51,9 +51,12 @@ fun Application.adminPanel(
     settings: SettingsStore,
     publishing: ScreenPublishing,
     allowHttp: Boolean = false,
+    allowPrivateApiHosts: Boolean = false,
 ) {
     install(FreeMarker) { adminFreeMarker() }
-    routing { adminRoutes(auth, screens, settings, publishing, allowHttp) }
+    routing {
+        adminRoutes(auth, screens, settings, publishing, allowHttp, ApiProbe(allowPrivateHosts = allowPrivateApiHosts))
+    }
 }
 
 internal fun Configuration.adminFreeMarker() {
@@ -77,6 +80,7 @@ internal fun Route.adminRoutes(
     settings: SettingsStore,
     publishing: ScreenPublishing,
     allowHttp: Boolean,
+    probe: ApiProbe = ApiProbe(),
     extra: Route.() -> Unit = {},
 ) {
     route("/admin") {
@@ -118,6 +122,7 @@ internal fun Route.adminRoutes(
             screenPages(screens, publishing)
             visualPages(screens)
             settingsPages(settings, publishing)
+            wizardPages(screens, probe)
             extra()
         }
     }

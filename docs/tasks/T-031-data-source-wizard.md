@@ -1,6 +1,6 @@
 # T-031 — Data source wizard (URL → ready list/detail screens)
 
-Status: in progress — next step: W2 (W1 done) · Roadmap: Etap 8 · Depends on: T-006, T-029 · Module: server-admin, sdk-server
+Status: in progress — next step: W3 (W1, W2 done) · Roadmap: Etap 8 · Depends on: T-006, T-029 · Module: server-admin, sdk-server
 
 ## Goal
 A non-developer pastes an API URL. The panel fetches it, shows the JSON as a tree and asks "what
@@ -28,7 +28,7 @@ the server, so the wizard also runs on the server.
 ## Steps
 
 1. **W1** Probe + heuristics: `ApiProbe` (server-side GET, public hosts only — every redirect hop
-   checked —, 256 KB, `{{secret.NAME}}` from env), `ApiShape` (lists of objects, fields with
+   checked —, 2 MB = the screens' own limit (TVMaze `/shows` is 373 KB, so not 256 KB), `{{secret.NAME}}` from env), `ApiShape` (lists of objects, fields with
    kinds, roles id/title/subtitle/image), filter `plain` (API HTML → text). Done when: heuristics
    tested on 3 fixture APIs, the probe refuses private addresses.
    **W1 result (2026-11-23):** done — `ApiShapeTest` (TVMaze shows, Rick and Morty characters,
@@ -40,6 +40,14 @@ the server, so the wizard also runs on the server.
    detail screen (a detail URL template such as `…/shows/{{params.id}}`, or the item's fields
    passed as params) as drafts, opened in the visual editor. Done when: TVMaze list + detail
    render on the emulator without editing JSON.
+   **W2 result (2026-11-23):** `WizardScreens.kt`, `WizardPages.kt`, `wizard.ftl`, entry on the
+   Screens page. **Acceptance met:** the real `https://api.tvmaze.com/shows` (240 items, 373 KB)
+   → wizard with its guesses → both screens published → in the Preview app on the emulator the
+   list shows 20 shows with posters and two-line plain summaries; tapping "Person of Interest"
+   opens its detail (poster, title, full summary, title in the app bar); back returns. Tests:
+   `WizardScreensTest`, `WizardPagesTest`, `RoutingTest` (+1: a screen param named `id`).
+   Notes: the list document is ~400 KB / ~1.1 s for 20 embedded posters (T-027 would load images
+   on the device); the detail's `params.id` default is a real id so it renders in previews.
 3. **W3** Field picker in the visual editor (probe the screen's source, click a field → its
    `{{binding}}`), and a form for the screen's data sources instead of the JSON field.
 
