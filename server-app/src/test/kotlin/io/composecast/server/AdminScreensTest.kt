@@ -255,4 +255,22 @@ class AdminScreensTest {
         assertContains(connect, "&amp;screen=$previewId")
         assertEquals(HttpStatusCode.BadRequest, client.get("/connect?screen=..%2Fx").status)
     }
+
+    @Test
+    fun `setting a home screen serves it for main`() = adminMode { client, cookie, store ->
+        store.saveDraft("shows", """{"id": "shows", "title": "TV Shows"}""")
+        val shows = client.post(
+            cookie,
+            "/admin/screens/shows/publish",
+            "json",
+            """{"id": "shows", "title": "TV Shows"}""",
+        )
+        assertEquals(HttpStatusCode.SeeOther, shows.status)
+        val setHome = client.post(cookie, "/admin/screens/shows/home", "x", "1")
+        assertEquals(HttpStatusCode.SeeOther, setHome.status)
+
+        val main = client.get("/screens/main")
+        assertEquals(HttpStatusCode.OK, main.status)
+        assertEquals("TV+Shows", main.headers[Headers.SCREEN_TITLE])
+    }
 }

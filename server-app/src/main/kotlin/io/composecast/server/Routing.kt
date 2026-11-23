@@ -89,7 +89,7 @@ fun Application.configureRouting(screens: LiveScreens) {
 private suspend fun ApplicationCall.renderScreen(screens: LiveScreens): RemoteScreen? {
     // Path only: `parameters` also holds the query, where a screen param named `id` (a detail
     // screen's `?id=82`) would win over the screen id (T-031).
-    val id = (this as RoutingCall).pathParameters["id"]!!
+    val id = screens.resolveId((this as RoutingCall).pathParameters["id"]!!)
     val params = request.queryParameters.entries().associate { (name, values) -> name to values.first() }
     val rawApiLevel = request.headers[Headers.RC_API_LEVEL]
     val rcApiLevel = rawApiLevel?.toIntOrNull()

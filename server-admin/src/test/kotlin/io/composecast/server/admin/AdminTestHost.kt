@@ -55,6 +55,12 @@ internal class AdminTestHost {
             previews += json
             return "__preview-test${previews.size}"
         }
+
+        override fun setHome(id: String) {
+            failWith?.let { throw PublishException(it) }
+            if (screens.live()[id] == null) throw PublishException("Screen '$id' must be published first")
+            settings[SettingsStore.HOME_SCREEN] = id
+        }
     }
 
     /** API answers for the wizard's probe by URL (no network); every host resolves to a public address. */

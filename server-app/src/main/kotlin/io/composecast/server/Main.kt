@@ -66,7 +66,7 @@ fun main() {
             adminScreens.importIfEmpty(dataDir)
             val auth = AdminAuth(UserStore(database))
             auth.bootstrapFromEnv(System.getenv("COMPOSECAST_ADMIN_EMAIL"), System.getenv("COMPOSECAST_ADMIN_PASSWORD"))
-            LiveScreens(adminScreens.load()).also { live ->
+            LiveScreens(adminScreens.load(), initialHome = adminScreens.homeScreen()).also { live ->
                 admin = AdminPanelConfig(
                     auth,
                     ScreenStore(database),

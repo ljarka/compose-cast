@@ -41,6 +41,16 @@ class AdminScreens(
         return files.ids().size
     }
 
+    /** The configured home screen id (served for `main`), or null when `main` itself is used. */
+    fun homeScreen(): String? = settings[SettingsStore.HOME_SCREEN]?.takeIf { it.isNotBlank() }
+
+    /** Sets [id] as the home screen (served for `main`) if it is currently live. */
+    fun setHome(id: String, serve: (String?) -> Unit) = synchronized(publishLock) {
+        require(screens.live().containsKey(id)) { "Screen '$id' must be published before setting it as home" }
+        settings[SettingsStore.HOME_SCREEN] = id
+        serve(id)
+    }
+
     /** The registry of the live screens and brand in the database. */
     fun load(): ScreenRegistry = build(screens.live())
 
@@ -133,11 +143,17 @@ internal fun AdminAuth.bootstrapFromEnv(email: String?, password: String?) {
 /** [ScreenPublishing] for `server-admin`: publishes through [AdminScreens] and swaps [live]. */
 class AdminPublishing(private val admin: AdminScreens, private val live: LiveScreens) : ScreenPublishing {
     override fun publish(id: String, json: String, by: String) = failsAsPublishException {
-        admin.publish(id, json, by, live::replace)
+        admin.publish(id, json, by) { registry ->
+            live.replace(registry)
+            live.replaceHome(admin.homeScreen())
+        }
     }
 
     override fun rollback(id: String, revisionId: Int, by: String) = failsAsPublishException {
-        admin.rollback(id, revisionId, by, live::replace)
+        admin.rollback(id, revisionId, by) { registry ->
+            live.replace(registry)
+            live.replaceHome(admin.homeScreen())
+        }
     }
 
     override fun publishBrand(brandJson: String) = failsAsPublishException {
@@ -148,6 +164,10 @@ class AdminPublishing(private val admin: AdminScreens, private val live: LiveScr
         val id = live.previews.newId()
         failsAsPublishException { live.previews.put(id, admin.preview(json, id)) }
         return id
+    }
+
+    override fun setHome(id: String) = failsAsPublishException {
+        admin.setHome(id, live::replaceHome)
     }
 
     /** Building fails with IllegalArgumentException/IllegalStateException (validation, secrets, dates). */

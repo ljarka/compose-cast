@@ -3,19 +3,21 @@
 <main class="wide">
   <h1>Screens</h1>
   <#if canEdit><p><a href="/admin/wizard">Create screens from an API…</a> <span class="muted">— paste a JSON API's address, get a list and a detail screen</span></p></#if>
+  <#if homeError??><p class="error" role="alert">${homeError}</p></#if>
   <div class="card">
     <table>
-      <thead><tr><th>Id</th><th>Title</th><th>Status</th><th>Last published</th></tr></thead>
+      <thead><tr><th>Id</th><th>Title</th><th>Status</th><th>Last published</th><th></th></tr></thead>
       <tbody>
       <#list screens as s>
         <tr>
-          <td><a href="/admin/screens/${s.id?url}"><code>${s.id}</code></a></td>
+          <td><a href="/admin/screens/${s.id?url}"><code>${s.id}</code></a><#if s.isHome> <span class="status status-live">home</span></#if></td>
           <td>${s.title}</td>
           <td><span class="status status-${s.status}">${s.status}</span></td>
           <td class="muted"><#if s.publishedAt?has_content>${s.publishedAt} · ${s.publishedBy}<#else>never</#if></td>
+          <td><#if canEdit && s.isLive && !s.isHome><form method="post" action="/admin/screens/${s.id?url}/home" style="margin:0"><button type="submit" style="margin:0">Set as home</button></form></#if></td>
         </tr>
       <#else>
-        <tr><td colspan="4" class="muted">No screens yet.</td></tr>
+        <tr><td colspan="5" class="muted">No screens yet.</td></tr>
       </#list>
       </tbody>
     </table>

@@ -119,10 +119,10 @@ internal fun Route.adminRoutes(
 
         loggedIn(auth) {
             get { call.seeOther("/admin/screens") }
-            screenPages(screens, publishing)
+            screenPages(screens, settings, publishing)
             visualPages(screens, probe)
             settingsPages(settings, publishing)
-            wizardPages(screens, probe)
+            wizardPages(screens, settings, probe)
             extra()
         }
     }

@@ -2,6 +2,7 @@ package io.composecast.server.admin
 
 import io.composecast.protocol.ScreenJson
 import io.composecast.server.store.ScreenStore
+import io.composecast.server.store.SettingsStore
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.Parameters
 import io.ktor.server.application.ApplicationCall
@@ -18,7 +19,7 @@ import java.net.URLEncoder
  * pick the list and its fields (pre-filled by [ApiShape]) → a list screen and a detail screen are
  * created as drafts ([WizardScreens]) and opened in the visual editor. Never stores a raw key.
  */
-internal fun Route.wizardPages(screens: ScreenStore, probe: ApiProbe) {
+internal fun Route.wizardPages(screens: ScreenStore, settings: SettingsStore, probe: ApiProbe) {
     get("/wizard") { call.wizardPage(WizardForm(Parameters.Empty), null, emptyList()) }
     post("/wizard") {
         val form = WizardForm(call.receiveParameters())
@@ -52,6 +53,9 @@ internal fun Route.wizardPages(screens: ScreenStore, probe: ApiProbe) {
             return@post call.wizardPage(form, result, invalid, analysis)
         }
         generated.forEach { screens.saveDraft(it.id, ScreenJson.encode(it)) }
+        if (screens.get("main") == null && settings[SettingsStore.HOME_SCREEN] == null) {
+            settings[SettingsStore.HOME_SCREEN] = plan.listScreen
+        }
         call.seeOther("/admin/screens/${plan.listScreen.urlEncoded()}/visual?node=&saved")
     }
 }

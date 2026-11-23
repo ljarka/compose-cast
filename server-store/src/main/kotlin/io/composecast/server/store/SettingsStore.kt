@@ -26,5 +26,8 @@ class SettingsStore(private val database: StoreDatabase) {
     companion object {
         /** The brand, as the text of a `brand.json` file (`BrandConfig`). */
         const val BRAND = "brand"
+
+        /** Id of the screen served when an app requests `main` (set in admin; defaults to `main`). */
+        const val HOME_SCREEN = "home_screen"
     }
 }

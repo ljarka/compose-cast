@@ -20,6 +20,9 @@ interface ScreenPublishing {
      * anything; returns its screen id (`__preview-…`, ADR 0027).
      */
     fun preview(json: String): String
+
+    /** Makes the already-published screen [id] the home screen (served for `main`). */
+    fun setHome(id: String)
 }
 
 /** The screens would not build as a whole (e.g. a `{{secret.X}}` that is not set); nothing changed. */

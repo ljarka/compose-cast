@@ -255,4 +255,30 @@ class ScreenPagesTest {
         assertEquals(HttpStatusCode.UnprocessableEntity, invalid.status)
         assertEquals(1, host.previews.size)
     }
+
+    @Test
+    fun `a live screen can be set as the home screen`() = host.run { client ->
+        val cookie = with(host) { client.loginAs(Role.EDITOR) }
+        screens.saveDraft("shows", ScreenJson.encode(ScreenDefinition("shows", title = "Shows")))
+        assertEquals(
+            HttpStatusCode.UnprocessableEntity,
+            client.form(cookie, "/admin/screens/shows/home").status,
+            "draft-only screen cannot be home yet",
+        )
+
+        client.form(
+            cookie,
+            "/admin/screens/shows/publish",
+            "json" to ScreenJson.encode(ScreenDefinition("shows", title = "Shows")),
+        )
+        val setHome = client.form(cookie, "/admin/screens/shows/home")
+        assertEquals(HttpStatusCode.SeeOther, setHome.status)
+        assertEquals("/admin/screens", setHome.headers[HttpHeaders.Location])
+
+        val list = client.get("/admin/screens") { header(HttpHeaders.Cookie, cookie) }.bodyAsText()
+        assertContains(
+            list,
+            "<a href=\"/admin/screens/shows\"><code>shows</code></a> <span class=\"status status-live\">home</span>",
+        )
+    }
 }

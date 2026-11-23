@@ -3,6 +3,7 @@ package io.composecast.server.admin
 import io.composecast.protocol.ScreenDefinition
 import io.composecast.protocol.ScreenJson
 import io.composecast.server.store.ScreenStore
+import io.composecast.server.store.SettingsStore
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.freemarker.respondTemplate
@@ -25,10 +26,13 @@ import java.net.URLEncoder
  * canonical JSON (ADR 0016); a draft never changes what apps are served (`ScreenStore.live`);
  * publishing goes through [ScreenPublishing], which changes nothing when the screens would not build.
  */
-internal fun Route.screenPages(screens: ScreenStore, publishing: ScreenPublishing) {
+internal fun Route.screenPages(screens: ScreenStore, settings: SettingsStore, publishing: ScreenPublishing) {
     route("/screens") {
         get {
-            call.respondTemplate("admin/screens.ftl", call.page("Screens") + mapOf("screens" to rows(screens)))
+            call.respondTemplate(
+                "admin/screens.ftl",
+                call.page("Screens") + mapOf("screens" to rows(screens, settings)),
+            )
         }
         post {
             val form = call.receiveParameters()
@@ -44,7 +48,12 @@ internal fun Route.screenPages(screens: ScreenStore, publishing: ScreenPublishin
                 return@post call.respondTemplate(
                     "admin/screens.ftl",
                     call.page("Screens") +
-                        mapOf("screens" to rows(screens), "error" to error, "newId" to id, "newTitle" to title),
+                        mapOf(
+                            "screens" to rows(screens, settings),
+                            "error" to error,
+                            "newId" to id,
+                            "newTitle" to title,
+                        ),
                 )
             }
             screens.saveDraft(id, ScreenJson.encode(ScreenDefinition(id = id, title = title)))
@@ -119,6 +128,18 @@ internal fun Route.screenPages(screens: ScreenStore, publishing: ScreenPublishin
                     preview = mapOf("url" to connect, "qr" to QrCode.svg(connect), "screen" to previewId),
                 )
             }
+            post("/home") {
+                val stored = screens.get(call.screenId) ?: return@post call.notFound()
+                val failure = publishOrProblem { publishing.setHome(stored.id) }
+                if (failure != null) {
+                    call.response.status(HttpStatusCode.UnprocessableEntity)
+                    return@post call.respondTemplate(
+                        "admin/screens.ftl",
+                        call.page("Screens") + mapOf("screens" to rows(screens, settings), "homeError" to failure),
+                    )
+                }
+                call.seeOther("/admin/screens")
+            }
             post("/rollback") {
                 val stored = screens.get(call.screenId) ?: return@post call.notFound()
                 val revision = call.receiveParameters()["revision"]?.toIntOrNull()
@@ -163,15 +184,20 @@ private inline fun publishOrProblem(publish: () -> Unit): String? = try {
     "Not published, nothing changed: ${e.message}"
 }
 
-private fun rows(screens: ScreenStore) = screens.list().map { stored ->
-    val json = stored.draftJson ?: stored.liveJson
-    mapOf(
-        "id" to stored.id,
-        "title" to (json?.let { ScreenJson.check(it).screen?.title } ?: stored.id),
-        "status" to status(stored),
-        "publishedAt" to stored.publishedAt?.toString().orEmpty(),
-        "publishedBy" to stored.publishedBy.orEmpty(),
-    )
+private fun rows(screens: ScreenStore, settings: SettingsStore): List<Map<String, Any>> {
+    val home = settings[SettingsStore.HOME_SCREEN]?.takeIf { it.isNotBlank() } ?: "main"
+    return screens.list().map { stored ->
+        val json = stored.draftJson ?: stored.liveJson
+        mapOf(
+            "id" to stored.id,
+            "title" to (json?.let { ScreenJson.check(it).screen?.title } ?: stored.id),
+            "status" to status(stored),
+            "isHome" to (stored.id == home),
+            "isLive" to (stored.liveJson != null),
+            "publishedAt" to stored.publishedAt?.toString().orEmpty(),
+            "publishedBy" to stored.publishedBy.orEmpty(),
+        )
+    }
 }
 
 /** New screen ids: safe in URLs and file names (`<id>.json`, ADR 0011). */
