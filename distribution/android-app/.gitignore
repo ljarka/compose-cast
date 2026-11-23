@@ -4,3 +4,6 @@ local.properties
 .idea/
 *.iml
 .kotlin/
+# Release keystores never go into git (rule: no secrets); keep them next to the repo or in CI secrets.
+*.jks
+*.keystore

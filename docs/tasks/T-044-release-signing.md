@@ -1,6 +1,6 @@
 # T-044 — Release signing configured by the app repository
 
-Status: ready · Roadmap: Etap 6 · Depends on: — · Module: gradle-plugins
+Status: done (commit pending) · Roadmap: Etap 6 · Depends on: — · Module: gradle-plugins
 
 ## Goal
 
@@ -30,3 +30,18 @@ Found by the weather app (T-025): the release build is `weather-release-unsigned
 ## Out of scope
 
 Play Store upload (T-025 out of scope), app bundles per ABI.
+
+## Result (2026-11-23)
+
+- `ComposeCastAppConfig.Signing` (keystore relative to the properties file, alias; passwords from
+  env or Gradle properties via a lookup passed to `load`); the plugin creates the signing config
+  `composecastRelease` for the `release` build type. Missing passwords are reported by
+  `checkReleaseComposeCastConfig` (release only: debug builds work without them); password keys in
+  the file are rejected; only one of storeFile/keyAlias → error naming the other.
+- Tests: `ComposeCastAppConfigTest` (first tests of the included build; now in `verify.sh`) instead
+  of a Gradle TestKit functional test (would need AGP + Android SDK in a TestKit project); the
+  plugin wiring was verified manually: `app-template` with a throwaway keystore → no passwords:
+  clear error; with env passwords: `app-template-release.apk` signed (`apksigner verify`: CN=Test);
+  debug without passwords builds.
+- Template: commented keys in `distribution/android-app/compose-cast.properties`, `*.jks` /
+  `*.keystore` in its `.gitignore`.

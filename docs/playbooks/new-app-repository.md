@@ -53,8 +53,15 @@ Pin `COMPOSECAST_VERSION` to the same release as the Android plugin version, and
 
 ```bash
 ./gradlew -Pcomposecast.appConfig=compose-cast.local.properties installDebug   # emulator; activity io.composecast.shell.ComposeCastActivity
-./gradlew assembleRelease               # https server URL; produces an unsigned APK (signing: T-044)
+./gradlew assembleRelease               # https server URL; unsigned unless app.signing.* is set
 ```
+
+   Signed release (T-044): create a keystore once and keep it **out of git** (`*.jks` is ignored),
+   e.g. `keytool -genkeypair -keystore release.jks -alias release -keyalg RSA -keysize 2048 -validity 10000`;
+   in `compose-cast.properties` set `app.signing.storeFile=release.jks` and `app.signing.keyAlias=release`;
+   build with `COMPOSECAST_SIGNING_STORE_PASSWORD=… COMPOSECAST_SIGNING_KEY_PASSWORD=… ./gradlew assembleRelease`.
+   Missing passwords fail only release builds, naming the variable. Back up the keystore: an app
+   update must be signed with the same key.
 
 6. Optional: a Maestro flow that clicks through the screens. Maestro 2.x stores `takeScreenshot`
    files under its output directory: `maestro test --test-output-dir build/maestro <flow>.yaml`.

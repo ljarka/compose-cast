@@ -289,3 +289,6 @@ README roadmap's "Etap" numbers.
     moved to it (`surfaceColor`, night icons).
 59. **T-042 data dir reload**: `DataDirReloader` polls `data/` every 2 s and swaps reloaded screens
     into `LiveScreens`; invalid edits keep the previous screens. `COMPOSECAST_RELOAD=false` opts out.
+60. **T-044 release signing**: `app.signing.storeFile` / `keyAlias` in `compose-cast.properties`,
+    passwords from env/Gradle properties only; signed `assembleRelease` without Kotlin. First unit
+    tests of `gradle-plugins`, now part of `verify.sh`. All gaps from the weather app are closed.

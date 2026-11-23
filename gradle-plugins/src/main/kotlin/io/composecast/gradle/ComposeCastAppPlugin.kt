@@ -23,7 +23,9 @@ class ComposeCastAppPlugin : Plugin<Project> {
         val configFile = project.providers.gradleProperty("composecast.appConfig").orNull
             ?.let { project.rootProject.file(it) }
             ?: project.file("compose-cast.properties")
-        val config = ComposeCastAppConfig.load(configFile)
+        val config = ComposeCastAppConfig.load(configFile) { name ->
+            project.providers.environmentVariable(name).orNull ?: project.providers.gradleProperty(name).orNull
+        }
 
         project.extensions.configure(ApplicationExtension::class.java) { android ->
             if (android.namespace == null) android.namespace = config.applicationId
@@ -41,6 +43,15 @@ class ComposeCastAppPlugin : Plugin<Project> {
                 resValue("color", "composecast_frame_background", config.frameBackgroundColor)
             }
             android.buildFeatures.resValues = true
+            config.signing?.let { signing ->
+                val release = android.signingConfigs.create("composecastRelease") {
+                    it.storeFile = signing.storeFile
+                    it.keyAlias = signing.keyAlias
+                    it.storePassword = signing.storePassword
+                    it.keyPassword = signing.keyPassword
+                }
+                android.buildTypes.getByName("release").signingConfig = release
+            }
             // AGP needs a main manifest; everything real is in app-shell's (merged in). An app
             // project may still bring its own src/main/AndroidManifest.xml.
             val main = android.sourceSets.getByName("main")
@@ -89,11 +100,26 @@ class ComposeCastAppPlugin : Plugin<Project> {
             }
             val serverUrl = config.serverUrl
             val source = configFile.path
+            // Names of missing signing passwords (T-044); checked when a release builds, not before.
+            val missingPasswords = config.signing?.let { signing ->
+                listOfNotNull(
+                    "${ComposeCastAppConfig.STORE_PASSWORD_ENV} (or -P${ComposeCastAppConfig.STORE_PASSWORD_PROPERTY})"
+                        .takeIf { signing.storePassword == null },
+                    "${ComposeCastAppConfig.KEY_PASSWORD_ENV} (or -P${ComposeCastAppConfig.KEY_PASSWORD_PROPERTY})"
+                        .takeIf { signing.keyPassword == null },
+                )
+            }.orEmpty()
             val check = project.tasks.register("check${variantName}ComposeCastConfig") { task ->
                 task.doLast {
                     if (!serverUrl.startsWith("https://")) {
                         throw GradleException(
                             "app.serverUrl must start with https:// for ${variant.name} builds (is '$serverUrl' in $source).",
+                        )
+                    }
+                    if (missingPasswords.isNotEmpty()) {
+                        throw GradleException(
+                            "Signing ${variant.name} builds (app.signing.* in $source) needs " +
+                                missingPasswords.joinToString(" and ") + ".",
                         )
                     }
                 }

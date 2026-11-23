@@ -57,6 +57,7 @@ fi
 step "Android modules: build + lint"
 gradle :sdk-android:assembleDebug :sdk-android:lintDebug :app-shell:assembleDebug :app-shell:lintDebug \
   :app-template:assembleDebug :app-template:lintDebug
+gradle -p gradle-plugins test   # included build: io.composecast.app plugin unit tests (T-044)
 
 step "App repository without Kotlin: publish dry run + build (T-024)"
 ./scripts/verify-app-repository.sh

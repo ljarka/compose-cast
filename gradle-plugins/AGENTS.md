@@ -14,6 +14,7 @@ plugin marker `io.composecast.app:io.composecast.app.gradle.plugin`.
 | `ComposeCastAppConfig.kt` | Parses/validates `compose-cast.properties` (missing/invalid key → `GradleException` naming it) |
 | `GenerateLauncherIconTask.kt` | `app.icon` → `mipmap-anydpi/ic_launcher.xml` (overrides the shell's) + foreground PNG per density, fit into the 72dp safe zone |
 | `GenerateDebugNetworkConfigTask.kt` | Debug variants: `xml/composecast_network_security_config.xml` allowing cleartext to local dev hosts |
+| `src/test/.../ComposeCastAppConfigTest.kt` | Unit tests of the properties parsing (signing keys, T-044); run by `verify.sh` as `./gradlew -p gradle-plugins test` |
 | `build.gradle.kts` | `java-gradle-plugin`, `implementation(libs.android.gradle)` (AGP comes with the plugin), version resource, publishing (mirrors the root block) |
 
 ## `compose-cast.properties`
@@ -26,6 +27,7 @@ plugin marker `io.composecast.app:io.composecast.app.gradle.plugin`.
 | `app.serverUrl` | `resValue string composecast_server_url`; non-debug variants: `check<Variant>ComposeCastConfig` before `pre<Variant>Build` fails unless `https://` |
 | `app.frame.primaryColor`, `app.frame.backgroundColor` | `resValue color composecast_frame_primary` / `composecast_frame_background` |
 | `app.icon`, `app.icon.backgroundColor` (optional) | generated launcher icon; background default = frame primary |
+| `app.signing.storeFile`, `app.signing.keyAlias` (optional, both or none) | signing config `composecastRelease` on the `release` build type (T-044); keystore path relative to the file. Passwords: env `COMPOSECAST_SIGNING_STORE_PASSWORD` / `COMPOSECAST_SIGNING_KEY_PASSWORD` or `-Pcomposecast.signing.storePassword` / `keyPassword`; missing → `check<Variant>ComposeCastConfig` fails release builds only. Password keys in the file are rejected |
 
 File: `compose-cast.properties` in the project dir, or `-Pcomposecast.appConfig=<path>` (relative
 to the root project). The resource names are the contract with `app-shell` (see its AGENTS.md).
@@ -47,4 +49,5 @@ to the root project). The resource names are the contract with `app-shell` (see 
 ```bash
 ./gradlew :app-template:assembleDebug                 # through the plugin (included build)
 ./scripts/verify-app-repository.sh [--install]        # publish dry run + distribution/android-app build
+./gradlew -p gradle-plugins test                      # plugin unit tests
 ```
