@@ -27,7 +27,7 @@ from the latest GitHub Release, scan the admin's QR code, done ([ADR 0024](../de
    per session; the editor shows the QR. Done when: a saved draft is visible in the Preview app
    before publishing.
 
-   **B2 result (2026-11-23):** ADR 0027 changes the mechanics: `POST /admin/screens/{id}/preview`
+   **B2 result (2026-11-23, `e9c524a`):** ADR 0027 changes the mechanics: `POST /admin/screens/{id}/preview`
    (the editor's text, not only saved drafts), id `__preview-<32 hex>` per preview, 30 min,
    `PreviewScreens` in `server-app`, inline SVG QR (`io.nayuki:qrcodegen`) of
    `/connect?screen=…`; the app pushes the screen on top of `main`. Tests: `PreviewScreensTest`,
