@@ -340,3 +340,8 @@ README roadmap's "Etap" numbers.
     (`FormSchema`); saving checks the whole screen and stores the same draft as the JSON editor.
     Every component of `examples/demo` round-trips through its form unchanged (test); pages looked
     at with headless Chrome screenshots.
+71. **T-029 C3 — palette (T-029 done)**: add (after / inside / to a list), move up/down, into the
+    container above, out, wrap, duplicate, delete — `Palette` on JSON paths, each change checked
+    and saved as the draft. Starters per component type (test); a repeat takes the screen's data
+    source; renaming its alias renames the uses. Acceptance: the weather app's `main` and every
+    demo screen are rebuilt from empty over HTTP with only editor operations, byte-identical.

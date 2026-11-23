@@ -1,6 +1,6 @@
 # T-029 — Visual screen editor in the admin panel (no JSON)
 
-Status: in progress — next step: C3 (C1 ADR 0028, C2 tree + forms done) · Roadmap: Etap 8 · Depends on: T-007 (admin MVP), ADR 0015, ADR 0013 · Module: server-admin, protocol (component schema)
+Status: done (C1–C3) · Roadmap: Etap 8 · Depends on: T-007 (admin MVP), ADR 0015, ADR 0013 · Module: server-admin, protocol (component schema)
 
 ## Goal
 
@@ -52,6 +52,15 @@ in an admin panel. ADR 0017 point 4: everything app-specific must be editable th
    types; after a structural change select the new/moved node.
 3. **C3** Palette: add, remove, reorder, nest. Done when: a screen is built from empty without JSON
    (the weather `main` from T-025 is the acceptance test).
+
+   **C3 result (2026-11-23):** `Palette.kt` (starters, add/delete/duplicate/move/into/out/wrap),
+   `Bindings.kt` (alias rename), `POST …/visual/edit`, list selection in the tree, toolbar in
+   `visual.ftl`; playbook [build-screen-in-admin.md](../playbooks/build-screen-in-admin.md).
+   **Acceptance met by a test:** `BuildFromEmptyTest` rebuilds the weather app's `main`
+   (fixture from ljarka/weather-app `f0f729b`) and every demo screen from empty, over HTTP, with
+   only the editor's operations — byte-identical. The screen's maps (data sources, params,
+   lookups) are still JSON fields: T-031 gives data sources a form. Not done: a human
+   non-developer trying it (owner), drag and drop (ADR 0028: buttons first).
 
 ## Acceptance criteria
 

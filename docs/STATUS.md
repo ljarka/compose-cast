@@ -5,7 +5,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Next
 
-- No `ready` task: specify one.
+- **[T-030 App templates](tasks/T-030-app-templates.md)** (Etap 8) — the `ready` task.
 
 ## Task queue (priority order)
 
@@ -36,8 +36,8 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-044 Release signing configured by the app repository](tasks/T-044-release-signing.md) | Etap 6 | done (`72bb93c`) |
 | [T-007 Admin panel MVP](tasks/T-007-admin-panel.md) | Etap 8 | done (`6ba75e7`) — A1–A5: `server-store`, admin mode, login + roles, editor + drafts, publish + history + rollback, settings, admin mode in Docker |
 | [T-045 Generic Preview app + draft preview](tasks/T-045-preview-app.md) | Roadmap B | waiting for the owner — B1 Preview app + `/connect`, B2 draft preview done; B3 needs a fresh VPS + signing secrets (T-029 goes on meanwhile) |
-| [T-029 Visual screen editor (no JSON)](tasks/T-029-visual-screen-editor.md) | Etap 8 | in progress — C1 ADR 0028, C2 tree + generated forms done; next: C3 palette (add, remove, reorder, nest) |
-| [T-030 App templates](tasks/T-030-app-templates.md) | Etap 8 | queued (after T-029); roadmap D1 |
+| [T-029 Visual screen editor (no JSON)](tasks/T-029-visual-screen-editor.md) | Etap 8 | done — C1 ADR 0028, C2 tree + generated forms, C3 palette; acceptance test rebuilds the weather `main` |
+| [T-030 App templates](tasks/T-030-app-templates.md) | Etap 8 | ready — roadmap D1 (its file lists T-031 as a dependency: check the order first) |
 | [T-031 Data source wizard (URL → screens)](tasks/T-031-data-source-wizard.md) | Etap 8 | queued (after T-030); roadmap D2 |
 | [T-010 Settings export (properties + icon)](tasks/T-010-app-export.md) | Etap 9 | queued (after T-031); roadmap E1–E3; rewrite the Design for ADR 0025 (GitHub Actions build) first |
 | [T-027 Images loaded by the SDK (lists)](tasks/T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-010); roadmap F1 |
@@ -70,7 +70,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | Etap 5 — Components for real apps | 8/12 |
 | Etap 6 — Milestone 1: Example weather app (external project) | 5/7 |
 | Etap 7 — App shells & SDKs | 3/7 |
-| Etap 8 — Admin panel MVP | 3/11 |
+| Etap 8 — Admin panel MVP | 4/11 |
 | Etap 9 — White-label app export + TV shows milestone | 1/6 |
 | Etap 10 — Interactivity (DivKit core) | 1/8 |
 | Etap 11 — Release 0.1.0-alpha | 0/2 |
@@ -81,9 +81,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- T-029 C3 — palette (T-029 done)
 - T-029 C2 — component tree + generated property forms
 - T-029 C1 — visual editor technology
 - T-045 B2 — draft preview
 - T-045 B1 — the compose-cast Preview app
 - T-007 A5 — app settings, admin mode in Docker (T-007 done)
-- T-007 A4 — publish, history, rollback

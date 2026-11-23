@@ -52,6 +52,12 @@
     details.group .fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0 12px; margin-top: 8px; }
     details.group .fields > details, details.group .fields > .field:has(textarea), details.group .fields > .variant-type { grid-column: 1 / -1; }
     .required { color: var(--error); }
+    .panel > .card { margin-bottom: 16px; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .toolbar button { margin: 0; padding: 6px 12px; }
+    .toolbar button:disabled { opacity: .4; cursor: default; }
+    button.danger { background: var(--error); }
+    label.inline { display: inline-flex; gap: 8px; align-items: center; margin: 0; }
     fieldset.plain { border: 0; margin: 0; padding: 0; }
     .field { margin-bottom: 8px; }
     .help { font-size: 13px; }

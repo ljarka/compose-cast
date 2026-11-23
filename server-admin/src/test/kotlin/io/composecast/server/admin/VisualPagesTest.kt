@@ -262,4 +262,36 @@ class VisualPagesTest {
         }
         kotlin.test.assertTrue(nodes > 60, "only $nodes nodes")
     }
+
+    @Test
+    fun `structural edits move, wrap and explain what is not possible`() = host.run { client ->
+        screens.publish("main", json, by = "import")
+        val cookie = with(host) { client.loginAs(Role.EDITOR) }
+        suspend fun edit(node: String, vararg fields: Pair<String, String>) =
+            client.save(cookie, "/admin/screens/main/visual/edit?node=$node", fields.toMap())
+
+        val moved = edit("components.1", "op" to "up")
+        assertEquals("/admin/screens/main/visual?node=components.0&saved", moved.headers[HttpHeaders.Location])
+        val wrapped = edit("components.1", "op" to "wrap", "type" to "card")
+        assertEquals(HttpStatusCode.SeeOther, wrapped.status)
+        val draft = ScreenJson.decode(screens.get("main")!!.draftJson!!, "d")
+        assertEquals(listOf("column", "card"), draft.components.map { it::class.simpleName!!.lowercase() })
+
+        val refused = edit("components.0", "op" to "into-previous")
+        assertEquals(HttpStatusCode.UnprocessableEntity, refused.status)
+        assertContains(refused.bodyAsText(), "there is no component above to move into")
+        val noRepeat = edit("components.0", "op" to "add-after", "type" to "repeat")
+        assertContains(noRepeat.bodyAsText(), "add a data source first")
+
+        val page = client.page(cookie, "/admin/screens/main/visual?node=components.0").bodyAsText()
+        assertContains(page, "value=\"up\" disabled")
+        assertContains(page, "value=\"add-inside\"", message = "a column is a container")
+        val list = client.page(cookie, "/admin/screens/main/visual?node=components.0.children")
+        assertEquals(HttpStatusCode.OK, list.status)
+        assertContains(list.bodyAsText(), "to this list")
+        assertEquals(
+            HttpStatusCode.NotFound,
+            client.page(cookie, "/admin/screens/main/visual?node=components.0.nope").status,
+        )
+    }
 }

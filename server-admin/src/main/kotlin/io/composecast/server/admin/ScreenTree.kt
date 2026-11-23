@@ -19,7 +19,8 @@ internal object ScreenTree {
     fun rows(screen: JsonObject): List<Row> = buildList {
         for (list in SCREEN_LISTS) {
             val items = screen[list] as? JsonArray
-            if (list == "error" && items.isNullOrEmpty()) continue
+            // The error list matters only with data sources: shown (and fillable) once there are some.
+            if (list == "error" && items.isNullOrEmpty() && (screen["data"] as? JsonObject).isNullOrEmpty()) continue
             add(Row(list, 0, null, if (list == "error") "Shown when a data source fails" else "Components"))
             items?.forEachIndexed { i, item -> addNode(this, "$list.$i", item, 1) }
         }
@@ -31,11 +32,12 @@ internal object ScreenTree {
         rows += Row(path, depth, type, summary(obj))
         val lists = FormSchema.componentTypes[type]?.let(FormSchema::componentLists).orEmpty()
         for (list in lists) {
-            val items = obj[list] as? JsonArray ?: continue
-            // Components with several lists (repeat: template + empty) name each one.
+            val items = obj[list] as? JsonArray
+            // Components with several lists (repeat: template + empty) name each one, even an
+            // absent one, so it can be selected and filled.
             val childDepth = if (lists.size > 1) depth + 2 else depth + 1
             if (lists.size > 1) rows += Row("$path.$list", depth + 1, null, list)
-            items.forEachIndexed { i, item -> addNode(rows, "$path.$list.$i", item, childDepth) }
+            items?.forEachIndexed { i, item -> addNode(rows, "$path.$list.$i", item, childDepth) }
         }
     }
 
@@ -65,7 +67,10 @@ internal object ScreenTree {
         val head = segments.first()
         val rest = segments.drop(1)
         return when (node) {
-            is JsonObject -> JsonObject(node + (head to replace(node.getValue(head), rest, value)))
+            // The last key may be new (a component list that is still absent, e.g. `empty`).
+            is JsonObject -> JsonObject(
+                node + (head to if (rest.isEmpty()) value else replace(node.getValue(head), rest, value)),
+            )
             is JsonArray -> {
                 val index = head.toInt()
                 JsonArray(node.mapIndexed { i, item -> if (i == index) replace(item, rest, value) else item })

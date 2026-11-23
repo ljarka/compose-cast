@@ -12,5 +12,6 @@ wrong or missing, fix the playbook in the same change.
 | [install-server.md](install-server.md) | Installing the server on a VPS from the published image (users), release mechanics (maintainers) |
 | [new-app-repository.md](new-app-repository.md) | Starting a product app in its own repository (server + Android, no Kotlin) |
 | [maven-repository.md](maven-repository.md) | Setting up / maintaining the Reposilite Maven repository on the VPS (owner) |
+| [build-screen-in-admin.md](build-screen-in-admin.md) | Building a screen in the admin's visual editor without JSON (owners; agents: the acceptance test) |
 | [preview-app.md](preview-app.md) | The compose-cast Preview app: using it, release signing secrets (owner), checking it on the emulator |
 | [cold-read-test.md](cold-read-test.md) | Checking that a fresh agent can continue from the docs alone |

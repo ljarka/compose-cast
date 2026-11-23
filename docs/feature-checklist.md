@@ -95,7 +95,7 @@ Android only ([ADR 0022](decisions/0022-android-only.md), owner 2026-11-16).
 - [x] User accounts (email + bcrypt password), roles: `admin` / `editor` / `viewer`; session cookie;
   first admin from `COMPOSECAST_ADMIN_EMAIL`/`_PASSWORD` env vars (no shared `ADMIN_PASSWORD`)
 - [x] MVP: JSON editor with live validation, preview, publish, history — T-007, T-045
-- [ ] Visual editor for non-developers: component palette, schema-driven property forms — T-029 (tree + generated forms done, C2; palette next)
+- [x] Visual editor for non-developers: component palette, schema-driven property forms — T-029 (data source form: T-031)
 - [ ] Data source wizard: paste an API URL → list + detail screens, field picker — T-031
 - [ ] App templates (news, catalog, events, weather): a working app in 5 minutes — T-030
 - [ ] Live preview on a phone, refreshed on every edit — T-032

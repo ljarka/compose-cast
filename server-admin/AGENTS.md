@@ -14,7 +14,9 @@ only in admin mode (`COMPOSECAST_MODE=admin`); files mode has no `/admin`.
 | `SettingsPages.kt` | A5: `GET/POST /admin/settings` (multipart form: app name = brand name, applicationId, server URL, brand colors, logo upload/remove; POST admin-only), `GET /admin/settings/logo`; `AppKeys` (`app.name`, `app.applicationId`, `app.serverUrl`, `app.icon` base64 + `app.icon.type`: read by T-010 export) |
 | `FormSchema.kt` | T-029 C2 (ADR 0028): property forms from `SerialDescriptor`s — `Kind` (Text, Number, Toggle, Choice, Group, Variant, Dimension, JsonValue), `componentFields(type)`, `screenFields`, `componentLists`, `values` (JSON → form values, defaults written out), `parse` (form → JSON, path-named problems), `filledIn` |
 | `ScreenTree.kt` | Outline rows of a screen's JSON, node paths (`components.0.children.2`), `get`/`set` |
-| `VisualPages.kt` | `GET/POST /admin/screens/{id}/visual?node=` (tree + form; save = whole screen checked, then `saveDraft`), `POST …/visual/panel` (HTMX re-render, e.g. another action type; saves nothing), `formRows` (flat rows for `_form.ftl`), `HELP` texts |
+| `VisualPages.kt` | `GET/POST /admin/screens/{id}/visual?node=` (tree + form; save = whole screen checked, then `saveDraft`), `POST …/visual/panel` (HTMX re-render, e.g. another action type; saves nothing), `POST …/visual/edit` (C3: `op` = add-after/add-inside/add-end/up/down/into-previous/out/duplicate/delete/wrap, `type`), `?node=` may be a list (`components.2.empty`), `formRows` (flat rows for `_form.ftl`), `HELP` texts |
+| `Palette.kt` | T-029 C3: `starters` (smallest valid component per type; a repeat gets the screen's first data source), `groups`, `containers`, structural edits on node paths: `add`, `delete`, `duplicate`, `move`, `intoPrevious`, `outOfParent`, `wrap` → `Result(screen, select)` |
+| `Bindings.kt` | `rename` of a binding root in JSON strings (renaming a repeat's `as`) |
 | `QrCode.kt` | `QrCode.svg(text)`: inline SVG QR code (`io.nayuki:qrcodegen`, ECC medium); the only template value rendered with `?no_esc` (generated, no user text) |
 | `ScreenPublishing.kt` | `ScreenPublishing` (publish, rollback, publishBrand, preview; implemented by `server-app`, which owns `LiveScreens`), `PublishException` (nothing changed) |
 | `AdminAuth.kt` | Accounts and sessions: `bootstrapAdmin`, `createUser`, `login` → token, `user(token)`, `logout`; bcrypt (`at.favre.lib:bcrypt`) |
@@ -76,6 +78,12 @@ only in admin mode (`COMPOSECAST_MODE=admin`); files mode has no `/admin`.
   optional group nobody filled in, so a required field inside it cannot create it). Component lists
   are never form fields — they are the tree, kept from the stored JSON on save. Saving = the whole
   screen through `ScreenJson.check`, so the visual and JSON editors share one draft and one rule set.
+- **Palette (C3):** structural edits are pure functions on the JSON (`Palette`), then the same
+  check + save; a refused edit (`IllegalArgumentException`, or an invalid screen such as an
+  expandable without content) shows the message and changes nothing. A new component type needs a
+  starter in `Palette.starters` and a palette group (`PaletteTest` fails otherwise). The error list
+  shows in the tree once the screen has data sources. Renaming a repeat's alias renames
+  `{{alias…}}` in its lists (`Bindings.rename`).
 - Not yet: login rate limiting (bcrypt cost is the only brake), password change, user management UI.
 
 Ktor 3.6.1 facts (sources jar, 2026-11-23): `Sessions` is route-scoped (installed on `/admin` only),
@@ -97,7 +105,10 @@ email, viewer 403 / editor allowed on every mutating route found in the routing 
 message, `allowHttp`, HTML escaping, bootstrap rules). `ScreenPagesTest` (list + statuses, create,
 invalid edit → problems with paths and nothing saved, canonical draft leaves `live()` unchanged,
 validate fragment, editor vs. viewer page, no textarea breakout, publish + who + draft cleared,
-invalid/failed publish changes nothing, rollback + revision page, preview QR + nothing saved). `FormSchemaTest` (all component types known, no unexpected JSON-value fields, every component of
+invalid/failed publish changes nothing, rollback + revision page, preview QR + nothing saved). `PaletteTest` (starters valid, edits keep the selection, nesting, repeat needs data).
+`BuildFromEmptyTest` (**acceptance**: the weather app's `main` — `src/test/resources/fixtures/weather-main.json`
+from ljarka/weather-app `f0f729b` — and every demo screen built from empty over HTTP with only
+New screen, forms and palette operations, byte-identical). `FormSchemaTest` (all component types known, no unexpected JSON-value fields, every component of
 `examples/demo` → form values → back unchanged). `VisualPagesTest` (tree, selected form, save one
 node, path-named errors keep the input, screen fields, action type switch, viewers disabled, every
 node of every demo screen opens and saves unchanged). `SettingsPagesTest` (save brand +
