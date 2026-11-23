@@ -59,7 +59,7 @@ change it together with the install docs when the admin is usable.
 - **Done when:** `/admin` redirects to login without a session; the env admin logs in; wrong
   password → error; a `viewer` gets 403 on every mutating route (tests with the Ktor test host).
 
-**A2 result (2026-11-23):** module `server-admin` (`AdminPanel.kt`, `AdminAuth.kt`, `Role.kt`,
+**A2 result (2026-11-23, `e3e07ef`):** module `server-admin` (`AdminPanel.kt`, `AdminAuth.kt`, `Role.kt`,
 Freemarker templates), `UserStore` in `server-store`, `COMPOSECAST_ADMIN_EMAIL`/`_PASSWORD`/
 `_ALLOW_HTTP` in `server-app`. Tests: `AdminPanelTest` (8), `UserStoreTest` (3), `AdminScreensTest`
 (+2: bootstrap from env, `/admin` only in admin mode); checked by hand with curl against a real
