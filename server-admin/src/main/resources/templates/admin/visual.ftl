@@ -147,9 +147,12 @@
           <td>${h.publishedAt}</td>
           <td>${h.publishedBy}</td>
           <td><#if canEdit && !h?is_first>
-            <form method="post" action="/admin/screens/${id?url}/rollback" style="margin:0">
+            <form method="post" action="/admin/screens/${id?url}/rollback" style="display:inline;margin:0">
               <input type="hidden" name="revision" value="${h.revision?c}">
               <button type="submit" style="margin:0">Roll back to this</button>
+            </form>
+            <form method="post" action="/admin/screens/${id?url}/revisions/${h.revision?c}/delete" style="display:inline;margin:0">
+              <button type="submit" class="danger" style="margin:0">Remove</button>
             </form>
           </#if></td>
         </tr>

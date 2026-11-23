@@ -195,6 +195,23 @@ internal fun Route.screenPages(screens: ScreenStore, settings: SettingsStore, pu
                     ),
                 )
             }
+            post("/revisions/{revision}/delete") {
+                val stored = screens.get(call.screenId) ?: return@post call.notFound()
+                val revId = call.parameters["revision"]?.toIntOrNull()
+                    ?.takeIf { screens.revision(stored.id, it) != null } ?: return@post call.notFound()
+                if (screens.history(stored.id).firstOrNull()?.id == revId) {
+                    call.response.status(HttpStatusCode.UnprocessableEntity)
+                    val json = stored.draftJson ?: stored.liveJson.orEmpty()
+                    return@post call.editor(
+                        screens,
+                        stored,
+                        json,
+                        ScreenJson.Checked(null, listOf("Cannot remove the currently live revision #$revId.")),
+                    )
+                }
+                screens.deleteRevision(stored.id, revId)
+                call.seeOther("/admin/screens/${stored.id.urlEncoded()}?revisionRemoved")
+            }
         }
     }
 }
@@ -203,6 +220,7 @@ private val NOTICES = mapOf(
     "saved" to "Draft saved (as formatted JSON). Apps still get the live version.",
     "published" to "Published: apps get this version from their next request.",
     "rolledback" to "Rolled back: apps get the chosen version from their next request. A pending draft was kept.",
+    "revisionRemoved" to "Removed the revision from history.",
 )
 
 /** Runs a publish; its failure becomes a message for the editor (null = success). */

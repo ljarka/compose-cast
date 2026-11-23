@@ -310,4 +310,23 @@ class ScreenPagesTest {
         val bad = client.form(cookie, "/admin/screens/main/describe", "json" to """{"id": " "}""").bodyAsText()
         assertContains(bad, "error")
     }
+
+    @Test
+    fun `past revisions can be removed from history but the live revision cannot`() = host.run { client ->
+        val cookie = with(host) { client.loginAs(Role.EDITOR) }
+        screens.publish("main", homeJson, by = "a@example.com")
+        screens.publish("main", """{"id": "main", "title": "V2"}""", by = "a@example.com")
+        val history = screens.history("main")
+        val live = history.first()
+        val older = history.last()
+
+        assertEquals(
+            HttpStatusCode.UnprocessableEntity,
+            client.form(cookie, "/admin/screens/main/revisions/${live.id}/delete").status,
+        )
+        val removed = client.form(cookie, "/admin/screens/main/revisions/${older.id}/delete")
+        assertEquals(HttpStatusCode.SeeOther, removed.status)
+        assertNull(screens.revision("main", older.id))
+        assertEquals(HttpStatusCode.NotFound, client.page(cookie, "/admin/screens/main/revisions/${older.id}").status)
+    }
 }

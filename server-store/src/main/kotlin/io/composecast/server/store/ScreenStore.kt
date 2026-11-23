@@ -50,6 +50,13 @@ class ScreenStore(private val database: StoreDatabase, private val clock: Clock 
         Screens.deleteWhere { Screens.id eq id } > 0
     }
 
+    /** Removes a single past revision [revisionId] of [screenId]; returns true when a row was deleted. */
+    fun deleteRevision(screenId: String, revisionId: Int): Boolean = database.tx {
+        ScreenHistory.deleteWhere {
+            (ScreenHistory.screenId eq screenId) and (ScreenHistory.id eq revisionId)
+        } > 0
+    }
+
     /** Live JSON of every published screen, ordered by id: what apps are served. */
     fun live(): Map<String, String> = database.tx {
         Screens.selectAll().where { Screens.liveJson.isNotNull() }.orderBy(Screens.id)
