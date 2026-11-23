@@ -23,6 +23,19 @@ class PreviewLinkTest {
     }
 
     @Test
+    fun `a link may name a screen to open (draft preview)`() {
+        assertEquals(
+            PreviewLink.Link("https://a.com", "__preview-0f3a"),
+            PreviewLink.parse("composecast://connect?url=https%3A%2F%2Fa.com&screen=__preview-0f3a"),
+        )
+        assertEquals(
+            PreviewLink.Link("https://a.com", null),
+            PreviewLink.parse("composecast://connect?url=https%3A%2F%2Fa.com"),
+        )
+        assertEquals(null, PreviewLink.parse("composecast://connect?url=https%3A%2F%2Fa.com&screen=..%2Fx")?.screen)
+    }
+
+    @Test
     fun `typed addresses default to https and must be a plain server address`() {
         assertEquals("https://app.example.com", PreviewLink.normalize(" app.example.com/ "))
         assertEquals("http://192.168.1.10:8080", PreviewLink.normalize("http://192.168.1.10:8080"))

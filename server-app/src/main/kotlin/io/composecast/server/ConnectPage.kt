@@ -2,6 +2,8 @@ package io.composecast.server
 
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.plugins.origin
+import io.ktor.server.request.host
+import io.ktor.server.request.port
 import java.net.URLEncoder
 
 /**
@@ -15,6 +17,9 @@ internal object ConnectPage {
     const val PREVIEW_PACKAGE = "io.composecast.preview"
     const val PREVIEW_APK = "https://github.com/ljarka/compose-cast/releases/latest/download/compose-cast-preview.apk"
 
+    /** `?screen=` (B2: a draft preview `__preview-…`): a screen id the app opens after connecting. */
+    val SCREEN = Regex("[A-Za-z0-9_-]{1,128}")
+
     /** Host header characters of a hostname, IPv4/IPv6 address and port; anything else is refused. */
     private val HOST = Regex("[A-Za-z0-9.\\-:\\[\\]]{1,255}")
 
@@ -23,17 +28,20 @@ internal object ConnectPage {
      * the connection's scheme, and the `Host` header. Null for a malformed host.
      */
     fun serverUrl(call: ApplicationCall): String? {
-        val host = call.request.headers["Host"]?.takeIf { HOST.matches(it) } ?: return null
+        // Without a Host header (HTTP/1.0, test engines): the address the request was made to.
+        val host = (call.request.headers["Host"] ?: "${call.request.host()}:${call.request.port()}")
+            .takeIf { HOST.matches(it) } ?: return null
         val forwarded = call.request.headers["X-Forwarded-Proto"]?.substringBefore(',')?.trim()?.lowercase()
         val scheme = forwarded?.takeIf { it == "https" || it == "http" } ?: call.request.origin.scheme
         return "$scheme://$host"
     }
 
-    fun html(serverUrl: String): String {
-        val encoded = encode(serverUrl)
-        val intent = "intent://connect?url=$encoded#Intent;scheme=composecast;package=$PREVIEW_PACKAGE;" +
+    /** [screen] (validated with [SCREEN]) is opened by the app after connecting. */
+    fun html(serverUrl: String, screen: String? = null): String {
+        val query = "url=${encode(serverUrl)}" + (screen?.let { "&screen=$it" } ?: "")
+        val intent = "intent://connect?$query#Intent;scheme=composecast;package=$PREVIEW_PACKAGE;" +
             "S.browser_fallback_url=${encode(PREVIEW_APK)};end"
-        val direct = "composecast://connect?url=$encoded"
+        val direct = "composecast://connect?$query"
         return """
             <!doctype html>
             <html lang="en">
@@ -51,8 +59,10 @@ internal object ConnectPage {
               </style>
             </head>
             <body>
-              <h1>Preview this app</h1>
-              <p>Opens <code>${escape(serverUrl)}</code> in the compose-cast Preview app.</p>
+              <h1>${if (screen == null) "Preview this app" else "Preview a draft"}</h1>
+              <p>Opens <code>${escape(serverUrl)}</code> in the compose-cast Preview app${
+            if (screen == null) "." else " and shows the draft (for 30 minutes; publishing is separate)."
+        }</p>
               <a class="button" id="open" href="${escape(intent)}">Open in compose-cast Preview</a>
               <p class="muted">Not installed? The button downloads it:
                 <a href="${escape(

@@ -227,4 +227,32 @@ class ScreenPagesTest {
             client.form(cookie, "/admin/screens/main/rollback", "revision" to "999").status,
         )
     }
+
+    @Test
+    fun `preview shows a QR code for the textarea and saves nothing`() = host.run { client ->
+        screens.publish("main", homeJson, by = "import")
+        val cookie = with(host) { client.loginAs(Role.EDITOR) }
+        val shown = """{"id": "main", "title": "Draft only"}"""
+
+        val response = client.submitForm(
+            "/admin/screens/main/preview",
+            parameters { append("json", shown) },
+        ) {
+            header(HttpHeaders.Cookie, cookie)
+            header(HttpHeaders.Host, "app.example.com")
+            header("X-Forwarded-Proto", "https")
+        }
+        assertEquals(HttpStatusCode.OK, response.status)
+        val body = response.bodyAsText()
+        assertContains(body, "<svg xmlns=\"http://www.w3.org/2000/svg\"")
+        assertContains(body, "href=\"https://app.example.com/connect?screen=__preview-test1\"")
+        assertContains(body, "Draft only", message = "the textarea keeps the text")
+        assertEquals(listOf(ScreenJson.encode(ScreenDefinition("main", title = "Draft only"))), host.previews)
+        assertNull(screens.get("main")!!.draftJson, "nothing saved")
+        assertEquals(mapOf("main" to homeJson), screens.live())
+
+        val invalid = client.form(cookie, "/admin/screens/main/preview", "json" to """{"id": "main", "x": 1}""")
+        assertEquals(HttpStatusCode.UnprocessableEntity, invalid.status)
+        assertEquals(1, host.previews.size)
+    }
 }

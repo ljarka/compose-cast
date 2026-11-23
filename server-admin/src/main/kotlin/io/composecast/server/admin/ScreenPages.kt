@@ -6,7 +6,11 @@ import io.composecast.server.store.ScreenStore
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.freemarker.respondTemplate
+import io.ktor.server.plugins.origin
+import io.ktor.server.request.host
+import io.ktor.server.request.port
 import io.ktor.server.request.receiveParameters
+import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
@@ -83,6 +87,36 @@ internal fun Route.screenPages(screens: ScreenStore, publishing: ScreenPublishin
                     return@post call.editor(screens, stored, json, shown)
                 }
                 call.seeOther("/admin/screens/${stored.id.urlEncoded()}?published")
+            }
+            // T-045 B2: the textarea as a temporary screen for the Preview app; nothing is saved.
+            post("/preview") {
+                val stored = screens.get(call.screenId) ?: return@post call.notFound()
+                val json = call.receiveParameters()["json"].orEmpty()
+                val checked = problems(stored.id, json)
+                val screen = checked.screen ?: run {
+                    call.response.status(HttpStatusCode.UnprocessableEntity)
+                    return@post call.editor(screens, stored, json, checked)
+                }
+                val previewId = try {
+                    publishing.preview(ScreenJson.encode(screen))
+                } catch (e: PublishException) {
+                    call.response.status(HttpStatusCode.UnprocessableEntity)
+                    return@post call.editor(
+                        screens,
+                        stored,
+                        json,
+                        ScreenJson.Checked(null, listOf("No preview: ${e.message}")),
+                    )
+                }
+                val serverUrl = call.publicServerUrl() ?: return@post call.respond(HttpStatusCode.BadRequest)
+                val connect = "$serverUrl/connect?screen=$previewId"
+                call.editor(
+                    screens,
+                    stored,
+                    json,
+                    checked,
+                    preview = mapOf("url" to connect, "qr" to QrCode.svg(connect), "screen" to previewId),
+                )
             }
             post("/rollback") {
                 val stored = screens.get(call.screenId) ?: return@post call.notFound()
@@ -168,6 +202,7 @@ private suspend fun ApplicationCall.editor(
     json: String,
     checked: ScreenJson.Checked,
     notice: String? = null,
+    preview: Map<String, String>? = null,
 ) = respondTemplate(
     "admin/screen.ftl",
     page(stored.id) + problemsModel(checked) + mapOf(
@@ -177,6 +212,7 @@ private suspend fun ApplicationCall.editor(
         "publishedAt" to stored.publishedAt?.toString().orEmpty(),
         "publishedBy" to stored.publishedBy.orEmpty(),
         "notice" to notice.orEmpty(),
+        "preview" to (preview ?: emptyMap()),
         "history" to screens.history(stored.id).map {
             mapOf("revision" to it.id, "publishedAt" to it.publishedAt.toString(), "publishedBy" to it.publishedBy)
         },
@@ -184,6 +220,20 @@ private suspend fun ApplicationCall.editor(
 )
 
 private val ApplicationCall.screenId: String get() = parameters["id"].orEmpty()
+
+/** Host header characters of a hostname, IPv4/IPv6 address and port. */
+private val HOST = Regex("[A-Za-z0-9.\\-:\\[\\]]{1,255}")
+
+/**
+ * This server as the phone reaches it (same rule as `server-app`'s `ConnectPage.serverUrl`):
+ * `X-Forwarded-Proto` from the HTTPS proxy or the connection's scheme, plus the `Host` header.
+ */
+private fun ApplicationCall.publicServerUrl(): String? {
+    val host =
+        (request.headers["Host"] ?: "${request.host()}:${request.port()}").takeIf { HOST.matches(it) } ?: return null
+    val forwarded = request.headers["X-Forwarded-Proto"]?.substringBefore(',')?.trim()?.lowercase()
+    return "${forwarded?.takeIf { it == "https" || it == "http" } ?: request.origin.scheme}://$host"
+}
 
 private suspend fun ApplicationCall.notFound() = respondText("No screen '$screenId'", status = HttpStatusCode.NotFound)
 

@@ -1,6 +1,6 @@
 # 0013 — Admin panel: preview strategy
 
-- Status: Accepted; the device side (which app scans the QR code) amended by [0024](0024-generic-preview-app.md) (auth in the examples below: `ADMIN_PASSWORD` is replaced by accounts, [0016](0016-admin-storage-sqlite.md))
+- Status: Accepted; the device side (which app scans the QR code) amended by [0024](0024-generic-preview-app.md), the mechanics (endpoint, `__preview-<token>` ids, 30 min, QR via `/connect`) by [0027](0027-draft-preview-ids.md) (auth in the examples below: `ADMIN_PASSWORD` is replaced by accounts, [0016](0016-admin-storage-sqlite.md))
 - Date: 2026-11-07
 
 ## Context

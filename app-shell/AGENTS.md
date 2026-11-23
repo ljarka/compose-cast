@@ -11,7 +11,7 @@ contain no Kotlin. For SDK details read `sdk-android/AGENTS.md`.
 | File | Purpose |
 |---|---|
 | `ComposeCastActivity.kt` | Launcher activity; reads config from resources; `ComposeCastApp` composable (back stack, states, action routing), frame color scheme, status bar style |
-| `PreviewConnection.kt` | Preview app (T-045): `PreviewLink.serverUrl` (`composecast://connect?url=…`), `PreviewLink.normalize` (typed address; no scheme = https), `PreviewServerStore` (SharedPreferences) |
+| `PreviewConnection.kt` | Preview app (T-045): `PreviewLink.parse` (`composecast://connect?url=…[&screen=…]`), `PreviewLink.normalize` (typed address; no scheme = https), `PreviewServerStore` (SharedPreferences) |
 | `ConnectScreen.kt` | Preview app without a server: how to connect + address field |
 | `AndroidManifest.xml` | `INTERNET`, application label/icon/theme/`networkSecurityConfig`, the launcher activity (`singleTop`), the `ConnectLink` alias (`composecast://connect`, enabled only by `@bool/composecast_preview`) — merged into every app |
 | `res/values/composecast_config.xml` | **Defaults** of the values the plugin overrides: `app_name`, `composecast_server_url`, `composecast_frame_primary`, `composecast_frame_background`, `composecast_preview` (bool) |
@@ -50,7 +50,9 @@ ComposeCastActivity (config: getString/getColor of the resources above)
   colors are the server's brand, painted by the RC document.
 - Server URL is state: `app.serverUrl`, or in the Preview app the linked/typed one (null → `ConnectScreen`).
   `key(url)` gives each server a new client and back stack; "Change server" (Preview only) forgets
-  it. A connect link while running arrives in `onNewIntent` (`singleTop`).
+  it. A connect link while running arrives in `onNewIntent` (`singleTop`). A link's `screen`
+  (draft preview, B2) is pushed on top of `main` via `OpenRequest` (seq: each scan counts; not again
+  after a rotation).
 - Config is `lazy`: resources are not available before `onCreate`.
 
 ## Build

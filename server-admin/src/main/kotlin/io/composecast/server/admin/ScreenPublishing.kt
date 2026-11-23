@@ -14,6 +14,12 @@ interface ScreenPublishing {
 
     /** Makes [brandJson] (`BrandConfig` JSON, already checked with `problems()`) the brand of `/brand` and every screen (A5). */
     fun publishBrand(brandJson: String)
+
+    /**
+     * T-045 B2: serves [json] (checked) as a temporary screen for the Preview app, without writing
+     * anything; returns its screen id (`__preview-…`, ADR 0027).
+     */
+    fun preview(json: String): String
 }
 
 /** The screens would not build as a whole (e.g. a `{{secret.X}}` that is not set); nothing changed. */

@@ -30,7 +30,7 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-042 Reload the data directory without a restart](T-042-reload-data-dir.md) | Etap 6 | done (`383c443`) |
 | [T-044 Release signing configured by the app repository](T-044-release-signing.md) | Etap 6 | done (`72bb93c`) |
 | [T-007 Admin panel MVP](T-007-admin-panel.md) | Etap 8 | done (`6ba75e7`) — A1–A5: `server-store`, admin mode, login + roles, editor + drafts, publish + history + rollback, settings, admin mode in Docker |
-| [T-045 Generic Preview app + draft preview](T-045-preview-app.md) | Roadmap B | in progress — B1 done (Preview app, `/connect`), next: B2 draft preview (ADR 0024, 0026) |
+| [T-045 Generic Preview app + draft preview](T-045-preview-app.md) | Roadmap B | in progress — B1 Preview app + `/connect`, B2 draft preview done; next: B3 (needs the owner: fresh VPS, signing secrets) |
 | [T-029 Visual screen editor (no JSON)](T-029-visual-screen-editor.md) | Etap 8 | queued (after T-045); roadmap C1–C3 (C1: ADR on the admin UI technology) |
 | [T-030 App templates](T-030-app-templates.md) | Etap 8 | queued (after T-029); roadmap D1 |
 | [T-031 Data source wizard (URL → screens)](T-031-data-source-wizard.md) | Etap 8 | queued (after T-030); roadmap D2 |

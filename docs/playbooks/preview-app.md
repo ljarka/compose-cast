@@ -9,7 +9,9 @@ phone before their own app exists (T-045, [ADR 0024](../decisions/0024-generic-p
 1. On the phone, open `https://<your server>/connect` (the admin panel's QR code points there) and
    tap **Open in compose-cast Preview**. Without the app installed the button downloads
    `compose-cast-preview.apk` from the latest GitHub Release (allow installing from the browser).
-2. The app opens your server's `main` screen and remembers the server. **Change server** in the top
+2. The app opens your server's `main` screen and remembers the server. Editing a screen in the
+   admin: **Preview on phone** shows a QR code of exactly the editor's text (not saved, 30 min);
+   scanning it opens that draft on top of `main` (back returns). **Change server** in the top
    bar goes back to the connect screen; the address can also be typed there
    (`https://app.example.com`, or `http://192.168.1.10:8080` on a local network).
 

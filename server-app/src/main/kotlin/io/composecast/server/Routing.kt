@@ -28,8 +28,14 @@ fun Application.configureRouting(screens: LiveScreens) {
         // Where the admin's QR code points: hands this server to the compose-cast Preview app (T-045).
         get("/connect") {
             val serverUrl = ConnectPage.serverUrl(call) ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val screen = call.request.queryParameters["screen"]
+            if (screen != null &&
+                !ConnectPage.SCREEN.matches(screen)
+            ) {
+                return@get call.respond(HttpStatusCode.BadRequest)
+            }
             call.response.header(HttpHeaders.CacheControl, "no-store")
-            call.respondText(ConnectPage.html(serverUrl), ContentType.Text.Html)
+            call.respondText(ConnectPage.html(serverUrl, screen), ContentType.Text.Html)
         }
         get("/version") {
             call.respond(VersionInfo(serverVersion = "1.0.0", protocolVersion = "1.0"))
@@ -99,9 +105,11 @@ private suspend fun ApplicationCall.renderScreen(screens: LiveScreens): RemoteSc
     }
     val rcProfiles = request.headers[Headers.RC_PROFILES]?.toIntOrNull()
     // Bound screens block on data sources (T-006): keep them off the request threads.
-    val registry = screens.current
-    val screen = withContext(Dispatchers.IO) {
-        registry.render(id, RenderContext(params, rcApiLevel = rcApiLevel, rcProfiles = rcProfiles))
+    val registry = screens.registryFor(id)
+    val screen = registry?.let {
+        withContext(Dispatchers.IO) {
+            it.render(id, RenderContext(params, rcApiLevel = rcApiLevel, rcProfiles = rcProfiles))
+        }
     }
     if (screen == null) respond(HttpStatusCode.NotFound, ErrorResponse("screen_not_found", "Screen '$id' not found"))
     return screen

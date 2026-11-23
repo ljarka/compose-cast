@@ -328,3 +328,7 @@ README roadmap's "Etap" numbers.
     fallback) — ADR 0026. Release job `preview-apk` signs it with secrets (owner sets them).
     Emulator: connect link → demo `main`; only the Preview app handles the link; branded demo app
     smoke flow still passes.
+68. **T-045 B2 — draft preview**: "Preview on phone" in the editor → `__preview-<128-bit>` screen
+    (in memory, 30 min, live brand, nothing saved) + an SVG QR of `/connect?screen=…`; the Preview
+    app opens it on top of `main` — ADR 0027 (amends 0013). Emulator: draft visible while apps
+    still get the live screen; rotation, back and a second scan with the app open work.

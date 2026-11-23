@@ -10,6 +10,7 @@ dependencies {
     implementation(libs.ktor.server.sessions)
     implementation(libs.ktor.server.freemarker)
     implementation(libs.bcrypt)
+    implementation(libs.qrcodegen) // T-045 B2: QR codes as inline SVG
     testImplementation(libs.kotlin.test)
     testImplementation(libs.ktor.server.test.host)
 }

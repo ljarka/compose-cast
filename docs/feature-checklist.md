@@ -94,13 +94,13 @@ Android only ([ADR 0022](decisions/0022-android-only.md), owner 2026-11-16).
   draft/live status, full history; `<id>.json` import/export ([ADR 0016](decisions/0016-admin-storage-sqlite.md)) — done except export (T-007 A1–A4)
 - [x] User accounts (email + bcrypt password), roles: `admin` / `editor` / `viewer`; session cookie;
   first admin from `COMPOSECAST_ADMIN_EMAIL`/`_PASSWORD` env vars (no shared `ADMIN_PASSWORD`)
-- [ ] MVP: JSON editor with live validation, preview, publish, history — T-007 (done except preview: T-045)
+- [x] MVP: JSON editor with live validation, preview, publish, history — T-007, T-045
 - [ ] Visual editor for non-developers: component palette, schema-driven property forms — T-029
 - [ ] Data source wizard: paste an API URL → list + detail screens, field picker — T-031
 - [ ] App templates (news, catalog, events, weather): a working app in 5 minutes — T-030
 - [ ] Live preview on a phone, refreshed on every edit — T-032
 - [ ] AI assistant (optional, own API key): describe a screen → draft; brand palette — T-033
-- [ ] Preview on a device: temporary `__preview` screen + QR code ([ADR 0013](decisions/0013-admin-preview.md)); Preview app + `/connect` done (T-045 B1), drafts next (B2);
+- [x] Preview on a device: temporary `__preview-…` screen + QR code ([ADR 0013](decisions/0013-admin-preview.md), [0027](decisions/0027-draft-preview-ids.md)) in the generic Preview app (T-045);
   in-browser RC player later, if one matures
 - [ ] Publish (screen goes live); change history per screen (who published, when); one-click rollback
 - [ ] **App Settings page:** app name, `applicationId`, server URL, `BrandConfig` (primary colour,

@@ -30,6 +30,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -74,10 +75,16 @@ class ComposeCastActivity : ComponentActivity() {
     /** The server: `app.serverUrl`, or in the Preview app the linked/typed one (null = not chosen yet). */
     private var serverUrl by mutableStateOf<String?>(null)
 
+    /** Preview app (T-045 B2): a linked screen to open on top (a draft preview); [OpenRequest.seq] makes each link count. */
+    private var openRequest by mutableStateOf<OpenRequest?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         serverUrl = if (preview) {
-            linkedServer(intent) ?: previewStore.serverUrl
+            // After a rotation the intent is the same link again: its screen is already on the back stack.
+            val link = PreviewLink.parse(intent.viewData())
+            if (savedInstanceState == null) link?.screen?.let { openRequest = OpenRequest(it, 0) }
+            link?.serverUrl?.also { previewStore.serverUrl = it } ?: previewStore.serverUrl
         } else {
             getString(R.string.composecast_server_url)
         }
@@ -111,6 +118,7 @@ class ComposeCastActivity : ComponentActivity() {
                                 "Check app.serverUrl in compose-cast.properties."
                             },
                             onChangeServer = if (preview) ({ connect(null) }) else null,
+                            openRequest = openRequest,
                             onOpenUrl = { link ->
                                 // false = no app can open it (would otherwise crash with ActivityNotFoundException).
                                 try {
@@ -127,10 +135,13 @@ class ComposeCastActivity : ComponentActivity() {
         }
     }
 
-    /** A connect link while running (the activity is `singleTop`): switch to that server. */
+    /** A connect link while running (the activity is `singleTop`): switch to that server (and screen). */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (preview) linkedServer(intent)?.let(::connect)
+        if (!preview) return
+        val link = PreviewLink.parse(intent.viewData()) ?: return
+        connect(link.serverUrl)
+        link.screen?.let { openRequest = OpenRequest(it, (openRequest?.seq ?: 0) + 1) }
     }
 
     /** Preview app: remember [url] (null = forget it and show the connect screen). */
@@ -139,9 +150,11 @@ class ComposeCastActivity : ComponentActivity() {
         serverUrl = url
     }
 
-    private fun linkedServer(intent: Intent?): String? =
-        intent?.takeIf { it.action == Intent.ACTION_VIEW }?.dataString?.let(PreviewLink::serverUrl)
+    private fun Intent?.viewData(): String? = this?.takeIf { it.action == Intent.ACTION_VIEW }?.dataString
 }
+
+/** Open [screen] on top of the back stack; a new [seq] = a new request (the same draft scanned twice). */
+private data class OpenRequest(val screen: String, val seq: Int)
 
 /**
  * Colors of the native frame around the server documents (top app bar, loading/error states) from
@@ -166,6 +179,7 @@ private fun ComposeCastApp(
     serverUrl: String,
     unreachableHint: String,
     onChangeServer: (() -> Unit)?,
+    openRequest: OpenRequest?,
     onOpenUrl: (String) -> Boolean,
 ) {
     // Back stack of (screen, params) entries; survives rotation. System back pops it.
@@ -175,6 +189,14 @@ private fun ComposeCastApp(
     val entry = backStack.last()
     val screenId = entry.screen
     BackHandler(enabled = backStack.size > 1) { backStack = backStack.dropLast(1) }
+    // A linked screen (draft preview) opens on top; rememberSaveable: not again after a rotation.
+    var handledRequest by rememberSaveable { mutableIntStateOf(-1) }
+    LaunchedEffect(openRequest) {
+        val request = openRequest ?: return@LaunchedEffect
+        if (request.seq == handledRequest) return@LaunchedEffect
+        handledRequest = request.seq
+        backStack = backStack + Action.Navigate(request.screen)
+    }
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 

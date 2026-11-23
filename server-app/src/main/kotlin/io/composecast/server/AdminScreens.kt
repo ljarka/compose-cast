@@ -77,6 +77,15 @@ class AdminScreens(
         serve(registry)
     }
 
+    /**
+     * T-045 B2: a one-screen registry serving [json] (checked like a draft) as [previewId], with the
+     * live brand; nothing is written. Navigation from it goes to the live screens.
+     */
+    fun preview(json: String, previewId: String): ScreenRegistry = composeCast(imageLoader, dataLoader, env) {
+        settings[SettingsStore.BRAND]?.let { brand(Json.decodeFromString(BrandConfig.serializer(), it)) }
+        screen(ScreenJson.decode(json, source = "preview").copy(id = previewId))
+    }
+
     /** Screens in id order, as [load] after a restart would serve them. */
     private fun build(live: Map<String, String>, brandJson: String? = settings[SettingsStore.BRAND]): ScreenRegistry =
         composeCast(imageLoader, dataLoader, env) {
@@ -133,6 +142,12 @@ class AdminPublishing(private val admin: AdminScreens, private val live: LiveScr
 
     override fun publishBrand(brandJson: String) = failsAsPublishException {
         admin.publishBrand(brandJson, live::replace)
+    }
+
+    override fun preview(json: String): String {
+        val id = live.previews.newId()
+        failsAsPublishException { live.previews.put(id, admin.preview(json, id)) }
+        return id
     }
 
     /** Building fails with IllegalArgumentException/IllegalStateException (validation, secrets, dates). */

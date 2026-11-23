@@ -16,9 +16,24 @@
     <#if canEdit>
       <button type="submit">Save draft</button>
       <button type="submit" formaction="/admin/screens/${id?url}/publish">Publish</button>
+      <button type="submit" formaction="/admin/screens/${id?url}/preview">Preview on phone</button>
       <span class="muted">Publish makes exactly this text live for apps.</span>
     </#if>
   </form>
+  <#if preview?has_content>
+  <div class="card" id="preview" style="margin-top: 16px">
+    <h2 style="margin-top: 0">Preview on your phone</h2>
+    <div class="row" style="align-items: center">
+      <div style="flex: 0 0 auto">${preview.qr?no_esc}</div>
+      <div>
+        <p>Scan with the phone's camera and tap <strong>Open in compose-cast Preview</strong>. It shows
+          exactly the text above, for 30 minutes; apps do not see it. Nothing was saved.</p>
+        <p class="muted">On this phone: <a href="${preview.url}">open the preview</a>.
+          No app yet? The page offers the download.</p>
+      </div>
+    </div>
+  </div>
+  </#if>
   <h2>History</h2>
   <div class="card">
     <table>

@@ -39,6 +39,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 /** T-007 A1: admin mode serves exactly what files mode served, from the database. */
 class AdminScreensTest {
@@ -229,4 +230,29 @@ class AdminScreensTest {
             assertContains(invalid.bodyAsText(), "secondaryColor: expected #RRGGBB or #AARRGGBB, was &#39;pink&#39;")
             assertEquals(changed, Json.decodeFromString(BrandConfig.serializer(), client.get("/brand").bodyAsText()))
         }
+
+    @Test
+    fun `a preview is served to apps under its own id, nothing else changes`() = adminMode { client, cookie, store ->
+        val before = client.get("/screens/main").readRawBytes()
+        val page = client.post(
+            cookie,
+            "/admin/screens/main/preview",
+            "json",
+            """{"id": "main", "title": "Draft preview"}""",
+        )
+        assertEquals(HttpStatusCode.OK, page.status)
+        val previewId = Regex("/connect\\?screen=(__preview-[0-9a-f]{32})").find(page.bodyAsText())!!.groupValues[1]
+
+        val preview = client.get("/screens/$previewId")
+        assertEquals(HttpStatusCode.OK, preview.status)
+        assertEquals("Draft+preview", preview.headers[Headers.SCREEN_TITLE])
+        assertContentEquals(before, client.get("/screens/main").readRawBytes(), "the live screen is unchanged")
+        assertNull(store.get("main")!!.draftJson)
+        assertFalse(previewId in client.get("/screens").bodyAsText(), "previews are not listed")
+        assertEquals(HttpStatusCode.NotFound, client.get("/screens/__preview-0000").status)
+
+        val connect = client.get("/connect?screen=$previewId").bodyAsText()
+        assertContains(connect, "&amp;screen=$previewId")
+        assertEquals(HttpStatusCode.BadRequest, client.get("/connect?screen=..%2Fx").status)
+    }
 }

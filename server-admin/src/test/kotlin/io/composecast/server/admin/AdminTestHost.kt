@@ -31,6 +31,9 @@ internal class AdminTestHost {
 
     /** Publishes straight into [screens]; set [failWith] to make the next publishes fail. */
     var failWith: String? = null
+
+    /** What [publishing] was asked to preview. */
+    val previews = mutableListOf<String>()
     val publishing = object : ScreenPublishing {
         override fun publish(id: String, json: String, by: String) {
             failWith?.let { throw PublishException(it) }
@@ -45,6 +48,12 @@ internal class AdminTestHost {
         override fun publishBrand(brandJson: String) {
             failWith?.let { throw PublishException(it) }
             settings[SettingsStore.BRAND] = brandJson
+        }
+
+        override fun preview(json: String): String {
+            failWith?.let { throw PublishException(it) }
+            previews += json
+            return "__preview-test${previews.size}"
         }
     }
 

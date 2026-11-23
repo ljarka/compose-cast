@@ -9,20 +9,29 @@ import java.net.URLDecoder
  * The compose-cast Preview app (T-045, ADR 0024; `app.preview=true`): the server is chosen at
  * runtime instead of `app.serverUrl`. It arrives as a link `composecast://connect?url=<encoded>`
  * (opened from the server's `/connect` page, which the admin's QR code points to) or is typed in.
+ * B2: `&screen=<id>` (a draft preview `__preview-…`) is opened on top of `main`.
  */
 internal object PreviewLink {
     const val SCHEME = "composecast"
     const val HOST = "connect"
+    private val SCREEN = Regex("[A-Za-z0-9_-]{1,128}")
 
-    /** The server URL of a `composecast://connect?url=…` link, or null for anything else or a bad URL. */
-    fun serverUrl(link: String?): String? {
+    data class Link(val serverUrl: String, val screen: String?)
+
+    /** A `composecast://connect?url=…[&screen=…]` link, or null for anything else or a bad URL. */
+    fun parse(link: String?): Link? {
         val uri = link?.let { runCatching { URI(it) }.getOrNull() } ?: return null
         if (!uri.scheme.equals(SCHEME, ignoreCase = true) || !uri.host.equals(HOST, ignoreCase = true)) return null
-        val url = uri.rawQuery.orEmpty().split('&')
-            .map { it.substringBefore('=') to URLDecoder.decode(it.substringAfter('=', ""), Charsets.UTF_8.name()) }
-            .firstOrNull { it.first == "url" }?.second ?: return null
-        return normalize(url)
+        val query = uri.rawQuery.orEmpty().split('&')
+            .associate {
+                it.substringBefore('=') to URLDecoder.decode(it.substringAfter('=', ""), Charsets.UTF_8.name())
+            }
+        val url = query["url"]?.let(::normalize) ?: return null
+        return Link(url, query["screen"]?.takeIf { SCREEN.matches(it) })
     }
+
+    /** The server URL of a connect link (see [parse]). */
+    fun serverUrl(link: String?): String? = parse(link)?.serverUrl
 
     /**
      * A typed or linked server address as the client needs it: `http(s)://host[:port][/path]`
