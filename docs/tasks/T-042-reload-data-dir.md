@@ -1,6 +1,6 @@
 # T-042 — Reload the data directory without a restart
 
-Status: done (commit pending) · Roadmap: Etap 6 · Depends on: — · Module: server-app
+Status: done (`383c443`) · Roadmap: Etap 6 · Depends on: — · Module: server-app
 
 ## Goal
 
