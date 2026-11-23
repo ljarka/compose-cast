@@ -1,6 +1,6 @@
 # T-040 — Brand theme colors for component defaults (surface, text)
 
-Status: done (commit pending) · Roadmap: Etap 5 · Depends on: — · Module: protocol, sdk-server
+Status: done (`a88be28`) · Roadmap: Etap 5 · Depends on: — · Module: protocol, sdk-server
 
 ## Goal
 
