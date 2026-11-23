@@ -335,3 +335,8 @@ README roadmap's "Etap" numbers.
 69. **T-029 C1 — visual editor technology** (owner): HTMX with the editor state on the server
     (the stored draft), property forms generated from the model's `SerialDescriptor`s — ADR 0028.
     T-045 B3 waits for the owner (fresh VPS, signing secrets).
+70. **T-029 C2 — component tree + generated property forms**: `/admin/screens/{id}/visual` shows
+    the outline and a form for the selected node, generated from the model's descriptors
+    (`FormSchema`); saving checks the whole screen and stores the same draft as the JSON editor.
+    Every component of `examples/demo` round-trips through its form unchanged (test); pages looked
+    at with headless Chrome screenshots.

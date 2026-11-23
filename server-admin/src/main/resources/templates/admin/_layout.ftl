@@ -41,6 +41,24 @@
     .row { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; }
     .row > div { flex: 1 1 200px; }
     code { font: 14px ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .split { display: grid; grid-template-columns: minmax(240px, 1fr) 2fr; gap: 16px; align-items: start; }
+    @media (max-width: 760px) { .split { grid-template-columns: 1fr; } }
+    .tree a, .tree-list { display: block; padding: 4px 8px; border-radius: 6px; text-decoration: none; color: inherit;
+                          white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tree a.selected { background: var(--bg); outline: 2px solid var(--accent); }
+    .tree-list { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+    details.group { border: 1px solid var(--line); border-radius: 8px; margin: 12px 0; padding: 8px 12px; }
+    details.group > summary { cursor: pointer; font-weight: 600; }
+    details.group .fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0 12px; margin-top: 8px; }
+    details.group .fields > details, details.group .fields > .field:has(textarea), details.group .fields > .variant-type { grid-column: 1 / -1; }
+    .required { color: var(--error); }
+    fieldset.plain { border: 0; margin: 0; padding: 0; }
+    .field { margin-bottom: 8px; }
+    .help { font-size: 13px; }
+    select { padding: 8px; font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+    textarea.json { min-height: 0; }
+    label.toggle { font-weight: normal; }
+    label.toggle input { width: auto; }
   </style>
   <#if htmx><script src="https://unpkg.com/htmx.org@2.0.11/dist/htmx.min.js" integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg" crossorigin="anonymous"></script></#if>
 </head>

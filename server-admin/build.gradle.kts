@@ -14,3 +14,8 @@ dependencies {
     testImplementation(libs.kotlin.test)
     testImplementation(libs.ktor.server.test.host)
 }
+
+tasks.test {
+    // FormSchemaTest round-trips every component of examples/demo through the generated forms.
+    systemProperty("composecast.examples", rootProject.projectDir.resolve("examples").path)
+}

@@ -1,7 +1,7 @@
 <#import "_layout.ftl" as layout>
 <@layout.page title=title user=user role=role htmx=canEdit>
 <main class="wide">
-  <p><a href="/admin/screens">← Screens</a></p>
+  <p><a href="/admin/screens">← Screens</a> · <a href="/admin/screens/${id?url}/visual">Visual editor</a></p>
   <h1><code>${id}</code> <span class="status status-${status}">${status}</span></h1>
   <p class="muted">
     <#if publishedAt?has_content>Live since ${publishedAt} (${publishedBy}).<#else>Never published: apps do not see this screen.</#if>

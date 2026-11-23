@@ -31,7 +31,7 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-044 Release signing configured by the app repository](T-044-release-signing.md) | Etap 6 | done (`72bb93c`) |
 | [T-007 Admin panel MVP](T-007-admin-panel.md) | Etap 8 | done (`6ba75e7`) — A1–A5: `server-store`, admin mode, login + roles, editor + drafts, publish + history + rollback, settings, admin mode in Docker |
 | [T-045 Generic Preview app + draft preview](T-045-preview-app.md) | Roadmap B | waiting for the owner — B1 Preview app + `/connect`, B2 draft preview done; B3 needs a fresh VPS + signing secrets (T-029 goes on meanwhile) |
-| [T-029 Visual screen editor (no JSON)](T-029-visual-screen-editor.md) | Etap 8 | in progress — C1 done (ADR 0028: HTMX, state on the server), next: C2 tree + forms |
+| [T-029 Visual screen editor (no JSON)](T-029-visual-screen-editor.md) | Etap 8 | in progress — C1 ADR 0028, C2 tree + generated forms done; next: C3 palette (add, remove, reorder, nest) |
 | [T-030 App templates](T-030-app-templates.md) | Etap 8 | queued (after T-029); roadmap D1 |
 | [T-031 Data source wizard (URL → screens)](T-031-data-source-wizard.md) | Etap 8 | queued (after T-030); roadmap D2 |
 | [T-010 Settings export (properties + icon)](T-010-app-export.md) | Etap 9 | queued (after T-031); roadmap E1–E3; rewrite the Design for ADR 0025 (GitHub Actions build) first |

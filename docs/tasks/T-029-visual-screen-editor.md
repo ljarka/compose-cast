@@ -1,6 +1,6 @@
 # T-029 — Visual screen editor in the admin panel (no JSON)
 
-Status: in progress — next step: C2 (C1 done: ADR 0028) · Roadmap: Etap 8 · Depends on: T-007 (admin MVP), ADR 0015, ADR 0013 · Module: server-admin, protocol (component schema)
+Status: in progress — next step: C3 (C1 ADR 0028, C2 tree + forms done) · Roadmap: Etap 8 · Depends on: T-007 (admin MVP), ADR 0015, ADR 0013 · Module: server-admin, protocol (component schema)
 
 ## Goal
 
@@ -37,6 +37,19 @@ in an admin panel. ADR 0017 point 4: everything app-specific must be editable th
 2. **C2** Component tree + schema-driven property forms for existing screens. Done when: every
    property of every component is editable in a form (test over all `Component` subtypes); the
    JSON editor shows the same draft.
+
+   **C2 result (2026-11-23):** `server-admin` `FormSchema.kt` (forms from `SerialDescriptor`s),
+   `ScreenTree.kt`, `VisualPages.kt`, `visual.ftl` + `_form.ftl`; link "Visual editor" on the JSON
+   editor page. Tests: `FormSchemaTest` (all 15 component types; every component of
+   `examples/demo` → form → back unchanged), `VisualPagesTest` (8, incl. every node of every demo
+   screen opens and saves unchanged). Looked at with headless Chrome screenshots (button with
+   navigate action, nested layouts, screen with data sources). Maps (`params`, `data`, `lookups`,
+   action params) and the repeat source are JSON-value fields for now — the data source form is
+   T-031. Notes for C3: add/remove/move/duplicate are operations on `ScreenTree` paths (insert into
+   a component list, remove, swap with neighbour); a new component starts as the smallest valid
+   JSON of its type (required fields: text "", label "", url "", action navigate main, columns 2,
+   items "" …) — derive it from `FormSchema` (non-optional fields) and check it with a test over all
+   types; after a structural change select the new/moved node.
 3. **C3** Palette: add, remove, reorder, nest. Done when: a screen is built from empty without JSON
    (the weather `main` from T-025 is the acceptance test).
 
