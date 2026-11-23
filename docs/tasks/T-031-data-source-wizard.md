@@ -50,7 +50,7 @@ the server, so the wizard also runs on the server.
    on the device); the detail's `params.id` default is a real id so it renders in previews.
 3. **W3** Field picker in the visual editor (probe the screen's source, click a field → its
    `{{binding}}`), and a form for the screen's data sources instead of the JSON field.
-   **W3 result (2026-11-23):** `DataFields.kt`, `GET …/visual/fields`, `_fields.ftl`, data sources
+   **W3 result (2026-11-23, `001e06c`):** `DataFields.kt`, `GET …/visual/fields`, `_fields.ftl`, data sources
    as tree nodes (`Palette.addSource`/`deleteSource`, `FormSchema.sourceFields`), the insert script
    in `visual.ftl`; `docs/admin-editor.md`. Tests: `DataFieldsTest` (3); `BuildFromEmptyTest` now
    adds sources with "Add data source" (still byte-identical). Looked at with headless Chrome (picker
