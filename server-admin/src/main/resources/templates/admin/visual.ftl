@@ -125,6 +125,10 @@
     <textarea id="json" name="json" spellcheck="false"<#if canEdit>
       hx-post="/admin/screens/${id?url}/validate" hx-trigger="input changed delay:400ms" hx-target="#problems"<#else> readonly</#if>>${json}</textarea>
     <div id="problems" aria-live="polite"><#include "_problems.ftl"></div>
+    <div style="margin-top: 8px">
+      <button type="button" class="chip" hx-post="/admin/screens/${id?url}/describe" hx-include="#json" hx-target="#rc-output">Show Remote Compose output</button>
+    </div>
+    <div id="rc-output"></div>
     <#if canEdit>
       <button type="submit">Save draft</button>
       <button type="submit" formaction="/admin/screens/${id?url}/publish">Publish</button>

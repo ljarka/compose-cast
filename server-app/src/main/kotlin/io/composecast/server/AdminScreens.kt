@@ -9,6 +9,7 @@ import io.composecast.server.sdk.DataLoader
 import io.composecast.server.sdk.HttpDataLoader
 import io.composecast.server.sdk.HttpImageLoader
 import io.composecast.server.sdk.ImageLoader
+import io.composecast.server.sdk.RenderContext
 import io.composecast.server.sdk.ScreenRegistry
 import io.composecast.server.sdk.composeCast
 import io.composecast.server.store.ScreenStore
@@ -105,6 +106,18 @@ class AdminScreens(
         screen(ScreenJson.decode(json, source = "preview").copy(id = previewId))
     }
 
+    /** Renders [json] once (with default param values) and returns the decoded Remote Compose tree. */
+    fun describe(json: String): String {
+        val definition = ScreenJson.decode(json, source = "describe")
+        val registry = composeCast(imageLoader, dataLoader, env) {
+            settings[SettingsStore.BRAND]?.let { brand(Json.decodeFromString(BrandConfig.serializer(), it)) }
+            screen(definition)
+        }
+        val defaults = definition.params.mapValues { it.value.default.orEmpty() }
+        val rendered = requireNotNull(registry.render(definition.id, RenderContext(params = defaults)))
+        return "size: ${rendered.size} bytes\netag: ${rendered.etag}\n\n${rendered.describe()}"
+    }
+
     /** Screens in id order, as [load] after a restart would serve them. */
     private fun build(live: Map<String, String>, brandJson: String? = settings[SettingsStore.BRAND]): ScreenRegistry =
         composeCast(imageLoader, dataLoader, env) {
@@ -181,6 +194,12 @@ class AdminPublishing(private val admin: AdminScreens, private val live: LiveScr
 
     override fun delete(id: String) = failsAsPublishException {
         admin.delete(id, live::replace)
+    }
+
+    override fun describe(json: String): String {
+        var result = ""
+        failsAsPublishException { result = admin.describe(json) }
+        return result
     }
 
     /** Building fails with IllegalArgumentException/IllegalStateException (validation, secrets, dates). */

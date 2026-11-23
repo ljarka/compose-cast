@@ -26,6 +26,9 @@ interface ScreenPublishing {
 
     /** Removes screen [id] (must not be the current home screen) and updates served screens. */
     fun delete(id: String)
+
+    /** Renders [json] and returns the decoded Remote Compose document tree (nothing saved). */
+    fun describe(json: String): String
 }
 
 /** The screens would not build as a whole (e.g. a `{{secret.X}}` that is not set); nothing changed. */

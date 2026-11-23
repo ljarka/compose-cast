@@ -301,4 +301,13 @@ class ScreenPagesTest {
         assertEquals(HttpStatusCode.SeeOther, deleted.status)
         assertNull(screens.get("temp"))
     }
+
+    @Test
+    fun `describe returns decoded Remote Compose output for valid json`() = host.run { client ->
+        val cookie = with(host) { client.loginAs(Role.EDITOR) }
+        val ok = client.form(cookie, "/admin/screens/main/describe", "json" to homeJson).bodyAsText()
+        assertContains(ok, "HEADER v1.1.0")
+        val bad = client.form(cookie, "/admin/screens/main/describe", "json" to """{"id": " "}""").bodyAsText()
+        assertContains(bad, "error")
+    }
 }

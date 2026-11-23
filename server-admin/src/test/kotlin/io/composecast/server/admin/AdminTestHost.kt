@@ -72,6 +72,11 @@ internal class AdminTestHost {
             }
             screens.delete(id)
         }
+
+        override fun describe(json: String): String {
+            failWith?.let { throw PublishException(it) }
+            return "HEADER v1.1.0\nROOT -2 VISIBLE"
+        }
     }
 
     /** API answers for the wizard's probe by URL (no network); every host resolves to a public address. */

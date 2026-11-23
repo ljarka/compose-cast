@@ -81,6 +81,23 @@ internal fun Route.screenPages(screens: ScreenStore, settings: SettingsStore, pu
                 val json = call.receiveParameters()["json"].orEmpty()
                 call.respondTemplate("admin/_problems.ftl", problemsModel(problems(call.screenId, json)))
             }
+            post("/describe") {
+                val json = call.receiveParameters()["json"].orEmpty()
+                val checked = problems(call.screenId, json)
+                val screen = checked.screen
+                if (screen == null) {
+                    return@post call.respondTemplate(
+                        "admin/_describe.ftl",
+                        mapOf("error" to checked.problems.joinToString("; ")),
+                    )
+                }
+                val model = try {
+                    mapOf("output" to publishing.describe(ScreenJson.encode(screen)))
+                } catch (e: PublishException) {
+                    mapOf("error" to (e.message ?: "Cannot render Remote Compose output"))
+                }
+                call.respondTemplate("admin/_describe.ftl", model)
+            }
             // The editor's "Publish" submits the textarea: exactly what is shown goes live.
             post("/publish") {
                 val stored = screens.get(call.screenId) ?: return@post call.notFound()
