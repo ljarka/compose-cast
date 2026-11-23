@@ -282,3 +282,6 @@ README roadmap's "Etap" numbers.
 56. **T-040 brand theme colors**: `BrandConfig.surfaceColor`, `textColor`, `outlineColor` replace the
     fixed purple-tinted defaults of card/expandable/text/divider; unset = byte-identical documents.
     New golden `brand-colors.png`. Note: `server-app` decodes `brand.json` strictly.
+57. **T-041 lookups by two values**: filter `append:` and path filter arguments (`append:h.is_day`,
+    `default:w.other`); the weather app's hourly list shows 🌙 at night (branch `next`, after the
+    next release).

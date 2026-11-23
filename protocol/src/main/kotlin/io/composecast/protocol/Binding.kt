@@ -85,8 +85,16 @@ sealed interface PathStep {
     data class Index(val index: Int) : PathStep
 }
 
-/** `name:arg:arg` after a `|`; args are unquoted strings (numbers and bare names kept as written). */
-data class FilterCall(val name: String, val args: List<String>)
+/**
+ * `name:arg:arg` after a `|`; [args] are unquoted strings (numbers and bare names kept as written).
+ * An unquoted argument with `.` or `[` (`append:h.is_day`) is a path in the expression's scope:
+ * [paths] holds it at the same index (null for literals), resolved per render (T-041).
+ */
+data class FilterCall(
+    val name: String,
+    val args: List<String>,
+    val paths: List<Template.Expression?> = List(args.size) { null },
+)
 
 /** The filters templates may use, with their allowed argument counts. Implemented in sdk-server `Binder`. */
 object Filters {
@@ -97,7 +105,11 @@ object Filters {
         "default" to 1..1,
         "upper" to 0..0,
         "lower" to 0..0,
+        "append" to 1..1,
     )
+
+    /** Filters whose argument may be a path (T-041); the others take literals only. */
+    val PATH_ARGUMENTS: Set<String> = setOf("append", "default")
 }
 
 /** A string with `{{ … }}` expressions, e.g. `"{{w.temp | round}}°C"`. */
@@ -150,7 +162,12 @@ class Template private constructor(val parts: List<Part>) {
                 val pieces = splitOutsideQuotes(segment.trim(), ':')
                 val name = pieces.first().trim()
                 require(IDENTIFIER.matches(name)) { "invalid filter name '$name' in \"{{$text}}\"" }
-                FilterCall(name, pieces.drop(1).map { parseArg(it.trim(), text) })
+                val args = pieces.drop(1).map { it.trim() }
+                FilterCall(
+                    name,
+                    args.map { parseArg(it, text) },
+                    args.map { arg -> if (isPathArg(arg)) parsePathArg(arg, text) else null },
+                )
             }
             return Expression(root, steps, filters, text)
         }
@@ -172,10 +189,17 @@ class Template private constructor(val parts: List<Part>) {
 
         private fun parseArg(arg: String, text: String): String = when {
             arg.length >= 2 && arg.startsWith("'") && arg.endsWith("'") -> arg.substring(1, arg.length - 1)
-            NUMBER.matches(arg) || IDENTIFIER.matches(arg) -> arg
+            NUMBER.matches(arg) || IDENTIFIER.matches(arg) || isPathArg(arg) -> arg
             else -> throw IllegalArgumentException(
-                "filter argument $arg must be a number, a name or 'quoted' in \"{{$text}}\"",
+                "filter argument $arg must be a number, a name, a path or 'quoted' in \"{{$text}}\"",
             )
+        }
+
+        private fun isPathArg(arg: String) = !arg.startsWith("'") && !NUMBER.matches(arg) && ('.' in arg || '[' in arg)
+
+        private fun parsePathArg(arg: String, text: String): Expression {
+            val (root, steps) = parsePathSteps(arg, text)
+            return Expression(root, steps, emptyList(), arg)
         }
 
         private fun splitOutsideQuotes(text: String, separator: Char): List<String> {

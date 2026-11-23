@@ -1,6 +1,6 @@
 # T-042 — Reload the data directory without a restart
 
-Status: queued (after T-041) · Roadmap: Etap 6 · Depends on: — · Module: server-app
+Status: ready · Roadmap: Etap 6 · Depends on: — · Module: server-app
 
 ## Goal
 

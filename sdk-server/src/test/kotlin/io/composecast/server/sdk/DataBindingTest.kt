@@ -105,6 +105,22 @@ class DataBindingTest {
     }
 
     @Test
+    fun `append with path arguments picks a lookup entry by two values (T-041)`() {
+        val hourly = """{"hourly":{"code":[0,0,3],"is_day":[1,0,0]}}"""
+        val r = registry(FakeLoader(hourly)) {
+            data("w", url = "https://api.dev/x")
+            lookup("icon", mapOf("0-1" to "☀️", "0-0" to "🌙", "*" to "☁️"))
+            repeat(zip = mapOf("code" to "w.hourly.code", "day" to "w.hourly.is_day"), alias = "h") {
+                text("{{h.code | append:'-' | append:h.day | lookup:icon}}")
+            }
+            text(
+                "{{w.nothing | append:'x'}}|{{w.hourly.code[2] | append:w.missing}}|{{w.gone | default:w.hourly.code[2]}}",
+            )
+        }
+        assertEquals(listOf("☀️", "🌙", "☁️", "x|3|3"), texts(r))
+    }
+
+    @Test
     fun `params - defaults, query values, required, url encoding`() {
         val loader = FakeLoader(forecast)
         val r = registry(loader) {

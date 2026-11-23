@@ -18,7 +18,7 @@ This module only. **Do not** import `sdk-server`, `server-app`, or `sdk-android`
 | `ScreenValidation.kt` | All screen validation (structure, modifiers, colors, actions, bindings, source URLs), called by the `ScreenDefinition` members |
 | `Component.kt` | `Component` (Text, Image, Icon, Divider, Card, Button, Spacer, Repeat, Expandable, Column, Row, Box, FitBox, Flow, Grid), `strings()`/`childLists()`/`hasBindings()`, `Action.strings()` |
 | `ComponentOptions.kt` | `TextStyle`, `FontWeight`, `TextAlign`, `TextOverflow`, `ContentScale`, `ButtonVariant` |
-| `Binding.kt` | Data sources (T-006, [ADR 0008](../docs/decisions/0008-server-side-data-sources.md)): `ParamSpec`, `DataSource`, `RepeatItems` (path or zipped parallel arrays), `Template` parser for `{{path \| filter:arg}}`, `Filters` (names/arity), allowed roots |
+| `Binding.kt` | Data sources (T-006, [ADR 0008](../docs/decisions/0008-server-side-data-sources.md)): `ParamSpec`, `DataSource`, `RepeatItems` (path or zipped parallel arrays), `Template` parser for `{{path \| filter:arg}}` (unquoted `a.b` args are paths, `FilterCall.paths`, T-041), `Filters` (names/arity, `PATH_ARGUMENTS`), allowed roots |
 | `Action.kt` | `Action` (Navigate, OpenUrl, Reload, Track, Custom) + `ActionCodec` (wire form) |
 | `Actions.kt` | `Actions` (wire type names, used only by the codec), `Headers` (HTTP headers) |
 | `BrandConfig.kt` | Brand colors + font, served as JSON by `GET /brand` |

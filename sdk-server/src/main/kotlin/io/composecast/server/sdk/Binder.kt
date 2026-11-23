@@ -289,7 +289,11 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
             warnOnce(expression.text) { "Screen '$id': {{${expression.text}}} is missing in the data; rendered empty" }
         }
         return expression.filters.fold(value) { current, filter ->
-            Filters.apply(filter.name, filter.args, current, definition.lookups)
+            // Path arguments (T-041) become the text of their value in the same scope ("" if missing).
+            val args = filter.args.mapIndexed { i, arg ->
+                filter.paths[i]?.let { text(evaluatePath(it, roots)) } ?: arg
+            }
+            Filters.apply(filter.name, args, current, definition.lookups)
         }
     }
 
@@ -342,6 +346,7 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
             "default" -> if (value == null || text(value).isEmpty()) JsonPrimitive(args.single()) else value
             "upper" -> value?.let { JsonPrimitive(text(it).uppercase(Locale.ROOT)) }
             "lower" -> value?.let { JsonPrimitive(text(it).lowercase(Locale.ROOT)) }
+            "append" -> JsonPrimitive(text(value) + args.single())
             else -> error("unknown filter '$name'") // rejected by ScreenDefinition.problems()
         }
 

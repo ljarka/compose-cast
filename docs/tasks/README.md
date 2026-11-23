@@ -26,8 +26,8 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-025 Milestone 1: weather app in its own repo + measurements](T-025-weather-app-milestone.md) | Etap 6 | in progress (waiting for owner: domain) — `v0.1.0` released, app runs on it: [ljarka/weather-app](https://github.com/ljarka/weather-app) |
 | [T-043 App bar shows the screen id while loading](T-043-shell-loading-title.md) | Etap 7 | done (`7241097`) |
 | [T-040 Brand theme colors for component defaults](T-040-brand-theme-colors.md) | Etap 5 | done (`a88be28`) |
-| [T-041 Lookups keyed by more than one value (day/night)](T-041-compound-lookup-keys.md) | Etap 4 | ready — gap from T-025 |
-| [T-042 Reload the data directory without a restart](T-042-reload-data-dir.md) | Etap 6 | queued (after T-041) — gap from T-025 |
+| [T-041 Lookups keyed by more than one value (day/night)](T-041-compound-lookup-keys.md) | Etap 4 | done (commit pending) |
+| [T-042 Reload the data directory without a restart](T-042-reload-data-dir.md) | Etap 6 | ready — gap from T-025 |
 | [T-044 Release signing configured by the app repository](T-044-release-signing.md) | Etap 6 | queued (after T-042) — gap from T-025 |
 | [T-007 Admin panel MVP](T-007-admin-panel.md) | Etap 8 | queued (after T-044 and T-025); **core of the product**; first step: write the MVP cut into the task file |
 | [T-029 Visual screen editor (no JSON)](T-029-visual-screen-editor.md) | Etap 8 | queued (after T-007) |

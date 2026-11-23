@@ -257,20 +257,17 @@ private fun ScreenDefinition.templateProblems(text: String, at: String, roots: S
     }
     template.expressions.forEach { e ->
         val where = "$at: {{${e.text}}}"
-        when {
-            e.root == Roots.SECRET && Roots.SECRET !in roots ->
-                add("$where: secrets are only allowed in data source urls and headers")
-            e.root !in roots -> add("$where: ${unknownRoot(e.root, roots)}")
-            e.root == Roots.PARAMS -> {
-                val param = (e.path.singleOrNull() as? PathStep.Key)?.name
-                if (param == null) {
-                    add("$where: use {{params.<name>}}")
-                } else if (param !in params) {
-                    add("$where: unknown param '$param' (declare it in \"params\")")
+        addAll(pathProblems(e, where, roots))
+        e.filters.forEach { f ->
+            f.paths.filterNotNull().forEach { arg ->
+                if (f.name !in Filters.PATH_ARGUMENTS) {
+                    add("$where: filter '${f.name}' takes a literal argument, not the path '${arg.text}'")
+                } else if (arg.root == Roots.SECRET) {
+                    add("$where: secrets are not allowed in filter arguments")
+                } else {
+                    addAll(pathProblems(arg, "$where: argument '${arg.text}'", roots))
                 }
             }
-            e.root == Roots.SECRET && (e.path.singleOrNull() !is PathStep.Key) ->
-                add("$where: use {{secret.<NAME>}}")
         }
         e.filters.forEach { f ->
             val arity = Filters.ARITY[f.name]
@@ -287,6 +284,26 @@ private fun ScreenDefinition.templateProblems(text: String, at: String, roots: S
         }
     }
 }
+
+/** Root and `params` checks of one path: a template expression or a path filter argument (T-041). */
+private fun ScreenDefinition.pathProblems(e: Template.Expression, where: String, roots: Set<String>): List<String> =
+    buildList {
+        when {
+            e.root == Roots.SECRET && Roots.SECRET !in roots ->
+                add("$where: secrets are only allowed in data source urls and headers")
+            e.root !in roots -> add("$where: ${unknownRoot(e.root, roots)}")
+            e.root == Roots.PARAMS -> {
+                val param = (e.path.singleOrNull() as? PathStep.Key)?.name
+                if (param == null) {
+                    add("$where: use {{params.<name>}}")
+                } else if (param !in params) {
+                    add("$where: unknown param '$param' (declare it in \"params\")")
+                }
+            }
+            e.root == Roots.SECRET && (e.path.singleOrNull() !is PathStep.Key) ->
+                add("$where: use {{secret.<NAME>}}")
+        }
+    }
 
 private fun unknownRoot(root: String, roots: Set<String>) =
     "unknown '$root' (available here: ${roots.sorted().joinToString()})"

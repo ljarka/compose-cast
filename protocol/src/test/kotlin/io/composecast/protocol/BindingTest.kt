@@ -31,6 +31,20 @@ class BindingTest {
     }
 
     @Test
+    fun `path arguments - dotted or indexed unquoted args are paths, quoted and bare stay literal (T-041)`() {
+        val filters = Template.parse("{{h.code | append:'-' | append:h.is_day | append:w.list[0] | append:'a.b'}}")
+            .expressions.single().filters
+        assertEquals(listOf("-", "h.is_day", "w.list[0]", "a.b"), filters.map { it.args.single() })
+        assertEquals(listOf(null, "h", "w", null), filters.map { it.paths.single()?.root })
+        assertEquals(listOf(PathStep.Key("is_day")), filters[1].paths.single()!!.path)
+        assertEquals(
+            FilterCall("round", listOf("1.5")),
+            Template.parse("{{a | round:1.5}}").expressions.single().filters.single(),
+        )
+        assertFailsWith<IllegalArgumentException> { Template.parse("{{a | append:h..x}}") }
+    }
+
+    @Test
     fun `syntax errors`() {
         listOf(
             "{{a",
@@ -89,6 +103,15 @@ class BindingTest {
         assertProblem("unknown lookup 'other'", problems(Component.Text("{{w.a | lookup:other}}")))
         assertProblem("round digits", problems(Component.Text("{{w.a | round:42}}")))
         assertProblem("takes 1..1 arguments", problems(Component.Text("{{w.a | date}}")))
+        // path arguments (T-041): only append/default, checked like any path
+        assertEquals(emptyList(), problems(Component.Text("{{w.a | append:w.b | default:params.q}}")))
+        assertProblem("argument 'x.b': unknown 'x'", problems(Component.Text("{{w.a | append:x.b}}")))
+        assertProblem("unknown param 'z'", problems(Component.Text("{{w.a | append:params.z}}")))
+        assertProblem("'lookup' takes a literal argument", problems(Component.Text("{{w.a | lookup:w.b}}")))
+        assertProblem(
+            "secrets are not allowed in filter arguments",
+            problems(Component.Text("{{w.a | append:secret.K}}")),
+        )
         assertProblem(
             "components[0].action.params.id",
             problems(Component.Button("b", Action.Navigate("m", mapOf("id" to "{{x.id}}")))),

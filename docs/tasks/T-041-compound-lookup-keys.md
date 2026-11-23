@@ -1,6 +1,6 @@
 # T-041 — Lookups keyed by more than one value (day/night icons)
 
-Status: ready · Roadmap: Etap 4 · Depends on: — · Module: protocol, sdk-server
+Status: done (commit pending) · Roadmap: Etap 4 · Depends on: — · Module: protocol, sdk-server
 
 ## Goal
 
@@ -31,3 +31,14 @@ The weather app's hourly screen shows 🌙 for clear night hours (verify on the 
 ## Docs to update
 
 `docs/screen-json-format.md` (filters), history.
+
+## Result (2026-11-23)
+
+- As designed: `append:<arg>`; an unquoted argument with `.` or `[` is a path (`FilterCall.paths`),
+  bare names stay literals (`lookup:icon`), so nothing existing changes meaning. Paths are allowed
+  in `append` and `default` (`Filters.PATH_ARGUMENTS`), validated like template roots (unknown
+  root, params, no secrets); a missing path gives `""`. No `"0-*"` fallback: the weather app lists
+  both `code-1` and `code-0` keys (generated table).
+- Tests: `BindingTest` (parsing, validation), `DataBindingTest` (zip of code + is_day).
+- Weather app: `hourly.json` on branch `next` of ljarka/weather-app (needs a server with T-041, so
+  it is merged after the next release); verified on the emulator with a locally built image.

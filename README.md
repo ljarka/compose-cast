@@ -234,7 +234,7 @@ per-source timeout and cache), binds and renders per request; API keys never rea
 ```
 
 `GET /screens/weather?lat=52.23&lon=21.01&city=Warsaw` changes the data. Filters: `round`, `date`,
-`lookup`, `default`, `upper`, `lower`; secrets as `{{secret.KEY}}` from `COMPOSECAST_SECRET_KEY`
+`lookup`, `default`, `upper`, `lower`, `append` (arguments may be paths: lookups by two values, T-041); secrets as `{{secret.KEY}}` from `COMPOSECAST_SECRET_KEY`
 (source URLs/headers only). Full grammar: [docs/screen-json-format.md](docs/screen-json-format.md#data-sources-and-bindings-t-006);
 live demo: `examples/demo/screens/data.json` ("Live data" on the home screen).
 
@@ -362,6 +362,7 @@ Android only ([ADR 0022](docs/decisions/0022-android-only.md), owner 2026-11-16)
 - [x] HTTP data sources: URL templates with route/query params, secrets from env — T-006
 - [x] Bind JSON fields to components (`{{weather.current.temperature}}`); repeat over arrays — T-006
 - [x] Loading / error / empty states; per-source timeouts and caching — T-006
+- [x] Lookups by more than one value (`append:` with path arguments, day/night icons) — T-041
 
 ### Etap 5 — Components for real apps
 - [x] Text, Image, Button, Spacer, Expandable (local state PoC — T-008)
