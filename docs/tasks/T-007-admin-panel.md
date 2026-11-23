@@ -93,7 +93,7 @@ The `:ro` data volume (A1 note) is still open.
 - **Done when:** after publish, `GET /screens/{id}` serves the new document without a restart; a
   rollback restores the previous bytes; history is append-only (tests).
 
-**A4 result (2026-11-23):** `server-admin/ScreenPublishing.kt` (interface) + publish/rollback/revision
+**A4 result (2026-11-23, `ad4591f`):** `server-admin/ScreenPublishing.kt` (interface) + publish/rollback/revision
 routes, `AdminScreens.publish`/`rollback` + `AdminPublishing` in `server-app`, `ScreenStore.revision`
 and draft-keeping rollback. Tests: `AdminScreensTest` (+3 over HTTP: publish serves the new
 document, rollback restores the imported bytes, a screen with an unset secret is refused and
