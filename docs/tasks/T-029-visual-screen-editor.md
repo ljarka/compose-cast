@@ -53,7 +53,7 @@ in an admin panel. ADR 0017 point 4: everything app-specific must be editable th
 3. **C3** Palette: add, remove, reorder, nest. Done when: a screen is built from empty without JSON
    (the weather `main` from T-025 is the acceptance test).
 
-   **C3 result (2026-11-23):** `Palette.kt` (starters, add/delete/duplicate/move/into/out/wrap),
+   **C3 result (2026-11-23, `69010e0`):** `Palette.kt` (starters, add/delete/duplicate/move/into/out/wrap),
    `Bindings.kt` (alias rename), `POST …/visual/edit`, list selection in the tree, toolbar in
    `visual.ftl`; playbook [build-screen-in-admin.md](../playbooks/build-screen-in-admin.md).
    **Acceptance met by a test:** `BuildFromEmptyTest` rebuilds the weather app's `main`
