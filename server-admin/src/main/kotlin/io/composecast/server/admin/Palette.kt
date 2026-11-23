@@ -153,6 +153,46 @@ internal object Palette {
         return Result(ScreenTree.set(screen, path, JsonObject(starter + (list to JsonArray(listOf(node))))), path)
     }
 
+    /** Moves component [fromPath] before, after or inside [targetPath] (drag-and-drop on the tree). */
+    fun moveTo(screen: JsonObject, fromPath: String, targetPath: String, position: String): Result {
+        val (fromList, fromIndex) = requireNotNull(location(fromPath)) { "not a component: $fromPath" }
+        require(targetPath != fromPath && !targetPath.startsWith("$fromPath.")) {
+            "cannot move a component into itself"
+        }
+        val node = items(screen, fromList)[fromIndex]
+        val removed = withItems(screen, fromList, items(screen, fromList).filterIndexed { i, _ -> i != fromIndex })
+        fun adjust(path: String): String {
+            if (!path.startsWith("$fromList.")) return path
+            val rest = path.removePrefix("$fromList.")
+            val idx = rest.substringBefore('.').toIntOrNull() ?: return path
+            if (idx <= fromIndex) return path
+            val suffix = if ('.' in rest) "." + rest.substringAfter('.') else ""
+            return "$fromList.${idx - 1}$suffix"
+        }
+        val dest = adjust(targetPath)
+        if (position == "inside") {
+            val targetList = when {
+                dest.isEmpty() -> "components"
+                location(dest) != null ->
+                    "$dest." + requireNotNull(firstList(removed, dest)) { "cannot move inside '$dest'" }
+                else -> {
+                    require(dest != "data" && !dest.startsWith("data.")) { "cannot move into data sources" }
+                    dest
+                }
+            }
+            val current = items(removed, targetList)
+            return Result(withItems(removed, targetList, current + node), "$targetList.${current.size}")
+        }
+        require(position == "before" || position == "after") { "unknown drop position '$position'" }
+        val (targetList, targetIndex) = requireNotNull(location(dest)) { "not a component: $targetPath" }
+        val insertAt = if (position == "before") targetIndex else targetIndex + 1
+        val current = items(removed, targetList)
+        return Result(
+            withItems(removed, targetList, current.take(insertAt) + node + current.drop(insertAt)),
+            "$targetList.$insertAt",
+        )
+    }
+
     private val SOURCE_NAME = Regex("[A-Za-z][A-Za-z0-9_]{0,63}")
 
     /** Adds the data source [name] with [url] (T-031 W3); its other fields have defaults. */

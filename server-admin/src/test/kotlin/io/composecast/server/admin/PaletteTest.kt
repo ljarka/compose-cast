@@ -82,6 +82,14 @@ class PaletteTest {
         s = Palette.wrap(s.screen, "components.1", "card")
         assertEquals("column ·button card ·text" to "components.1", shape(s.screen) to s.select)
 
+        s = Palette.moveTo(s.screen, "components.0.children.0", "components.1", "inside")
+        assertEquals("column card ·text ·button" to "components.1.children.1", shape(s.screen) to s.select)
+        s = Palette.moveTo(s.screen, "components.1.children.1", "components.0", "before")
+        assertEquals("button column card ·text" to "components.0", shape(s.screen) to s.select)
+        assertFailsWith<IllegalArgumentException> {
+            Palette.moveTo(s.screen, "components.2", "components.2.children.0", "before")
+        }
+
         assertFailsWith<IllegalArgumentException> { Palette.intoPrevious(s.screen, "components.0") }
         assertFailsWith<IllegalArgumentException> { Palette.outOfParent(s.screen, "components.0") }
         assertFailsWith<IllegalArgumentException> { Palette.wrap(s.screen, "components.0", "text") }

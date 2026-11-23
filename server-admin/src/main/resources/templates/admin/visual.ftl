@@ -41,9 +41,10 @@
   </#if>
   <div class="split">
     <nav class="card tree" aria-label="Component tree">
-      <a href="/admin/screens/${id?url}/visual?node="<#if node == ""> class="selected"</#if>>Screen</a>
+      <a href="/admin/screens/${id?url}/visual?node="<#if canEdit> data-path="" data-list="true"</#if><#if node == ""> class="selected"</#if>>Screen</a>
       <#list tree as t>
         <a href="/admin/screens/${id?url}/visual?node=${t.path?url}" style="padding-left: ${t.depth * 16 + 8}px"
+           <#if canEdit><#if t.type?has_content>draggable="true" data-path="${t.path}" data-container="${t.isContainer?c}"<#elseif t.isList>data-path="${t.path}" data-list="true"</#if></#if>
            class="<#if !t.type?has_content>tree-list</#if><#if t.path == node> selected</#if>"<#if t.path == node> aria-current="true"</#if>><#if t.type?has_content><code>${t.type}</code> <span class="muted">${t.label}</span><#else>${t.label}</#if></a>
       </#list>
     </nav>
@@ -82,11 +83,7 @@
         <#if canEdit && (mode == "component" || mode == "source")>
         <form class="tools" method="post" action="/admin/screens/${id?url}/visual/edit?node=${node?url}" style="margin-bottom: 12px">
           <#if mode == "component">
-            <div class="toolbar" role="group" aria-label="Move and edit" style="margin-bottom: 0">
-              <button name="op" value="up"<#if isFirst> disabled</#if> title="Move up">↑ Up</button>
-              <button name="op" value="down"<#if isLast> disabled</#if> title="Move down">↓ Down</button>
-              <button name="op" value="into-previous"<#if isFirst> disabled</#if> title="Into the container above">→ Into above</button>
-              <button name="op" value="out"<#if isTopLevel> disabled</#if> title="Out of its container">← Out</button>
+            <div class="toolbar" role="group" aria-label="Edit component" style="margin-bottom: 0">
               <button name="op" value="duplicate">Duplicate</button>
               <button name="op" value="delete" class="danger">Delete</button>
             </div>
@@ -163,6 +160,14 @@
       </tbody>
     </table>
   </div>
+  <#if canEdit>
+  <form id="move-form" method="post" action="/admin/screens/${id?url}/visual/edit?node=${node?url}" hidden>
+    <input type="hidden" name="op" value="move-to">
+    <input type="hidden" name="from" id="move-from">
+    <input type="hidden" name="target" id="move-target">
+    <input type="hidden" name="position" id="move-position">
+  </form>
+  </#if>
 </main>
 <script>
   // T-031 W3 field picker: remember the last text field of the property form, insert a chip's
@@ -189,6 +194,68 @@
       last.focus();
       last.setSelectionRange(start + text.length, start + text.length);
     });
+    const tree = document.querySelector(".tree");
+    const moveForm = document.getElementById("move-form");
+    if (tree && moveForm) {
+      let dragged = null;
+      let overLink = null;
+      let dropPos = null;
+      function clearDrop() {
+        if (overLink) overLink.classList.remove("drop-before", "drop-after", "drop-inside");
+        overLink = null;
+        dropPos = null;
+      }
+      tree.addEventListener("dragstart", function (e) {
+        const a = e.target.closest("a[draggable=true]");
+        if (!a) return;
+        dragged = a.dataset.path;
+        a.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", dragged);
+      });
+      tree.addEventListener("dragend", function () {
+        tree.querySelectorAll(".dragging").forEach(el => el.classList.remove("dragging"));
+        dragged = null;
+        clearDrop();
+      });
+      tree.addEventListener("dragover", function (e) {
+        if (!dragged) return;
+        const a = e.target.closest("a[data-path]");
+        if (!a) { clearDrop(); return; }
+        const target = a.dataset.path;
+        if (target === dragged || target.startsWith(dragged + ".")) { clearDrop(); return; }
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        let pos;
+        if (a.dataset.list === "true") {
+          pos = "inside";
+        } else {
+          const rect = a.getBoundingClientRect();
+          const y = (e.clientY - rect.top) / rect.height;
+          pos = a.dataset.container === "true"
+            ? (y < 0.25 ? "before" : y > 0.75 ? "after" : "inside")
+            : (y < 0.5 ? "before" : "after");
+        }
+        if (overLink !== a || dropPos !== pos) {
+          clearDrop();
+          overLink = a;
+          dropPos = pos;
+          a.classList.add("drop-" + pos);
+        }
+      });
+      tree.addEventListener("dragleave", function (e) {
+        if (!tree.contains(e.relatedTarget)) clearDrop();
+      });
+      tree.addEventListener("drop", function (e) {
+        e.preventDefault();
+        if (!dragged || !overLink || !dropPos) return;
+        document.getElementById("move-from").value = dragged;
+        document.getElementById("move-target").value = overLink.dataset.path;
+        document.getElementById("move-position").value = dropPos;
+        clearDrop();
+        moveForm.submit();
+      });
+    }
   })();
 </script>
 </@layout.page>

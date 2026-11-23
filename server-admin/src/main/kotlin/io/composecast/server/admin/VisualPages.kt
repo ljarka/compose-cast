@@ -75,6 +75,12 @@ internal fun Route.visualPages(screens: ScreenStore, probe: ApiProbe) {
                     "duplicate" -> Palette.duplicate(root, node)
                     "delete" -> Palette.delete(root, node)
                     "wrap" -> Palette.wrap(root, node, type)
+                    "move-to" -> Palette.moveTo(
+                        root,
+                        params["from"].orEmpty().ifEmpty { node },
+                        params["target"].orEmpty(),
+                        params["position"].orEmpty(),
+                    )
                     "add-source" -> Palette.addSource(root, params["name"].orEmpty(), params["url"].orEmpty())
                     "delete-source" -> Palette.deleteSource(root, node)
                     else -> throw IllegalArgumentException("unknown operation '${params["op"]}'")
@@ -313,7 +319,14 @@ internal fun visualModel(
             ),
         "isTopLevel" to (location != null && '.' !in location.first),
         "tree" to ScreenTree.rows(editing.root).map {
-            mapOf("path" to it.path, "depth" to it.depth, "type" to it.type.orEmpty(), "label" to it.label)
+            mapOf(
+                "path" to it.path,
+                "depth" to it.depth,
+                "type" to it.type.orEmpty(),
+                "label" to it.label,
+                "isContainer" to (it.type in Palette.containers),
+                "isList" to (it.type == null && it.path != "data" && !it.path.startsWith("data.")),
+            )
         },
         "rows" to (editing.fields(node)?.let { formRows(it, value) } ?: emptyList()),
         "palette" to Palette.groups.map { (group, types) -> mapOf("name" to group, "types" to types) },

@@ -46,6 +46,10 @@
     .tree a, .tree-list { display: block; padding: 4px 8px; border-radius: 6px; text-decoration: none; color: inherit;
                           white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .tree a.selected { background: var(--bg); outline: 2px solid var(--accent); }
+    .tree a.dragging { opacity: .45; }
+    .tree a.drop-before { box-shadow: inset 0 2px 0 var(--accent); }
+    .tree a.drop-after { box-shadow: inset 0 -2px 0 var(--accent); }
+    .tree a.drop-inside { background: var(--bg); outline: 2px dashed var(--accent); }
     .tree-list { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
     details.group { border: 1px solid var(--line); border-radius: 8px; margin: 12px 0; padding: 8px 12px; }
     details.group > summary { cursor: pointer; font-weight: 600; }

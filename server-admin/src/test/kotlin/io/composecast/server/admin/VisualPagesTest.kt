@@ -279,8 +279,18 @@ class VisualPagesTest {
         assertContains(noRepeat.bodyAsText(), "add a data source first")
 
         val page = client.page(cookie, "/admin/screens/main/visual?node=components.0").bodyAsText()
-        assertContains(page, "value=\"up\" disabled")
+        assertContains(page, "draggable=\"true\"")
+        assertContains(page, "id=\"move-form\"")
         assertContains(page, "value=\"add-inside\"", message = "a column is a container")
+
+        val dragMoved = edit(
+            "components.1",
+            "op" to "move-to",
+            "from" to "components.1",
+            "target" to "components.0",
+            "position" to "before",
+        )
+        assertEquals("/admin/screens/main/visual?node=components.0&saved", dragMoved.headers[HttpHeaders.Location])
         val list = client.page(cookie, "/admin/screens/main/visual?node=components.0.children")
         assertEquals(HttpStatusCode.OK, list.status)
         assertContains(list.bodyAsText(), "to this list")
