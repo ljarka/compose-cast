@@ -281,4 +281,24 @@ class ScreenPagesTest {
             "<a href=\"/admin/screens/shows\"><code>shows</code></a> <span class=\"status status-live\">home</span>",
         )
     }
+
+    @Test
+    fun `a non-home screen can be removed and the home screen cannot`() = host.run { client ->
+        val cookie = with(host) { client.loginAs(Role.EDITOR) }
+        screens.saveDraft("main", homeJson)
+        client.form(cookie, "/admin/screens/main/publish", "json" to homeJson)
+        screens.saveDraft("temp", ScreenJson.encode(ScreenDefinition("temp", title = "Temp")))
+
+        val list = client.get("/admin/screens") { header(HttpHeaders.Cookie, cookie) }.bodyAsText()
+        assertContains(list, "Actions for temp")
+        assertContains(list, "/admin/screens/temp/delete")
+
+        assertEquals(
+            HttpStatusCode.UnprocessableEntity,
+            client.form(cookie, "/admin/screens/main/delete").status,
+        )
+        val deleted = client.form(cookie, "/admin/screens/temp/delete")
+        assertEquals(HttpStatusCode.SeeOther, deleted.status)
+        assertNull(screens.get("temp"))
+    }
 }

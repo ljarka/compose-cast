@@ -6,6 +6,7 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.isNotNull
 import org.jetbrains.exposed.v1.jdbc.JdbcTransaction
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
@@ -42,6 +43,12 @@ class ScreenStore(private val database: StoreDatabase, private val clock: Clock 
 
     fun get(id: String): StoredScreen? =
         database.tx { Screens.selectAll().where { Screens.id eq id }.singleOrNull()?.let(::screen) }
+
+    /** Removes [id] and its history; returns true when a row was deleted. */
+    fun delete(id: String): Boolean = database.tx {
+        ScreenHistory.deleteWhere { ScreenHistory.screenId eq id }
+        Screens.deleteWhere { Screens.id eq id } > 0
+    }
 
     /** Live JSON of every published screen, ordered by id: what apps are served. */
     fun live(): Map<String, String> = database.tx {

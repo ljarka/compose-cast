@@ -61,6 +61,17 @@ internal class AdminTestHost {
             if (screens.live()[id] == null) throw PublishException("Screen '$id' must be published first")
             settings[SettingsStore.HOME_SCREEN] = id
         }
+
+        override fun delete(id: String) {
+            failWith?.let { throw PublishException(it) }
+            val home = settings[SettingsStore.HOME_SCREEN]?.takeIf { it.isNotBlank() } ?: "main"
+            if (id ==
+                home
+            ) {
+                throw PublishException("Cannot remove the home screen '$id'; set another screen as home first")
+            }
+            screens.delete(id)
+        }
     }
 
     /** API answers for the wizard's probe by URL (no network); every host resolves to a public address. */

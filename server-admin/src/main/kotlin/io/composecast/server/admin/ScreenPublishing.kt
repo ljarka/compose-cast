@@ -23,6 +23,9 @@ interface ScreenPublishing {
 
     /** Makes the already-published screen [id] the home screen (served for `main`). */
     fun setHome(id: String)
+
+    /** Removes screen [id] (must not be the current home screen) and updates served screens. */
+    fun delete(id: String)
 }
 
 /** The screens would not build as a whole (e.g. a `{{secret.X}}` that is not set); nothing changed. */

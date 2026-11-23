@@ -140,6 +140,18 @@ internal fun Route.screenPages(screens: ScreenStore, settings: SettingsStore, pu
                 }
                 call.seeOther("/admin/screens")
             }
+            post("/delete") {
+                val stored = screens.get(call.screenId) ?: return@post call.notFound()
+                val failure = publishOrProblem { publishing.delete(stored.id) }
+                if (failure != null) {
+                    call.response.status(HttpStatusCode.UnprocessableEntity)
+                    return@post call.respondTemplate(
+                        "admin/screens.ftl",
+                        call.page("Screens") + mapOf("screens" to rows(screens, settings), "homeError" to failure),
+                    )
+                }
+                call.seeOther("/admin/screens")
+            }
             post("/rollback") {
                 val stored = screens.get(call.screenId) ?: return@post call.notFound()
                 val revision = call.receiveParameters()["revision"]?.toIntOrNull()

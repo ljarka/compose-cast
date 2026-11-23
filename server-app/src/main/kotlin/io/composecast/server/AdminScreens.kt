@@ -51,6 +51,15 @@ class AdminScreens(
         serve(id)
     }
 
+    /** Removes screen [id] (refusing the current home screen) and [serve]s the remaining live screens. */
+    fun delete(id: String, serve: (ScreenRegistry) -> Unit) = synchronized(publishLock) {
+        val home = homeScreen() ?: "main"
+        require(id != home) { "Cannot remove the home screen '$id'; set another screen as home first" }
+        val registry = build(screens.live() - id)
+        screens.delete(id)
+        serve(registry)
+    }
+
     /** The registry of the live screens and brand in the database. */
     fun load(): ScreenRegistry = build(screens.live())
 
@@ -168,6 +177,10 @@ class AdminPublishing(private val admin: AdminScreens, private val live: LiveScr
 
     override fun setHome(id: String) = failsAsPublishException {
         admin.setHome(id, live::replaceHome)
+    }
+
+    override fun delete(id: String) = failsAsPublishException {
+        admin.delete(id, live::replace)
     }
 
     /** Building fails with IllegalArgumentException/IllegalStateException (validation, secrets, dates). */

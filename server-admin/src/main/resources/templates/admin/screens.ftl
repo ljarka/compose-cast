@@ -14,7 +14,19 @@
           <td>${s.title}</td>
           <td><span class="status status-${s.status}">${s.status}</span></td>
           <td class="muted"><#if s.publishedAt?has_content>${s.publishedAt} · ${s.publishedBy}<#else>never</#if></td>
-          <td><#if canEdit && s.isLive && !s.isHome><form method="post" action="/admin/screens/${s.id?url}/home" style="margin:0"><button type="submit" style="margin:0">Set as home</button></form></#if></td>
+          <td style="text-align: right">
+            <#if canEdit && !s.isHome>
+              <details class="menu">
+                <summary aria-label="Actions for ${s.id}">⋯</summary>
+                <div class="menu-list">
+                  <#if s.isLive>
+                    <form method="post" action="/admin/screens/${s.id?url}/home" style="margin:0"><button type="submit">Set as home</button></form>
+                  </#if>
+                  <form method="post" action="/admin/screens/${s.id?url}/delete" style="margin:0"><button type="submit" class="danger">Remove</button></form>
+                </div>
+              </details>
+            </#if>
+          </td>
         </tr>
       <#else>
         <tr><td colspan="5" class="muted">No screens yet.</td></tr>

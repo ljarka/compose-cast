@@ -282,5 +282,10 @@ class AdminScreensTest {
         }
         assertEquals(HttpStatusCode.OK, updated.status)
         assertEquals("Other", updated.headers[Headers.SCREEN_TITLE])
+
+        val removed = client.post(cookie, "/admin/screens/shows/delete", "x", "1")
+        assertEquals(HttpStatusCode.SeeOther, removed.status)
+        assertEquals(HttpStatusCode.NotFound, client.get("/screens/shows").status)
+        assertFalse("shows" in client.get("/screens").bodyAsText())
     }
 }

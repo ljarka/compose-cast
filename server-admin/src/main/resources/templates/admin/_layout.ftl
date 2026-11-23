@@ -63,6 +63,17 @@
                   max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
     .fields-title { font-size: 15px; margin: 12px 0 6px; }
     fieldset.plain { border: 0; margin: 0; padding: 0; }
+    details.menu { position: relative; display: inline-block; }
+    details.menu > summary { list-style: none; cursor: pointer; padding: 2px 10px; border-radius: 6px;
+                             border: 1px solid var(--line); background: var(--bg); color: var(--fg); font-weight: 600; }
+    details.menu > summary::-webkit-details-marker { display: none; }
+    details.menu[open] > .menu-list { position: absolute; right: 0; top: calc(100% + 4px); z-index: 10; min-width: 150px;
+                                       background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+                                       padding: 4px; box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+    details.menu .menu-list button { display: block; width: 100%; margin: 0; padding: 6px 10px; text-align: left;
+                                     background: transparent; color: var(--fg); border-radius: 6px; }
+    details.menu .menu-list button:hover { background: var(--bg); }
+    details.menu .menu-list button.danger { color: var(--error); }
     .field { margin-bottom: 8px; }
     .help { font-size: 13px; }
     select { padding: 8px; font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
