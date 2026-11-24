@@ -1,0 +1,19 @@
+# Live screens (T-047, ADR 0029): main → Dashboard → "See it live" → back.
+# Run against the demo server: maestro test app-template/maestro/live.yaml
+# That it moves: the server logs "Live 'live' opened" and, after Back, "closed after N frames"
+# (N ≈ seconds on the screen); Home closes the socket too, returning reopens it.
+appId: ${APP_ID}
+env:
+    APP_ID: io.composecast.demo
+---
+- launchApp:
+    stopApp: true
+- tapOn: "Dashboard"
+- assertVisible: "Service health"
+- scrollUntilVisible:
+    element: "See it live"
+- tapOn: "See it live"
+- assertVisible: "Service health, live"
+- assertVisible: ".*Requests / s.*"
+- back
+- assertVisible: "Service health"

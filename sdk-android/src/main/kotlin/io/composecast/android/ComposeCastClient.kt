@@ -11,20 +11,31 @@ import io.composecast.protocol.UpgradeRequiredResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.android.Android
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.url
 import io.ktor.client.statement.readRawBytes
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.appendPathSegments
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.websocket.CloseReason
+import io.ktor.websocket.Frame
+import io.ktor.websocket.readBytes
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.net.URLDecoder
@@ -56,7 +67,11 @@ class ComposeCastClient(private val config: ComposeCastConfig) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, CachedScreen>) = size > CACHE_SIZE
     }
 
-    private class CachedScreen(val etag: String, val title: String, val bytes: ByteArray)
+    private class CachedScreen(val etag: String, val title: String, val bytes: ByteArray, val liveEveryMs: Int?)
+
+    /** Only for live screens (T-047): Ktor's Android engine has no WebSockets, OkHttp has. */
+    private val socketsLazy = lazy { HttpClient(OkHttp) { install(WebSockets) } }
+    private val sockets by socketsLazy
 
     /**
      * Downloads a screen's Remote Compose document (`GET /screens/{id}?params`, URL-encoded) and
@@ -96,21 +111,80 @@ class ComposeCastClient(private val config: ComposeCastConfig) {
                 val title = response.headers[Headers.SCREEN_TITLE]
                     ?.let { URLDecoder.decode(it, Charsets.UTF_8.name()) }
                     ?: id
-                CachedScreen(response.headers[HttpHeaders.ETag].orEmpty(), title, response.readRawBytes())
+                CachedScreen(
+                    response.headers[HttpHeaders.ETag].orEmpty(),
+                    title,
+                    response.readRawBytes(),
+                    response.headers[Headers.LIVE]?.toIntOrNull(),
+                )
                     .also { fresh -> if (fresh.etag.isNotEmpty()) synchronized(cache) { cache[key] = fresh } }
             }
         }
-        return withContext(Dispatchers.Default) { ScreenDocument.fromBytes(id, screen.title, screen.bytes) }
+        return withContext(Dispatchers.Default) {
+            ScreenDocument.fromBytes(id, screen.title, screen.bytes, screen.liveEveryMs)
+        }
+    }
+
+    /**
+     * Updates of a live screen (T-047, ADR 0029; [ScreenDocument.liveEveryMs] is set): opens
+     * `/screens/{id}/live` (WebSocket, same query and version headers as [getScreen]) and emits
+     * every document the server pushes — full documents and data updates; pass the flow to
+     * [ComposeCastScreen], which applies both. Reconnects with backoff (1 s … 30 s) while
+     * collected; completes when the server refuses the screen (not live, unknown). Collect it
+     * only while the screen is visible: [ComposeCastScreen] does that.
+     */
+    fun liveScreen(id: String, params: Map<String, String> = emptyMap()): Flow<ScreenDocument> = channelFlow {
+        var attempt = 0
+        while (true) {
+            var refused = false
+            try {
+                sockets.webSocket(
+                    request = {
+                        url(config.serverUrl.replaceFirst("http", "ws"))
+                        url {
+                            appendPathSegments("screens", id, "live")
+                            params.forEach { (name, value) -> parameters.append(name, value) }
+                        }
+                        header(Headers.PLAYER_VERSION, config.playerVersion)
+                        header(Headers.RC_API_LEVEL, CoreDocument.DOCUMENT_API_LEVEL)
+                        header(Headers.RC_PROFILES, RcProfiles.PROFILE_ANDROIDX or RcProfiles.PROFILE_EXPERIMENTAL)
+                    },
+                ) {
+                    attempt = 0
+                    for (frame in incoming) {
+                        if (frame !is Frame.Binary) continue
+                        val bytes = frame.readBytes()
+                        send(withContext(Dispatchers.Default) { ScreenDocument.fromBytes(id, id, bytes) })
+                    }
+                    val reason = closeReason.await()
+                    refused = reason?.code == CloseReason.Codes.CANNOT_ACCEPT.code
+                    if (config.logEnabled) Log.d("ComposeCast", "live '$id' closed: $reason")
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                if (config.logEnabled) Log.d("ComposeCast", "live '$id' failed: ${e.message}")
+            }
+            if (refused) return@channelFlow
+            delay((LIVE_RETRY_MS shl attempt.coerceAtMost(LIVE_MAX_SHIFT)).coerceAtMost(LIVE_MAX_RETRY_MS))
+            attempt++
+        }
     }
 
     suspend fun listScreens(): List<String> = http.get("${config.serverUrl}/screens").body()
 
     suspend fun getBrand(): BrandConfig = http.get("${config.serverUrl}/brand").body()
 
-    fun close() = http.close()
+    fun close() {
+        http.close()
+        if (socketsLazy.isInitialized()) sockets.close()
+    }
 
     private companion object {
         const val CACHE_SIZE = 32
+        const val LIVE_RETRY_MS = 1000L
+        const val LIVE_MAX_SHIFT = 5
+        const val LIVE_MAX_RETRY_MS = 30_000L
     }
 }
 

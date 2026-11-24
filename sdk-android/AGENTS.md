@@ -8,9 +8,9 @@ AndroidX Remote Compose player (`remote-player-view`).
 | Class | Purpose |
 |---|---|
 | `ComposeCastConfig` | Server URL, player version, logging flag |
-| `ComposeCastClient` | Ktor client: `getScreen(id, params)` (→ `ScreenDocument`, ETag revalidation, throws `ComposeCastHttpException`), `listScreens`, `getBrand` |
-| `ScreenDocument` | Decoded RC document + `id`, `title` (from `X-Composecast-Screen-Title`), `sizeBytes` |
-| `ComposeCastScreen` | Composable: `AndroidView` hosting `RemoteComposePlayer`; `onAction(Action)` |
+| `ComposeCastClient` | Ktor client: `getScreen(id, params)` (→ `ScreenDocument`, ETag revalidation, throws `ComposeCastHttpException`), `listScreens`, `getBrand`; `liveScreen(id, params)`: `Flow<ScreenDocument>` of a live screen's pushes over a WebSocket (T-047) |
+| `ScreenDocument` | Decoded RC document + `id`, `title` (from `X-Composecast-Screen-Title`), `sizeBytes`, `liveEveryMs` (from `X-Composecast-Live`; null = not live) |
+| `ComposeCastScreen` | Composable: `AndroidView` hosting `RemoteComposePlayer`; `live: Flow<ScreenDocument>?` (applies data updates in place, full documents replace the screen; collected only while the app is started); `onAction(Action)` |
 
 ## Usage Pattern (app-shell)
 
@@ -46,6 +46,16 @@ names are logged (`Log.w`, tag `ComposeCast`) and ignored. `protocol` is an `api
 installs an `android.util.Log` logger.
 
 ## Decisions
+
+- **Live screens (T-047, [ADR 0029](../docs/decisions/0029-live-screens-websocket-data-updates.md)):**
+  `liveScreen` uses a second, lazily created Ktor client on the **OkHttp** engine (the Android
+  engine has no WebSockets); same version headers as GET; reconnects with backoff 1 s … 30 s;
+  stops when the server closes with `CANNOT_ACCEPT` (not live / unknown). `ComposeCastScreen`
+  sends data-update frames to `updateDocument`, skips a full frame equal to the shown document
+  (`contentHash`) and re-registers action callbacks for other full frames; `repeatOnLifecycle(STARTED)`
+  closes the socket in the background. The effect is keyed by the player **value**, not the state:
+  reading the state inside the effect connected twice (the factory sets it before the first
+  effect runs). Verified on the emulator: one connection per visit, 62 frames/min, Home/Back close.
 
 - Player: `remote-player-view` wrapped in our own `AndroidView` (~30 lines), not
   `remote-player-compose` (pulls Compose 1.11 + appcompat; possible since AGP 9.5, revisit with

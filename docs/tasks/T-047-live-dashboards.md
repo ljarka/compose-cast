@@ -1,6 +1,6 @@
 # T-047 — Live screens + dashboard components (gauge, sparkline, KPI)
 
-Status: ready · Roadmap: G1–G2 (live dashboards) · Depends on: ADR 0029 · Module: protocol, sdk-server, server-app, sdk-android, app-shell, compat-tests
+Status: done · Roadmap: G1–G2 (live dashboards) · Depends on: ADR 0029 · Module: protocol, sdk-server, server-app, sdk-android, app-shell, compat-tests
 
 ## Goal
 A screen marked `live` keeps itself current on the phone with no refresh button: the server pushes
@@ -53,12 +53,17 @@ live + canvas is for advanced screens. The PoC proved the mechanism (ADR 0029,
   generated forms; the palette was done in step 1). Tests: `LiveTest`, `LiveFramesTest`,
   `LiveRouteTest`, `LiveDemoTest`, `FormSchemaTest`. Checked against the real server with a raw
   WebSocket (frames every second).
-- **Next: step 3** (app). `ComposeCastClient`: read `X-Composecast-Live` (store it in the ETag
-  cache too — a 304 carries it as well); `liveScreen(id, params)` = Ktor client WebSockets on the
-  **OkHttp** engine (the Android engine has none; PoC used `io.ktor:ktor-client-okhttp`), same
-  version headers, binary frames → `setDocument(bytes)` on the player (it routes data updates to
-  `updateDocument` by header). Lifecycle: open while the screen is shown and the app is resumed,
-  reconnect with backoff, close otherwise. Emulator: demo `main` → Dashboard → "See it live".
+- Step 3 done (2026-11-24): `ComposeCastClient.liveScreen` (OkHttp WebSocket, backoff, stops on
+  `CANNOT_ACCEPT`), `ScreenDocument.liveEveryMs`, `ComposeCastScreen(live = …)` (data updates in
+  place, lifecycle-aware), shell wiring, Maestro flow `app-template/maestro/live.yaml`, server
+  logs one line per open/close. Emulator: one connection per visit, 62 frames in 63 s, Home and
+  Back close the socket, returning and a server restart reconnect; 0 skipped-frame warnings.
+  Bugs found on the device: a second connection per visit (effect read the player state instead
+  of its key) and a refused connection for the previous screen after Back (document/entry
+  mismatch for one frame) — both fixed.
+- Step 4 came with steps 1–2 (palette group, `live` in the generated screen form); step 5 = docs.
+- Follow-ups (not blocking): share one render loop per `(screen, params)`; send only the data ops
+  in update frames (now as large as a full document); measure rendering on a real phone.
 
 ## Steps (commit each)
 1. Model + JSON + validation + renderer for `gauge`/`sparkline`/`kpi` (static) → golden

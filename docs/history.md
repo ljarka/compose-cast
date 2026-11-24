@@ -380,3 +380,9 @@ README roadmap's "Etap" numbers.
     RC data-update documents only when something changed (structure fingerprint decides full vs
     update), demo `live` screen with simulated metrics. Found: an update document is as large as
     the full one (state/animation kept, bytes not saved).
+78. **T-047 step 3 — live screens in the app (T-047 done)**: `ComposeCastClient.liveScreen`
+    (OkHttp WebSocket, backoff), `ComposeCastScreen(live = …)` applies data updates in place while
+    the app is started, shell wiring, Maestro `live.yaml`. On the emulator the demo moved once a
+    second for a minute; Home/Back closed the socket, returning and a server restart reconnected.
+    Two bugs only the device showed (rule 5): a double connection from reading Compose state in an
+    effect, and a refused connection for the previous screen after Back. Next: T-032 live preview.

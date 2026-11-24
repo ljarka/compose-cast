@@ -5,7 +5,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Next
 
-- **[T-047 Live screens + dashboard components](tasks/T-047-live-dashboards.md)** (Roadmap G1–G2) — the `ready` task.
+- **[T-032 Live preview on a phone](tasks/T-032-live-preview.md)** (Roadmap G3) — the `ready` task.
 
 ## Task queue (priority order)
 
@@ -38,8 +38,8 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-045 Generic Preview app + draft preview](tasks/T-045-preview-app.md) | Roadmap B | waiting for the owner — B1 Preview app + `/connect`, B2 draft preview done; B3 needs a fresh VPS + signing secrets (T-029 goes on meanwhile) |
 | [T-029 Visual screen editor (no JSON)](tasks/T-029-visual-screen-editor.md) | Etap 8 | done (`69010e0`) — C1 ADR 0028, C2 tree + generated forms, C3 palette; acceptance test rebuilds the weather `main` |
 | [T-031 Data source wizard (URL → screens)](tasks/T-031-data-source-wizard.md) | Etap 8 | done (`001e06c`) — W1 probe + heuristics, W2 wizard (TVMaze list + detail on the emulator), W3 field picker + data source form |
-| [T-047 Live screens + dashboard components](tasks/T-047-live-dashboards.md) | Roadmap G1–G2 | ready — ADR 0029, PoC verified 2026-11-24 (owner: before templates) |
-| [T-032 Live preview on a phone](tasks/T-032-live-preview.md) | Roadmap G3 | queued (after T-047); reuses the T-047 live channel (ADR 0029) |
+| [T-047 Live screens + dashboard components](tasks/T-047-live-dashboards.md) | Roadmap G1–G2 | done (HASH) — gauge/sparkline/kpi, live screens over a WebSocket, app keeps them current |
+| [T-032 Live preview on a phone](tasks/T-032-live-preview.md) | Roadmap G3 | ready — reuse the T-047 live channel (ADR 0029) for drafts |
 | [T-030 App templates](tasks/T-030-app-templates.md) | Etap 8 | queued (after T-032) — roadmap D2; templates can use live screens + dashboard components |
 | [T-010 Settings export (properties + icon)](tasks/T-010-app-export.md) | Etap 9 | queued (after T-030); roadmap E1–E3; rewrite the Design for ADR 0025 (GitHub Actions build) first |
 | [T-027 Images loaded by the SDK (lists)](tasks/T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-010); roadmap F1 |
@@ -68,7 +68,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | Etap 2 — Foundations ✅ | 5/5 |
 | Etap 3 — iOS spike: dropped | 0/0 |
 | Etap 4 — Data sources (APIs) — ADR 0008 | 4/4 |
-| Etap 5 — Components for real apps | 10/15 |
+| Etap 5 — Components for real apps | 11/15 |
 | Etap 6 — Milestone 1: Example weather app (external project) | 5/7 |
 | Etap 7 — App shells & SDKs | 3/7 |
 | Etap 8 — Admin panel MVP | 5/11 |
@@ -82,9 +82,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- T-047 step 3 — live screens in the app (T-047 done)
 - T-047 step 2 — live screens on the server
 - T-047 step 1 — dashboard components
 - Live dashboards concept + PoC
 - T-031 W3 — field picker + data source form (T-031 done)
 - T-031 W2 — the wizard page
-- T-031 W1 — API probe + heuristics

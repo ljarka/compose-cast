@@ -31,6 +31,7 @@ $ADB shell am start -W -n io.composecast.demo/io.composecast.shell.ComposeCastAc
 # 4. Click with Maestro (the project's UI automation tool; flows in app-template/maestro/)
 maestro test app-template/maestro/smoke.yaml                     # launch, tap "Get started", back
 maestro test -e APP_ID=<id> app-template/maestro/smoke.yaml      # an app built from another properties file
+maestro test app-template/maestro/live.yaml                      # live screen (T-047): server logs "Live 'live' opened" / "closed after N frames"
 #    One-off taps: write a scratch flow (tapOn: "<text>", back, assertVisible: ...) and run it the same way.
 
 # 5. Look

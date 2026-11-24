@@ -37,7 +37,7 @@ built: [specs/tech-stack.md](specs/tech-stack.md) · what comes next: [specs/roa
 | Actions | Host actions (named) + local value changes | typed `Action` (navigate with params, open_url, reload, track, custom) ✅ |
 | Light/dark, theming | Themed colors in the document | ⏳ Etap 7 |
 | Custom elements / extensions | `Custom` component + player custom support | ⏳ later |
-| Loading new markup without release | Whole document per request; player `updateDocument` | ✅ per screen; live data-update documents over a WebSocket ⏳ T-047 ([ADR 0029](docs/decisions/0029-live-screens-websocket-data-updates.md)) |
+| Loading new markup without release | Whole document per request; player `updateDocument` | ✅ per screen; **live screens**: data-update documents pushed over a WebSocket ✅ T-047 ([ADR 0029](docs/decisions/0029-live-screens-websocket-data-updates.md)) |
 | Data from APIs | — (server-side) | data sources ✅ (Etap 4) |
 | Visibility actions (analytics) | no equivalent found | ⏳ SDK-side, Etap 7 |
 | Platforms: Android, iOS, web, KMP | official player: Android only | Android ✅ (only target, ADR 0022) |

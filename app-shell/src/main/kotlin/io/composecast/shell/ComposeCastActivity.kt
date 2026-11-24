@@ -306,21 +306,31 @@ private fun ComposeCastApp(
                     Button(onClick = { reloadKey++ }) { Text("Retry") }
                 }
 
-                else -> ComposeCastScreen(
-                    screen = screenState!!.getOrThrow(),
-                    modifier = Modifier.fillMaxSize(),
-                    onAction = { action ->
-                        when (action) {
-                            is Action.Navigate -> backStack = backStack + action
-                            is Action.OpenUrl -> if (!onOpenUrl(action.url)) {
-                                scope.launch { snackbar.showSnackbar("No app can open ${action.url}") }
+                else -> {
+                    val screen = screenState!!.getOrThrow()
+                    // Live screens (T-047, ADR 0029): updates over a WebSocket, no refresh needed.
+                    // While navigating, `screen` can still be the previous entry's document for a frame.
+                    val live = remember(screen, entry) {
+                        entry?.takeIf { screen.liveEveryMs != null && it.screen == screen.id }
+                            ?.let { client.liveScreen(it.screen, it.params) }
+                    }
+                    ComposeCastScreen(
+                        screen = screen,
+                        modifier = Modifier.fillMaxSize(),
+                        live = live,
+                        onAction = { action ->
+                            when (action) {
+                                is Action.Navigate -> backStack = backStack + action
+                                is Action.OpenUrl -> if (!onOpenUrl(action.url)) {
+                                    scope.launch { snackbar.showSnackbar("No app can open ${action.url}") }
+                                }
+                                Action.Reload -> reloadKey++
+                                is Action.Track -> { /* analytics hook */ }
+                                is Action.Custom -> scope.launch { snackbar.showSnackbar("Custom: ${action.payload}") }
                             }
-                            Action.Reload -> reloadKey++
-                            is Action.Track -> { /* analytics hook */ }
-                            is Action.Custom -> scope.launch { snackbar.showSnackbar("Custom: ${action.payload}") }
-                        }
-                    },
-                )
+                        },
+                    )
+                }
             }
         }
     }

@@ -60,6 +60,10 @@ Verified in RC 1.0.0-alpha23 sources and in a PoC on the emulator (2026-11-24, d
 - A data-update frame is a full render with the flag (same size); it saves state and animation,
   not bytes. A delta with only the data operations is a later optimization.
 - One render loop per connection for now; sharing it per `(screen, params)` is a follow-up.
+- App (step 3): `ComposeCastClient.liveScreen` (OkHttp engine) + `ComposeCastScreen(live = …)`;
+  emulator: one connection per visit, 1 frame/s for a minute, closed on Home/Back, reconnected
+  after a server restart. Rendering of the animated demo on the emulator: p50 11 ms, p90 16 ms,
+  p99 21 ms — check on a real device before promising "no dropped frames".
 
 ## How to verify it still holds
 `LiveRouteTest`, `LiveFramesTest`, `LiveDemoTest`: first frame is a full document, the next ones have

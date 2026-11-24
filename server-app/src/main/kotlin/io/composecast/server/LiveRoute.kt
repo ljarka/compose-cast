@@ -43,29 +43,39 @@ internal fun Route.liveScreens(screens: LiveScreens) {
     webSocket("/screens/{id}/live") {
         // From the path: a screen param named `id` in the query must not win (as in GET, T-031).
         val id = call.request.path().removePrefix("/screens/").removeSuffix("/live").decodeURLPart()
-        val frames = LiveFrames(id, call.renderContext(id)) { screens.registryFor(id) }
-        var started = false
+        stream(id, LiveFrames(id, call.renderContext(id)) { screens.registryFor(id) })
+    }
+}
+
+/** Sends [frames] until the client leaves or the screen is refused; logs open/close (one line each). */
+private suspend fun WebSocketServerSession.stream(id: String, frames: LiveFrames) {
+    val log = call.application.environment.log
+    var sent = 0
+    log.info("Live '{}' opened", id)
+    try {
         while (isActive) {
             val frame = try {
                 withContext(Dispatchers.IO) { frames.next() }
             } catch (e: NoSuchElementException) {
-                return@webSocket refuse("screen '$id' not found")
+                return refuse(e.message ?: "screen not found")
             } catch (e: ScreenParameterException) {
-                return@webSocket refuse(e.message ?: "missing parameter")
+                return refuse(e.message ?: "missing parameter")
             } catch (e: UnsupportedClientVersionException) {
-                return@webSocket refuse("app update required")
+                return refuse("app update required")
             } catch (e: DataSourceException) {
                 // Already logged by the binder; keep the last frame on the device and try again.
-                if (!started) return@webSocket refuse("data source failed")
+                if (sent == 0) return refuse("data source failed")
                 null
             }
-            val everyMs = frames.everyMs ?: return@webSocket refuse("screen '$id' is not live")
+            val everyMs = frames.everyMs ?: return refuse("screen is not live")
             if (frame != null) {
                 send(Frame.Binary(true, frame.document))
-                started = true
+                sent++
             }
             delay(everyMs.toLong())
         }
+    } finally {
+        log.info("Live '{}' closed after {} frames", id, sent)
     }
 }
 
