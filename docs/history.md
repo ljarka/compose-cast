@@ -397,3 +397,8 @@ README roadmap's "Etap" numbers.
     (prefix on id clashes, optional colors) and "Publish all"; an empty app opens on it. Checked on
     the emulator from an empty database with the real APIs; the device showed a too-wide key figure
     (now ellipsized) and uneven columns, both fixed. DummyJSON rejected: WebP images.
+81. **T-048 spike — phone preview in the panel** (task only, no code): Robolectric + the real RC
+    player rendered demo screens to PNG in 56–71 ms each (warm, heap ≈ 110 MB), the same pixels
+    as the goldens, so ADR 0013's "no headless renderer" no longer holds. Limits: native graphics
+    only for linux/x86_64 (no Linux arm64), and the first capture catches animations mid-way.
+    Next: run Robolectric as a long-lived service outside Gradle, measured in Docker.

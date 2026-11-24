@@ -45,6 +45,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-027 Images loaded by the SDK (lists)](tasks/T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-010); roadmap F1 |
 | [T-021 Native components via RC `Custom` (text input)](tasks/T-021-native-components.md) | Etap 10 | queued (after T-027); roadmap F2; spike first |
 | [T-046 Milestone 2: TV shows app built only in the admin](tasks/T-046-tv-shows-milestone.md) | Roadmap F | queued (after T-021); roadmap F3 — success criterion 1 |
+| [T-048 Phone preview inside the admin panel](tasks/T-048-in-panel-phone-preview.md) | Etap 8 (not placed) | blocked: owner picks its place in the roadmap — spike: Robolectric renders a screen PNG in ~65 ms; renderer is linux/amd64 only |
 | [T-038 Feature flags and A/B tests](tasks/T-038-feature-flags-ab.md) | Etap 12 | queued (after T-046) |
 | [T-037 Analytics in the panel](tasks/T-037-analytics.md) | Etap 12 | queued (after T-038) |
 | [T-033 AI assistant in the panel](tasks/T-033-ai-assistant.md) | Etap 8 | queued (after T-037) |
@@ -79,12 +80,13 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Waiting for a decision or design
 
+- [T-048 Phone preview inside the admin panel](tasks/T-048-in-panel-phone-preview.md): blocked: owner picks its place in the roadmap — spike: Robolectric renders a screen PNG in ~65 ms; renderer is linux/amd64 only
 
 ## Recent work (docs/history.md)
 
+- T-048 spike — phone preview in the panel
 - T-030 — app templates
 - T-032 — live draft preview
 - T-047 step 3 — live screens in the app (T-047 done)
 - T-047 step 2 — live screens on the server
 - T-047 step 1 — dashboard components
-- Live dashboards concept + PoC

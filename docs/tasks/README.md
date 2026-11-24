@@ -40,6 +40,7 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-027 Images loaded by the SDK (lists)](T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-010); roadmap F1 |
 | [T-021 Native components via RC `Custom` (text input)](T-021-native-components.md) | Etap 10 | queued (after T-027); roadmap F2; spike first |
 | [T-046 Milestone 2: TV shows app built only in the admin](T-046-tv-shows-milestone.md) | Roadmap F | queued (after T-021); roadmap F3 — success criterion 1 |
+| [T-048 Phone preview inside the admin panel](T-048-in-panel-phone-preview.md) | Etap 8 (not placed) | blocked: owner picks its place in the roadmap — spike: Robolectric renders a screen PNG in ~65 ms; renderer is linux/amd64 only |
 | [T-038 Feature flags and A/B tests](T-038-feature-flags-ab.md) | Etap 12 | queued (after T-046) |
 | [T-037 Analytics in the panel](T-037-analytics.md) | Etap 12 | queued (after T-038) |
 | [T-033 AI assistant in the panel](T-033-ai-assistant.md) | Etap 8 | queued (after T-037) |
