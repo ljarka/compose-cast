@@ -38,7 +38,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-045 Generic Preview app + draft preview](tasks/T-045-preview-app.md) | Roadmap B | waiting for the owner — B1 Preview app + `/connect`, B2 draft preview done; B3 needs a fresh VPS + signing secrets (T-029 goes on meanwhile) |
 | [T-029 Visual screen editor (no JSON)](tasks/T-029-visual-screen-editor.md) | Etap 8 | done (`69010e0`) — C1 ADR 0028, C2 tree + generated forms, C3 palette; acceptance test rebuilds the weather `main` |
 | [T-031 Data source wizard (URL → screens)](tasks/T-031-data-source-wizard.md) | Etap 8 | done (`001e06c`) — W1 probe + heuristics, W2 wizard (TVMaze list + detail on the emulator), W3 field picker + data source form |
-| [T-047 Live screens + dashboard components](tasks/T-047-live-dashboards.md) | Roadmap G1–G2 | done (HASH) — gauge/sparkline/kpi, live screens over a WebSocket, app keeps them current |
+| [T-047 Live screens + dashboard components](tasks/T-047-live-dashboards.md) | Roadmap G1–G2 | done (`99a932a`) — gauge/sparkline/kpi, live screens over a WebSocket, app keeps them current |
 | [T-032 Live preview on a phone](tasks/T-032-live-preview.md) | Roadmap G3 | ready — reuse the T-047 live channel (ADR 0029) for drafts |
 | [T-030 App templates](tasks/T-030-app-templates.md) | Etap 8 | queued (after T-032) — roadmap D2; templates can use live screens + dashboard components |
 | [T-010 Settings export (properties + icon)](tasks/T-010-app-export.md) | Etap 9 | queued (after T-030); roadmap E1–E3; rewrite the Design for ADR 0025 (GitHub Actions build) first |
