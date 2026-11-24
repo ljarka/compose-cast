@@ -1,0 +1,15 @@
+{
+  "name": "Weather",
+  "description": "Current weather that stays up to date (live), humidity gauge, next 24 hours and 7 days, a city list. Keyless API (open-meteo.com).",
+  "home": "weather",
+  "screens": [
+    "weather",
+    "cities"
+  ],
+  "fixtures": [
+    {
+      "match": "api.open-meteo.com",
+      "file": "fixtures/forecast.json"
+    }
+  ]
+}

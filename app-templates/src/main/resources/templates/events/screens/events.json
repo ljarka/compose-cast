@@ -1,0 +1,145 @@
+{
+  "id": "events",
+  "title": "Programme",
+  "components": [
+    {
+      "type": "image",
+      "url": "https://picsum.photos/seed/cc-festival/800/400",
+      "alt": "The venue",
+      "contentScale": "crop",
+      "aspectRatio": 2.0,
+      "modifier": {
+        "cornerRadius": 12
+      }
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "text",
+      "text": "Two days, four sessions",
+      "style": "h2"
+    },
+    {
+      "type": "spacer",
+      "height": 8
+    },
+    {
+      "type": "card",
+      "spacing": 4,
+      "modifier": {
+        "action": {
+          "type": "navigate",
+          "screen": "event",
+          "params": {
+            "id": "1"
+          }
+        }
+      },
+      "children": [
+        {
+          "type": "text",
+          "text": "Opening keynote",
+          "style": "h3"
+        },
+        {
+          "type": "text",
+          "text": "Fri 12 June · 09:30 · Main hall",
+          "style": "caption"
+        }
+      ]
+    },
+    {
+      "type": "spacer",
+      "height": 8
+    },
+    {
+      "type": "card",
+      "spacing": 4,
+      "modifier": {
+        "action": {
+          "type": "navigate",
+          "screen": "event",
+          "params": {
+            "id": "2"
+          }
+        }
+      },
+      "children": [
+        {
+          "type": "text",
+          "text": "Design systems workshop",
+          "style": "h3"
+        },
+        {
+          "type": "text",
+          "text": "Fri 12 June · 13:00 · Room B",
+          "style": "caption"
+        }
+      ]
+    },
+    {
+      "type": "spacer",
+      "height": 8
+    },
+    {
+      "type": "card",
+      "spacing": 4,
+      "modifier": {
+        "action": {
+          "type": "navigate",
+          "screen": "event",
+          "params": {
+            "id": "3"
+          }
+        }
+      },
+      "children": [
+        {
+          "type": "text",
+          "text": "Live demo night",
+          "style": "h3"
+        },
+        {
+          "type": "text",
+          "text": "Fri 12 June · 19:00 · Rooftop",
+          "style": "caption"
+        }
+      ]
+    },
+    {
+      "type": "spacer",
+      "height": 8
+    },
+    {
+      "type": "card",
+      "spacing": 4,
+      "modifier": {
+        "action": {
+          "type": "navigate",
+          "screen": "event",
+          "params": {
+            "id": "4"
+          }
+        }
+      },
+      "children": [
+        {
+          "type": "text",
+          "text": "Closing panel",
+          "style": "h3"
+        },
+        {
+          "type": "text",
+          "text": "Sat 13 June · 16:00 · Main hall",
+          "style": "caption"
+        }
+      ]
+    },
+    {
+      "type": "spacer",
+      "height": 8
+    }
+  ]
+}

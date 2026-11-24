@@ -1,0 +1,113 @@
+{
+  "id": "story",
+  "title": "Story",
+  "params": {
+    "id": {
+      "default": "1"
+    }
+  },
+  "data": {
+    "st": {
+      "url": "https://hn.algolia.com/api/v1/search?tags=story,story_{{params.id}}",
+      "cacheSeconds": 120
+    }
+  },
+  "components": [
+    {
+      "type": "text",
+      "text": "{{st.hits[0].title}}",
+      "style": "h2"
+    },
+    {
+      "type": "spacer",
+      "height": 8
+    },
+    {
+      "type": "row",
+      "spacing": 12,
+      "children": [
+        {
+          "type": "card",
+          "modifier": {
+            "weight": 1.0
+          },
+          "children": [
+            {
+              "type": "kpi",
+              "value": "{{st.hits[0].points | default:'0'}}",
+              "label": "Points"
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "modifier": {
+            "weight": 1.0
+          },
+          "children": [
+            {
+              "type": "kpi",
+              "value": "{{st.hits[0].num_comments | default:'0'}}",
+              "label": "Comments"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "spacer",
+      "height": 8
+    },
+    {
+      "type": "text",
+      "text": "by {{st.hits[0].author}}",
+      "style": "caption"
+    },
+    {
+      "type": "spacer",
+      "height": 16
+    },
+    {
+      "type": "button",
+      "label": "Read the article",
+      "action": {
+        "type": "open_url",
+        "url": "{{st.hits[0].url | default:'https://news.ycombinator.com'}}"
+      }
+    },
+    {
+      "type": "spacer",
+      "height": 8
+    },
+    {
+      "type": "button",
+      "label": "Discussion",
+      "variant": "outlined",
+      "action": {
+        "type": "open_url",
+        "url": "https://news.ycombinator.com/item?id={{params.id}}"
+      }
+    }
+  ],
+  "error": [
+    {
+      "type": "text",
+      "text": "Story not available",
+      "style": "h3"
+    },
+    {
+      "type": "text",
+      "text": "The service did not answer. Try again in a moment."
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "button",
+      "label": "Retry",
+      "action": {
+        "type": "reload"
+      }
+    }
+  ]
+}

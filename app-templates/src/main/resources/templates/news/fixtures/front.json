@@ -1,0 +1,25 @@
+{
+  "hits": [
+    {
+      "objectID": "1",
+      "title": "Show HN: A server-driven UI that ships without app releases",
+      "points": 412,
+      "num_comments": 118,
+      "author": "alice"
+    },
+    {
+      "objectID": "2",
+      "title": "How we cut our Android build time in half",
+      "points": 287,
+      "num_comments": 64,
+      "author": "bob"
+    },
+    {
+      "objectID": "3",
+      "title": "The quiet joy of boring technology",
+      "points": 198,
+      "num_comments": null,
+      "author": "carol"
+    }
+  ]
+}

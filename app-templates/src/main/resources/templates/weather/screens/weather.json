@@ -1,0 +1,233 @@
+{
+  "id": "weather",
+  "title": "{{params.city}}",
+  "params": {
+    "lat": {
+      "default": "52.52"
+    },
+    "lon": {
+      "default": "13.41"
+    },
+    "city": {
+      "default": "Berlin"
+    }
+  },
+  "data": {
+    "meteo": {
+      "url": "https://api.open-meteo.com/v1/forecast?latitude={{params.lat}}&longitude={{params.lon}}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=temperature_2m&forecast_hours=24&daily=weather_code,temperature_2m_max,temperature_2m_min&forecast_days=7&timezone=auto",
+      "cacheSeconds": 60
+    }
+  },
+  "live": {
+    "everyMs": 60000
+  },
+  "lookups": {
+    "wmo": {
+      "0": "Clear sky",
+      "1": "Mainly clear",
+      "2": "Partly cloudy",
+      "3": "Overcast",
+      "45": "Fog",
+      "61": "Rain",
+      "71": "Snow",
+      "95": "Thunderstorm",
+      "*": "Changing weather"
+    }
+  },
+  "components": [
+    {
+      "type": "row",
+      "spacing": 12,
+      "children": [
+        {
+          "type": "card",
+          "modifier": {
+            "weight": 1.0
+          },
+          "children": [
+            {
+              "type": "kpi",
+              "value": "{{meteo.current.temperature_2m | round}}°",
+              "label": "Now",
+              "caption": "Feels like {{meteo.current.apparent_temperature | round}}°"
+            },
+            {
+              "type": "spacer",
+              "height": 4
+            },
+            {
+              "type": "text",
+              "text": "{{meteo.current.weather_code | lookup:wmo}}",
+              "style": "caption",
+              "maxLines": 2
+            },
+            {
+              "type": "text",
+              "text": "Wind {{meteo.current.wind_speed_10m | round}} km/h",
+              "style": "caption"
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "modifier": {
+            "weight": 1.0
+          },
+          "children": [
+            {
+              "type": "column",
+              "horizontalAlignment": "center",
+              "modifier": {
+                "width": "fill"
+              },
+              "children": [
+                {
+                  "type": "gauge",
+                  "value": "{{meteo.current.relative_humidity_2m}}",
+                  "label": "{{meteo.current.relative_humidity_2m}}%",
+                  "size": 96,
+                  "thickness": 10
+                },
+                {
+                  "type": "spacer",
+                  "height": 4
+                },
+                {
+                  "type": "text",
+                  "text": "Humidity",
+                  "style": "caption",
+                  "textAlign": "center"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "card",
+      "spacing": 8,
+      "children": [
+        {
+          "type": "text",
+          "text": "Next 24 hours",
+          "style": "h3"
+        },
+        {
+          "type": "sparkline",
+          "values": "{{meteo.hourly.temperature_2m}}",
+          "height": 80,
+          "thickness": 3
+        }
+      ]
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "text",
+      "text": "Next 7 days",
+      "style": "h3"
+    },
+    {
+      "type": "spacer",
+      "height": 4
+    },
+    {
+      "type": "repeat",
+      "items": {
+        "day": "meteo.daily.time",
+        "max": "meteo.daily.temperature_2m_max",
+        "min": "meteo.daily.temperature_2m_min",
+        "code": "meteo.daily.weather_code"
+      },
+      "as": "d",
+      "template": [
+        {
+          "type": "row",
+          "verticalAlignment": "center",
+          "modifier": {
+            "width": "fill",
+            "padding": {
+              "top": 6,
+              "bottom": 6
+            }
+          },
+          "children": [
+            {
+              "type": "text",
+              "text": "{{d.day | date:'EEEE'}}",
+              "modifier": {
+                "weight": 1.0
+              }
+            },
+            {
+              "type": "text",
+              "text": "{{d.code | lookup:wmo}}",
+              "style": "caption",
+              "maxLines": 1,
+              "overflow": "ellipsis",
+              "modifier": {
+                "weight": 1.0
+              }
+            },
+            {
+              "type": "text",
+              "text": "{{d.max | round}}° / {{d.min | round}}°",
+              "fontWeight": "bold",
+              "textAlign": "end",
+              "modifier": {
+                "width": "wrap"
+              }
+            }
+          ]
+        }
+      ],
+      "empty": [
+        {
+          "type": "text",
+          "text": "No forecast"
+        }
+      ]
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "button",
+      "label": "Other cities",
+      "variant": "outlined",
+      "action": {
+        "type": "navigate",
+        "screen": "cities"
+      }
+    }
+  ],
+  "error": [
+    {
+      "type": "text",
+      "text": "No weather for {{params.city}}",
+      "style": "h3"
+    },
+    {
+      "type": "text",
+      "text": "The service did not answer. Try again in a moment."
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "button",
+      "label": "Retry",
+      "action": {
+        "type": "reload"
+      }
+    }
+  ]
+}

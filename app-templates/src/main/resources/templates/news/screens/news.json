@@ -1,0 +1,77 @@
+{
+  "id": "news",
+  "title": "Top stories",
+  "data": {
+    "hn": {
+      "url": "https://hn.algolia.com/api/v1/search?tags=front_page&hitsPerPage=20",
+      "cacheSeconds": 120
+    }
+  },
+  "components": [
+    {
+      "type": "repeat",
+      "items": "hn.hits",
+      "as": "s",
+      "template": [
+        {
+          "type": "card",
+          "spacing": 4,
+          "modifier": {
+            "action": {
+              "type": "navigate",
+              "screen": "story",
+              "params": {
+                "id": "{{s.objectID}}"
+              }
+            }
+          },
+          "children": [
+            {
+              "type": "text",
+              "text": "{{s.title}}",
+              "style": "h3",
+              "maxLines": 3,
+              "overflow": "ellipsis"
+            },
+            {
+              "type": "text",
+              "text": "{{s.points | default:'0'}} points · {{s.num_comments | default:'0'}} comments · {{s.author}}",
+              "style": "caption"
+            }
+          ]
+        },
+        {
+          "type": "spacer",
+          "height": 8
+        }
+      ],
+      "empty": [
+        {
+          "type": "text",
+          "text": "No stories right now."
+        }
+      ]
+    }
+  ],
+  "error": [
+    {
+      "type": "text",
+      "text": "No stories",
+      "style": "h3"
+    },
+    {
+      "type": "text",
+      "text": "The service did not answer. Try again in a moment."
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "button",
+      "label": "Retry",
+      "action": {
+        "type": "reload"
+      }
+    }
+  ]
+}

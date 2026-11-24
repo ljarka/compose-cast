@@ -1,0 +1,19 @@
+{
+  "name": "Shop",
+  "description": "A product catalog with product pages, rating gauge and price. Keyless API (fakestoreapi.com).",
+  "home": "shop",
+  "screens": [
+    "shop",
+    "product"
+  ],
+  "fixtures": [
+    {
+      "match": "/products?",
+      "file": "fixtures/products.json"
+    },
+    {
+      "match": "/products/",
+      "file": "fixtures/product.json"
+    }
+  ]
+}

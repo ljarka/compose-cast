@@ -1,0 +1,9 @@
+{
+  "name": "Events",
+  "description": "An event programme with detail pages. No API: all content is in the screens, edit it in the panel.",
+  "home": "events",
+  "screens": [
+    "events",
+    "event"
+  ]
+}

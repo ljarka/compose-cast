@@ -1,0 +1,93 @@
+{
+  "id": "event",
+  "title": "{{params.id | lookup:titles}}",
+  "params": {
+    "id": {
+      "default": "1"
+    }
+  },
+  "lookups": {
+    "titles": {
+      "1": "Opening keynote",
+      "2": "Design systems workshop",
+      "3": "Live demo night",
+      "4": "Closing panel",
+      "*": "Event"
+    },
+    "times": {
+      "1": "Fri 12 June · 09:30",
+      "2": "Fri 12 June · 13:00",
+      "3": "Fri 12 June · 19:00",
+      "4": "Sat 13 June · 16:00",
+      "*": ""
+    },
+    "places": {
+      "1": "Main hall",
+      "2": "Room B",
+      "3": "Rooftop",
+      "4": "Main hall",
+      "*": ""
+    },
+    "about": {
+      "1": "What is new this year, from the people who built it.",
+      "2": "Build a theme for a whole app in ninety minutes.",
+      "3": "Ten demos, five minutes each, one winner.",
+      "4": "What should we build next? Questions from the audience.",
+      "*": ""
+    },
+    "images": {
+      "1": "https://picsum.photos/seed/cc-keynote/800/400",
+      "2": "https://picsum.photos/seed/cc-workshop/800/400",
+      "3": "https://picsum.photos/seed/cc-demos/800/400",
+      "4": "https://picsum.photos/seed/cc-panel/800/400",
+      "*": "https://picsum.photos/seed/cc-festival/800/400"
+    }
+  },
+  "components": [
+    {
+      "type": "image",
+      "url": "{{params.id | lookup:images}}",
+      "alt": "{{params.id | lookup:titles}}",
+      "contentScale": "crop",
+      "aspectRatio": 2.0,
+      "modifier": {
+        "cornerRadius": 12
+      }
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "text",
+      "text": "{{params.id | lookup:titles}}",
+      "style": "h2"
+    },
+    {
+      "type": "text",
+      "text": "{{params.id | lookup:times}} · {{params.id | lookup:places}}",
+      "style": "caption"
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "text",
+      "text": "{{params.id | lookup:about}}"
+    },
+    {
+      "type": "spacer",
+      "height": 16
+    },
+    {
+      "type": "button",
+      "label": "Whole programme",
+      "variant": "outlined",
+      "action": {
+        "type": "navigate",
+        "screen": "events"
+      }
+    }
+  ]
+}

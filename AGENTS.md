@@ -53,8 +53,9 @@ Do not load the whole project: root `AGENTS.md` → task → the modules in its 
 | `gradle-plugins` (included build) | `io.composecast.app` Gradle plugin: properties → branded app + shell | done |
 | `compat-tests` | Screenshot tests server → player; goldens = README images | done |
 | `server-store` | Admin database (SQLite/Exposed): screens with drafts + history, users + sessions, app settings (T-007) | done |
+| `app-templates` | Bundled app templates (News, Shop, Events, Weather, Blank) + the bundle format (ADR 0031, T-030) | done |
 | `server-admin` | Admin panel at `/admin` (Ktor + Freemarker): login + roles, screens (editor, drafts, publish, history, rollback), settings (T-007) | done (MVP) |
-| planned: `app-templates`, `server-ai`, `server-forms`, `server-auth`, `server-push`/`android-push`, `server-analytics`, `server-flags` | one feature = one module with its own `AGENTS.md` ([ADR 0023](docs/decisions/0023-module-structure.md)) | planned |
+| planned: `server-ai`, `server-forms`, `server-auth`, `server-push`/`android-push`, `server-analytics`, `server-flags` | one feature = one module with its own `AGENTS.md` ([ADR 0023](docs/decisions/0023-module-structure.md)) | planned |
 
 ## Rules
 

@@ -1,0 +1,119 @@
+{
+  "id": "cities",
+  "title": "Cities",
+  "components": [
+    {
+      "type": "text",
+      "text": "Pick a city",
+      "style": "h2"
+    },
+    {
+      "type": "spacer",
+      "height": 8
+    },
+    {
+      "type": "button",
+      "label": "Berlin",
+      "variant": "outlined",
+      "action": {
+        "type": "navigate",
+        "screen": "weather",
+        "params": {
+          "lat": "52.52",
+          "lon": "13.41",
+          "city": "Berlin"
+        }
+      }
+    },
+    {
+      "type": "spacer",
+      "height": 8
+    },
+    {
+      "type": "button",
+      "label": "London",
+      "variant": "outlined",
+      "action": {
+        "type": "navigate",
+        "screen": "weather",
+        "params": {
+          "lat": "51.51",
+          "lon": "-0.13",
+          "city": "London"
+        }
+      }
+    },
+    {
+      "type": "spacer",
+      "height": 8
+    },
+    {
+      "type": "button",
+      "label": "New York",
+      "variant": "outlined",
+      "action": {
+        "type": "navigate",
+        "screen": "weather",
+        "params": {
+          "lat": "40.71",
+          "lon": "-74.01",
+          "city": "New York"
+        }
+      }
+    },
+    {
+      "type": "spacer",
+      "height": 8
+    },
+    {
+      "type": "button",
+      "label": "Tokyo",
+      "variant": "outlined",
+      "action": {
+        "type": "navigate",
+        "screen": "weather",
+        "params": {
+          "lat": "35.68",
+          "lon": "139.69",
+          "city": "Tokyo"
+        }
+      }
+    },
+    {
+      "type": "spacer",
+      "height": 8
+    },
+    {
+      "type": "button",
+      "label": "Sydney",
+      "variant": "outlined",
+      "action": {
+        "type": "navigate",
+        "screen": "weather",
+        "params": {
+          "lat": "-33.87",
+          "lon": "151.21",
+          "city": "Sydney"
+        }
+      }
+    },
+    {
+      "type": "spacer",
+      "height": 8
+    },
+    {
+      "type": "button",
+      "label": "Warsaw",
+      "variant": "outlined",
+      "action": {
+        "type": "navigate",
+        "screen": "weather",
+        "params": {
+          "lat": "52.23",
+          "lon": "21.01",
+          "city": "Warsaw"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "News",
+  "description": "Top stories from Hacker News with a story page. Keyless API (hn.algolia.com).",
+  "home": "news",
+  "screens": [
+    "news",
+    "story"
+  ],
+  "fixtures": [
+    {
+      "match": "tags=front_page",
+      "file": "fixtures/front.json"
+    },
+    {
+      "match": "tags=story",
+      "file": "fixtures/story.json"
+    }
+  ]
+}

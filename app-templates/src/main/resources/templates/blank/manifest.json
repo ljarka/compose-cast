@@ -1,0 +1,8 @@
+{
+  "name": "Blank",
+  "description": "One empty screen to start from scratch.",
+  "home": "home",
+  "screens": [
+    "home"
+  ]
+}

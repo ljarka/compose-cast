@@ -25,6 +25,7 @@ include(":protocol")
 include(":sdk-server")
 include(":server-scripting")
 include(":server-store")
+include(":app-templates")
 include(":server-admin")
 include(":server-app")
 

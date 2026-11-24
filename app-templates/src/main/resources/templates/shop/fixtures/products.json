@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "title": "Everyday backpack, fits 15\" laptops",
+    "price": 109.95,
+    "category": "bags",
+    "image": "https://example.com/1.png",
+    "rating": {
+      "rate": 3.9,
+      "count": 120
+    },
+    "description": "A roomy backpack."
+  },
+  {
+    "id": 2,
+    "title": "Slim fit cotton t-shirt",
+    "price": 22.3,
+    "category": "clothing",
+    "image": "https://example.com/2.png",
+    "rating": {
+      "rate": 4.1,
+      "count": 259
+    },
+    "description": "Soft and light."
+  },
+  {
+    "id": 3,
+    "title": "Waterproof rain jacket",
+    "price": 55.99,
+    "category": "clothing",
+    "image": "https://example.com/3.png",
+    "rating": {
+      "rate": 4.7,
+      "count": 500
+    },
+    "description": "Stays dry."
+  }
+]

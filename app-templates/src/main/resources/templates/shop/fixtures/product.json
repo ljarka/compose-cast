@@ -1,0 +1,12 @@
+{
+  "id": 1,
+  "title": "Everyday backpack, fits 15\" laptops",
+  "price": 109.95,
+  "category": "bags",
+  "image": "https://example.com/1.png",
+  "rating": {
+    "rate": 3.9,
+    "count": 120
+  },
+  "description": "A roomy backpack."
+}

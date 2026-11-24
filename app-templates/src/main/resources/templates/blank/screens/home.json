@@ -1,0 +1,19 @@
+{
+  "id": "home",
+  "title": "Home",
+  "components": [
+    {
+      "type": "text",
+      "text": "Hello!",
+      "style": "h1"
+    },
+    {
+      "type": "spacer",
+      "height": 8
+    },
+    {
+      "type": "text",
+      "text": "This app has one screen. Edit it in the admin panel, add more screens and publish them."
+    }
+  ]
+}

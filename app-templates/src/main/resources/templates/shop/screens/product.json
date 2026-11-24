@@ -1,0 +1,118 @@
+{
+  "id": "product",
+  "title": "Product",
+  "params": {
+    "id": {
+      "default": "1"
+    }
+  },
+  "data": {
+    "p": {
+      "url": "https://fakestoreapi.com/products/{{params.id}}",
+      "cacheSeconds": 600
+    }
+  },
+  "components": [
+    {
+      "type": "image",
+      "url": "{{p.image}}",
+      "alt": "{{p.title}}",
+      "contentScale": "fit",
+      "aspectRatio": 1.4
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "text",
+      "text": "{{p.title}}",
+      "style": "h2"
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "row",
+      "spacing": 12,
+      "children": [
+        {
+          "type": "card",
+          "modifier": {
+            "weight": 1.0
+          },
+          "children": [
+            {
+              "type": "kpi",
+              "value": "{{p.price}} USD",
+              "label": "Price",
+              "caption": "{{p.category}}"
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "modifier": {
+            "weight": 1.0
+          },
+          "children": [
+            {
+              "type": "column",
+              "horizontalAlignment": "center",
+              "modifier": {
+                "width": "fill"
+              },
+              "children": [
+                {
+                  "type": "gauge",
+                  "value": "{{p.rating.rate}}",
+                  "max": 5.0,
+                  "label": "{{p.rating.rate}}",
+                  "size": 88,
+                  "thickness": 9,
+                  "color": "#F59F00"
+                },
+                {
+                  "type": "text",
+                  "text": "{{p.rating.count}} ratings",
+                  "style": "caption",
+                  "textAlign": "center"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "text",
+      "text": "{{p.description}}"
+    }
+  ],
+  "error": [
+    {
+      "type": "text",
+      "text": "Product not available",
+      "style": "h3"
+    },
+    {
+      "type": "text",
+      "text": "The service did not answer. Try again in a moment."
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "button",
+      "label": "Retry",
+      "action": {
+        "type": "reload"
+      }
+    }
+  ]
+}

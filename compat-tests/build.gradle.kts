@@ -33,6 +33,7 @@ dependencies {
     testImplementation(project(":sdk-android"))
     testImplementation(project(":sdk-server"))
     testImplementation(project(":server-app")) // demoScreens()
+    testImplementation(project(":app-templates")) // template home screens (T-030)
     testImplementation(platform(libs.compose.bom))
     testImplementation(libs.compose.material3)
     testImplementation(libs.compose.ui.test.junit4)

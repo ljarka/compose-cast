@@ -1,0 +1,107 @@
+{
+  "id": "shop",
+  "title": "Shop",
+  "data": {
+    "store": {
+      "url": "https://fakestoreapi.com/products?limit=12",
+      "cacheSeconds": 600
+    }
+  },
+  "components": [
+    {
+      "type": "text",
+      "text": "Products",
+      "style": "h2"
+    },
+    {
+      "type": "spacer",
+      "height": 8
+    },
+    {
+      "type": "repeat",
+      "items": "store",
+      "as": "p",
+      "template": [
+        {
+          "type": "card",
+          "spacing": 4,
+          "modifier": {
+            "action": {
+              "type": "navigate",
+              "screen": "product",
+              "params": {
+                "id": "{{p.id}}"
+              }
+            }
+          },
+          "children": [
+            {
+              "type": "text",
+              "text": "{{p.title}}",
+              "style": "h3",
+              "maxLines": 2,
+              "overflow": "ellipsis"
+            },
+            {
+              "type": "row",
+              "horizontalArrangement": "spaceBetween",
+              "modifier": {
+                "width": "fill"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": "{{p.price}} USD",
+                  "fontWeight": "bold",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": "★ {{p.rating.rate}} · {{p.category}}",
+                  "style": "caption",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ],
+              "verticalAlignment": "center"
+            }
+          ]
+        },
+        {
+          "type": "spacer",
+          "height": 8
+        }
+      ],
+      "empty": [
+        {
+          "type": "text",
+          "text": "No products."
+        }
+      ]
+    }
+  ],
+  "error": [
+    {
+      "type": "text",
+      "text": "The shop is closed",
+      "style": "h3"
+    },
+    {
+      "type": "text",
+      "text": "The service did not answer. Try again in a moment."
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "button",
+      "label": "Retry",
+      "action": {
+        "type": "reload"
+      }
+    }
+  ]
+}
