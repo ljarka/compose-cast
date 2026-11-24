@@ -45,7 +45,8 @@ Android only ([ADR 0022](decisions/0022-android-only.md), owner 2026-11-16).
 - [x] Adaptive layouts: FitBox, collapsible rows/columns, min/max sizes — T-015
 - [x] Accessibility: content descriptions, roles — T-016
 - [ ] Canvas: progress bar/ring, line/bar charts, rating, gradients — T-018
-- [ ] Live dashboards: `gauge`, `sparkline`, `kpi` on canvas; opt-in `live` screens updated over a WebSocket (RC data-update documents, ADR 0029) — T-047
+- [x] Dashboard components on canvas: `gauge`, `sparkline`, `kpi` — T-047 step 1
+- [ ] Live screens: opt-in `live`, updated over a WebSocket (RC data-update documents, ADR 0029) — T-047 steps 2–3
 - [ ] Long-press, double-tap, ripple, haptics; alpha/scale/rotation/offset/z-order — T-019
 - [ ] Tabs / bottom navigation defined by the server (app structure, not only screens)
 - [x] Brand surface/text/outline colors for component defaults (`brand.json`) — T-040

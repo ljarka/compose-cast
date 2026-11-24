@@ -77,6 +77,45 @@ open class ComponentsBuilder internal constructor(private val context: String) {
         components += Component.Divider(thickness, color, modifier)
     }
 
+    /** Ring filled to [value] (a number or a `{{binding}}`) between [min] and [max] (T-047). */
+    fun gauge(
+        value: String,
+        min: Float = 0f,
+        max: Float = 100f,
+        label: String = "",
+        color: String? = null,
+        trackColor: String? = null,
+        size: Int = 120,
+        thickness: Int = 12,
+        modifier: Modifier = Modifier.NONE,
+    ) {
+        components += Component.Gauge(value, min, max, label, color, trackColor, size, thickness, modifier)
+    }
+
+    /** Line through [values] (`"3, 5, 2"` or a `{{binding}}` to a JSON array of numbers) (T-047). */
+    fun sparkline(
+        values: String,
+        min: Float? = null,
+        max: Float? = null,
+        color: String? = null,
+        height: Int = 64,
+        thickness: Int = 2,
+        modifier: Modifier = Modifier.NONE,
+    ) {
+        components += Component.Sparkline(values, min, max, color, height, thickness, modifier)
+    }
+
+    /** Key figure: small [label], big [value], optional [caption] (T-047). */
+    fun kpi(
+        value: String,
+        label: String = "",
+        caption: String = "",
+        color: String? = null,
+        modifier: Modifier = Modifier.NONE,
+    ) {
+        components += Component.Kpi(value, label, caption, color, modifier)
+    }
+
     /** Vertical container with card defaults (16 dp padding, 12 dp corner radius, surface background). */
     fun card(modifier: Modifier = Modifier.NONE, spacing: Int = 0, children: ComponentsBuilder.() -> Unit) {
         components += Component.Card(nested(children), spacing, modifier)

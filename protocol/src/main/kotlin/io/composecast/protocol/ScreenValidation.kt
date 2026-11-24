@@ -81,6 +81,33 @@ private fun componentProblems(
             }
             is Component.Spacer ->
                 if (component.height < 0) add("$at.height: must be >= 0, was ${component.height}")
+            is Component.Gauge -> {
+                if (!Template.hasBindings(component.value) && NumberList.single(component.value) == null) {
+                    add("$at.value: expected a number or a {{binding}}, was '${component.value}'")
+                }
+                if (!(component.max > component.min)) {
+                    add("$at.max: must be greater than min (${component.min}), was ${component.max}")
+                }
+                if (component.size <= 0) add("$at.size: must be > 0, was ${component.size}")
+                if (component.thickness <= 0 || component.thickness * 2 >= component.size) {
+                    add("$at.thickness: must be > 0 and less than half of size, was ${component.thickness}")
+                }
+                component.color?.let { colorProblem(it)?.let { problem -> add("$at.color: $problem") } }
+                component.trackColor?.let { colorProblem(it)?.let { problem -> add("$at.trackColor: $problem") } }
+            }
+            is Component.Sparkline -> {
+                if (!Template.hasBindings(component.values) && NumberList.parse(component.values).size < 2) {
+                    add("$at.values: expected at least 2 numbers or a {{binding}}, was '${component.values}'")
+                }
+                val max = component.max
+                val min = component.min
+                if (min != null && max != null && max <= min) add("$at.max: must be greater than min ($min), was $max")
+                if (component.height <= 0) add("$at.height: must be > 0, was ${component.height}")
+                if (component.thickness <= 0) add("$at.thickness: must be > 0, was ${component.thickness}")
+                component.color?.let { colorProblem(it)?.let { problem -> add("$at.color: $problem") } }
+            }
+            is Component.Kpi ->
+                component.color?.let { colorProblem(it)?.let { problem -> add("$at.color: $problem") } }
             is Component.Repeat -> {
                 if ((component.limit ?: 0) < 0) add("$at.limit: must be >= 0, was ${component.limit}")
                 if (component.items is RepeatItems.Zip && component.items.arrays.isEmpty()) {

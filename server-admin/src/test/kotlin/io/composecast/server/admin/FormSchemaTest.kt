@@ -30,7 +30,7 @@ class FormSchemaTest {
     fun `every component type has a form and no unexpected raw JSON field`() {
         val types = FormSchema.componentTypes.keys
         val known = setOf("text", "image", "icon", "divider", "card", "button", "spacer", "column", "row") +
-            setOf("box", "fitBox", "flow", "grid", "repeat", "expandable")
+            setOf("box", "fitBox", "flow", "grid", "repeat", "expandable") + setOf("gauge", "sparkline", "kpi")
         assertEquals(
             known,
             types,

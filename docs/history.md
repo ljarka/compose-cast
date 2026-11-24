@@ -371,3 +371,7 @@ README roadmap's "Etap" numbers.
     T-047 (live screens + dashboard components), T-032 moved onto the same channel, roadmap step G.
     Owner then put live first: T-047 `ready`, T-032 next, T-030 templates after them (templates
     build on live screens and dashboard components).
+76. **T-047 step 1 — dashboard components**: `gauge`, `sparkline`, `kpi` (model, JSON, validation,
+    DSL, `render/Dashboard.kt`, admin palette group), demo `dashboard` screen, goldens at phone and
+    tablet width, checked on the emulator. Values are strings so `{{bindings}}` work unchanged
+    (`NumberList`). Found: equal texts share one RC id (remote-compose.md behavior 21).

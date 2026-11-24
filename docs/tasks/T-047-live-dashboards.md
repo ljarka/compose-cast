@@ -37,6 +37,19 @@ live + canvas is for advanced screens. The PoC proved the mechanism (ADR 0029,
 - **Demo**: `dashboard` screen (DSL + JSON) with a fake metrics data source (fixture loader in
   tests, a tiny `/demo/metrics` JSON endpoint on the demo server so it moves without internet).
 
+## Progress
+- Step 1 done (2026-11-24): model + JSON + validation + DSL + renderer (`render/Dashboard.kt`),
+  admin palette group "Dashboard" (forms are generated), demo `dashboard` screen + JSON copy,
+  goldens `dashboard.png`/`dashboard-tablet.png`, checked on the emulator. Decisions: values are
+  **strings** so bindings, filters and their validation work unchanged (`NumberList` reads the
+  numbers; a bound array renders as JSON text); the sparkline normalizes to 0..1 on the server;
+  the gauge label is a layout `Text` over the canvas (canvas text would mix px font sizes with dp
+  coordinates). Equal texts share an id (remote-compose.md behavior 21) — step 2 must detect
+  structure changes, not assume them.
+- **Next: step 2** (server). Start from `RemoteComposeRenderer.render`: add a `dataUpdate` flag
+  that adds `HTag(Header.DOC_DATA_UPDATE, 1)`; a structure fingerprint (e.g. `describe()` with
+  values masked, or the op/id sequence) to choose full vs update frame.
+
 ## Steps (commit each)
 1. Model + JSON + validation + renderer for `gauge`/`sparkline`/`kpi` (static) → golden
    `dashboard.png`; check two widths.

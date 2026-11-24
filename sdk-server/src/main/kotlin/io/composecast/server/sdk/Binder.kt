@@ -202,6 +202,24 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
             ),
         )
         is Component.Spacer -> listOf(c.copy(modifier = bindModifier(c.modifier, roots)))
+        is Component.Gauge -> listOf(
+            c.copy(
+                value = render(c.value, roots),
+                label = render(c.label, roots),
+                modifier = bindModifier(c.modifier, roots),
+            ),
+        )
+        is Component.Sparkline -> listOf(
+            c.copy(values = render(c.values, roots), modifier = bindModifier(c.modifier, roots)),
+        )
+        is Component.Kpi -> listOf(
+            c.copy(
+                value = render(c.value, roots),
+                label = render(c.label, roots),
+                caption = render(c.caption, roots),
+                modifier = bindModifier(c.modifier, roots),
+            ),
+        )
         is Component.Expandable -> listOf(
             c.copy(
                 title = render(c.title, roots),

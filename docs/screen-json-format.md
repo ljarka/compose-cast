@@ -62,6 +62,27 @@ Actions: `navigate` (screen, params), `open_url` (url), `reload`, `track` (event
   - `modifier.semantics`: `{description, role (button|checkbox|switch|radioButton|tab|image|dropdownList|picker|carousel), stateDescription, hidden, enabled}`.
   - `ScreenDefinition.warnings()`: non-fatal warnings (e.g. clickable image/icon without `alt` or `semantics.description`), surfaced in `/screens/{id}/debug`.
 
+### Dashboard components (T-047, [ADR 0029](decisions/0029-live-screens-websocket-data-updates.md))
+
+Drawn on a Remote Compose canvas; meant for (live) dashboards. Values are **strings**, so they take
+`{{bindings}}` like any text.
+
+```json
+{ "type": "gauge", "value": "{{metrics.cpu}}", "min": 0, "max": 100, "label": "{{metrics.cpu | round}}%",
+  "color": "#6200EE", "trackColor": "#D0C8DC", "size": 120, "thickness": 12 },
+{ "type": "sparkline", "values": "{{metrics.history}}", "min": 0, "max": 200, "color": "#6200EE",
+  "height": 64, "thickness": 2 },
+{ "type": "kpi", "value": "1,284", "label": "Requests / s", "caption": "+4% vs last hour", "color": "#2B8A3E" }
+```
+- `gauge`: ring filled from 12 o'clock to `value` within `min`..`max` (defaults 0..100; clamped),
+  `label` centered inside. `value` is one number after binding (`"42"`, not `"42%"`); a literal
+  that is not a number is an error. `size` (dp, default 120) square unless `modifier` sizes it;
+  `thickness` < `size / 2`. Colors default to the brand primary / outline color.
+- `sparkline`: line through `values`, full width × `height` dp. `values` is a list of numbers
+  (`"3, 5, 2, 8"`) or binds a JSON array of numbers (`"{{m.history}}"`); a literal needs ≥ 2
+  numbers. Vertical range `min`..`max`, or the values' own range when not given.
+- `kpi`: small `label`, big bold `value`, small `caption` (empty ones are not shown); full width.
+
 ### Data sources and bindings (T-006)
 
 A screen may declare `params` (`{"lat": {"default": "52.52"}}`; no default = required → 400),

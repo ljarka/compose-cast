@@ -309,6 +309,13 @@ All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alph
     wrap-content `Text`; with `Modifier.fillMaxWidth()` it is re-laid out shortly after (≈ next
     frames). Give live texts a fixed or full width. Verified alpha23 (Robolectric + emulator).
 
+21. **Equal texts share one id**: `RemoteComposeWriter.addText` returns the existing id for an
+    identical string (`mState.dataGetId(text)`). If data makes two texts equal (or no longer
+    equal) between renders, every later id shifts — a live data update is then impossible and a
+    full document must be sent (ADR 0029: compare the structure, not assume it). Floats
+    (`remoteFloat`) and float arrays (`remoteFloatArray`, own typed id space) are not de-duplicated.
+    Verified alpha23 sources (T-047, 2026-11-24).
+
 ## Live updates (verified alpha23, 2026-11-24, PoC on the emulator)
 
 RC has **data-update documents**: a document whose header has `Header.DOC_DATA_UPDATE = 1`

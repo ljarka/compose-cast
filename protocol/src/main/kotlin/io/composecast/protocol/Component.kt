@@ -177,6 +177,53 @@ sealed interface Component {
         override val modifier: Modifier = Modifier.NONE,
     ) : Component
 
+    /**
+     * A ring filled to [value] between [min] and [max], drawn on an RC canvas, with [label] in the
+     * middle (T-047). [value] is a number or a binding (`"{{metrics.cpu}}"`); the ring animates to
+     * a new value on live screens (ADR 0029).
+     */
+    @Serializable
+    @SerialName("gauge")
+    data class Gauge(
+        val value: String,
+        val min: Float = 0f,
+        val max: Float = 100f,
+        val label: String = "",
+        val color: String? = null,
+        val trackColor: String? = null,
+        val size: Int = 120,
+        val thickness: Int = 12,
+        override val modifier: Modifier = Modifier.NONE,
+    ) : Component
+
+    /**
+     * A line through [values], full width and [height] dp high (T-047). [values] holds the numbers
+     * (`"3, 5, 2, 8"`) or binds a JSON array (`"{{metrics.history}}"`); [NumberList] reads them.
+     * The vertical range is [min]..[max], or the values' own range when not set.
+     */
+    @Serializable
+    @SerialName("sparkline")
+    data class Sparkline(
+        val values: String,
+        val min: Float? = null,
+        val max: Float? = null,
+        val color: String? = null,
+        val height: Int = 64,
+        val thickness: Int = 2,
+        override val modifier: Modifier = Modifier.NONE,
+    ) : Component
+
+    /** A key figure: small [label], big [value], optional [caption] below (T-047). All bindable. */
+    @Serializable
+    @SerialName("kpi")
+    data class Kpi(
+        val value: String,
+        val label: String = "",
+        val caption: String = "",
+        val color: String? = null,
+        override val modifier: Modifier = Modifier.NONE,
+    ) : Component
+
     /** The bindable string fields of this component (not of nested ones), by field path. */
     fun strings(): List<Pair<String, String>> = when (this) {
         is Text -> listOf("text" to text)
@@ -186,6 +233,9 @@ sealed interface Component {
             listOfNotNull(icon?.let { "icon" to it }) +
             action.strings().map { (field, value) -> "action.$field" to value }
         is Expandable -> listOf("title" to title)
+        is Gauge -> listOf("value" to value, "label" to label)
+        is Sparkline -> listOf("values" to values)
+        is Kpi -> listOf("value" to value, "label" to label, "caption" to caption)
         is Divider, is Card, is Spacer, is Repeat, is Column, is Row, is Box, is FitBox, is Flow, is Grid -> emptyList()
     } + modifier.action?.strings().orEmpty().map { (field, value) -> "modifier.action.$field" to value } +
         listOfNotNull(
@@ -204,12 +254,25 @@ sealed interface Component {
         is Grid -> listOf("children" to children)
         is Expandable -> listOf("content" to content)
         is Repeat -> listOf("template" to template, "empty" to empty)
-        is Text, is Image, is Icon, is Divider, is Button, is Spacer -> emptyList()
+        is Text, is Image, is Icon, is Divider, is Button, is Spacer, is Gauge, is Sparkline, is Kpi -> emptyList()
     }
 
     /** Whether this component or a nested one contains `{{`, or it is a [Repeat]. */
     fun hasBindings(): Boolean = this is Repeat || strings().any { Template.hasBindings(it.second) } ||
         childLists().any { (_, list) -> list.any { it.hasBindings() } }
+}
+
+/**
+ * Numbers in a bound string, in order: `"3, 5.5, -2"`, a JSON array `"[3,5.5,-2]"` (what a bound
+ * array renders to) or one number. Used by validation and the renderer (gauge, sparkline).
+ */
+object NumberList {
+    private val NUMBER = Regex("""-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?""")
+
+    fun parse(text: String): List<Float> = NUMBER.findAll(text).mapNotNull { it.value.toFloatOrNull() }.toList()
+
+    /** The single number in [text], or null when it is not exactly one number. */
+    fun single(text: String): Float? = text.trim().toFloatOrNull()?.takeIf { it.isFinite() }
 }
 
 /** The bindable string fields of an action, by field path. */

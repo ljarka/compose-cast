@@ -29,7 +29,7 @@ built: [specs/tech-stack.md](specs/tech-stack.md) · what comes next: [specs/roa
 
 | DivKit concept | Remote Compose primitive (alpha) | compose-cast |
 |---|---|---|
-| Element tree (containers, text, image) | `Column`/`Row`/`Box`/`Flow`, `Text`, `Image`, `Canvas` | Text, Image, Button, Icon, Divider, Card, Column/Row/Box, Flow, grids, galleries + modifiers ✅; Canvas ⏳ T-018 |
+| Element tree (containers, text, image) | `Column`/`Row`/`Box`/`Flow`, `Text`, `Image`, `Canvas` | Text, Image, Button, Icon, Divider, Card, Column/Row/Box, Flow, grids, galleries + modifiers ✅; Canvas: `gauge`, `sparkline`, `kpi` ✅ (T-047), charts ⏳ T-018 |
 | Templates | Server-side Kotlin functions; RC macros (`defineMacro`/`inflate`) | ⏳ Etap 10 |
 | Variables | Named variables, set by the host (`setUserLocal*` on the player) | ⏳ Etap 10 |
 | Expressions | On-device float/text expressions, conditional operations | used internally for dp/sp; DSL ⏳ Etap 10 |
@@ -37,7 +37,7 @@ built: [specs/tech-stack.md](specs/tech-stack.md) · what comes next: [specs/roa
 | Actions | Host actions (named) + local value changes | typed `Action` (navigate with params, open_url, reload, track, custom) ✅ |
 | Light/dark, theming | Themed colors in the document | ⏳ Etap 7 |
 | Custom elements / extensions | `Custom` component + player custom support | ⏳ later |
-| Loading new markup without release | Whole document per request; player `updateDocument` | ✅ per screen; partial updates ⏳ investigate |
+| Loading new markup without release | Whole document per request; player `updateDocument` | ✅ per screen; live data-update documents over a WebSocket ⏳ T-047 ([ADR 0029](docs/decisions/0029-live-screens-websocket-data-updates.md)) |
 | Data from APIs | — (server-side) | data sources ✅ (Etap 4) |
 | Visibility actions (analytics) | no equivalent found | ⏳ SDK-side, Etap 7 |
 | Platforms: Android, iOS, web, KMP | official player: Android only | Android ✅ (only target, ADR 0022) |
@@ -60,6 +60,7 @@ rendered to Remote Compose documents by the server SDK and played by the Android
     <td align="center"><img src="compat-tests/src/test/screenshots/data.png" width="270" alt="Weather from a data source"><br><code>data</code> (fixture data)</td>
     <td align="center"><img src="compat-tests/src/test/screenshots/data-error.png" width="270" alt="Error components of a failed data source"><br><code>data</code>, source down</td>
     <td align="center"><img src="compat-tests/src/test/screenshots/layouts.png" width="270" alt="Rows, columns, boxes and modifiers"><br><code>layouts</code></td>
+    <td align="center"><img src="compat-tests/src/test/screenshots/dashboard.png" width="270" alt="Dashboard with gauges, key figures and a sparkline"><br><code>dashboard</code></td>
   </tr>
 </table>
 
@@ -236,7 +237,7 @@ Server with Docker — no JDK, Gradle or Kotlin needed (serves the JSON screens 
 
 ```bash
 docker compose up -d
-curl http://localhost:8080/screens                 # ["actions","adaptive","collections","components","data","layouts","main","onboarding"]
+curl http://localhost:8080/screens                 # ["actions","adaptive","collections","components","dashboard","data","layouts","main","onboarding"]
 COMPOSECAST_SCREENS=/path/to/data docker compose up -d   # your own screens/<id>.json + brand.json
 docker compose logs server                         # edits are reloaded within ~3 s; an invalid file is reported here (file + JSON path)
 ```

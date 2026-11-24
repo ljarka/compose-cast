@@ -56,8 +56,8 @@ and the only place where these two modules are allowed to be on the same classpa
   scope just for `demoScreens()`, so README shows exactly what the server serves.
 - `changeThreshold = 0.0002` (0.02% of pixels): goldens are recorded on macOS, CI is Linux.
   Changing two words on a button is ~0.14%, so content changes are still caught (verified).
-- Add a screen to the demo → add a `@Test` here and record. Current tests: `main`, `onboarding`,
-  `actions` (one button per action type), `echo` (dynamic: `capture(id, params)` uses
+- Add a screen to the demo → add a `@Test` here and record. Current tests include `main`, `onboarding`,
+  `actions` (one button per action type), `dashboard` + `dashboard-tablet` (T-047 canvas components at two widths), `echo` (dynamic: `capture(id, params)` uses
   `registry.render(id, RenderContext(params))`).
 - The Material3 `TopAppBar` frame is not the subject: its status-bar inset differs between
   Robolectric and devices (and changed with Compose upgrades). When a diff appears, check whether

@@ -17,5 +17,7 @@ internal fun RegistryBuilder.mainScreen() {
         button("Live data", Action.Navigate("data"))
         spacer(8)
         button("Layouts", Action.Navigate("layouts"))
+        spacer(8)
+        button("Dashboard", Action.Navigate("dashboard"))
     }
 }

@@ -80,6 +80,15 @@ class DemoScreensScreenshotTest {
     @Config(sdk = [35], qualifiers = RobolectricDeviceQualifiers.MediumTablet)
     fun adaptiveTablet() = capture("adaptive", file = "adaptive-tablet")
 
+    /** Dashboard components on an RC canvas (T-047): gauges, key figures, sparkline. */
+    @Test
+    fun dashboard() = capture("dashboard")
+
+    /** The same dashboard on a tablet width: canvases scale with the component size. */
+    @Test
+    @Config(sdk = [35], qualifiers = RobolectricDeviceQualifiers.MediumTablet)
+    fun dashboardTablet() = capture("dashboard", file = "dashboard-tablet")
+
     /** A dynamic screen, rendered from query parameters (T-003). */
     @Test
     fun echo() = capture("echo", mapOf("word" to "zażółć gęślą jaźń"))

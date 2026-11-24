@@ -53,6 +53,17 @@
         "type": "navigate",
         "screen": "layouts"
       }
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "button",
+      "label": "Dashboard",
+      "action": {
+        "type": "navigate",
+        "screen": "dashboard"
+      }
     }
   ]
 }

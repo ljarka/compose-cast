@@ -1,0 +1,147 @@
+{
+  "id": "dashboard",
+  "title": "Dashboard",
+  "components": [
+    {
+      "type": "text",
+      "text": "Service health",
+      "style": "h2"
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "row",
+      "children": [
+        {
+          "type": "card",
+          "children": [
+            {
+              "type": "column",
+              "children": [
+                {
+                  "type": "gauge",
+                  "value": "42",
+                  "label": "42%"
+                },
+                {
+                  "type": "spacer"
+                },
+                {
+                  "type": "text",
+                  "text": "CPU",
+                  "style": "caption",
+                  "textAlign": "center"
+                }
+              ],
+              "horizontalAlignment": "center",
+              "modifier": {
+                "width": "fill"
+              }
+            }
+          ],
+          "modifier": {
+            "weight": 1.0
+          }
+        },
+        {
+          "type": "card",
+          "children": [
+            {
+              "type": "column",
+              "children": [
+                {
+                  "type": "gauge",
+                  "value": "6.1",
+                  "max": 8.0,
+                  "label": "6.1 GB",
+                  "color": "#E8590C"
+                },
+                {
+                  "type": "spacer"
+                },
+                {
+                  "type": "text",
+                  "text": "Memory of 8 GB",
+                  "style": "caption",
+                  "textAlign": "center"
+                }
+              ],
+              "horizontalAlignment": "center",
+              "modifier": {
+                "width": "fill"
+              }
+            }
+          ],
+          "modifier": {
+            "weight": 1.0
+          }
+        }
+      ],
+      "spacing": 12
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "row",
+      "children": [
+        {
+          "type": "card",
+          "children": [
+            {
+              "type": "kpi",
+              "value": "1,284",
+              "label": "Requests / s",
+              "caption": "+4% vs last hour"
+            }
+          ],
+          "modifier": {
+            "weight": 1.0
+          }
+        },
+        {
+          "type": "card",
+          "children": [
+            {
+              "type": "kpi",
+              "value": "0.3%",
+              "label": "Errors",
+              "caption": "SLO 1%",
+              "color": "#2B8A3E"
+            }
+          ],
+          "modifier": {
+            "weight": 1.0
+          }
+        }
+      ],
+      "spacing": 12
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "card",
+      "children": [
+        {
+          "type": "text",
+          "text": "Latency, last 24 h (ms)",
+          "style": "h3"
+        },
+        {
+          "type": "spacer"
+        },
+        {
+          "type": "sparkline",
+          "values": "120, 118, 125, 131, 128, 140, 162, 158, 149, 137, 129, 124, 121, 119, 126, 138, 171, 190, 176, 150, 139, 131, 127, 122",
+          "height": 96,
+          "thickness": 3
+        }
+      ]
+    }
+  ]
+}

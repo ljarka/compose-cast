@@ -19,7 +19,7 @@ Do NOT load `sdk-android` or `app-template` unless cross-cutting.
 | `LiveScreens.kt` | `AtomicReference` holder of the served `ScreenRegistry`; `replace()` swaps it atomically (admin publish, reloads); `registryFor(id)`: `__preview-…` ids from `previews` |
 | `PreviewScreens.kt` | T-045 B2 (ADR 0027): in-memory draft previews, `newId()` = `__preview-` + 128 random bits, 30 min TTL, max 100 |
 | `Screens.kt` | `loadScreens(dataDir)` (JSON data dir or demo), `demoScreens()` (registers the demo screens in order), `demoBrand`; injectable `ImageLoader`/`DataLoader` for tests |
-| `demo/Demo<Id>Screen.kt` | One file per demo screen: `internal fun RegistryBuilder.<id>Screen()` (incl. dynamic `echo`, bound `data` on Open-Meteo); `DemoShared.kt`: `featureCard`, `HERO_IMAGE`, `SURFACE` |
+| `demo/Demo<Id>Screen.kt` | One file per demo screen: `internal fun RegistryBuilder.<id>Screen()` (incl. dynamic `echo`, bound `data` on Open-Meteo, `dashboard` with gauges/kpis/sparkline — T-047); `DemoShared.kt`: `featureCard`, `HERO_IMAGE`, `SURFACE` |
 | `src/main/resources/logback.xml` | SLF4J provider config — without logback the server logged nothing (not even 500 stack traces) |
 | `src/test/.../RoutingTest.kt` | Ktor `testApplication`: 304, query params (non-ASCII), 400/404, 50 concurrent requests, registry swap |
 | `src/test/.../JsonScreensTest.kt` | `examples/demo` == DSL definitions and brand, canonical, byte-identical RC documents |

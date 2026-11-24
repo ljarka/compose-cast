@@ -32,6 +32,9 @@ internal object Palette {
         "fitBox" to """{"children": []}""",
         "expandable" to """{"title": "Section", "content": [{"type": "text", "text": "Shown when opened"}]}""",
         "repeat" to """{"items": "items", "template": [{"type": "text", "text": "{{item}}"}]}""",
+        "gauge" to """{"value": "42", "label": "42%"}""",
+        "sparkline" to """{"values": "3, 5, 4, 7, 6, 9"}""",
+        "kpi" to """{"value": "1,284", "label": "Key figure"}""",
     ).mapValues { (type, json) ->
         JsonObject(mapOf("type" to JsonPrimitive(type)) + Json.parseToJsonElement(json) as JsonObject)
     }
@@ -41,6 +44,7 @@ internal object Palette {
         "Content" to listOf("text", "image", "icon", "button", "divider", "spacer"),
         "Layout" to listOf("column", "row", "box", "card", "grid", "flow", "fitBox", "expandable"),
         "Data" to listOf("repeat"),
+        "Dashboard" to listOf("gauge", "sparkline", "kpi"),
     )
 
     /** Types that hold components; [wrap] puts the node into the first list. */

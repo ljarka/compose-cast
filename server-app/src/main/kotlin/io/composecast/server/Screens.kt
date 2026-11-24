@@ -5,6 +5,7 @@ import io.composecast.server.demo.actionsScreen
 import io.composecast.server.demo.adaptiveScreen
 import io.composecast.server.demo.collectionsScreen
 import io.composecast.server.demo.componentsScreen
+import io.composecast.server.demo.dashboardScreen
 import io.composecast.server.demo.dataScreen
 import io.composecast.server.demo.echoScreen
 import io.composecast.server.demo.layoutsScreen
@@ -72,4 +73,5 @@ fun demoScreens(imageLoader: ImageLoader = HttpImageLoader(), dataLoader: DataLo
         componentsScreen()
         collectionsScreen()
         adaptiveScreen()
+        dashboardScreen()
     }
