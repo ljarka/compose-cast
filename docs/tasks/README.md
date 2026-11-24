@@ -34,7 +34,7 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-029 Visual screen editor (no JSON)](T-029-visual-screen-editor.md) | Etap 8 | done (`69010e0`) — C1 ADR 0028, C2 tree + generated forms, C3 palette; acceptance test rebuilds the weather `main` |
 | [T-031 Data source wizard (URL → screens)](T-031-data-source-wizard.md) | Etap 8 | done (`001e06c`) — W1 probe + heuristics, W2 wizard (TVMaze list + detail on the emulator), W3 field picker + data source form |
 | [T-047 Live screens + dashboard components](T-047-live-dashboards.md) | Roadmap G1–G2 | done (`99a932a`) — gauge/sparkline/kpi, live screens over a WebSocket, app keeps them current |
-| [T-032 Live preview on a phone](T-032-live-preview.md) | Roadmap G3 | done (HASH) — one live preview per editor and screen, every saved edit on the phone in ~1 s (ADR 0030) |
+| [T-032 Live preview on a phone](T-032-live-preview.md) | Roadmap G3 | done (`1087b4b`) — one live preview per editor and screen, every saved edit on the phone in ~1 s (ADR 0030) |
 | [T-030 App templates](T-030-app-templates.md) | Etap 8 | ready — roadmap D2; templates can use live screens + dashboard components |
 | [T-010 Settings export (properties + icon)](T-010-app-export.md) | Etap 9 | queued (after T-030); roadmap E1–E3; rewrite the Design for ADR 0025 (GitHub Actions build) first |
 | [T-027 Images loaded by the SDK (lists)](T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-010); roadmap F1 |
