@@ -1,6 +1,6 @@
 # T-047 — Live screens + dashboard components (gauge, sparkline, KPI)
 
-Status: queued · Roadmap: G (live dashboards) · Depends on: ADR 0029 · Module: protocol, sdk-server, server-app, sdk-android, app-shell, compat-tests
+Status: ready · Roadmap: G1–G2 (live dashboards) · Depends on: ADR 0029 · Module: protocol, sdk-server, server-app, sdk-android, app-shell, compat-tests
 
 ## Goal
 A screen marked `live` keeps itself current on the phone with no refresh button: the server pushes

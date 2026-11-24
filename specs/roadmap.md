@@ -55,9 +55,9 @@ release signing), data-dir hot reload, releases `v0.1.0` and `v0.2.0`. Milestone
 | # | Step | Done when… |
 |---|---|---|
 | D1 | Data source wizard: paste an API URL → field picker → list + detail screens (T-031; before the templates, which need data sources — owner 2026-11-23) | A public API (e.g. TVMaze) becomes a list and a detail screen without JSON |
-| D2 | App templates in the admin: news, catalog, events, weather (T-030) | Choosing a template creates a working multi-screen app in one click |
+| D2 | App templates in the admin: news, catalog, events, weather (T-030; after step G — templates can use live screens and dashboard components) | Choosing a template creates a working multi-screen app in one click |
 
-### G. Live dashboards (owner, 2026-11-24; done after D, before E)
+### G. Live dashboards (owner, 2026-11-24; done after D1 and **before D2 templates**, which build on it)
 
 Static screens stay exactly as they are; **live** is opt-in per screen for advanced screens
 ([ADR 0029](../docs/decisions/0029-live-screens-websocket-data-updates.md): WebSocket + RC

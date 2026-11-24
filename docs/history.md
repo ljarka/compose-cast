@@ -369,3 +369,5 @@ README roadmap's "Etap" numbers.
     `anim()` on array elements freezes, updated texts are not re-measured
     (`docs/remote-compose.md` behaviors 18–20, "Live updates"). → [ADR 0029](decisions/0029-live-screens-websocket-data-updates.md),
     T-047 (live screens + dashboard components), T-032 moved onto the same channel, roadmap step G.
+    Owner then put live first: T-047 `ready`, T-032 next, T-030 templates after them (templates
+    build on live screens and dashboard components).

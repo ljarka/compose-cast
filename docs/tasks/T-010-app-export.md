@@ -1,6 +1,6 @@
 # T-010 — White-label app export (setup wizard)
 
-Status: queued (after T-031) · Roadmap: Etap 9 · Depends on: T-007 (admin panel + App Settings), T-011 (`compose-cast.properties`), SDK distribution (below) · Module: gradle-plugins, server-admin
+Status: queued (after T-030) · Roadmap: Etap 9 · Depends on: T-007 (admin panel + App Settings), T-011 (`compose-cast.properties`), SDK distribution (below) · Module: gradle-plugins, server-admin
 
 ## Scope note (2026-11-16)
 
