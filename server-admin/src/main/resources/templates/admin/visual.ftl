@@ -9,7 +9,7 @@
   </select>
 </#macro>
 <@layout.page title=title user=user role=role htmx=canEdit>
-<main class="wide editor">
+<main class="wide editor<#if phone> with-phone</#if>">
   <p><a href="/admin/screens">← Screens</a> · <a href="#json-editor">JSON</a> · <a href="#history">History</a></p>
   <h1><code>${id}</code> <span class="status status-${status}">${status}</span></h1>
   <p class="muted">
@@ -38,7 +38,7 @@
     </div>
   </div>
   </#if>
-  <div class="split">
+  <div class="split<#if phone> with-phone</#if>">
     <nav class="card tree" aria-label="Component tree">
       <a href="/admin/screens/${id?url}/visual?node="<#if canEdit> data-path="" data-list="true"</#if><#if node == ""> class="selected"</#if>>Screen</a>
       <#list tree as t>
@@ -113,6 +113,13 @@
         <p class="muted">A list of components. Add one above, or select a component in the tree.</p></div>
       </#if>
     </div>
+    <#if phone>
+    <aside class="phone" aria-label="Phone preview">
+      <img src="/admin/screens/${id?url}/phone.png" width="411" height="914"
+        alt="The saved screen as the app draws it on a phone">
+      <p class="muted help">Drawn by the app's own player from the saved draft. Updates on every save.</p>
+    </aside>
+    </#if>
   </div>
 
   <h2 id="json-editor">Code</h2>

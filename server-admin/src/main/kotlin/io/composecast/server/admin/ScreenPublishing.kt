@@ -40,6 +40,12 @@ interface ScreenPublishing {
 
     /** Renders [json] and returns the decoded Remote Compose document tree (nothing saved). */
     fun describe(json: String): String
+
+    /**
+     * T-048: renders [json] (checked) to the Remote Compose document an app would get (default
+     * params, live brand, real data); nothing saved. Throws [PublishException] when it cannot.
+     */
+    fun document(json: String): ByteArray
 }
 
 /** The screens would not build as a whole (e.g. a `{{secret.X}}` that is not set); nothing changed. */

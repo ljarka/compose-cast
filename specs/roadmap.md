@@ -68,6 +68,7 @@ data-update documents, PoC: 10 updates/s on the emulator).
 | G1 | Dashboard components on RC `Canvas`: `gauge`, `sparkline`, `kpi` (T-047) | Golden `dashboard.png` at two widths; editable in the visual editor |
 | G2 | Live screens: `live.everyMs`, WebSocket `/screens/{id}/live`, data updates in `sdk-android` (T-047) | The demo dashboard moves every second on the emulator with no refresh button; static screens byte-identical |
 | G3 | Live edit preview on the same channel (T-032) | An edit in the panel shows on the phone in under 2 s |
+| G4 | Phone preview inside the panel: server-rendered PNG from the real RC player under Robolectric, optional amd64 service (T-048; owner 2026-11-24: before E) | Saving an edit updates a phone frame in the editor in under 2 s, no device needed |
 
 ### E. Ship the owner's app
 

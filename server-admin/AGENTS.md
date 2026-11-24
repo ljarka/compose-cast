@@ -23,8 +23,9 @@ only in admin mode (`COMPOSECAST_MODE=admin`); files mode has no `/admin`.
 | `TemplatesPages.kt` | T-030 ([ADR 0031](../docs/decisions/0031-app-bundle-format.md)): `GET /admin/templates` (bundled templates from `app-templates`), `POST /admin/templates/{t}` (prefix, "use its colors" → drafts via `withPrefix`; clashing ids → 422 with a prefix hint; colors only, name/font kept, via `publishBrand`), `POST /admin/templates/{t}/publish` (publishes the drafts, sets the template's home); `/admin` of an app without screens redirects here; `templates.ftl` |
 | `WizardPages.kt` | `GET/POST /admin/wizard` (`step` = probe/create): probe → pick list + fields (guesses pre-filled, another list = its own guesses) → both screens as drafts → visual editor; refuses raw keys in headers/URL (`{{secret.NAME}}` only) and existing ids |
 | `DataFields.kt` | T-031 W3: the field picker's bindings at a node (`groups`: repeat alias items first, then each source, then params) from probed data |
+| `PhonePreview.kt` | T-048 ([ADR 0032](../docs/decisions/0032-phone-preview-rendered-by-robolectric.md)): `PhoneRenderer` (RC → PNG), `HttpPhoneRenderer(baseUrl)` (`POST /render` of `preview-renderer`, JDK client, 2 s connect / 20 s), `CachingPhoneRenderer` (32 PNGs by document SHA-256), `GET /admin/screens/{id}/phone.png` (draft, else live → `publishing.document` → PNG; any failure → phone-sized SVG message, `default-src 'none'`); `page()` sets `phone` when configured, `visual.ftl` shows the frame (third column, below on < 1100 px) |
 | `QrCode.kt` | `QrCode.svg(text)`: inline SVG QR code (`io.nayuki:qrcodegen`, ECC medium); the only template value rendered with `?no_esc` (generated, no user text) |
-| `ScreenPublishing.kt` | `ScreenPublishing` (publish, rollback, publishBrand, preview(json, owner) + updatePreview + stopPreviews — T-032, ADR 0030: one live preview per user and screen, every draft save updates it, logout stops it; implemented by `server-app`, which owns `LiveScreens`), `PublishException` (nothing changed) |
+| `ScreenPublishing.kt` | `ScreenPublishing` (publish, rollback, publishBrand, preview(json, owner) + updatePreview + stopPreviews — T-032, ADR 0030: one live preview per user and screen, every draft save updates it, logout stops it; `document(json)` → RC bytes for the phone frame, T-048; implemented by `server-app`, which owns `LiveScreens`), `PublishException` (nothing changed) |
 | `AdminAuth.kt` | Accounts and sessions: `bootstrapAdmin`, `createUser`, `login` → token, `user(token)`, `logout`; bcrypt (`at.favre.lib:bcrypt`) |
 | `Role.kt` | `Role` (`viewer` < `editor` < `admin`, `canEdit`), `AdminUser` |
 | `resources/templates/admin/*.ftl` | `_layout.ftl` (`<@layout.page title user role htmx>`: page, header with nav + logout, inline CSS light/dark, HTMX 2.0.11 with SRI), `login.ftl`, `screens.ftl`, `screen.ftl` (editor + history), `revision.ftl`, `settings.ftl`, `wizard.ftl` (data source wizard), `_fields.ftl` (field picker fragment), `visual.ftl` + `_form.ftl` (visual editor; groups are `<details>`, closed unless filled), `_problems.ftl` (validation result; also the HTMX fragment) |
@@ -77,6 +78,9 @@ only in admin mode (`COMPOSECAST_MODE=admin`); files mode has no `/admin`.
 - **Preview (T-045 B2, ADR 0027):** saves nothing; the QR and an "open on this phone" link go
   to `/connect?screen=…`; the server URL comes from `X-Forwarded-Proto` + `Host` (fallback: the
   request's host/port, e.g. the test engine sends no `Host`).
+- **Phone frame (T-048):** only with `adminPanel(phoneRenderer = …)` (server-app: `COMPOSECAST_PREVIEW_RENDERER_URL`);
+  shows the *saved* draft (every edit is a full form submit + redirect, so the image reloads with
+  the page; no HTMX). A static first viewport, no app bar; the QR preview stays for real devices.
 - **Visual editor, palette, data source wizard, field picker:** how they work and why —
   [docs/admin-editor.md](../docs/admin-editor.md) (read it before changing `FormSchema`, `Palette`,
   `VisualPages`, `Wizard*`, `ApiProbe`, `ApiShape`, `DataFields`).

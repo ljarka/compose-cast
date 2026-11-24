@@ -353,6 +353,10 @@ and running animations stay.
   thread.
 - Emulator performance: start the emulator with `-gpu host` (without it ~20x slower).
 - Texts from documents appear in the accessibility tree (useful with `uiautomator dump`).
+- Under Robolectric (paused looper) the player's animations (`anim()`, e.g. a `gauge` filling up)
+  follow the looper clock: a capture right after `setDocument` shows the first frame;
+  `ShadowLooper.idleFor(3 s)` before capturing shows the end state, identical every time
+  (alpha23, Robolectric 4.17, 2026-11-24; T-048 `Renderer`).
 
 ---
 

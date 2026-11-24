@@ -10,6 +10,7 @@ import io.composecast.server.sdk.DataLoader
 import io.composecast.server.sdk.HttpDataLoader
 import io.composecast.server.sdk.HttpImageLoader
 import io.composecast.server.sdk.ImageLoader
+import io.composecast.server.sdk.RemoteScreen
 import io.composecast.server.sdk.RenderContext
 import io.composecast.server.sdk.ScreenRegistry
 import io.composecast.server.sdk.composeCast
@@ -117,14 +118,21 @@ class AdminScreens(
 
     /** Renders [json] once (with default param values) and returns the decoded Remote Compose tree. */
     fun describe(json: String): String {
+        val rendered = renderOnce(json)
+        return "size: ${rendered.size} bytes\netag: ${rendered.etag}\n\n${rendered.describe()}"
+    }
+
+    /** T-048: [json] rendered once (default params, live brand) as the RC document an app would get. */
+    fun document(json: String): ByteArray = renderOnce(json).document
+
+    private fun renderOnce(json: String): RemoteScreen {
         val definition = ScreenJson.decode(json, source = "describe")
         val registry = composeCast(imageLoader, dataLoader, env) {
             settings[SettingsStore.BRAND]?.let { brand(Json.decodeFromString(BrandConfig.serializer(), it)) }
             screen(definition)
         }
         val defaults = definition.params.mapValues { it.value.default.orEmpty() }
-        val rendered = requireNotNull(registry.render(definition.id, RenderContext(params = defaults)))
-        return "size: ${rendered.size} bytes\netag: ${rendered.etag}\n\n${rendered.describe()}"
+        return requireNotNull(registry.render(definition.id, RenderContext(params = defaults)))
     }
 
     /** Screens in id order, as [load] after a restart would serve them. */
@@ -226,6 +234,12 @@ class AdminPublishing(private val admin: AdminScreens, private val live: LiveScr
     override fun describe(json: String): String {
         var result = ""
         failsAsPublishException { result = admin.describe(json) }
+        return result
+    }
+
+    override fun document(json: String): ByteArray {
+        var result = ByteArray(0)
+        failsAsPublishException { result = admin.document(json) }
         return result
     }
 

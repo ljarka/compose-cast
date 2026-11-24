@@ -129,10 +129,20 @@ for dep in sorted(project_deps("server-app", {"server-app"})):
         fail("R11", "server-app/AGENTS.md → Docker", "server-app/Dockerfile",
              f"module '{dep}' is not copied into the build stage", f"add 'COPY {dep} {dep}'")
 
+# R12 — Robolectric (and sdk-android next to sdk-server) only in compat-tests and preview-renderer (T-048).
+R12_ALLOWED = {"compat-tests", "preview-renderer"}
+for f in gradle:
+    text = f.read_text()
+    meets = '":sdk-android"' in text and '":sdk-server"' in text
+    if ("libs.robolectric" in text or meets) and f.parent.name not in R12_ALLOWED:
+        fail("R12", "docs/decisions/0032-phone-preview-rendered-by-robolectric.md", rel(f),
+             "uses Robolectric or puts sdk-android and sdk-server on one classpath",
+             "only compat-tests (goldens) and preview-renderer (the service) may")
+
 if errors:
     print(f"Architecture check failed ({len(errors)}):")
     for e in errors:
         print(" -", e)
     sys.exit(1)
-print(f"Architecture OK: 11 rules, {len(kotlin)} Kotlin files, {len(gradle)} build files")
+print(f"Architecture OK: 12 rules, {len(kotlin)} Kotlin files, {len(gradle)} build files")
 PY

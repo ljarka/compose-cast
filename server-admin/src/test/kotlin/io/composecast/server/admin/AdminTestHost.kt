@@ -89,6 +89,11 @@ internal class AdminTestHost {
             failWith?.let { throw PublishException(it) }
             return "HEADER v1.1.0\nROOT -2 VISIBLE"
         }
+
+        override fun document(json: String): ByteArray {
+            failWith?.let { throw PublishException(it) }
+            return "rc:$json".toByteArray()
+        }
     }
 
     /** API answers for the wizard's probe by URL (no network); every host resolves to a public address. */
@@ -112,12 +117,24 @@ internal class AdminTestHost {
 
     fun run(
         allowHttp: Boolean = false,
+        phoneRenderer: PhoneRenderer? = null,
         extra: Route.() -> Unit = {},
         test: suspend ApplicationTestBuilder.(HttpClient) -> Unit,
     ) = testApplication {
         application {
             install(FreeMarker) { adminFreeMarker() }
-            root = routing { adminRoutes(auth, screens, settings, publishing, allowHttp, probe = probe, extra = extra) }
+            root = routing {
+                adminRoutes(
+                    auth,
+                    screens,
+                    settings,
+                    publishing,
+                    allowHttp,
+                    probe = probe,
+                    phoneRenderer = phoneRenderer,
+                    extra = extra,
+                )
+            }
         }
         startApplication()
         test(createClient { followRedirects = false })

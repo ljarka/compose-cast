@@ -41,7 +41,7 @@ class AdminPanelTest {
     }
 
     private fun admin(allowHttp: Boolean = false, test: suspend ApplicationTestBuilder.(HttpClient) -> Unit) =
-        host.run(allowHttp, extra, test)
+        host.run(allowHttp, extra = extra, test = test)
 
     /** Mutating routes in the routing tree (method, path with `x` for parameters), minus the public ones. */
     private fun mutating() = host.root.getAllRoutes().mapNotNull(::methodAndPath)

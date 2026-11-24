@@ -1,6 +1,6 @@
 # T-048 — Phone preview inside the admin panel (server-rendered PNG)
 
-Status: blocked: owner picks its place in the roadmap · Roadmap: not placed yet (fits Etap 8, next to G3) · Depends on: T-032, ADR 0013, ADR 0030 · Module: new `preview-renderer`, server-admin, compat-tests
+Status: done · Roadmap: G4 (owner 2026-11-24: do it now, before T-010) · Depends on: T-032, ADR 0013, ADR 0030 · Module: new `preview-renderer`, server-admin, compat-tests
 
 ## Goal
 The screen editor (JSON and visual) shows the screen **as the phone would draw it**, in a phone
@@ -30,7 +30,23 @@ It set the `ScreenDocument` through Compose state, then ran `waitForIdle`,
   silicon runs arm64. The renderer image is therefore amd64 only (arm64 hosts: Docker's amd64
   emulation, slower, or no in-panel preview).
 
-## Design (to confirm in step 1 and the ADR)
+## Result (2026-11-24, [ADR 0032](../decisions/0032-phone-preview-rendered-by-robolectric.md))
+- Step 1 answered: candidate (a) works. `RenderServer` is a Robolectric test that never returns,
+  started by `Main` through `JUnitCore`. `installRenderer` copies the unit-test classpath, a
+  rewritten `test_config.properties` and android-all (offline mode). Plain `java`: ready in 4 s. Docker
+  linux/amd64 (emulated on Apple silicon): ready in 9 s, 90–120 ms per render, PNG byte-identical to
+  macOS, image 523 MB, ≈ 730 MiB memory.
+- Animations: `ShadowLooper.idleFor(3 s)` before capture → the gauge shows its value, same bytes
+  every time (`RendererTest`).
+- Admin: `ScreenPublishing.document(json)`, `PhonePreview.kt` (`HttpPhoneRenderer`, cache of 32,
+  `GET /admin/screens/{id}/phone.png`, SVG message on failure), phone frame as the visual editor's
+  third column. Checked end to end in admin mode (headless Chrome screenshot of the dashboard) and
+  through `distribution/docker-compose.yml` with `COMPOSE_PROFILES=preview`. Edit saved → new image
+  in 0.14 s. Renderer down → message in the frame.
+- Not done (follow-ups when needed): tablet frame, app bar with the screen title, live screens
+  streaming into the frame, linux/arm64.
+
+## Design (as planned before step 1)
 - **Separate service, optional.** New module `preview-renderer`: a JVM process that keeps one
   Robolectric sandbox warm and serves `POST /render` (RC bytes + width/height dp + density + dark?)
   → `image/png`. A separate container (`docker compose` profile `preview`, image amd64 only), so

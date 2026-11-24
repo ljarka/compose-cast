@@ -7,6 +7,8 @@
 #                                 enough as a baseline only for server-only work
 #   ./scripts/verify.sh --docker  only the server Docker image smoke test (scripts/verify-docker.sh;
 #                                 needs Docker, separate CI job)
+#   ./scripts/verify.sh --renderer  only the preview renderer image smoke test (T-048,
+#                                 scripts/verify-preview-renderer.sh; JDK, Android SDK, Docker; CI job)
 #
 # Exits non-zero on the first failing step and says what to look at.
 set -euo pipefail
@@ -15,6 +17,8 @@ cd "$(dirname "$0")/.."
 QUICK=false
 [[ "${1:-}" == "--quick" ]] && QUICK=true
 [[ "${1:-}" == "--docker" ]] && exec ./scripts/verify-docker.sh
+RENDERER=false
+[[ "${1:-}" == "--renderer" ]] && RENDERER=true
 
 # Agent shells do not load ~/.zshrc; find JDK 21 if JAVA_HOME is not set (CI sets it).
 if [[ -z "${JAVA_HOME:-}" ]]; then
@@ -32,6 +36,7 @@ if [[ ! -f local.properties && -z "${ANDROID_HOME:-}" && -z "${ANDROID_SDK_ROOT:
 fi
 
 step() { echo; echo "=== $1"; }
+$RENDERER && exec ./scripts/verify-preview-renderer.sh
 gradle() { ./gradlew --console=plain "$@"; }
 
 step "Docs consistency (ADR 0009)"
@@ -57,7 +62,8 @@ fi
 step "Android modules: build + lint"
 gradle :sdk-android:assembleDebug :sdk-android:lintDebug :app-shell:assembleDebug :app-shell:lintDebug \
   :app-shell:testDebugUnitTest :app-template:assembleDebug :app-template:lintDebug \
-  :app-preview:assembleDebug :app-preview:lintDebug :app-preview:assembleRelease  # Preview: http allowed in release (T-045)
+  :app-preview:assembleDebug :app-preview:lintDebug :app-preview:assembleRelease \
+  :preview-renderer:testDebugUnitTest  # Preview: http allowed in release (T-045); phone preview renderer (T-048)
 gradle -p gradle-plugins test   # included build: io.composecast.app plugin unit tests (T-044)
 
 step "App repository without Kotlin: publish dry run + build (T-024)"

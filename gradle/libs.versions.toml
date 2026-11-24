@@ -60,6 +60,8 @@ compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 activity-compose = { module = "androidx.activity:activity-compose", version = "1.13.0" }
 lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version = "2.9.4" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+# The Android 15 (sdk 35) runtime Robolectric 4.17 loads; bundled by preview-renderer for offline mode.
+robolectric-android-all = { module = "org.robolectric:android-all-instrumented", version = "15-robolectric-13954326-i7" }
 roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
 roborazzi-compose = { module = "io.github.takahirom.roborazzi:roborazzi-compose", version.ref = "roborazzi" }
 junit = { module = "junit:junit", version = "4.13.2" }

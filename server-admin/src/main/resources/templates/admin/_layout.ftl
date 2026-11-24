@@ -43,6 +43,13 @@
     code { font: 14px ui-monospace, SFMono-Regular, Menlo, monospace; }
     .split { display: grid; grid-template-columns: minmax(240px, 1fr) 2fr; gap: 16px; align-items: start; }
     @media (max-width: 760px) { .split { grid-template-columns: 1fr; } }
+    /* T-048: phone preview beside the editor; below it on narrower screens. */
+    .wide.with-phone { max-width: 1440px; }
+    .split.with-phone { grid-template-columns: minmax(220px, 1fr) 2fr minmax(220px, 300px); }
+    .phone { position: sticky; top: 16px; }
+    .phone img { display: block; width: 100%; height: auto; box-sizing: border-box; border: 10px solid #1d1d1f; border-radius: 32px; background: #fff; }
+    @media (max-width: 1100px) { .split.with-phone { grid-template-columns: minmax(240px, 1fr) 2fr; } .split.with-phone .phone { grid-column: 1 / -1; position: static; max-width: 320px; } }
+    @media (max-width: 760px) { .split.with-phone { grid-template-columns: 1fr; } }
     .tree a, .tree-list { display: block; padding: 4px 8px; border-radius: 6px; text-decoration: none; color: inherit;
                           white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .tree a.selected { background: var(--bg); outline: 2px solid var(--accent); }

@@ -31,6 +31,7 @@ names the file and the JSON path.
 | `COMPOSECAST_DATA_LOCATION` | `./data` | The app's data directory, mounted at `/data` (files mode only reads it; admin mode keeps `compose-cast.db` there) |
 | `COMPOSECAST_MODE` | `files` | `admin`: the admin panel at `/admin` and a database instead of files (see "Admin panel" below) |
 | `COMPOSECAST_ADMIN_EMAIL`, `COMPOSECAST_ADMIN_PASSWORD` | — | Admin mode: the first admin account (min. 12 characters), required at the first start, ignored once an account exists |
+| `COMPOSECAST_PREVIEW_RENDERER_URL` | — | Admin mode: `http://preview-renderer:8090` with `COMPOSE_PROFILES=preview` (or `https,preview`) shows each screen in a phone frame in the editor (extra container, linux/amd64, ~800 MB RAM; T-048) |
 | `COMPOSECAST_ADMIN_ALLOW_HTTP` | `false` | `true`: the login cookie is not `Secure`, so the admin works over plain http (testing only; production uses HTTPS) |
 | `COMPOSECAST_PORT` | `8080` | Host port; with HTTPS use `127.0.0.1:8080` so only Caddy is public |
 | `COMPOSE_PROFILES` | — | `https` starts Caddy (reverse proxy, automatic Let's Encrypt certificates) |

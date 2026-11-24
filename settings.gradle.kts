@@ -37,4 +37,5 @@ if (providers.gradleProperty("composecast.serverOnly").orNull != "true") {
     include(":app-template")
     include(":app-preview")
     include(":compat-tests")
+    include(":preview-renderer")
 }

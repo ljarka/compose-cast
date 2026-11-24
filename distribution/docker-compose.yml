@@ -48,6 +48,15 @@ services:
         condition: service_healthy
     restart: always
 
+  # Phone preview in the admin panel's screen editor (T-048): the app's own player draws each
+  # saved draft. Optional: COMPOSE_PROFILES=preview plus COMPOSECAST_PREVIEW_RENDERER_URL in .env.
+  # linux/amd64 only (Docker Desktop on Apple silicon runs it emulated); needs ~800 MB RAM.
+  preview-renderer:
+    image: ghcr.io/ljarka/compose-cast-preview-renderer:${COMPOSECAST_VERSION:-release}
+    platform: linux/amd64
+    profiles: ["preview"]
+    restart: always
+
 volumes:
   caddy-data:
   caddy-config:

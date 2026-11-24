@@ -37,6 +37,7 @@ one (never silently contradict an accepted ADR).
 | [0029](0029-live-screens-websocket-data-updates.md) | Live screens: WebSocket + RC data-update documents (opt-in per screen) | Accepted |
 | [0030](0030-live-draft-previews.md) | Live draft previews: one preview per editor and screen, updated on every save | Accepted (amends 0027, 0013) |
 | [0031](0031-app-bundle-format.md) | App bundle format (templates now, export/import later) | Accepted |
+| [0032](0032-phone-preview-rendered-by-robolectric.md) | Phone preview in the panel: the real player under Robolectric, optional amd64 service | Accepted |
 
 ## Template
 

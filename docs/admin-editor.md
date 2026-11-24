@@ -48,6 +48,12 @@ How the screen-building parts of the admin panel (`server-admin`) work and why. 
   field of the property form — about 15 lines of inline vanilla JS in `visual.ftl` (the tech stack
   allows small JS islands; no library). Probed on demand (button), not on every page view.
 
+- **Phone frame (T-048, [ADR 0032](decisions/0032-phone-preview-rendered-by-robolectric.md)):**
+  beside the tree and form, `<img src="…/phone.png">` = the saved draft (else live) rendered to RC by
+  `ScreenPublishing.document` and drawn by the `preview-renderer` service (real player). Only when
+  `COMPOSECAST_PREVIEW_RENDERER_URL` is set. Errors (data source down, renderer down) are an SVG
+  message in the frame. Measured: edit saved → new image 0.14 s.
+
 ## Tests
 
 `DataFieldsTest` (picker scopes with real samples, source nodes add/edit/delete over HTTP, the

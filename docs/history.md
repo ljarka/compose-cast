@@ -397,8 +397,12 @@ README roadmap's "Etap" numbers.
     (prefix on id clashes, optional colors) and "Publish all"; an empty app opens on it. Checked on
     the emulator from an empty database with the real APIs; the device showed a too-wide key figure
     (now ellipsized) and uneven columns, both fixed. DummyJSON rejected: WebP images.
-81. **T-048 spike — phone preview in the panel** (task only, no code): Robolectric + the real RC
-    player rendered demo screens to PNG in 56–71 ms each (warm, heap ≈ 110 MB), the same pixels
-    as the goldens, so ADR 0013's "no headless renderer" no longer holds. Limits: native graphics
-    only for linux/x86_64 (no Linux arm64), and the first capture catches animations mid-way.
-    Next: run Robolectric as a long-lived service outside Gradle, measured in Docker.
+81. **T-048 — phone preview in the panel** ([ADR 0032](decisions/0032-phone-preview-rendered-by-robolectric.md),
+    amends 0013): new module `preview-renderer`, an optional HTTP service that plays RC documents
+    with `sdk-android`'s player under Robolectric native graphics (a never-ending test started by
+    `JUnitCore`; `installRenderer` copies the unit-test classpath, AGP's test config and android-all
+    for offline use). The visual editor shows the saved draft in a phone frame when
+    `COMPOSECAST_PREVIEW_RENDERER_URL` is set. Measured: 56–71 ms per render on macOS, 90–120 ms in
+    Docker amd64 emulated on Apple silicon (PNG byte-identical), edit → new image 0.14 s. Limits:
+    linux/amd64 only (no arm64 native runtime), static first viewport. Rule R12, CI job
+    `preview-renderer`, compose profile `preview`.

@@ -104,7 +104,8 @@ Android only ([ADR 0022](decisions/0022-android-only.md), owner 2026-11-16).
 - [x] Live preview on a phone, refreshed on every saved edit (same WebSocket as live screens, ADR 0029/0030) — T-032
 - [ ] AI assistant (optional, own API key): describe a screen → draft; brand palette — T-033
 - [x] Preview on a device: temporary `__preview-…` screen + QR code ([ADR 0013](decisions/0013-admin-preview.md), [0027](decisions/0027-draft-preview-ids.md)) in the generic Preview app (T-045);
-  in-browser RC player later, if one matures; server-rendered PNG in the editor planned (T-048)
+  in-browser RC player later, if one matures
+- [x] Phone frame in the editor without a device: the real player under Robolectric draws each saved draft (optional `preview-renderer` service, [ADR 0032](decisions/0032-phone-preview-rendered-by-robolectric.md)) — T-048
 - [ ] Publish (screen goes live); change history per screen (who published, when); one-click rollback
 - [ ] **App Settings page:** app name, `applicationId`, server URL, `BrandConfig` (primary colour,
   background colour, logo upload)

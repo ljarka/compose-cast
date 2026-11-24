@@ -52,6 +52,7 @@ Do not load the whole project: root `AGENTS.md` → task → the modules in its 
 | `app-preview` | The generic compose-cast Preview app (`app.preview=true`): any server via `/connect` link or typed (T-045) | in progress |
 | `gradle-plugins` (included build) | `io.composecast.app` Gradle plugin: properties → branded app + shell | done |
 | `compat-tests` | Screenshot tests server → player; goldens = README images | done |
+| `preview-renderer` | Optional service: RC document → PNG with the real player under Robolectric, the admin's phone frame (T-048, ADR 0032; linux/amd64) | done |
 | `server-store` | Admin database (SQLite/Exposed): screens with drafts + history, users + sessions, app settings (T-007) | done |
 | `app-templates` | Bundled app templates (News, Shop, Events, Weather, Blank) + the bundle format (ADR 0031, T-030) | done |
 | `server-admin` | Admin panel at `/admin` (Ktor + Freemarker): login + roles, screens (editor, drafts, publish, history, rollback), settings (T-007) | done (MVP) |
@@ -109,6 +110,7 @@ Do not load the whole project: root `AGENTS.md` → task → the modules in its 
 ./scripts/verify.sh                               # = CI (.github/workflows/ci.yml)
 ./scripts/verify.sh --quick                       # docs + architecture + formatting + JVM build/tests
 ./scripts/verify.sh --docker                      # server image + distribution/ install smoke test (CI job `docker`)
+./scripts/verify.sh --renderer                    # preview renderer image renders the demo main (CI job `preview-renderer`)
 ./gradlew spotlessApply                           # fix formatting (ktlint, rules in .editorconfig)
 ./gradlew :compat-tests:recordRoborazziDebug      # accept intended visual changes (look at PNGs!)
 ./scripts/verify-app-repository.sh [--install]    # publish dry run + build distribution/android-app (no Kotlin)
@@ -126,7 +128,7 @@ maestro test app-template/maestro/smoke.yaml      # click through the demo app (
 
 [Roadmap](specs/roadmap.md) → [task queue](docs/tasks/README.md): T-007 admin panel, T-045 Preview app (B3 waits
 for the owner), T-029 visual editor, T-031 data wizard, T-047 live dashboards (opt-in live screens over a WebSocket,
-[ADR 0029](docs/decisions/0029-live-screens-websocket-data-updates.md)), T-032 live preview, T-030 templates done → **T-010 export** (can reuse the bundle format, ADR 0031) +
+[ADR 0029](docs/decisions/0029-live-screens-websocket-data-updates.md)), T-032 live preview, T-030 templates done → T-048 phone preview in the panel done → **T-010 export** (can reuse the bundle format, ADR 0031) +
 GitHub Actions build → T-027 → T-021 → **T-046 TV shows app built only in the admin** (mission:
 a non-developer ships an app). T-025 (weather app, `v0.2.0`) only waits for the owner's domain.
 Android only ([ADR 0022](docs/decisions/0022-android-only.md)).

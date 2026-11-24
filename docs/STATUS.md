@@ -41,11 +41,11 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-047 Live screens + dashboard components](tasks/T-047-live-dashboards.md) | Roadmap G1–G2 | done (`99a932a`) — gauge/sparkline/kpi, live screens over a WebSocket, app keeps them current |
 | [T-032 Live preview on a phone](tasks/T-032-live-preview.md) | Roadmap G3 | done (`1087b4b`) — one live preview per editor and screen, every saved edit on the phone in ~1 s (ADR 0030) |
 | [T-030 App templates](tasks/T-030-app-templates.md) | Etap 8 | done (`4ab4a14`) — News, Shop, Events, Weather (live), Blank; Templates page applies drafts + Publish all (ADR 0031) |
+| [T-048 Phone preview inside the admin panel](tasks/T-048-in-panel-phone-preview.md) | Roadmap G4 | done — optional `preview-renderer` service (real player under Robolectric, linux/amd64), phone frame in the visual editor, edit → image 0.14 s (ADR 0032) |
 | [T-010 Settings export (properties + icon)](tasks/T-010-app-export.md) | Etap 9 | ready; roadmap E1–E3; rewrite the Design for ADR 0025 (GitHub Actions build) first |
 | [T-027 Images loaded by the SDK (lists)](tasks/T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-010); roadmap F1 |
 | [T-021 Native components via RC `Custom` (text input)](tasks/T-021-native-components.md) | Etap 10 | queued (after T-027); roadmap F2; spike first |
 | [T-046 Milestone 2: TV shows app built only in the admin](tasks/T-046-tv-shows-milestone.md) | Roadmap F | queued (after T-021); roadmap F3 — success criterion 1 |
-| [T-048 Phone preview inside the admin panel](tasks/T-048-in-panel-phone-preview.md) | Etap 8 (not placed) | blocked: owner picks its place in the roadmap — spike: Robolectric renders a screen PNG in ~65 ms; renderer is linux/amd64 only |
 | [T-038 Feature flags and A/B tests](tasks/T-038-feature-flags-ab.md) | Etap 12 | queued (after T-046) |
 | [T-037 Analytics in the panel](tasks/T-037-analytics.md) | Etap 12 | queued (after T-038) |
 | [T-033 AI assistant in the panel](tasks/T-033-ai-assistant.md) | Etap 8 | queued (after T-037) |
@@ -72,7 +72,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | Etap 5 — Components for real apps | 11/15 |
 | Etap 6 — Milestone 1: Example weather app (external project) | 5/7 |
 | Etap 7 — App shells & SDKs | 3/7 |
-| Etap 8 — Admin panel MVP | 7/11 |
+| Etap 8 — Admin panel MVP | 8/12 |
 | Etap 9 — White-label app export + TV shows milestone | 1/6 |
 | Etap 10 — Interactivity (DivKit core) | 1/8 |
 | Etap 11 — Release 0.1.0-alpha | 0/2 |
@@ -80,11 +80,10 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Waiting for a decision or design
 
-- [T-048 Phone preview inside the admin panel](tasks/T-048-in-panel-phone-preview.md): blocked: owner picks its place in the roadmap — spike: Robolectric renders a screen PNG in ~65 ms; renderer is linux/amd64 only
 
 ## Recent work (docs/history.md)
 
-- T-048 spike — phone preview in the panel
+- T-048 — phone preview in the panel
 - T-030 — app templates
 - T-032 — live draft preview
 - T-047 step 3 — live screens in the app (T-047 done)

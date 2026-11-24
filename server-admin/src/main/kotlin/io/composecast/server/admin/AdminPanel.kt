@@ -25,6 +25,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.RouteSelector
 import io.ktor.server.routing.RouteSelectorEvaluation
 import io.ktor.server.routing.RoutingResolveContext
+import io.ktor.server.routing.application
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
@@ -52,10 +53,19 @@ fun Application.adminPanel(
     publishing: ScreenPublishing,
     allowHttp: Boolean = false,
     allowPrivateApiHosts: Boolean = false,
+    phoneRenderer: PhoneRenderer? = null,
 ) {
     install(FreeMarker) { adminFreeMarker() }
     routing {
-        adminRoutes(auth, screens, settings, publishing, allowHttp, ApiProbe(allowPrivateHosts = allowPrivateApiHosts))
+        adminRoutes(
+            auth,
+            screens,
+            settings,
+            publishing,
+            allowHttp,
+            ApiProbe(allowPrivateHosts = allowPrivateApiHosts),
+            phoneRenderer = phoneRenderer,
+        )
     }
 }
 
@@ -81,8 +91,10 @@ internal fun Route.adminRoutes(
     publishing: ScreenPublishing,
     allowHttp: Boolean,
     probe: ApiProbe = ApiProbe(),
+    phoneRenderer: PhoneRenderer? = null,
     extra: Route.() -> Unit = {},
 ) {
+    phoneRenderer?.let { application.attributes.put(PhoneRendererKey, it) } // T-048: editors show the phone frame
     route("/admin") {
         install(SecurityHeaders)
         install(Sessions) {
@@ -128,6 +140,7 @@ internal fun Route.adminRoutes(
             settingsPages(settings, publishing)
             wizardPages(screens, settings, probe)
             templatesPages(screens, settings, publishing)
+            phoneRenderer?.let { phonePreview(screens, publishing, it) }
             extra()
         }
     }
@@ -135,7 +148,13 @@ internal fun Route.adminRoutes(
 
 /** The template model every logged-in page starts from (`_layout.ftl`: title, user, role, canEdit). */
 internal fun ApplicationCall.page(title: String): Map<String, Any> = adminUser.let {
-    mapOf("title" to title, "user" to it, "role" to it.role.id, "canEdit" to it.role.canEdit)
+    mapOf(
+        "title" to title,
+        "user" to it,
+        "role" to it.role.id,
+        "canEdit" to it.role.canEdit,
+        "phone" to hasPhonePreview,
+    )
 }
 
 /** Whose draft previews these are (T-032, ADR 0030): one preview per user and screen. */

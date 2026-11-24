@@ -2,6 +2,9 @@ package io.composecast.server
 
 import io.composecast.protocol.UpgradeRequiredResponse
 import io.composecast.server.admin.AdminAuth
+import io.composecast.server.admin.CachingPhoneRenderer
+import io.composecast.server.admin.HttpPhoneRenderer
+import io.composecast.server.admin.PhoneRenderer
 import io.composecast.server.admin.ScreenPublishing
 import io.composecast.server.admin.adminPanel
 import io.composecast.server.sdk.DataSourceException
@@ -41,6 +44,8 @@ import java.nio.file.Path
  *   admin account when there is none (required on the first start; ignored afterwards).
  *   `COMPOSECAST_ADMIN_ALLOW_HTTP=true`: the login cookie is not `Secure` (local testing without
  *   TLS; default false: the panel at `/admin` needs HTTPS or localhost).
+ *   `COMPOSECAST_PREVIEW_RENDERER_URL` (e.g. `http://preview-renderer:8090`): the optional
+ *   `preview-renderer` service (T-048); the screen editor then shows the screen in a phone frame.
  */
 fun main() {
     val port = System.getenv("PORT")?.toInt() ?: 8080
@@ -75,6 +80,8 @@ fun main() {
                     allowHttp = System.getenv("COMPOSECAST_ADMIN_ALLOW_HTTP").toBoolean(),
                     // The wizard's API probe follows the image rule (T-026): private hosts only for local development.
                     allowPrivateApiHosts = allowPrivateImageHosts,
+                    phoneRenderer = System.getenv("COMPOSECAST_PREVIEW_RENDERER_URL")?.takeIf { it.isNotBlank() }
+                        ?.let { CachingPhoneRenderer(HttpPhoneRenderer(it)) },
                 )
             }
         }
@@ -91,6 +98,7 @@ class AdminPanelConfig(
     val publishing: ScreenPublishing,
     val allowHttp: Boolean = false,
     val allowPrivateApiHosts: Boolean = false,
+    val phoneRenderer: PhoneRenderer? = null,
 )
 
 fun Application.module(screens: LiveScreens, admin: AdminPanelConfig? = null) {
@@ -121,5 +129,15 @@ fun Application.module(screens: LiveScreens, admin: AdminPanelConfig? = null) {
         }
     }
     configureRouting(screens)
-    admin?.let { adminPanel(it.auth, it.screens, it.settings, it.publishing, it.allowHttp, it.allowPrivateApiHosts) }
+    admin?.let {
+        adminPanel(
+            it.auth,
+            it.screens,
+            it.settings,
+            it.publishing,
+            it.allowHttp,
+            it.allowPrivateApiHosts,
+            it.phoneRenderer,
+        )
+    }
 }

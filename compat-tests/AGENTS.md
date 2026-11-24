@@ -5,8 +5,8 @@ End-to-end screenshot tests: the server renders demo screens to RC documents; th
 
 ## Scope
 
-This module only. Touches both `sdk-server` and `sdk-android` at test time — that is intentional
-and the only place where these two modules are allowed to be on the same classpath.
+This module only. Touches both `sdk-server` and `sdk-android` at test time — that is intentional; only here and in
+`preview-renderer` (the admin's phone preview, same Robolectric setup) may the two share a classpath (rule R12).
 
 ## Key files
 
