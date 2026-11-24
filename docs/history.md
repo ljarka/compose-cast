@@ -361,3 +361,11 @@ README roadmap's "Etap" numbers.
     `{{binding}}` with its value (inside a repeat: the item's fields) — a chip inserts it at the
     cursor (inline JS, ~15 lines). Found by the tests: saving the screen form would have dropped
     the data sources once `data` left the form. Editor docs moved to `docs/admin-editor.md`.
+75. **Live dashboards concept + PoC** (owner, 2026-11-24): the owner wants beautiful live
+    dashboards on RC and live edit preview, with an always-open connection instead of a refresh
+    button, while static screens stay as they are. PoC (thrown away): Robolectric + emulator,
+    Ktor WebSocket pushing RC **data-update documents** (`DOC_DATA_UPDATE`) — 10 updates/s, ≈ 4 KB,
+    ≈ 4 ms apply, gauge animates between values. Found: named variables/arrays need `Global { }`,
+    `anim()` on array elements freezes, updated texts are not re-measured
+    (`docs/remote-compose.md` behaviors 18–20, "Live updates"). → [ADR 0029](decisions/0029-live-screens-websocket-data-updates.md),
+    T-047 (live screens + dashboard components), T-032 moved onto the same channel, roadmap step G.

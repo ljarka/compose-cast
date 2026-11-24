@@ -292,6 +292,46 @@ All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alph
     `DROPDOWN_LIST`, `PICKER`, `CAROUSEL`, `UNKNOWN` (there is no `HEADING` role in alpha23).
     `CoreSemantics.Mode.CLEAR_AND_SET` maps to `Modifier.clearAndSetSemantics {}` (used for
     `semantics.hidden = true`). Verified alpha23 (T-016).
+18. **Named variables / float arrays are dropped inside layout containers**: `LayoutComponent.inflate()`
+    keeps only operations implementing `ComponentData`. `NamedVariable` and `DataListFloat` do not,
+    so `remoteNamedFloat/Text(...)` or `addNamedFloatArray(...)` written inside a `Column`/`Row`/`Box`
+    silently lose their name (`player.namedFloats` is empty; `setUserLocalFloat` /
+    `getNamedFloat` → `NoSuchElementException: Variable USER:x not found`). Inside a `Canvas` they
+    survive. Declare them in **`Global { }`** (`RemoteComposeWriter.beginGlobal/endGlobal` moves
+    the block in front of the root). Verified alpha23 (live dashboard PoC, 2026-11-24).
+19. **`anim()` on an array element freezes it**: `arr[i].anim(d)` draws the first value and never
+    follows later `DataListFloat` updates; plain `arr[i]` updates. `anim()` on a float expression
+    (`(cpu * 360f).anim(0.8f)`) does animate old → new on every update (`FloatExpression`: a changed
+    input sets the animation's initial value to the previous target). Verified alpha23 on the
+    emulator (PoC, 2026-11-24).
+20. **A data update does not re-measure**: a `TextData` replaced by `applyUpdate` keeps the width
+    measured for the old text — a longer text is clipped (`"OK"` → `"De"`) and stays clipped in a
+    wrap-content `Text`; with `Modifier.fillMaxWidth()` it is re-laid out shortly after (≈ next
+    frames). Give live texts a fixed or full width. Verified alpha23 (Robolectric + emulator).
+
+## Live updates (verified alpha23, 2026-11-24, PoC on the emulator)
+
+RC has **data-update documents**: a document whose header has `Header.DOC_DATA_UPDATE = 1`
+(`HTag(Header.DOC_DATA_UPDATE, 1)` in `createRcBuffer`). `RemoteComposePlayer.setDocument` routes
+it to `updateDocument` → `CoreDocument.applyUpdate(delta)`, which walks the delta and copies every
+`TextData`, `BitmapData`, `FloatConstant`, `IntegerConstant`, `LongConstant` and **`DataListFloat`**
+into the playing document **by id**; everything else in the delta is ignored. Layout, state, scroll
+and running animations stay.
+
+- **Ids are stable** when the server renders the same structure with different values (the writer
+  allocates ids sequentially), so a data update = *render the same screen again with the header
+  flag*. A structural change (list length, components shown/hidden) changes ids → send a full
+  document (`setDocument`) instead.
+- Host-side values: `player.setUserLocalFloat/String/Int/Color(name, v)` set `"USER:" + name`
+  (declare the variable as `remoteNamedFloat("USER:cpu", …)` in `Global { }`, behavior 18). There is
+  **no float-array setter** on the player — series go through data-update documents.
+- Measured (PoC: gauge + number + status text + 24-point sparkline, Medium_Phone_API_37 `-gpu
+  host`): data-update document ≈ 3.9–4.7 KB; `updateDocument` 3.9 ms average, 12.7 ms max; **10
+  updates/s over a WebSocket for 12 s, 119 applied, no skipped frames**. Between updates `anim()`
+  expressions animate locally.
+- Transport is ours (RC has none): the PoC used Ktor `webSocket` (server) and Ktor client with the
+  **OkHttp** engine (the `Android` engine has no WebSocket support) →
+  [ADR 0029](decisions/0029-live-screens-websocket-data-updates.md).
 
 ---
 

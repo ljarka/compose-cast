@@ -45,6 +45,7 @@ Android only ([ADR 0022](decisions/0022-android-only.md), owner 2026-11-16).
 - [x] Adaptive layouts: FitBox, collapsible rows/columns, min/max sizes — T-015
 - [x] Accessibility: content descriptions, roles — T-016
 - [ ] Canvas: progress bar/ring, line/bar charts, rating, gradients — T-018
+- [ ] Live dashboards: `gauge`, `sparkline`, `kpi` on canvas; opt-in `live` screens updated over a WebSocket (RC data-update documents, ADR 0029) — T-047
 - [ ] Long-press, double-tap, ripple, haptics; alpha/scale/rotation/offset/z-order — T-019
 - [ ] Tabs / bottom navigation defined by the server (app structure, not only screens)
 - [x] Brand surface/text/outline colors for component defaults (`brand.json`) — T-040
@@ -98,7 +99,7 @@ Android only ([ADR 0022](decisions/0022-android-only.md), owner 2026-11-16).
 - [x] Visual editor for non-developers: component palette, schema-driven property forms — T-029 (data source form: T-031)
 - [x] Data source wizard: paste an API URL → list + detail screens, field picker — T-031
 - [ ] App templates (news, catalog, events, weather): a working app in 5 minutes — T-030
-- [ ] Live preview on a phone, refreshed on every edit — T-032
+- [ ] Live preview on a phone, refreshed on every edit (same WebSocket as live screens, ADR 0029) — T-032
 - [ ] AI assistant (optional, own API key): describe a screen → draft; brand palette — T-033
 - [x] Preview on a device: temporary `__preview-…` screen + QR code ([ADR 0013](decisions/0013-admin-preview.md), [0027](decisions/0027-draft-preview-ids.md)) in the generic Preview app (T-045);
   in-browser RC player later, if one matures

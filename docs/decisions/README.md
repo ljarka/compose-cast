@@ -34,6 +34,7 @@ one (never silently contradict an accepted ADR).
 | [0026](0026-preview-connect-page.md) | The Preview app connects through the server's `/connect` page | Accepted |
 | [0027](0027-draft-preview-ids.md) | Draft previews: one unguessable screen id per preview | Accepted (amends 0013) |
 | [0028](0028-visual-editor-htmx-server-state.md) | Visual editor: HTMX, editor state on the server, forms from the model's descriptors | Accepted |
+| [0029](0029-live-screens-websocket-data-updates.md) | Live screens: WebSocket + RC data-update documents (opt-in per screen) | Accepted |
 
 ## Template
 

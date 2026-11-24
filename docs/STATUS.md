@@ -39,12 +39,13 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-029 Visual screen editor (no JSON)](tasks/T-029-visual-screen-editor.md) | Etap 8 | done (`69010e0`) — C1 ADR 0028, C2 tree + generated forms, C3 palette; acceptance test rebuilds the weather `main` |
 | [T-031 Data source wizard (URL → screens)](tasks/T-031-data-source-wizard.md) | Etap 8 | done (`001e06c`) — W1 probe + heuristics, W2 wizard (TVMaze list + detail on the emulator), W3 field picker + data source form |
 | [T-030 App templates](tasks/T-030-app-templates.md) | Etap 8 | ready — roadmap D2 |
-| [T-010 Settings export (properties + icon)](tasks/T-010-app-export.md) | Etap 9 | queued (after T-030); roadmap E1–E3; rewrite the Design for ADR 0025 (GitHub Actions build) first |
+| [T-047 Live screens + dashboard components](tasks/T-047-live-dashboards.md) | Roadmap G | queued (after T-030) — ADR 0029, PoC verified 2026-11-24; owner may pull it forward |
+| [T-032 Live preview on a phone](tasks/T-032-live-preview.md) | Roadmap G3 | queued (after T-047); reuses the T-047 live channel (ADR 0029) |
+| [T-010 Settings export (properties + icon)](tasks/T-010-app-export.md) | Etap 9 | queued (after T-032); roadmap E1–E3; rewrite the Design for ADR 0025 (GitHub Actions build) first |
 | [T-027 Images loaded by the SDK (lists)](tasks/T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-010); roadmap F1 |
 | [T-021 Native components via RC `Custom` (text input)](tasks/T-021-native-components.md) | Etap 10 | queued (after T-027); roadmap F2; spike first |
 | [T-046 Milestone 2: TV shows app built only in the admin](tasks/T-046-tv-shows-milestone.md) | Roadmap F | queued (after T-021); roadmap F3 — success criterion 1 |
-| [T-032 Live preview on a phone](tasks/T-032-live-preview.md) | Etap 8 | queued (after T-046); after the success criteria (roadmap: not ordered yet) |
-| [T-038 Feature flags and A/B tests](tasks/T-038-feature-flags-ab.md) | Etap 12 | queued (after T-032) |
+| [T-038 Feature flags and A/B tests](tasks/T-038-feature-flags-ab.md) | Etap 12 | queued (after T-046) |
 | [T-037 Analytics in the panel](tasks/T-037-analytics.md) | Etap 12 | queued (after T-038) |
 | [T-033 AI assistant in the panel](tasks/T-033-ai-assistant.md) | Etap 8 | queued (after T-037) |
 | [T-028 Offline: disk cache of the last screen](tasks/T-028-offline-disk-cache.md) | Etap 7 | queued (after T-033) |
@@ -67,7 +68,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | Etap 2 — Foundations ✅ | 5/5 |
 | Etap 3 — iOS spike: dropped | 0/0 |
 | Etap 4 — Data sources (APIs) — ADR 0008 | 4/4 |
-| Etap 5 — Components for real apps | 8/12 |
+| Etap 5 — Components for real apps | 8/13 |
 | Etap 6 — Milestone 1: Example weather app (external project) | 5/7 |
 | Etap 7 — App shells & SDKs | 3/7 |
 | Etap 8 — Admin panel MVP | 5/11 |
@@ -81,9 +82,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- Live dashboards concept + PoC
 - T-031 W3 — field picker + data source form (T-031 done)
 - T-031 W2 — the wizard page
 - T-031 W1 — API probe + heuristics
 - T-029 C3 — palette (T-029 done)
 - T-029 C2 — component tree + generated property forms
-- T-029 C1 — visual editor technology

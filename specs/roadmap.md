@@ -57,6 +57,18 @@ release signing), data-dir hot reload, releases `v0.1.0` and `v0.2.0`. Milestone
 | D1 | Data source wizard: paste an API URL → field picker → list + detail screens (T-031; before the templates, which need data sources — owner 2026-11-23) | A public API (e.g. TVMaze) becomes a list and a detail screen without JSON |
 | D2 | App templates in the admin: news, catalog, events, weather (T-030) | Choosing a template creates a working multi-screen app in one click |
 
+### G. Live dashboards (owner, 2026-11-24; done after D, before E)
+
+Static screens stay exactly as they are; **live** is opt-in per screen for advanced screens
+([ADR 0029](../docs/decisions/0029-live-screens-websocket-data-updates.md): WebSocket + RC
+data-update documents, PoC: 10 updates/s on the emulator).
+
+| # | Step | Done when… |
+|---|---|---|
+| G1 | Dashboard components on RC `Canvas`: `gauge`, `sparkline`, `kpi` (T-047) | Golden `dashboard.png` at two widths; editable in the visual editor |
+| G2 | Live screens: `live.everyMs`, WebSocket `/screens/{id}/live`, data updates in `sdk-android` (T-047) | The demo dashboard moves every second on the emulator with no refresh button; static screens byte-identical |
+| G3 | Live edit preview on the same channel (T-032) | An edit in the panel shows on the phone in under 2 s |
+
 ### E. Ship the owner's app
 
 | # | Step | Done when… |
@@ -75,8 +87,7 @@ release signing), data-dir hot reload, releases `v0.1.0` and `v0.2.0`. Milestone
 
 ## After the success criteria
 
-Not ordered yet; each becomes a step when a real app needs it: live preview refreshed on every
-edit (T-032), feature flags and A/B tests (T-038), analytics in the panel (T-037), AI assistant
+Not ordered yet; each becomes a step when a real app needs it: feature flags and A/B tests (T-038), analytics in the panel (T-037), AI assistant
 (T-033), offline cache (T-028), canvas charts (T-018), forms (T-034), app user accounts (T-035),
 push (T-036), stateful components (T-017), gestures/effects (T-019), dynamic values incl.
 light/dark (T-020), advanced RC features (T-022).
