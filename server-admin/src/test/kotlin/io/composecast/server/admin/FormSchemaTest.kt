@@ -42,7 +42,7 @@ class FormSchemaTest {
             assertTrue(jsonFields.containsAll(raw), "$type: unexpected JSON-value fields ${raw - jsonFields}")
         }
         assertEquals(
-            listOf("title", "params", "lookups"),
+            listOf("title", "params", "live", "lookups"),
             FormSchema.screenFields.map {
                 it.key
             },
@@ -107,5 +107,21 @@ class FormSchemaTest {
         val parsed = FormSchema.parse(FormSchema.componentFields("text")!!, form::get, problems)
         assertEquals(listOf("fontSize: expected a whole number, was 'big'"), problems)
         assertEquals("""{"text":"Hi","modifier":{"width":"fill","height":48}}""", parsed.toString())
+    }
+
+    @Test
+    fun `the screen form makes a screen live with Every ms and normal again when it is blank (T-047)`() {
+        val live = FormSchema.parse(
+            FormSchema.screenFields,
+            mapOf("title" to "D", "live.everyMs" to "500")::get,
+            mutableListOf(),
+        )
+        assertEquals("""{"everyMs":500}""", live["live"].toString())
+        val normal = FormSchema.parse(
+            FormSchema.screenFields,
+            mapOf("title" to "D", "live.everyMs" to "")::get,
+            mutableListOf(),
+        )
+        assertEquals(null, normal["live"])
     }
 }

@@ -95,6 +95,7 @@ class AdminPanelConfig(
 
 fun Application.module(screens: LiveScreens, admin: AdminPanelConfig? = null) {
     install(CallLogging)
+    installLiveScreens()
     install(ContentNegotiation) {
         json(Json { prettyPrint = true })
     }

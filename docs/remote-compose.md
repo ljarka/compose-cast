@@ -336,6 +336,11 @@ and running animations stay.
   host`): data-update document ≈ 3.9–4.7 KB; `updateDocument` 3.9 ms average, 12.7 ms max; **10
   updates/s over a WebSocket for 12 s, 119 applied, no skipped frames**. Between updates `anim()`
   expressions animate locally.
+- A data-update document is **the whole render** with the header flag: the player reads only its
+  data operations, but the bytes are as large as a full document (live demo: ≈ 8.4 KB/frame). It
+  keeps state and animations, it does not save bandwidth; a smaller delta (only the data ops) is
+  a possible optimization. Structure is compared with `Operation.write(WireBuffer)` of every
+  decoded operation (values reduced to type + id), `RemoteComposeRenderer.structure` (T-047).
 - Transport is ours (RC has none): the PoC used Ktor `webSocket` (server) and Ktor client with the
   **OkHttp** engine (the `Android` engine has no WebSocket support) →
   [ADR 0029](decisions/0029-live-screens-websocket-data-updates.md).

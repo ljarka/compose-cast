@@ -375,3 +375,8 @@ README roadmap's "Etap" numbers.
     DSL, `render/Dashboard.kt`, admin palette group), demo `dashboard` screen, goldens at phone and
     tablet width, checked on the emulator. Values are strings so `{{bindings}}` work unchanged
     (`NumberList`). Found: equal texts share one RC id (remote-compose.md behavior 21).
+77. **T-047 step 2 — live screens on the server**: `live` on screens (JSON, DSL, admin form),
+    `X-Composecast-Live`, WebSocket `/screens/{id}/live` sending the full document first and then
+    RC data-update documents only when something changed (structure fingerprint decides full vs
+    update), demo `live` screen with simulated metrics. Found: an update document is as large as
+    the full one (state/animation kept, bytes not saved).

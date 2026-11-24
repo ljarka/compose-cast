@@ -20,6 +20,8 @@ data class ScreenDefinition(
     val params: Map<String, ParamSpec> = emptyMap(),
     /** HTTP JSON sources, by name; bound as `{{name.path}}` (T-006, ADR 0008). */
     val data: Map<String, DataSource> = emptyMap(),
+    /** Opt-in: apps keep the screen current over a WebSocket (T-047, ADR 0029); null = a normal screen. */
+    val live: Live? = null,
     /** Value tables for the `lookup` filter; key `"*"` is the fallback. */
     val lookups: Map<String, Map<String, String>> = emptyMap(),
     val components: List<Component> = emptyList(),
@@ -54,6 +56,19 @@ data class ScreenDefinition(
     fun validate() {
         val problems = problems()
         require(problems.isEmpty()) { "Screen '$id': ${problems.joinToString("; ")}" }
+    }
+}
+
+/**
+ * A live screen (T-047, ADR 0029): the server renders it again every [everyMs] ms (data sources
+ * still respect their `cacheSeconds`) and pushes what changed to connected apps.
+ */
+@Serializable
+data class Live(val everyMs: Int = DEFAULT_EVERY_MS) {
+    companion object {
+        const val DEFAULT_EVERY_MS = 1000
+        const val MIN_EVERY_MS = 100
+        const val MAX_EVERY_MS = 3_600_000
     }
 }
 

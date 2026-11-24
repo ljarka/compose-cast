@@ -156,9 +156,19 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
         }
         val title = render(definition.title, roots)
         val bound = if (failed == null) {
-            ScreenDefinition(id, title, components = bindComponents(definition.components, roots))
+            ScreenDefinition(
+                id,
+                title,
+                live = definition.live,
+                components = bindComponents(definition.components, roots),
+            )
         } else if (definition.error.isNotEmpty()) {
-            ScreenDefinition(id, title, components = bindComponents(definition.error, mapOf(PARAMS to paramsJson)))
+            ScreenDefinition(
+                id,
+                title,
+                live = definition.live,
+                components = bindComponents(definition.error, mapOf(PARAMS to paramsJson)),
+            )
         } else {
             throw DataSourceException("data source '${failed.key}' failed: ${reason(failed.value.exceptionOrNull()!!)}")
         }

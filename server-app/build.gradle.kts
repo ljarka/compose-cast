@@ -19,6 +19,7 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.server.call.logging)
     implementation(libs.ktor.server.status.pages)
+    implementation(libs.ktor.server.websockets) // live screens (T-047, ADR 0029)
     implementation(libs.kotlinx.serialization.json)
     // SLF4J provider: without it Ktor and CallLogging print nothing (not even 500 stack traces).
     runtimeOnly(libs.logback.classic)

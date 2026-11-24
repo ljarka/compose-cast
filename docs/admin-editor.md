@@ -25,6 +25,9 @@ How the screen-building parts of the admin panel (`server-admin`) work and why. 
   header or in a URL parameter named like a key (`key`, `apikey`, `token`, …) must be
   `{{secret.NAME}}`, otherwise nothing is created. `ApplicationCall.screenId` reads the **path**
   parameter only (Ktor's `parameters` also holds the query).
+- **Live (T-047):** the screen form shows `live` as an optional group ("Every ms", generated from
+  `Live`); filling it in makes the screen live, clearing it makes it a normal screen again
+  (`FormSchemaTest`). Publishing reaches open live connections on their next tick.
 - **Data sources (T-031 W3):** not a JSON field of the screen form but tree nodes `data.<name>`
   whose form is generated from `DataSource` (`FormSchema.sourceFields`); "Add data source" (name +
   address) and "Delete this data source" are `Palette.addSource` / `deleteSource`. Saving the

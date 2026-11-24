@@ -46,9 +46,19 @@ live + canvas is for advanced screens. The PoC proved the mechanism (ADR 0029,
   the gauge label is a layout `Text` over the canvas (canvas text would mix px font sizes with dp
   coordinates). Equal texts share an id (remote-compose.md behavior 21) — step 2 must detect
   structure changes, not assume them.
-- **Next: step 2** (server). Start from `RemoteComposeRenderer.render`: add a `dataUpdate` flag
-  that adds `HTag(Header.DOC_DATA_UPDATE, 1)`; a structure fingerprint (e.g. `describe()` with
-  values masked, or the op/id sequence) to choose full vs update frame.
+- Step 2 done (2026-11-24): `ScreenDefinition.live`, DSL `live()`, header `X-Composecast-Live`,
+  `render(…, dataUpdate)`, `RemoteComposeRenderer.structure`, `LiveFrames`, WebSocket
+  `/screens/{id}/live` (`server-app/LiveRoute.kt`), demo `live` screen (simulated metrics, linked
+  from `dashboard`), admin screen form shows `live` (step 4's field came for free from the
+  generated forms; the palette was done in step 1). Tests: `LiveTest`, `LiveFramesTest`,
+  `LiveRouteTest`, `LiveDemoTest`, `FormSchemaTest`. Checked against the real server with a raw
+  WebSocket (frames every second).
+- **Next: step 3** (app). `ComposeCastClient`: read `X-Composecast-Live` (store it in the ETag
+  cache too — a 304 carries it as well); `liveScreen(id, params)` = Ktor client WebSockets on the
+  **OkHttp** engine (the Android engine has none; PoC used `io.ktor:ktor-client-okhttp`), same
+  version headers, binary frames → `setDocument(bytes)` on the player (it routes data updates to
+  `updateDocument` by header). Lifecycle: open while the screen is shown and the app is resumed,
+  reconnect with backoff, close otherwise. Emulator: demo `main` → Dashboard → "See it live".
 
 ## Steps (commit each)
 1. Model + JSON + validation + renderer for `gauge`/`sparkline`/`kpi` (static) → golden

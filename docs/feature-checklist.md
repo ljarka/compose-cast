@@ -46,7 +46,8 @@ Android only ([ADR 0022](decisions/0022-android-only.md), owner 2026-11-16).
 - [x] Accessibility: content descriptions, roles — T-016
 - [ ] Canvas: progress bar/ring, line/bar charts, rating, gradients — T-018
 - [x] Dashboard components on canvas: `gauge`, `sparkline`, `kpi` — T-047 step 1
-- [ ] Live screens: opt-in `live`, updated over a WebSocket (RC data-update documents, ADR 0029) — T-047 steps 2–3
+- [x] Live screens, server: opt-in `live`, `/screens/{id}/live` WebSocket with RC data-update documents (ADR 0029) — T-047 step 2
+- [ ] Live screens in the app (sdk-android keeps the socket open) — T-047 step 3
 - [ ] Long-press, double-tap, ripple, haptics; alpha/scale/rotation/offset/z-order — T-019
 - [ ] Tabs / bottom navigation defined by the server (app structure, not only screens)
 - [x] Brand surface/text/outline colors for component defaults (`brand.json`) — T-040

@@ -7,6 +7,11 @@ package io.composecast.protocol
 /** Structural problems (no template checks): id, components and error components. */
 internal fun ScreenDefinition.screenContentProblems(): List<String> = buildList {
     if (id.isBlank()) add("id: must not be blank")
+    live?.let {
+        if (it.everyMs !in Live.MIN_EVERY_MS..Live.MAX_EVERY_MS) {
+            add("live.everyMs: must be ${Live.MIN_EVERY_MS}..${Live.MAX_EVERY_MS}, was ${it.everyMs}")
+        }
+    }
     addAll(componentProblems(components, "components"))
     addAll(componentProblems(error, "error"))
 }

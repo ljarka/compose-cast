@@ -50,12 +50,15 @@ fun Application.configureRouting(screens: LiveScreens) {
             call.response.header(HttpHeaders.ETag, etag)
             // Clients may keep the document but must revalidate (cheap 304) before using it.
             call.response.header(HttpHeaders.CacheControl, "no-cache")
+            // Live screens (T-047): the app opens /screens/{id}/live for updates (also on a 304).
+            screen.definition.live?.let { call.response.header(Headers.LIVE, it.everyMs.toString()) }
             if (etagMatches(call.request.headers[HttpHeaders.IfNoneMatch], etag)) {
                 return@get call.respond(HttpStatusCode.NotModified)
             }
             call.response.header(Headers.SCREEN_TITLE, URLEncoder.encode(screen.title, Charsets.UTF_8))
             call.respondBytes(screen.document, ContentType.Application.OctetStream)
         }
+        liveScreens(screens)
         // Human-readable dump of the decoded document, for debugging in a browser or curl.
         get("/screens/{id}/debug") {
             val screen = call.renderScreen(screens) ?: return@get
@@ -102,6 +105,16 @@ private suspend fun ApplicationCall.renderScreen(screens: LiveScreens): RemoteSc
     // Path only: `parameters` also holds the query, where a screen param named `id` (a detail
     // screen's `?id=82`) would win over the screen id (T-031).
     val id = (this as RoutingCall).pathParameters["id"]!!
+    val context = renderContext(id)
+    // Bound screens block on data sources (T-006): keep them off the request threads.
+    val registry = screens.registryFor(id)
+    val screen = registry?.let { withContext(Dispatchers.IO) { it.render(id, context) } }
+    if (screen == null) respond(HttpStatusCode.NotFound, ErrorResponse("screen_not_found", "Screen '$id' not found"))
+    return screen
+}
+
+/** Query parameters and the client's RC version headers (T-004) of a request for screen [id]. */
+internal fun ApplicationCall.renderContext(id: String): RenderContext {
     val params = request.queryParameters.entries().associate { (name, values) -> name to values.first() }
     val rawApiLevel = request.headers[Headers.RC_API_LEVEL]
     val rcApiLevel = rawApiLevel?.toIntOrNull()
@@ -119,15 +132,7 @@ private suspend fun ApplicationCall.renderScreen(screens: LiveScreens): RemoteSc
         )
     }
     val rcProfiles = request.headers[Headers.RC_PROFILES]?.toIntOrNull()
-    // Bound screens block on data sources (T-006): keep them off the request threads.
-    val registry = screens.registryFor(id)
-    val screen = registry?.let {
-        withContext(Dispatchers.IO) {
-            it.render(id, RenderContext(params, rcApiLevel = rcApiLevel, rcProfiles = rcProfiles))
-        }
-    }
-    if (screen == null) respond(HttpStatusCode.NotFound, ErrorResponse("screen_not_found", "Screen '$id' not found"))
-    return screen
+    return RenderContext(params, rcApiLevel = rcApiLevel, rcProfiles = rcProfiles)
 }
 
 /** `If-None-Match` may list several tags, weak (`W/`) ones or `*` (RFC 9110 §13.1.2). */

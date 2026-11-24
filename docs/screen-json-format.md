@@ -62,6 +62,17 @@ Actions: `navigate` (screen, params), `open_url` (url), `reload`, `track` (event
   - `modifier.semantics`: `{description, role (button|checkbox|switch|radioButton|tab|image|dropdownList|picker|carousel), stateDescription, hidden, enabled}`.
   - `ScreenDefinition.warnings()`: non-fatal warnings (e.g. clickable image/icon without `alt` or `semantics.description`), surfaced in `/screens/{id}/debug`.
 
+### Live screens (T-047, [ADR 0029](decisions/0029-live-screens-websocket-data-updates.md))
+
+```json
+{ "id": "ops", "live": { "everyMs": 1000 }, "data": { "m": { "url": "https://…/metrics", "cacheSeconds": 0 } },
+  "components": [{ "type": "gauge", "value": "{{m.cpu}}", "label": "{{m.cpu}}%" }] }
+```
+- `live` (optional; default `everyMs` 1000, allowed 100..3600000): the server renders the screen
+  again every `everyMs` and pushes what changed to apps over `/screens/{id}/live`. Without `live`
+  the screen is served exactly as before. Data sources still use their `cacheSeconds` — set it
+  at or below `everyMs` (0 = fetch every time) or the values only change when the cache expires.
+
 ### Dashboard components (T-047, [ADR 0029](decisions/0029-live-screens-websocket-data-updates.md))
 
 Drawn on a Remote Compose canvas; meant for (live) dashboards. Values are **strings**, so they take

@@ -1,5 +1,6 @@
 package io.composecast.server.demo
 
+import io.composecast.protocol.Action
 import io.composecast.protocol.Alignment
 import io.composecast.protocol.Dimension
 import io.composecast.protocol.Modifier
@@ -8,7 +9,7 @@ import io.composecast.server.sdk.RegistryBuilder
 
 /**
  * Dashboard components drawn on an RC canvas (T-047): gauges, key figures and a sparkline.
- * Static values here; T-047 step 2 binds them to a metrics source and makes the screen live.
+ * Static values (a golden screenshot); the `live` screen shows the same components updating.
  */
 internal fun RegistryBuilder.dashboardScreen() {
     screen("dashboard") {
@@ -51,5 +52,7 @@ internal fun RegistryBuilder.dashboardScreen() {
                 thickness = 3,
             )
         }
+        spacer(12)
+        button("See it live", Action.Navigate("live"))
     }
 }

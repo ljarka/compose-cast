@@ -40,6 +40,11 @@ class RemoteScreen internal constructor(
 
     /** Human-readable dump of the decoded document, for debugging. */
     fun describe(): String = RemoteComposeRenderer.describe(bytes)
+
+    /** Hash of what a data update cannot change ([RemoteComposeRenderer.structure], ADR 0029). */
+    val structure: String by lazy { RemoteComposeRenderer.structure(bytes) }
+
+    internal fun sameBytes(other: RemoteScreen): Boolean = bytes.contentEquals(other.bytes)
 }
 
 /**
@@ -139,6 +144,17 @@ class ScreenRegistry internal constructor(
         val definition = build(context).also { it.validate() }
         val resolved = if (definition.isBound) BoundScreen(definition, fetcher).bind(context) else definition
         return render(resolved, targetLevel, profiles)
+    }
+
+    /**
+     * [screen] (a result of [render] with the same [context]) as a data-update document: the same
+     * definition, already bound, so no data is fetched again and the ids match (ADR 0029).
+     */
+    fun dataUpdate(screen: RemoteScreen, context: RenderContext = RenderContext.EMPTY): ByteArray {
+        val apiLevel =
+            minOf(context.rcApiLevel ?: RemoteComposeRenderer.MAX_API_LEVEL, RemoteComposeRenderer.MAX_API_LEVEL)
+        val profiles = context.rcProfiles ?: RemoteComposeRenderer.DEFAULT_PROFILES
+        return renderer.render(screen.definition, apiLevel, profiles, dataUpdate = true)
     }
 
     private fun render(definition: ScreenDefinition, apiLevel: Int, profiles: Int) =

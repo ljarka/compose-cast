@@ -31,4 +31,10 @@ object Headers {
 
     /** Screen title sent with `GET /screens/{id}`; UTF-8, percent-encoded (URL encoding). */
     const val SCREEN_TITLE = "X-Composecast-Screen-Title"
+
+    /**
+     * Sent with `GET /screens/{id}` of a live screen (T-047, ADR 0029): its `everyMs`. The app then
+     * opens `/screens/{id}/live` (WebSocket, same query and headers) to receive updates.
+     */
+    const val LIVE = "X-Composecast-Live"
 }

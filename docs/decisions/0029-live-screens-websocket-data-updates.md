@@ -53,8 +53,16 @@ Verified in RC 1.0.0-alpha23 sources and in a PoC on the emulator (2026-11-24, d
 - `sdk-android` gains an OkHttp dependency (Ktor `Android` engine has no WebSocket).
 - Static screens, goldens and existing apps are untouched.
 
+## Implementation notes (T-047 step 2, 2026-11-24)
+- Structure fingerprint = the decoded operations re-encoded (`Operation.write`), replaceable values
+  reduced to type + id (`RemoteComposeRenderer.structure`). Equal texts share an id, so data can
+  change structure; then a full frame is sent (`LiveFramesTest`).
+- A data-update frame is a full render with the flag (same size); it saves state and animation,
+  not bytes. A delta with only the data operations is a later optimization.
+- One render loop per connection for now; sharing it per `(screen, params)` is a follow-up.
+
 ## How to verify it still holds
-`ServerLiveTest` (to be added in T-047): first frame is a full document, the next ones have
+`LiveRouteTest`, `LiveFramesTest`, `LiveDemoTest`: first frame is a full document, the next ones have
 `DOC_DATA_UPDATE` and identical ids; static screens have no live route. On the emulator: the demo
 `dashboard` screen moves without user action (`adb logcat -s ComposeCast` shows applied updates).
 On an RC upgrade re-run the live checks in the upgrade playbook (behaviors 18–20).

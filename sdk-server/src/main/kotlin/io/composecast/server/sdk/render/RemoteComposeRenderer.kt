@@ -1,10 +1,19 @@
 package io.composecast.server.sdk.render
 
 import androidx.compose.remote.core.CoreDocument
+import androidx.compose.remote.core.Operation
 import androidx.compose.remote.core.RcPlatformServices
 import androidx.compose.remote.core.RcProfiles
 import androidx.compose.remote.core.RemoteComposeBuffer
+import androidx.compose.remote.core.WireBuffer
+import androidx.compose.remote.core.operations.BitmapData
+import androidx.compose.remote.core.operations.DataListFloat
+import androidx.compose.remote.core.operations.FloatConstant
 import androidx.compose.remote.core.operations.Header
+import androidx.compose.remote.core.operations.TextData
+import androidx.compose.remote.core.operations.layout.Container
+import androidx.compose.remote.core.types.IntegerConstant
+import androidx.compose.remote.core.types.LongConstant
 import androidx.compose.remote.creation.JvmRcPlatformServices
 import androidx.compose.remote.creation.RemoteComposeWriter
 import androidx.compose.remote.creation.dsl.Modifier
@@ -21,6 +30,7 @@ import io.composecast.server.sdk.ImageCache
 import io.composecast.server.sdk.ImageLoader
 import io.composecast.server.sdk.UnsupportedClientVersionException
 import java.io.ByteArrayInputStream
+import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Logger
 import javax.imageio.ImageIO
@@ -50,7 +60,17 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
         images.get(url, ::fetch)
     }
 
-    fun render(screen: ScreenDefinition, apiLevel: Int = MAX_API_LEVEL, profiles: Int = DEFAULT_PROFILES): ByteArray {
+    /**
+     * The document of [screen]. With [dataUpdate] the header marks it as a data-update document
+     * (`DOC_DATA_UPDATE`): a player that already shows the same structure only replaces its
+     * texts, numbers, arrays and images by id (live screens, ADR 0029).
+     */
+    fun render(
+        screen: ScreenDefinition,
+        apiLevel: Int = MAX_API_LEVEL,
+        profiles: Int = DEFAULT_PROFILES,
+        dataUpdate: Boolean = false,
+    ): ByteArray {
         if (apiLevel < MIN_API_LEVEL) {
             throw UnsupportedClientVersionException(
                 MIN_API_LEVEL,
@@ -66,7 +86,7 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
             )
         }
         return try {
-            createRcBuffer(profile, *HEADER_TAGS) {
+            createRcBuffer(profile, *(if (dataUpdate) UPDATE_TAGS else HEADER_TAGS)) {
                 Column(Modifier.fillMaxSize().background(background).verticalScroll().padding(SCREEN_PADDING)) {
                     renderChildren(env, screen.components, Slot(Axis.Vertical) { m, w -> m.weight(w) })
                 }
@@ -118,6 +138,47 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
         private val HEADER_TAGS = arrayOf(
             RemoteComposeWriter.HTag(Header.DOC_DENSITY_BEHAVIOR, CoreDocument.DENSITY_BEHAVIOR_DP),
         )
+
+        private val UPDATE_TAGS = HEADER_TAGS + RemoteComposeWriter.HTag(Header.DOC_DATA_UPDATE, 1)
+
+        /**
+         * A hash of everything in [bytes] that a data update cannot change: every operation's
+         * encoding, except the replaceable values (`CoreDocument.applyUpdate`: texts, floats,
+         * integers, longs, float arrays, bitmaps), which count only by type and id. Two documents
+         * with the same structure can be turned into each other by a data-update document. Equal
+         * texts share one id (docs/remote-compose.md behavior 21), so data can change structure.
+         */
+        fun structure(bytes: ByteArray): String {
+            val document = CoreDocument()
+            document.initFromBuffer(RemoteComposeBuffer.fromInputStream(bytes.inputStream()))
+            val digest = MessageDigest.getInstance("SHA-256")
+            fun visit(operations: List<Operation>) {
+                for (op in operations) {
+                    val replaceable = when (op) {
+                        is TextData -> op.mTextId
+                        is FloatConstant -> op.mId
+                        is IntegerConstant -> op.mId
+                        is LongConstant -> op.mId
+                        is DataListFloat -> op.mId
+                        is BitmapData -> op.mImageId
+                        else -> null
+                    }
+                    when {
+                        replaceable != null -> digest.update("${op.javaClass.simpleName}#$replaceable;".toByteArray())
+                        op is Header -> Unit // carries the DOC_DATA_UPDATE flag itself
+                        else -> {
+                            val wire = WireBuffer()
+                            op.write(wire)
+                            digest.update(op.javaClass.simpleName.toByteArray())
+                            digest.update(wire.buffer, 0, wire.size)
+                        }
+                    }
+                    if (op is Container) visit(op.list)
+                }
+            }
+            visit(document.operations)
+            return digest.digest().joinToString("") { "%02x".format(it) }
+        }
 
         /** Decodes a document with the Remote Compose core reader and dumps its operation tree. */
         fun describe(bytes: ByteArray): String {

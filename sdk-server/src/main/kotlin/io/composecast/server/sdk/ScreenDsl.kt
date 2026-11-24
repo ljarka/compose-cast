@@ -9,6 +9,7 @@ import io.composecast.protocol.Component
 import io.composecast.protocol.ContentScale
 import io.composecast.protocol.DataSource
 import io.composecast.protocol.FontWeight
+import io.composecast.protocol.Live
 import io.composecast.protocol.Modifier
 import io.composecast.protocol.ParamSpec
 import io.composecast.protocol.RepeatItems
@@ -314,6 +315,12 @@ class ScreenBuilder internal constructor(val id: String) : ComponentsBuilder("Sc
     private val data = linkedMapOf<String, DataSource>()
     private val lookups = linkedMapOf<String, Map<String, String>>()
     private var error = emptyList<Component>()
+    private var live: Live? = null
+
+    /** Makes this a live screen (T-047, ADR 0029): apps receive its changes every [everyMs] ms. */
+    fun live(everyMs: Int = Live.DEFAULT_EVERY_MS) {
+        live = Live(everyMs)
+    }
 
     /** A query parameter read as `{{params.<name>}}`; no [default] = required (HTTP 400 when missing). */
     fun param(name: String, default: String? = null) {
@@ -342,6 +349,14 @@ class ScreenBuilder internal constructor(val id: String) : ComponentsBuilder("Sc
         error = nested(block)
     }
 
-    internal fun build(): ScreenDefinition =
-        ScreenDefinition(id, title, params.toMap(), data.toMap(), lookups.toMap(), components.toList(), error)
+    internal fun build(): ScreenDefinition = ScreenDefinition(
+        id,
+        title,
+        params.toMap(),
+        data.toMap(),
+        live,
+        lookups.toMap(),
+        components.toList(),
+        error,
+    )
 }
