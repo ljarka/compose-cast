@@ -42,7 +42,7 @@ copy of `demoScreens()`. `./gradlew :server-app:run` runs from the repo root, so
 | `/.github/workflows/release.yml` | Push to `main` → `:main`; published release → `:<tag>` + `:release` + the two distribution files as release assets; buildx amd64 + arm64 (QEMU for the runtime stage), OCI labels via `metadata-action` |
 
 - The build stage `COPY`s every module `server-app` depends on (transitively); a new one is
-  enforced by `check-architecture.sh` R11 (A1 forgot `server-store` and only Docker failed).
+  enforced by `check-architecture.sh` R11 (A1 forgot `server-store` and only Docker failed; `app-templates` added with T-030).
 - The build stage must `chmod -R a+rX` the install: Gradle-cache jars are 0600 → `NoClassDefFoundError` as non-root.
 - Pin base image tags (`21.0.13_9-…`); bump them with the JDK. Apps pull the published image (T-023, ADR 0017).
 

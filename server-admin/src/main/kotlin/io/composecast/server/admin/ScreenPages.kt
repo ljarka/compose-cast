@@ -226,7 +226,7 @@ private val NOTICES = mapOf(
 )
 
 /** Runs a publish; its failure becomes a message for the editor (null = success). */
-private inline fun publishOrProblem(publish: () -> Unit): String? = try {
+internal inline fun publishOrProblem(publish: () -> Unit): String? = try {
     publish()
     null
 } catch (e: PublishException) {

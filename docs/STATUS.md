@@ -5,7 +5,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Next
 
-- **[T-030 App templates](tasks/T-030-app-templates.md)** (Etap 8) — the `ready` task.
+- No `ready` task: specify one.
 
 ## Task queue (priority order)
 
@@ -40,8 +40,8 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-031 Data source wizard (URL → screens)](tasks/T-031-data-source-wizard.md) | Etap 8 | done (`001e06c`) — W1 probe + heuristics, W2 wizard (TVMaze list + detail on the emulator), W3 field picker + data source form |
 | [T-047 Live screens + dashboard components](tasks/T-047-live-dashboards.md) | Roadmap G1–G2 | done (`99a932a`) — gauge/sparkline/kpi, live screens over a WebSocket, app keeps them current |
 | [T-032 Live preview on a phone](tasks/T-032-live-preview.md) | Roadmap G3 | done (`1087b4b`) — one live preview per editor and screen, every saved edit on the phone in ~1 s (ADR 0030) |
-| [T-030 App templates](tasks/T-030-app-templates.md) | Etap 8 | ready — roadmap D2; templates can use live screens + dashboard components |
-| [T-010 Settings export (properties + icon)](tasks/T-010-app-export.md) | Etap 9 | queued (after T-030); roadmap E1–E3; rewrite the Design for ADR 0025 (GitHub Actions build) first |
+| [T-030 App templates](tasks/T-030-app-templates.md) | Etap 8 | done (HASH) — News, Shop, Events, Weather (live), Blank; Templates page applies drafts + Publish all (ADR 0031) |
+| [T-010 Settings export (properties + icon)](tasks/T-010-app-export.md) | Etap 9 | ready; roadmap E1–E3; rewrite the Design for ADR 0025 (GitHub Actions build) first |
 | [T-027 Images loaded by the SDK (lists)](tasks/T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-010); roadmap F1 |
 | [T-021 Native components via RC `Custom` (text input)](tasks/T-021-native-components.md) | Etap 10 | queued (after T-027); roadmap F2; spike first |
 | [T-046 Milestone 2: TV shows app built only in the admin](tasks/T-046-tv-shows-milestone.md) | Roadmap F | queued (after T-021); roadmap F3 — success criterion 1 |
@@ -71,7 +71,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | Etap 5 — Components for real apps | 11/15 |
 | Etap 6 — Milestone 1: Example weather app (external project) | 5/7 |
 | Etap 7 — App shells & SDKs | 3/7 |
-| Etap 8 — Admin panel MVP | 6/11 |
+| Etap 8 — Admin panel MVP | 7/11 |
 | Etap 9 — White-label app export + TV shows milestone | 1/6 |
 | Etap 10 — Interactivity (DivKit core) | 1/8 |
 | Etap 11 — Release 0.1.0-alpha | 0/2 |
@@ -82,9 +82,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- T-030 — app templates
 - T-032 — live draft preview
 - T-047 step 3 — live screens in the app (T-047 done)
 - T-047 step 2 — live screens on the server
 - T-047 step 1 — dashboard components
 - Live dashboards concept + PoC
-- T-031 W3 — field picker + data source form (T-031 done)

@@ -182,7 +182,7 @@
               "fontWeight": "bold",
               "textAlign": "end",
               "modifier": {
-                "width": "wrap"
+                "width": 104
               }
             }
           ]

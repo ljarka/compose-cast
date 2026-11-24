@@ -9,6 +9,7 @@ import androidx.compose.remote.creation.dsl.RcPaintStyle
 import androidx.compose.remote.creation.dsl.RcScope
 import androidx.compose.remote.creation.dsl.RcStrokeCap
 import androidx.compose.remote.creation.dsl.RcTextAlign
+import androidx.compose.remote.creation.dsl.RcTextOverflow
 import androidx.compose.remote.creation.dsl.RcVerticalPositioning
 import androidx.compose.remote.creation.dsl.fillMaxSize
 import androidx.compose.remote.creation.dsl.fillMaxWidth
@@ -134,6 +135,8 @@ internal fun RcScope.renderKpi(env: RenderEnv, node: Component.Kpi, slot: Slot) 
             fontSize = sp(KPI_VALUE_SP),
             fontWeight = RcFontWeight.W700,
             maxLines = 1,
+            // A value wider than the card ends in "…" rather than being cut mid-character.
+            overflow = RcTextOverflow.Ellipsis,
         )
         if (node.caption.isNotBlank()) {
             Text(node.caption, Modifier.fillMaxWidth(), color = muted, fontSize = sp(KPI_CAPTION_SP), maxLines = 1)

@@ -20,6 +20,10 @@ How the screen-building parts of the admin panel (`server-admin`) work and why. 
   starter in `Palette.starters` and a palette group (`PaletteTest` fails otherwise). The error list
   shows in the tree once the screen has data sources. Renaming a repeat's alias renames
   `{{alias…}}` in its lists (`Bindings.rename`).
+- **Templates (T-030, [ADR 0031](decisions/0031-app-bundle-format.md)):** "Templates" (nav, and
+  `/admin` of an app without screens) applies a whole app from `app-templates` as drafts; "Use its
+  colors" changes only the brand's colors; "Publish all" publishes the drafts and makes the
+  template's home the app's home. Clashing ids need a prefix (screens and navigation renamed).
 - **Wizard (T-031):** the probe's limit is the screens' own 2 MB; lists in generated screens are
   capped at 20 items because images are embedded (ADR 0003; SDK-loaded images: T-027). A key in a
   header or in a URL parameter named like a key (`key`, `apikey`, `token`, …) must be

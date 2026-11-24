@@ -30,7 +30,7 @@ built: [specs/tech-stack.md](specs/tech-stack.md) · what comes next: [specs/roa
 | DivKit concept | Remote Compose primitive (alpha) | compose-cast |
 |---|---|---|
 | Element tree (containers, text, image) | `Column`/`Row`/`Box`/`Flow`, `Text`, `Image`, `Canvas` | Text, Image, Button, Icon, Divider, Card, Column/Row/Box, Flow, grids, galleries + modifiers ✅; Canvas: `gauge`, `sparkline`, `kpi` ✅ (T-047), charts ⏳ T-018 |
-| Templates | Server-side Kotlin functions; RC macros (`defineMacro`/`inflate`) | ⏳ Etap 10 |
+| Templates | Server-side Kotlin functions; RC macros (`defineMacro`/`inflate`) | whole-app templates in the admin (News, Shop, Events, Weather, Blank) ✅ T-030; component templates ⏳ Etap 10 |
 | Variables | Named variables, set by the host (`setUserLocal*` on the player) | ⏳ Etap 10 |
 | Expressions | On-device float/text expressions, conditional operations | used internally for dp/sp; DSL ⏳ Etap 10 |
 | States | `StateLayout` + local value-change actions | `expandable` (T-008 PoC) ✅; general states & tabs ⏳ Etap 10 (T-017) |

@@ -121,11 +121,13 @@ internal fun Route.adminRoutes(
         }
 
         loggedIn(auth) {
-            get { call.seeOther("/admin/screens") }
+            // An app without screens starts at the templates (T-030): a working app in one click.
+            get { call.seeOther(if (screens.isEmpty()) "/admin/templates" else "/admin/screens") }
             screenPages(screens, settings, publishing)
             visualPages(screens, probe, publishing)
             settingsPages(settings, publishing)
             wizardPages(screens, settings, probe)
+            templatesPages(screens, settings, publishing)
             extra()
         }
     }

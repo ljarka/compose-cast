@@ -69,7 +69,7 @@ class AdminPanelTest {
 
         val cookie = login.sessionCookie()
         assertEquals(
-            "/admin/screens",
+            "/admin/templates", // no screens yet: start from a template (T-030)
             client.get("/admin") {
                 header(HttpHeaders.Cookie, cookie)
             }.headers[HttpHeaders.Location],

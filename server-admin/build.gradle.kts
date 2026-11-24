@@ -7,6 +7,7 @@ dependencies {
     implementation(project(":protocol"))
     implementation(project(":sdk-server")) // HttpImageLoader.isPrivateAddress (T-031 probe)
     implementation(project(":server-store"))
+    implementation(project(":app-templates")) // Templates page (T-030)
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.sessions)
     implementation(libs.ktor.server.freemarker)

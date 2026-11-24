@@ -45,8 +45,8 @@
           "children": [
             {
               "type": "kpi",
-              "value": "{{p.price}} USD",
-              "label": "Price",
+              "value": "{{p.price}}",
+              "label": "Price, USD",
               "caption": "{{p.category}}"
             }
           ]

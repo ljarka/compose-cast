@@ -391,3 +391,9 @@ README roadmap's "Etap" numbers.
     a new QR code ([ADR 0030](decisions/0030-live-draft-previews.md)); a new registry is always a
     full frame; logout revokes. Preview app: "Preview ·" title, no refresh button on live screens.
     Emulator: edit → phone in 1.2 s; `scripts/verify-live-preview.sh` makes it repeatable.
+80. **T-030 — app templates**: new module `app-templates` with the bundle format
+    ([ADR 0031](decisions/0031-app-bundle-format.md)) and News, Shop, Events, Weather (live, with
+    the T-047 dashboard components) and Blank; admin "Templates" page applies a template as drafts
+    (prefix on id clashes, optional colors) and "Publish all"; an empty app opens on it. Checked on
+    the emulator from an empty database with the real APIs; the device showed a too-wide key figure
+    (now ellipsized) and uneven columns, both fixed. DummyJSON rejected: WebP images.

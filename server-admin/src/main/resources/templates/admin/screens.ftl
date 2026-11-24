@@ -2,7 +2,10 @@
 <@layout.page title=title user=user role=role>
 <main class="wide">
   <h1>Screens</h1>
-  <#if canEdit><p><a href="/admin/wizard">Create screens from an API…</a> <span class="muted">— paste a JSON API's address, get a list and a detail screen</span></p></#if>
+  <#if canEdit>
+  <p><a href="/admin/templates">Start from a template…</a> <span class="muted">— a whole app (news, shop, events, weather) in one click</span></p>
+  <p><a href="/admin/wizard">Create screens from an API…</a> <span class="muted">— paste a JSON API's address, get a list and a detail screen</span></p>
+  </#if>
   <#if homeError??><p class="error" role="alert">${homeError}</p></#if>
   <div class="card">
     <table>
