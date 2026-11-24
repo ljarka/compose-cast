@@ -13,8 +13,10 @@ class LiveFrame(
 /**
  * The frames of one live screen for one viewer: call [next] every `live.everyMs`. The first frame
  * and every structure change send the full document; a change of data only sends a data-update
- * document; no change sends nothing. [registry] is asked on every call, so a publish or a data-dir
- * reload (a new registry) reaches open connections.
+ * document; no change sends nothing. [registry] is asked on every call, so a publish, a data-dir
+ * reload or a draft preview edit (a new registry) reaches open connections — always as a full
+ * document: an edited text in a data update would keep its old measured width (remote-compose.md
+ * behavior 20), and edits are rare compared to data ticks.
  */
 class LiveFrames(
     private val id: String,
@@ -22,6 +24,7 @@ class LiveFrames(
     private val registry: () -> ScreenRegistry?,
 ) {
     private var last: RemoteScreen? = null
+    private var lastRegistry: ScreenRegistry? = null
 
     /** The screen's `live.everyMs` as of the last [next]; null before the first call or for a non-live screen. */
     val everyMs: Int? get() = last?.definition?.live?.everyMs
@@ -35,10 +38,13 @@ class LiveFrames(
         val registry = registry() ?: throw NoSuchElementException("Screen '$id' not found")
         val screen = registry.render(id, context) ?: throw NoSuchElementException("Screen '$id' not found")
         val previous = last
+        val edited = lastRegistry != null && lastRegistry !== registry
         last = screen
+        lastRegistry = registry
         return when {
             previous == null -> LiveFrame(screen.document, full = true)
             previous.sameBytes(screen) -> null
+            edited -> LiveFrame(screen.document, full = true)
             previous.structure != screen.structure -> LiveFrame(screen.document, full = true)
             else -> LiveFrame(registry.dataUpdate(screen, context), full = false)
         }

@@ -386,3 +386,8 @@ README roadmap's "Etap" numbers.
     second for a minute; Home/Back closed the socket, returning and a server restart reconnected.
     Two bugs only the device showed (rule 5): a double connection from reading Compose state in an
     effect, and a refused connection for the previous screen after Back. Next: T-032 live preview.
+79. **T-032 — live draft preview**: one preview id per admin user and screen, updated in place by
+    every saved draft and served as a live screen (500 ms), so the phone follows the panel without
+    a new QR code ([ADR 0030](decisions/0030-live-draft-previews.md)); a new registry is always a
+    full frame; logout revokes. Preview app: "Preview ·" title, no refresh button on live screens.
+    Emulator: edit → phone in 1.2 s; `scripts/verify-live-preview.sh` makes it repeatable.

@@ -24,6 +24,7 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /** T-029 C2: the visual editor's tree and generated forms edit the stored draft. */
 class VisualPagesTest {
@@ -158,6 +159,9 @@ class VisualPagesTest {
         assertEquals("Start", draft.title)
         assertEquals(mapOf("icons" to mapOf("*" to "x")), draft.lookups)
         assertEquals(screen.components, draft.components)
+        // T-032: every saved edit goes to the editor's open preview (if any) as the saved draft.
+        assertEquals(screens.get("main")!!.draftJson, host.updatedPreviews.single().second)
+        assertTrue(host.updatedPreviews.single().first.startsWith("user:"))
     }
 
     @Test

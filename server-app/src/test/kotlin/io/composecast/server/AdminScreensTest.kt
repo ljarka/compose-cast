@@ -5,6 +5,7 @@ import io.composecast.protocol.Headers
 import io.composecast.protocol.ScreenJson
 import io.composecast.server.admin.AdminAuth
 import io.composecast.server.sdk.DataLoader
+import io.composecast.server.sdk.Documents
 import io.composecast.server.sdk.ImageLoader
 import io.composecast.server.sdk.RenderContext
 import io.composecast.server.sdk.ScreenRegistry
@@ -12,6 +13,8 @@ import io.composecast.server.store.ScreenStore
 import io.composecast.server.store.SettingsStore
 import io.composecast.server.store.UserStore
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.forms.submitFormWithBinaryData
@@ -24,6 +27,10 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.parameters
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
+import io.ktor.websocket.CloseReason
+import io.ktor.websocket.Frame
+import io.ktor.websocket.readBytes
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
@@ -40,6 +47,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /** T-007 A1: admin mode serves exactly what files mode served, from the database. */
 class AdminScreensTest {
@@ -255,6 +263,41 @@ class AdminScreensTest {
         assertContains(connect, "&amp;screen=$previewId")
         assertEquals(HttpStatusCode.BadRequest, client.get("/connect?screen=..%2Fx").status)
     }
+
+    @Test
+    fun `an edit saved in the panel reaches a phone showing the preview within a second (T-032)`() =
+        adminMode { client, cookie, _ ->
+            val page = client.post(cookie, "/admin/screens/main/preview", "json", """{"id": "main", "title": "T"}""")
+            val previewId = Regex("/connect\\?screen=(__preview-[0-9a-f]{32})").find(page.bodyAsText())!!.groupValues[1]
+            assertEquals("500", client.get("/screens/$previewId").headers[Headers.LIVE], "previews are live")
+            val again = client.post(cookie, "/admin/screens/main/preview", "json", """{"id": "main", "title": "T"}""")
+            assertContains(again.bodyAsText(), previewId, message = "the same QR code: no new scan")
+
+            createClient { install(WebSockets) }.webSocket("/screens/$previewId/live") {
+                val first = Documents.describe((withTimeout(5_000) { incoming.receive() } as Frame.Binary).readBytes())
+                assertFalse("Edited on the panel" in first)
+
+                val started = System.nanoTime()
+                val saved = client.post(
+                    cookie,
+                    "/admin/screens/main",
+                    "json",
+                    """{"id": "main", "title": "T", "components": [{"type": "text", "text": "Edited on the panel"}]}""",
+                )
+                assertEquals(HttpStatusCode.SeeOther, saved.status)
+                val next = Documents.describe((withTimeout(5_000) { incoming.receive() } as Frame.Binary).readBytes())
+                val ms = (System.nanoTime() - started) / 1_000_000
+                assertTrue("Edited " in next, next)
+                assertFalse("DOC_DATA_UPDATE" in next, "an edit is a full document (text re-measured)")
+                assertTrue(ms < 2_000, "took $ms ms")
+
+                // Logging out ends the preview: the stream closes, GET answers 404.
+                client.post(cookie, "/admin/logout", "x", "y")
+                val close = withTimeout(5_000) { closeReason.await() }
+                assertEquals(CloseReason.Codes.CANNOT_ACCEPT.code, close?.code)
+            }
+            assertEquals(HttpStatusCode.NotFound, client.get("/screens/$previewId").status)
+        }
 
     @Test
     fun `setting a home screen exposes it in brand and keeps main distinct`() = adminMode { client, cookie, store ->

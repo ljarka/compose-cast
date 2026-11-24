@@ -47,4 +47,34 @@ class PreviewScreensTest {
         previews.put(c, registry)
         assertEquals(listOf(null, registry, registry), listOf(previews[a], previews[b], previews[c]))
     }
+
+    @Test
+    fun `one id per owner and screen while editing, updates in place, logout revokes (T-032)`() {
+        val previews = PreviewScreens(clock, ttl = Duration.ofMinutes(30), max = 10)
+        val first = composeCast { }
+        val id = previews.open("user:1", "main") { first }
+        assertEquals(id, previews.open("user:1", "main") { composeCast { } }, "a second click keeps the id")
+        assertNotEquals(id, previews.open("user:2", "main") { first }, "another editor has its own")
+        assertNotEquals(id, previews.open("user:1", "about") { first }, "another screen has its own")
+
+        val edited = composeCast { }
+        now = now.plus(Duration.ofMinutes(20))
+        assertTrue(previews.update("user:1", "main") { edited })
+        assertTrue(previews[id] === edited)
+        now = now.plus(Duration.ofMinutes(20))
+        assertNotNull(previews[id], "each update extends the preview")
+        assertEquals(false, previews.update("user:3", "main") { edited }, "no open preview: nothing")
+
+        previews.revoke("user:1")
+        assertNull(previews[id])
+        assertEquals(false, previews.update("user:1", "main") { edited })
+        assertNotEquals(id, previews.open("user:1", "main") { first }, "after logout a new id")
+    }
+
+    @Test
+    fun `an expired preview gets a new id`() {
+        val id = previews.open("user:1", "main") { registry }
+        now = now.plus(Duration.ofMinutes(31))
+        assertNotEquals(id, previews.open("user:1", "main") { registry })
+    }
 }

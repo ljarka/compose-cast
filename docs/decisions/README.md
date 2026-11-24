@@ -35,6 +35,7 @@ one (never silently contradict an accepted ADR).
 | [0027](0027-draft-preview-ids.md) | Draft previews: one unguessable screen id per preview | Accepted (amends 0013) |
 | [0028](0028-visual-editor-htmx-server-state.md) | Visual editor: HTMX, editor state on the server, forms from the model's descriptors | Accepted |
 | [0029](0029-live-screens-websocket-data-updates.md) | Live screens: WebSocket + RC data-update documents (opt-in per screen) | Accepted |
+| [0030](0030-live-draft-previews.md) | Live draft previews: one preview per editor and screen, updated on every save | Accepted (amends 0027, 0013) |
 
 ## Template
 

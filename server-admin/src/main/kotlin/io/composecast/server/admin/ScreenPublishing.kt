@@ -16,10 +16,21 @@ interface ScreenPublishing {
     fun publishBrand(brandJson: String)
 
     /**
-     * T-045 B2: serves [json] (checked) as a temporary screen for the Preview app, without writing
-     * anything; returns its screen id (`__preview-…`, ADR 0027).
+     * T-045 B2, T-032: serves [json] (checked) as a temporary **live** screen for the Preview app,
+     * without writing anything; returns its screen id (`__preview-…`, ADR 0027). The id stays the
+     * same for one [owner] (admin user) and screen while the preview is open (ADR 0030).
      */
-    fun preview(json: String): String
+    fun preview(json: String, owner: String): String
+
+    /**
+     * T-032: [json] (a saved draft) replaces [owner]'s open preview of that screen, so phones
+     * showing it update within a second; nothing happens without an open preview. Never throws:
+     * the draft is saved either way.
+     */
+    fun updatePreview(json: String, owner: String)
+
+    /** T-032: ends all previews of [owner] (logout). */
+    fun stopPreviews(owner: String)
 
     /** Makes the already-published screen [id] the home screen (served for `main`). */
     fun setHome(id: String)

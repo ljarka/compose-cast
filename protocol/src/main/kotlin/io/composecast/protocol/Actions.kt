@@ -18,6 +18,16 @@ object Actions {
     const val CUSTOM = "custom"
 }
 
+/**
+ * Draft previews (ADR 0027, 0030): screen ids `__preview-<128-bit hex>`, served only while an
+ * admin keeps the preview open. Apps mark them as previews; real screen ids never use the prefix.
+ */
+object PreviewIds {
+    const val PREFIX = "__preview-"
+
+    fun isPreview(id: String): Boolean = id.startsWith(PREFIX)
+}
+
 /** HTTP request/response header names used by the Compose Cast protocol. */
 object Headers {
     /** SDK version sent by the player on every `/screens/{id}` request; used for compatibility checks. */

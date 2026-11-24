@@ -1,6 +1,6 @@
 # T-032 — Live preview on a phone (instant refresh while editing)
 
-Status: ready · Roadmap: G3 · Depends on: T-007, T-047, ADR 0013, ADR 0029 · Module: server-admin, sdk-android, app-shell
+Status: done · Roadmap: G3 · Depends on: T-007, T-047, ADR 0013, ADR 0029 · Module: server-admin, sdk-android, app-shell
 
 ## Goal
 A phone running the app in **preview mode** shows the screen being edited in the panel and
@@ -30,6 +30,18 @@ the preview registry is built); (3) the Preview app opens the stream like any li
 `ComposeCastScreen(live = …)` already applies full frames when the structure changes (an edit
 usually changes structure). Decide in the task how the stable preview id is bound to the admin
 session (token / expiry) and record it in an ADR amending 0027.
+
+## Result (2026-11-24, [ADR 0030](../decisions/0030-live-draft-previews.md))
+- One preview id per admin user and screen (`PreviewScreens.open`), updated in place by every
+  saved draft (JSON editor and visual editor → `ScreenPublishing.updatePreview`), served live
+  every 500 ms; a new registry is always a full frame (edited texts re-measured); 30 min sliding
+  lifetime, logout revokes. The Preview app needed no stream code (T-047): title "Preview · …",
+  no refresh button on live screens.
+- Pairing/token: the unguessable preview id is the token (ADR 0027); bound to the admin user,
+  revoked on logout, expires 30 min after the last save. No "Stop preview" button yet.
+- Measured on the emulator: edit saved → phone shows it 1.2 s after the save started;
+  `scripts/verify-live-preview.sh` (curl + adb + Maestro `preview-shows.yaml`) checks it in < 3 s;
+  logout closed the phone's stream at once.
 
 ## Acceptance criteria
 - Edit a text in the panel → the emulator updates in under 2 s. A Maestro flow plus a server test

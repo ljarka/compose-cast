@@ -24,7 +24,7 @@ import java.net.URLEncoder
  * change is checked as a whole screen and saved as the same draft the JSON editor shows; `?node=`
  * is the selection (a component, `""` for the screen, or a list such as `components.2.empty`).
  */
-internal fun Route.visualPages(screens: ScreenStore, probe: ApiProbe) {
+internal fun Route.visualPages(screens: ScreenStore, probe: ApiProbe, publishing: ScreenPublishing) {
     val dataFields = DataFields(probe)
     route("/screens/{id}/visual") {
         get {
@@ -45,7 +45,7 @@ internal fun Route.visualPages(screens: ScreenStore, probe: ApiProbe) {
             val problems = mutableListOf<String>()
             val parsed = FormSchema.parse(fields, params::get, problems)
             val screen = ScreenTree.set(editing.root, node, editing.rebuild(node, parsed))
-            call.saveOrShow(screens, editing, screen, node, problems) { params[it] }
+            call.saveOrShow(screens, publishing, editing, screen, node, problems) { params[it] }
         }
         // C3: add, delete, duplicate, move, nest, wrap — form fields `op` and `type`.
         post("/edit") {
@@ -96,7 +96,9 @@ internal fun Route.visualPages(screens: ScreenStore, probe: ApiProbe) {
                     "",
                 )
             }
-            call.saveOrShow(screens, editing, result.screen, result.select, emptyList()) { editing.values(node)[it] }
+            call.saveOrShow(screens, publishing, editing, result.screen, result.select, emptyList()) {
+                editing.values(node)[it]
+            }
         }
         // T-031 W3, HTMX: the field picker — bindings usable at the node, with samples from the real data.
         get("/fields") {
@@ -139,6 +141,7 @@ internal fun Route.visualPages(screens: ScreenStore, probe: ApiProbe) {
  */
 private suspend fun ApplicationCall.saveOrShow(
     screens: ScreenStore,
+    publishing: ScreenPublishing,
     editing: Editing,
     screen: JsonObject,
     select: String,
@@ -154,7 +157,9 @@ private suspend fun ApplicationCall.saveOrShow(
         response.status(HttpStatusCode.UnprocessableEntity)
         return visualPage(screens, editing, node, value, all, "")
     }
-    screens.saveDraft(editing.stored.id, ScreenJson.encode(valid))
+    val saved = ScreenJson.encode(valid)
+    screens.saveDraft(editing.stored.id, saved)
+    publishing.updatePreview(saved, adminUser.previewOwner) // T-032: an open phone shows the edit
     seeOther("/admin/screens/${editing.stored.id.urlEncoded()}/visual?node=${select.urlEncoded()}&saved")
 }
 

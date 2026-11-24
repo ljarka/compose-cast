@@ -112,7 +112,10 @@ internal fun Route.adminRoutes(
             call.seeOther("/admin")
         }
         post("/logout") {
-            call.sessions.get<AdminSession>()?.let { auth.logout(it.token) }
+            call.sessions.get<AdminSession>()?.let { session ->
+                auth.user(session.token)?.let { publishing.stopPreviews(it.previewOwner) } // T-032
+                auth.logout(session.token)
+            }
             call.sessions.clear<AdminSession>()
             call.seeOther("/admin/login")
         }
@@ -120,7 +123,7 @@ internal fun Route.adminRoutes(
         loggedIn(auth) {
             get { call.seeOther("/admin/screens") }
             screenPages(screens, settings, publishing)
-            visualPages(screens, probe)
+            visualPages(screens, probe, publishing)
             settingsPages(settings, publishing)
             wizardPages(screens, settings, probe)
             extra()
@@ -132,6 +135,9 @@ internal fun Route.adminRoutes(
 internal fun ApplicationCall.page(title: String): Map<String, Any> = adminUser.let {
     mapOf("title" to title, "user" to it, "role" to it.role.id, "canEdit" to it.role.canEdit)
 }
+
+/** Whose draft previews these are (T-032, ADR 0030): one preview per user and screen. */
+internal val AdminUser.previewOwner: String get() = "user:$id"
 
 /** The user of the current request inside [loggedIn]. */
 internal val ApplicationCall.adminUser: AdminUser get() = attributes[AdminUserKey]

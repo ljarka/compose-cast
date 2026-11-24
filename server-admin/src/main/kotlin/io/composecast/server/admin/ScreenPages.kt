@@ -74,7 +74,9 @@ internal fun Route.screenPages(screens: ScreenStore, settings: SettingsStore, pu
                     call.response.status(HttpStatusCode.UnprocessableEntity)
                     return@post call.editor(screens, stored, json, checked)
                 }
-                screens.saveDraft(stored.id, ScreenJson.encode(checked.screen!!))
+                val saved = ScreenJson.encode(checked.screen!!)
+                screens.saveDraft(stored.id, saved)
+                publishing.updatePreview(saved, call.adminUser.previewOwner) // T-032: open phones follow
                 call.seeOther("/admin/screens/${stored.id.urlEncoded()}?saved")
             }
             post("/validate") {
@@ -125,7 +127,7 @@ internal fun Route.screenPages(screens: ScreenStore, settings: SettingsStore, pu
                     return@post call.editor(screens, stored, json, checked)
                 }
                 val previewId = try {
-                    publishing.preview(ScreenJson.encode(screen))
+                    publishing.preview(ScreenJson.encode(screen), call.adminUser.previewOwner)
                 } catch (e: PublishException) {
                     call.response.status(HttpStatusCode.UnprocessableEntity)
                     return@post call.editor(

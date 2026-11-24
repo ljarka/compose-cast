@@ -25,6 +25,9 @@ How the screen-building parts of the admin panel (`server-admin`) work and why. 
   header or in a URL parameter named like a key (`key`, `apikey`, `token`, …) must be
   `{{secret.NAME}}`, otherwise nothing is created. `ApplicationCall.screenId` reads the **path**
   parameter only (Ktor's `parameters` also holds the query).
+- **Live preview (T-032, [ADR 0030](decisions/0030-live-draft-previews.md)):** "Preview on phone"
+  keeps one preview per user and screen; every save (JSON editor, every visual edit) updates it and
+  the phone follows within about a second. Logout ends it.
 - **Live (T-047):** the screen form shows `live` as an optional group ("Every ms", generated from
   `Live`); filling it in makes the screen live, clearing it makes it a normal screen again
   (`FormSchemaTest`). Publishing reaches open live connections on their next tick.

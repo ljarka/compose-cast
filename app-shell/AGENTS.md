@@ -10,7 +10,7 @@ contain no Kotlin. For SDK details read `sdk-android/AGENTS.md`.
 
 | File | Purpose |
 |---|---|
-| `ComposeCastActivity.kt` | Launcher activity; reads config from resources; `ComposeCastApp` composable (back stack, states, action routing, live screens: `client.liveScreen` passed to `ComposeCastScreen` when the document is live **and** its id matches the back-stack entry — for one frame after Back the previous document is still shown), frame color scheme, status bar style |
+| `ComposeCastActivity.kt` | Launcher activity; reads config from resources; `ComposeCastApp` composable (back stack, states, action routing, live screens: `client.liveScreen` passed to `ComposeCastScreen` when the document is live **and** its id matches the back-stack entry — for one frame after Back the previous document is still shown), title "Preview · …" for draft previews (`PreviewIds`), no refresh button on live screens (they update themselves), frame color scheme, status bar style |
 | `PreviewConnection.kt` | Preview app (T-045): `PreviewLink.parse` (`composecast://connect?url=…[&screen=…]`), `PreviewLink.normalize` (typed address; no scheme = https), `PreviewServerStore` (SharedPreferences) |
 | `ConnectScreen.kt` | Preview app without a server: how to connect + address field |
 | `AndroidManifest.xml` | `INTERNET`, application label/icon/theme/`networkSecurityConfig`, the launcher activity (`singleTop`), the `ConnectLink` alias (`composecast://connect`, enabled only by `@bool/composecast_preview`) — merged into every app |

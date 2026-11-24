@@ -34,6 +34,9 @@ internal class AdminTestHost {
 
     /** What [publishing] was asked to preview. */
     val previews = mutableListOf<String>()
+    val previewOwners = mutableListOf<String>()
+    val updatedPreviews = mutableListOf<Pair<String, String>>()
+    val stoppedPreviews = mutableListOf<String>()
     val publishing = object : ScreenPublishing {
         override fun publish(id: String, json: String, by: String) {
             failWith?.let { throw PublishException(it) }
@@ -50,10 +53,19 @@ internal class AdminTestHost {
             settings[SettingsStore.BRAND] = brandJson
         }
 
-        override fun preview(json: String): String {
+        override fun preview(json: String, owner: String): String {
             failWith?.let { throw PublishException(it) }
             previews += json
+            previewOwners += owner
             return "__preview-test${previews.size}"
+        }
+
+        override fun updatePreview(json: String, owner: String) {
+            updatedPreviews += owner to json
+        }
+
+        override fun stopPreviews(owner: String) {
+            stoppedPreviews += owner
         }
 
         override fun setHome(id: String) {

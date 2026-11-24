@@ -1,0 +1,7 @@
+# Live draft preview (T-032): the Preview app shows TEXT within a few seconds.
+# Used by scripts/verify-live-preview.sh; run alone: maestro test -e TEXT="…" app-template/maestro/preview-shows.yaml
+appId: io.composecast.preview
+---
+- extendedWaitUntil:
+    visible: ".*${TEXT}.*"
+    timeout: 3000

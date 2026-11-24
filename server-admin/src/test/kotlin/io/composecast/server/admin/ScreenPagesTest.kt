@@ -248,6 +248,8 @@ class ScreenPagesTest {
         assertContains(body, "href=\"https://app.example.com/connect?screen=__preview-test1\"")
         assertContains(body, "Draft only", message = "the textarea keeps the text")
         assertEquals(listOf(ScreenJson.encode(ScreenDefinition("main", title = "Draft only"))), host.previews)
+        assertTrue(host.previewOwners.single().startsWith("user:"), "one preview per user and screen (T-032)")
+        assertTrue(host.updatedPreviews.isEmpty(), "previewing is not saving")
         assertNull(screens.get("main")!!.draftJson, "nothing saved")
         assertEquals(mapOf("main" to homeJson), screens.live())
 

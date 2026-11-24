@@ -57,6 +57,7 @@ import io.composecast.android.ComposeCastUpgradeRequiredException
 import io.composecast.android.ScreenDocument
 import io.composecast.protocol.Action
 import io.composecast.protocol.ActionCodec
+import io.composecast.protocol.PreviewIds
 import kotlinx.coroutines.launch
 
 /**
@@ -259,11 +260,24 @@ private fun ComposeCastApp(
                         } else {
                             lastTitle
                         }
-                    Text(title)
+                    // A draft preview (ADR 0030) must not be mistaken for the published screen.
+                    val isPreview = entry?.screen?.let(PreviewIds::isPreview) == true
+                    Text(
+                        if (isPreview) {
+                            listOf("Preview", title).filter {
+                                it.isNotBlank()
+                            }.joinToString(" · ")
+                        } else {
+                            title
+                        },
+                    )
                 },
                 actions = {
-                    IconButton(onClick = { reloadKey++ }) {
-                        Icon(painterResource(R.drawable.ic_refresh), contentDescription = "Refresh")
+                    // Live screens update themselves (T-047): no refresh button.
+                    if (screenState?.getOrNull()?.liveEveryMs == null) {
+                        IconButton(onClick = { reloadKey++ }) {
+                            Icon(painterResource(R.drawable.ic_refresh), contentDescription = "Refresh")
+                        }
                     }
                     if (onChangeServer != null) {
                         IconButton(onClick = { showSettings = true }) {

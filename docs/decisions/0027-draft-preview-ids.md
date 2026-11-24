@@ -1,6 +1,6 @@
 # 0027 — Draft previews: one unguessable screen id per preview (amends 0013)
 
-- Status: Accepted
+- Status: Accepted; id reuse, lifetime and live updates amended by [0030](0030-live-draft-previews.md)
 - Date: 2026-11-23
 - Amends: [0013](0013-admin-preview.md) (the mechanics: endpoint, id, lifetime, QR format); with
   [0024](0024-generic-preview-app.md) (Preview app) and [0026](0026-preview-connect-page.md) (`/connect`)

@@ -32,6 +32,8 @@ $ADB shell am start -W -n io.composecast.demo/io.composecast.shell.ComposeCastAc
 maestro test app-template/maestro/smoke.yaml                     # launch, tap "Get started", back
 maestro test -e APP_ID=<id> app-template/maestro/smoke.yaml      # an app built from another properties file
 maestro test app-template/maestro/live.yaml                      # live screen (T-047): server logs "Live 'live' opened" / "closed after N frames"
+#    live draft preview (T-032): server in admin mode + Preview app (./gradlew :app-preview:installDebug)
+#    SERVER=http://localhost:8080 EMAIL=… PASSWORD=… ./scripts/verify-live-preview.sh   # edit → phone < 3 s
 #    One-off taps: write a scratch flow (tapOn: "<text>", back, assertVisible: ...) and run it the same way.
 
 # 5. Look

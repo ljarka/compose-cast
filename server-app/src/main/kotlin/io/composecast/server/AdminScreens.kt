@@ -1,6 +1,7 @@
 package io.composecast.server
 
 import io.composecast.protocol.BrandConfig
+import io.composecast.protocol.Live
 import io.composecast.protocol.ScreenJson
 import io.composecast.server.admin.AdminAuth
 import io.composecast.server.admin.PublishException
@@ -101,9 +102,17 @@ class AdminScreens(
      * T-045 B2: a one-screen registry serving [json] (checked like a draft) as [previewId], with the
      * live brand; nothing is written. Navigation from it goes to the live screens.
      */
+
+    /**
+     * [json] as the one screen of a preview registry, served as [previewId] and **live** (T-032,
+     * ADR 0030): re-rendered every [PREVIEW_EVERY_MS] (or the draft's own faster `live`), so an
+     * open phone shows each saved edit. The stored draft is not changed.
+     */
     fun preview(json: String, previewId: String): ScreenRegistry = composeCast(imageLoader, dataLoader, env) {
         settings[SettingsStore.BRAND]?.let { brand(Json.decodeFromString(BrandConfig.serializer(), it)) }
-        screen(ScreenJson.decode(json, source = "preview").copy(id = previewId))
+        val draft = ScreenJson.decode(json, source = "preview")
+        val everyMs = minOf(draft.live?.everyMs ?: PREVIEW_EVERY_MS, PREVIEW_EVERY_MS)
+        screen(draft.copy(id = previewId, live = Live(everyMs)))
     }
 
     /** Renders [json] once (with default param values) and returns the decoded Remote Compose tree. */
@@ -129,6 +138,9 @@ class AdminScreens(
         /** `published_by` of rows created by the first-start import. */
         const val IMPORT = "import"
         const val DATABASE_FILE = "compose-cast.db"
+
+        /** How often an open draft preview is re-rendered: a saved edit shows within this (T-032). */
+        const val PREVIEW_EVERY_MS = 500
         private val log = LoggerFactory.getLogger(AdminScreens::class.java)
 
         fun openDatabase(dataDir: Path): StoreDatabase = StoreDatabase.open(dataDir.resolve(DATABASE_FILE))
@@ -164,6 +176,8 @@ internal fun AdminAuth.bootstrapFromEnv(email: String?, password: String?) {
 
 /** [ScreenPublishing] for `server-admin`: publishes through [AdminScreens] and swaps [live]. */
 class AdminPublishing(private val admin: AdminScreens, private val live: LiveScreens) : ScreenPublishing {
+    private val log = LoggerFactory.getLogger(AdminPublishing::class.java)
+
     override fun publish(id: String, json: String, by: String) = failsAsPublishException {
         admin.publish(id, json, by) { registry ->
             live.replace(registry)
@@ -182,11 +196,24 @@ class AdminPublishing(private val admin: AdminScreens, private val live: LiveScr
         admin.publishBrand(brandJson, live::replace)
     }
 
-    override fun preview(json: String): String {
-        val id = live.previews.newId()
-        failsAsPublishException { live.previews.put(id, admin.preview(json, id)) }
+    override fun preview(json: String, owner: String): String {
+        var id = ""
+        failsAsPublishException { id = live.previews.open(owner, screenId(json)) { admin.preview(json, it) } }
         return id
     }
+
+    override fun updatePreview(json: String, owner: String) {
+        try {
+            live.previews.update(owner, screenId(json)) { admin.preview(json, it) }
+        } catch (e: Exception) {
+            // The draft is saved; the phone keeps the last preview that built (e.g. a missing secret).
+            log.warn("Preview not updated: {}", e.message)
+        }
+    }
+
+    override fun stopPreviews(owner: String) = live.previews.revoke(owner)
+
+    private fun screenId(json: String) = ScreenJson.decode(json, source = "preview").id
 
     override fun setHome(id: String) = failsAsPublishException {
         admin.setHome(id, live::replaceHome)
