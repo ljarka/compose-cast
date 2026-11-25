@@ -406,3 +406,12 @@ README roadmap's "Etap" numbers.
     Docker amd64 emulated on Apple silicon (PNG byte-identical), edit → new image 0.14 s. Limits:
     linux/amd64 only (no arm64 native runtime), static first viewport. Rule R12, CI job
     `preview-renderer`, compose profile `preview`.
+82. **On-device screen values & `slider` → `gauge` / `text` interaction**: screen-level `values`
+    (`ScreenValue`: `default`, `min`, `max`; `default` may bind to server data) and `Component.Slider`
+    (`controls`, optional `step` notches with haptics) in `protocol`, `sdk-server` and `server-admin`
+    (`Palette` + generated forms). `ScreenValues.kt` reserves a float id ahead of time
+    (`reserveFloatVariable()`) so a `Gauge` or `Text` (`createTextFromFloat` + `textMerge`) rendered
+    *above or below* the slider reads the exact same `RcFloat` written by the slider's `TouchExpression`.
+    Verified on Robolectric (`InteractiveSliderTest`: drag updates gauge above, leaves second slider
+    untouched, survives `DOC_DATA_UPDATE`) and on the Android emulator (zero server requests during
+    drag; 1:1 finger tracking inside `verticalScroll`). Demo screen `interactive` + golden.

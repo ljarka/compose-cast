@@ -94,6 +94,25 @@ Drawn on a Remote Compose canvas; meant for (live) dashboards. Values are **stri
   numbers. Vertical range `min`..`max`, or the values' own range when not given.
 - `kpi`: small `label`, big bold `value`, small `caption` (empty ones are not shown); full width.
 
+### On-device screen values & sliders
+
+Reactive numeric values that live on the phone (no server round-trip): declared in screen-level
+`values`, written by `slider`, and read via `{{values.<name>}}` (optional `| round[:0..4]`) in
+`gauge.value`, `gauge.label`, `text.text` and `kpi` fields.
+
+```json
+{ "id": "interactive",
+  "values": { "volume": { "default": "40", "min": 0, "max": 100 } },
+  "components": [
+    { "type": "gauge", "value": "{{values.volume}}", "label": "{{values.volume | round}}%" },
+    { "type": "slider", "controls": "volume", "step": 5 }
+  ] }
+```
+- `values.<name>`: `{ "default": "0", "min": 0, "max": 100 }` (`default` may be a number or a
+  server `{{binding}}`, e.g. `"{{device.volume}}"`).
+- `slider`: `{ "type": "slider", "controls": "<name>", "step": 5, "color": "#...", "trackColor": "#..." }`.
+  At most one slider per value; optional `step` snaps to evenly spaced notches with haptic ticks.
+
 ### Data sources and bindings (T-006)
 
 A screen may declare `params` (`{"lat": {"default": "52.52"}}`; no default = required → 400),

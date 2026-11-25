@@ -35,6 +35,7 @@ internal object Palette {
         "gauge" to """{"value": "42", "label": "42%"}""",
         "sparkline" to """{"values": "3, 5, 4, 7, 6, 9"}""",
         "kpi" to """{"value": "1,284", "label": "Key figure"}""",
+        "slider" to """{"controls": "value"}""",
     ).mapValues { (type, json) ->
         JsonObject(mapOf("type" to JsonPrimitive(type)) + Json.parseToJsonElement(json) as JsonObject)
     }
@@ -44,7 +45,7 @@ internal object Palette {
         "Content" to listOf("text", "image", "icon", "button", "divider", "spacer"),
         "Layout" to listOf("column", "row", "box", "card", "grid", "flow", "fitBox", "expandable"),
         "Data" to listOf("repeat"),
-        "Dashboard" to listOf("gauge", "sparkline", "kpi"),
+        "Dashboard" to listOf("gauge", "sparkline", "kpi", "slider"),
     )
 
     /** Types that hold components; [wrap] puts the node into the first list. */
@@ -74,14 +75,41 @@ internal object Palette {
     private fun withItems(screen: JsonObject, list: String, items: List<JsonElement>) =
         ScreenTree.set(screen, list, JsonArray(items))
 
-    /** The starter of [type] for [screen] (a repeat lists the screen's first data source). */
+    /** The starter of [type] for [screen] (repeat → first data source; slider → first screen value). */
     fun starter(screen: JsonObject, type: String): JsonObject {
         val starter = requireNotNull(starters[type]) { "unknown component type '$type'" }
-        if (type != "repeat") return starter
-        val source = requireNotNull((screen["data"] as? JsonObject)?.keys?.firstOrNull()) {
-            "a repeat lists data from an API: add a data source first (select Screen, field Data)"
+        if (type == "repeat") {
+            val source = requireNotNull((screen["data"] as? JsonObject)?.keys?.firstOrNull()) {
+                "a repeat lists data from an API: add a data source first (select Screen, field Data)"
+            }
+            return JsonObject(starter + ("items" to JsonPrimitive(source)))
         }
-        return JsonObject(starter + ("items" to JsonPrimitive(source)))
+        if (type == "slider") {
+            val values = (screen["values"] as? JsonObject)?.keys.orEmpty()
+            require(values.isNotEmpty()) {
+                "a slider controls a screen value: add a value first (select Screen, field Values)"
+            }
+            val used = controlledValues(screen)
+            val chosen = values.firstOrNull { it !in used } ?: values.first()
+            return JsonObject(starter + ("controls" to JsonPrimitive(chosen)))
+        }
+        return starter
+    }
+
+    private fun controlledValues(element: JsonElement): Set<String> = buildSet {
+        fun walk(e: JsonElement) {
+            when (e) {
+                is JsonObject -> {
+                    if ((e["type"] as? JsonPrimitive)?.content == "slider") {
+                        (e["controls"] as? JsonPrimitive)?.content?.let(::add)
+                    }
+                    e.values.forEach(::walk)
+                }
+                is JsonArray -> e.forEach(::walk)
+                else -> Unit
+            }
+        }
+        walk(element)
     }
 
     /** Inserts a new [type] into [list] at [index] (clamped; null = at the end). */

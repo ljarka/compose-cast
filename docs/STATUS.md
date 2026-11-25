@@ -83,9 +83,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- On-device screen values & `slider` → `gauge` / `text` interaction
 - T-048 — phone preview in the panel
 - T-030 — app templates
 - T-032 — live draft preview
 - T-047 step 3 — live screens in the app (T-047 done)
 - T-047 step 2 — live screens on the server
-- T-047 step 1 — dashboard components

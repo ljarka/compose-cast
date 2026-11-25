@@ -1,0 +1,107 @@
+{
+  "id": "interactive",
+  "title": "Interactive",
+  "values": {
+    "volume": {
+      "default": "40"
+    },
+    "temp": {
+      "default": "21",
+      "min": 15.0,
+      "max": 30.0
+    }
+  },
+  "components": [
+    {
+      "type": "text",
+      "text": "On-device controls",
+      "style": "h2"
+    },
+    {
+      "type": "text",
+      "text": "Drag either slider — the gauges and labels update locally with zero network requests.",
+      "style": "caption"
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "card",
+      "children": [
+        {
+          "type": "column",
+          "children": [
+            {
+              "type": "gauge",
+              "value": "{{values.volume}}",
+              "label": "{{values.volume | round}}%",
+              "size": 140
+            },
+            {
+              "type": "spacer"
+            },
+            {
+              "type": "text",
+              "text": "Volume: {{values.volume | round}}%",
+              "style": "h3",
+              "textAlign": "center"
+            }
+          ],
+          "horizontalAlignment": "center",
+          "modifier": {
+            "width": "fill"
+          }
+        },
+        {
+          "type": "slider",
+          "controls": "volume"
+        }
+      ],
+      "spacing": 12
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
+      "type": "card",
+      "children": [
+        {
+          "type": "row",
+          "children": [
+            {
+              "type": "gauge",
+              "value": "{{values.temp}}",
+              "min": 15.0,
+              "max": 30.0,
+              "label": "{{values.temp | round:1}}°",
+              "color": "#E8590C",
+              "size": 108,
+              "thickness": 10
+            },
+            {
+              "type": "kpi",
+              "value": "{{values.temp | round:1}}°C",
+              "label": "Thermostat",
+              "caption": "Snaps in 0.5° steps",
+              "color": "#E8590C",
+              "modifier": {
+                "weight": 1.0
+              }
+            }
+          ],
+          "verticalAlignment": "center",
+          "spacing": 16
+        },
+        {
+          "type": "slider",
+          "controls": "temp",
+          "step": 0.5,
+          "color": "#E8590C"
+        }
+      ],
+      "spacing": 12
+    }
+  ]
+}

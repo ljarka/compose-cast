@@ -5,6 +5,7 @@ import io.composecast.protocol.Component
 import io.composecast.protocol.Modifier
 import io.composecast.protocol.PathStep
 import io.composecast.protocol.RepeatItems
+import io.composecast.protocol.Roots
 import io.composecast.protocol.ScreenDefinition
 import io.composecast.protocol.Template
 import kotlinx.serialization.json.Json
@@ -155,11 +156,15 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
             result.isFailure && !definition.data.getValue(name).optional
         }
         val title = render(definition.title, roots)
+        val boundValues = definition.values.mapValues { (_, spec) ->
+            spec.copy(default = render(spec.default, roots))
+        }
         val bound = if (failed == null) {
             ScreenDefinition(
                 id,
                 title,
                 live = definition.live,
+                values = boundValues,
                 components = bindComponents(definition.components, roots),
             )
         } else if (definition.error.isNotEmpty()) {
@@ -230,6 +235,7 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
                 modifier = bindModifier(c.modifier, roots),
             ),
         )
+        is Component.Slider -> listOf(c.copy(modifier = bindModifier(c.modifier, roots)))
         is Component.Expandable -> listOf(
             c.copy(
                 title = render(c.title, roots),
@@ -300,13 +306,17 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
         is Action.Custom -> Action.Custom(render(action.payload, roots))
     }
 
-    /** [text] with every `{{ }}` replaced; [escape] applies to substituted values (URL encoding). */
+    /** [text] with every `{{ }}` replaced; `{{values.*}}` stays for the renderer; [escape] applies to substituted values. */
     private fun render(text: String, roots: Map<String, JsonElement>, escape: (String) -> String = { it }): String {
         if (!Template.hasBindings(text)) return text
         return template(text).parts.joinToString("") { part ->
             when (part) {
                 is Template.Literal -> part.text
-                is Template.Expression -> escape(text(evaluate(part, roots)))
+                is Template.Expression -> if (part.root == Roots.VALUES) {
+                    "{{${part.text}}}"
+                } else {
+                    escape(text(evaluate(part, roots)))
+                }
             }
         }
     }

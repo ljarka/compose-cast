@@ -224,6 +224,21 @@ sealed interface Component {
         override val modifier: Modifier = Modifier.NONE,
     ) : Component
 
+    /**
+     * Horizontal slider drawn on an RC canvas that updates screen value [controls] locally on the
+     * device via `TouchExpression` (no server round-trip). Optional [step] snaps to evenly spaced
+     * notches across the value's `min..max` range with haptic ticks.
+     */
+    @Serializable
+    @SerialName("slider")
+    data class Slider(
+        val controls: String,
+        val step: Float? = null,
+        val color: String? = null,
+        val trackColor: String? = null,
+        override val modifier: Modifier = Modifier.NONE,
+    ) : Component
+
     /** The bindable string fields of this component (not of nested ones), by field path. */
     fun strings(): List<Pair<String, String>> = when (this) {
         is Text -> listOf("text" to text)
@@ -236,7 +251,9 @@ sealed interface Component {
         is Gauge -> listOf("value" to value, "label" to label)
         is Sparkline -> listOf("values" to values)
         is Kpi -> listOf("value" to value, "label" to label, "caption" to caption)
-        is Divider, is Card, is Spacer, is Repeat, is Column, is Row, is Box, is FitBox, is Flow, is Grid -> emptyList()
+        is Divider, is Card, is Spacer, is Repeat, is Column, is Row, is Box, is FitBox, is Flow, is Grid,
+        is Slider,
+        -> emptyList()
     } + modifier.action?.strings().orEmpty().map { (field, value) -> "modifier.action.$field" to value } +
         listOfNotNull(
             modifier.semantics?.description?.let { "modifier.semantics.description" to it },
@@ -254,7 +271,9 @@ sealed interface Component {
         is Grid -> listOf("children" to children)
         is Expandable -> listOf("content" to content)
         is Repeat -> listOf("template" to template, "empty" to empty)
-        is Text, is Image, is Icon, is Divider, is Button, is Spacer, is Gauge, is Sparkline, is Kpi -> emptyList()
+        is Text, is Image, is Icon, is Divider, is Button, is Spacer, is Gauge, is Sparkline, is Kpi,
+        is Slider,
+        -> emptyList()
     }
 
     /** Whether this component or a nested one contains `{{`, or it is a [Repeat]. */

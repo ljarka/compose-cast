@@ -89,6 +89,10 @@ class DemoScreensScreenshotTest {
     @Config(sdk = [35], qualifiers = RobolectricDeviceQualifiers.MediumTablet)
     fun dashboardTablet() = capture("dashboard", file = "dashboard-tablet")
 
+    /** Interactive on-device sliders driving gauges, KPIs and text with no server round-trip. */
+    @Test
+    fun interactive() = capture("interactive")
+
     /** A dynamic screen, rendered from query parameters (T-003). */
     @Test
     fun echo() = capture("echo", mapOf("word" to "zażółć gęślą jaźń"))

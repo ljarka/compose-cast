@@ -28,11 +28,13 @@ private const val VALUE_ANIMATION_S = 0.8f
 
 /** Ring: track circle, then an arc from 12 o'clock over the value's fraction; label centered on top. */
 internal fun RcScope.renderGauge(env: RenderEnv, node: Component.Gauge, slot: Slot) {
-    val value = NumberList.single(node.value) ?: node.min
-    val fraction = ((value - node.min) / (node.max - node.min)).coerceIn(0f, 1f)
+    val liveValue = resolveValueRef(env, node.value)
+    val staticValue = if (liveValue == null) NumberList.single(node.value) ?: node.min else node.min
+    val staticFraction = ((staticValue - node.min) / (node.max - node.min)).coerceIn(0f, 1f)
     val color = node.color?.let(::parseColor) ?: env.primary
     val track = node.trackColor?.let(::parseColor) ?: env.outline
     val stroke = node.thickness.toFloat()
+    val range = node.max - node.min
     Box(
         modifier = boxModel(
             node.modifier,
@@ -52,22 +54,40 @@ internal fun RcScope.renderGauge(env: RenderEnv, node: Component.Gauge, slot: Sl
                 strokeCap(RcStrokeCap.Round)
             }
             drawArc(ring.left, ring.top, ring.right, ring.bottom, remoteFloat(0f), remoteFloat(FULL_CIRCLE))
-            if (fraction > 0f) {
+            if (liveValue != null) {
                 paint { color(color) }
-                val sweep = (remoteFloat(fraction) * FULL_CIRCLE).anim(VALUE_ANIMATION_S)
+                val fraction = min(max((liveValue - node.min) / range, 0f), 1f)
+                drawArc(ring.left, ring.top, ring.right, ring.bottom, remoteFloat(START_ANGLE), fraction * FULL_CIRCLE)
+            } else if (staticFraction > 0f) {
+                paint { color(color) }
+                val sweep = (remoteFloat(staticFraction) * FULL_CIRCLE).anim(VALUE_ANIMATION_S)
                 drawArc(ring.left, ring.top, ring.right, ring.bottom, remoteFloat(START_ANGLE), sweep)
             }
         }
         if (node.label.isNotBlank()) {
-            Text(
-                node.label,
-                modifier = Modifier.fillMaxWidth(),
-                color = env.text,
-                fontSize = sp((node.size / GAUGE_LABEL_DIVISOR).coerceAtLeast(MIN_LABEL_SP)),
-                fontWeight = RcFontWeight.W700,
-                textAlign = RcTextAlign.Center,
-                maxLines = 1,
-            )
+            val fontSize = sp((node.size / GAUGE_LABEL_DIVISOR).coerceAtLeast(MIN_LABEL_SP))
+            val dynamicLabel = resolveDynamicText(env, node.label)
+            if (dynamicLabel != null) {
+                Text(
+                    dynamicLabel,
+                    modifier = Modifier.fillMaxWidth(),
+                    color = env.text,
+                    fontSize = fontSize,
+                    fontWeight = RcFontWeight.W700,
+                    textAlign = RcTextAlign.Center,
+                    maxLines = 1,
+                )
+            } else {
+                Text(
+                    node.label,
+                    modifier = Modifier.fillMaxWidth(),
+                    color = env.text,
+                    fontSize = fontSize,
+                    fontWeight = RcFontWeight.W700,
+                    textAlign = RcTextAlign.Center,
+                    maxLines = 1,
+                )
+            }
         }
     }
 }
@@ -126,20 +146,50 @@ internal fun RcScope.renderKpi(env: RenderEnv, node: Component.Kpi, slot: Slot) 
     val muted = (env.text and RGB_MASK) or MUTED_ALPHA
     Column(boxModel(node.modifier, slot, defaultWidth = Dimension.Fill)) {
         if (node.label.isNotBlank()) {
-            Text(node.label, Modifier.fillMaxWidth(), color = muted, fontSize = sp(KPI_LABEL_SP), maxLines = 1)
+            val dynamicLabel = resolveDynamicText(env, node.label)
+            if (dynamicLabel != null) {
+                Text(dynamicLabel, Modifier.fillMaxWidth(), color = muted, fontSize = sp(KPI_LABEL_SP), maxLines = 1)
+            } else {
+                Text(node.label, Modifier.fillMaxWidth(), color = muted, fontSize = sp(KPI_LABEL_SP), maxLines = 1)
+            }
         }
-        Text(
-            node.value,
-            Modifier.fillMaxWidth(),
-            color = node.color?.let(::parseColor) ?: env.text,
-            fontSize = sp(KPI_VALUE_SP),
-            fontWeight = RcFontWeight.W700,
-            maxLines = 1,
-            // A value wider than the card ends in "…" rather than being cut mid-character.
-            overflow = RcTextOverflow.Ellipsis,
-        )
+        val valueColor = node.color?.let(::parseColor) ?: env.text
+        val dynamicValue = resolveDynamicText(env, node.value)
+        if (dynamicValue != null) {
+            Text(
+                dynamicValue,
+                Modifier.fillMaxWidth(),
+                color = valueColor,
+                fontSize = sp(KPI_VALUE_SP),
+                fontWeight = RcFontWeight.W700,
+                maxLines = 1,
+                overflow = RcTextOverflow.Ellipsis,
+            )
+        } else {
+            Text(
+                node.value,
+                Modifier.fillMaxWidth(),
+                color = valueColor,
+                fontSize = sp(KPI_VALUE_SP),
+                fontWeight = RcFontWeight.W700,
+                maxLines = 1,
+                // A value wider than the card ends in "…" rather than being cut mid-character.
+                overflow = RcTextOverflow.Ellipsis,
+            )
+        }
         if (node.caption.isNotBlank()) {
-            Text(node.caption, Modifier.fillMaxWidth(), color = muted, fontSize = sp(KPI_CAPTION_SP), maxLines = 1)
+            val dynamicCaption = resolveDynamicText(env, node.caption)
+            if (dynamicCaption != null) {
+                Text(
+                    dynamicCaption,
+                    Modifier.fillMaxWidth(),
+                    color = muted,
+                    fontSize = sp(KPI_CAPTION_SP),
+                    maxLines = 1,
+                )
+            } else {
+                Text(node.caption, Modifier.fillMaxWidth(), color = muted, fontSize = sp(KPI_CAPTION_SP), maxLines = 1)
+            }
         }
     }
 }

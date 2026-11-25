@@ -14,8 +14,10 @@ class PaletteTest {
 
     private val empty = screen("""{"id": "s"}""")
 
-    /** A screen with a data source (a repeat needs one). */
-    private val withData = screen("""{"id": "s", "data": {"shows": {"url": "https://api.tvmaze.com/shows"}}}""")
+    /** A screen with a data source (a repeat needs one) and a screen value (a slider needs one). */
+    private val withData = screen(
+        """{"id": "s", "data": {"shows": {"url": "https://api.tvmaze.com/shows"}}, "values": {"volume": {"default": "40"}}}""",
+    )
 
     /** Types of the screen's top-level components, nested ones in brackets. */
     private fun shape(screen: JsonObject): String = ScreenTree.rows(screen).filter {

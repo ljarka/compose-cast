@@ -4,7 +4,7 @@ package io.composecast.protocol
 // admin panel). Entry points are the ScreenDefinition members problems(), contentProblems(),
 // warnings() and validate(); every message starts with a JSON-like path.
 
-/** Structural problems (no template checks): id, components and error components. */
+/** Structural problems (no template checks): id, values, components and error components. */
 internal fun ScreenDefinition.screenContentProblems(): List<String> = buildList {
     if (id.isBlank()) add("id: must not be blank")
     live?.let {
@@ -12,8 +12,18 @@ internal fun ScreenDefinition.screenContentProblems(): List<String> = buildList 
             add("live.everyMs: must be ${Live.MIN_EVERY_MS}..${Live.MAX_EVERY_MS}, was ${it.everyMs}")
         }
     }
-    addAll(componentProblems(components, "components"))
-    addAll(componentProblems(error, "error"))
+    values.forEach { (key, spec) ->
+        val at = "values.$key"
+        if (!spec.min.isFinite() || !spec.max.isFinite() || !(spec.max > spec.min)) {
+            add("$at.max: must be greater than min (${spec.min}), was ${spec.max}")
+        }
+        if (!Template.hasBindings(spec.default) && NumberList.single(spec.default) == null) {
+            add("$at.default: expected a number or a {{binding}}, was '${spec.default}'")
+        }
+    }
+    val slidersByValue = mutableSetOf<String>()
+    addAll(componentProblems(components, "components", values = values, slidersByValue = slidersByValue))
+    addAll(componentProblems(error, "error", values = emptyMap(), slidersByValue = mutableSetOf()))
 }
 
 /** Non-fatal accessibility/authoring warnings (T-016). */
@@ -47,6 +57,8 @@ private fun componentProblems(
     path: String,
     parent: Parent = Parent.Screen,
     depth: Int = 1,
+    values: Map<String, ScreenValue> = emptyMap(),
+    slidersByValue: MutableSet<String> = mutableSetOf(),
 ): List<String> = buildList {
     if (depth > MAX_DEPTH) {
         add("$path: nested deeper than $MAX_DEPTH levels")
@@ -82,7 +94,16 @@ private fun componentProblems(
             }
             is Component.Card -> {
                 if (component.spacing < 0) add("$at.spacing: must be >= 0, was ${component.spacing}")
-                addAll(componentProblems(component.children, "$at.children", Parent.Column, depth + 1))
+                addAll(
+                    componentProblems(
+                        component.children,
+                        "$at.children",
+                        Parent.Column,
+                        depth + 1,
+                        values,
+                        slidersByValue,
+                    ),
+                )
             }
             is Component.Spacer ->
                 if (component.height < 0) add("$at.height: must be >= 0, was ${component.height}")
@@ -113,47 +134,109 @@ private fun componentProblems(
             }
             is Component.Kpi ->
                 component.color?.let { colorProblem(it)?.let { problem -> add("$at.color: $problem") } }
+            is Component.Slider -> {
+                val spec = values[component.controls]
+                if (spec == null) {
+                    add("$at.controls: unknown value '${component.controls}' (declare it in \"values\")")
+                } else if (!slidersByValue.add(component.controls)) {
+                    add("$at.controls: value '${component.controls}' is already controlled by another slider")
+                }
+                component.step?.let { step ->
+                    if (!step.isFinite() || step <= 0f) {
+                        add("$at.step: must be > 0, was $step")
+                    } else if (spec != null && spec.max > spec.min && step > (spec.max - spec.min)) {
+                        add("$at.step: must be <= range (${spec.max - spec.min}), was $step")
+                    }
+                }
+                component.color?.let { colorProblem(it)?.let { problem -> add("$at.color: $problem") } }
+                component.trackColor?.let { colorProblem(it)?.let { problem -> add("$at.trackColor: $problem") } }
+            }
             is Component.Repeat -> {
                 if ((component.limit ?: 0) < 0) add("$at.limit: must be >= 0, was ${component.limit}")
                 if (component.items is RepeatItems.Zip && component.items.arrays.isEmpty()) {
                     add("$at.items: must name at least one array")
                 }
                 // Expanded in place: its components are children of this repeat's parent.
-                addAll(componentProblems(component.template, "$at.template", parent, depth))
-                addAll(componentProblems(component.empty, "$at.empty", parent, depth))
+                addAll(componentProblems(component.template, "$at.template", parent, depth, values, slidersByValue))
+                addAll(componentProblems(component.empty, "$at.empty", parent, depth, values, slidersByValue))
             }
             is Component.Expandable -> {
                 if (component.title.isBlank()) add("$at.title: must not be blank")
                 if (component.content.isEmpty()) add("$at.content: must not be empty")
-                addAll(componentProblems(component.content, "$at.content", Parent.Column, depth + 1))
+                addAll(
+                    componentProblems(
+                        component.content,
+                        "$at.content",
+                        Parent.Column,
+                        depth + 1,
+                        values,
+                        slidersByValue,
+                    ),
+                )
             }
             is Component.Column -> {
                 if (component.spacing < 0) add("$at.spacing: must be >= 0, was ${component.spacing}")
-                addAll(componentProblems(component.children, "$at.children", Parent.Column, depth + 1))
+                addAll(
+                    componentProblems(
+                        component.children,
+                        "$at.children",
+                        Parent.Column,
+                        depth + 1,
+                        values,
+                        slidersByValue,
+                    ),
+                )
             }
             is Component.Row -> {
                 if (component.spacing < 0) add("$at.spacing: must be >= 0, was ${component.spacing}")
-                addAll(componentProblems(component.children, "$at.children", Parent.Row, depth + 1))
+                addAll(
+                    componentProblems(
+                        component.children,
+                        "$at.children",
+                        Parent.Row,
+                        depth + 1,
+                        values,
+                        slidersByValue,
+                    ),
+                )
             }
             is Component.Box -> addAll(
-                componentProblems(component.children, "$at.children", Parent.Other, depth + 1),
+                componentProblems(component.children, "$at.children", Parent.Other, depth + 1, values, slidersByValue),
             )
             is Component.FitBox -> addAll(
-                componentProblems(component.children, "$at.children", Parent.Other, depth + 1),
+                componentProblems(component.children, "$at.children", Parent.Other, depth + 1, values, slidersByValue),
             )
             is Component.Flow -> {
                 component.maxItemsInEachRow?.let {
                     if (it < 1) add("$at.maxItemsInEachRow: must be >= 1, was $it")
                 }
                 component.maxLines?.let { if (it < 1) add("$at.maxLines: must be >= 1, was $it") }
-                addAll(componentProblems(component.children, "$at.children", Parent.Row, depth + 1))
+                addAll(
+                    componentProblems(
+                        component.children,
+                        "$at.children",
+                        Parent.Row,
+                        depth + 1,
+                        values,
+                        slidersByValue,
+                    ),
+                )
             }
             is Component.Grid -> {
                 if (component.columns !in 1..12) {
                     add("$at.columns: must be 1..12, was ${component.columns}")
                 }
                 if (component.spacing < 0) add("$at.spacing: must be >= 0, was ${component.spacing}")
-                addAll(componentProblems(component.children, "$at.children", Parent.Other, depth + 1))
+                addAll(
+                    componentProblems(
+                        component.children,
+                        "$at.children",
+                        Parent.Other,
+                        depth + 1,
+                        values,
+                        slidersByValue,
+                    ),
+                )
             }
         }
     }
@@ -225,6 +308,7 @@ internal fun ScreenDefinition.bindingProblems(): List<String> = buildList {
     }
     params.keys.forEach { name("param", "params.$it", it) }
     lookups.keys.forEach { name("lookup", "lookups.$it", it) }
+    values.keys.forEach { name("value", "values.$it", it) }
     data.forEach { (source, spec) ->
         val at = "data.$source"
         name("data source", at, source)
@@ -238,8 +322,12 @@ internal fun ScreenDefinition.bindingProblems(): List<String> = buildList {
         }
     }
     val roots = setOf(Roots.PARAMS) + data.keys
+    values.forEach { (key, spec) ->
+        addAll(templateProblems(spec.default, "values.$key.default", roots))
+    }
     addAll(templateProblems(title, "title", roots))
-    addAll(componentBindingProblems(components, "components", roots))
+    val componentRoots = if (values.isNotEmpty()) roots + Roots.VALUES else roots
+    addAll(componentBindingProblems(components, "components", componentRoots))
     addAll(componentBindingProblems(error, "error", setOf(Roots.PARAMS)))
 }
 
@@ -308,6 +396,8 @@ private fun ScreenDefinition.templateProblems(text: String, at: String, roots: S
                     add("$where: unknown filter '${f.name}' (known: ${Filters.ARITY.keys.joinToString()})")
                 f.args.size !in arity ->
                     add("$where: filter '${f.name}' takes ${arity.first}..${arity.last} arguments")
+                e.root == Roots.VALUES && f.name != "round" ->
+                    add("$where: on-device values only support the 'round' filter, not '${f.name}'")
                 f.name == "lookup" && f.args.single() !in lookups ->
                     add("$where: unknown lookup '${f.args.single()}' (declare it in \"lookups\")")
                 f.name == "round" && f.args.isNotEmpty() && f.args.single().toIntOrNull() !in 0..10 ->
@@ -317,7 +407,7 @@ private fun ScreenDefinition.templateProblems(text: String, at: String, roots: S
     }
 }
 
-/** Root and `params` checks of one path: a template expression or a path filter argument (T-041). */
+/** Root and `params`/`values` checks of one path: a template expression or a path filter argument (T-041). */
 private fun ScreenDefinition.pathProblems(e: Template.Expression, where: String, roots: Set<String>): List<String> =
     buildList {
         when {
@@ -330,6 +420,14 @@ private fun ScreenDefinition.pathProblems(e: Template.Expression, where: String,
                     add("$where: use {{params.<name>}}")
                 } else if (param !in params) {
                     add("$where: unknown param '$param' (declare it in \"params\")")
+                }
+            }
+            e.root == Roots.VALUES -> {
+                val valueName = (e.path.singleOrNull() as? PathStep.Key)?.name
+                if (valueName == null) {
+                    add("$where: use {{values.<name>}}")
+                } else if (valueName !in values) {
+                    add("$where: unknown value '$valueName' (declare it in \"values\")")
                 }
             }
             e.root == Roots.SECRET && (e.path.singleOrNull() !is PathStep.Key) ->

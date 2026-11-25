@@ -14,6 +14,7 @@ import io.composecast.protocol.Modifier
 import io.composecast.protocol.ParamSpec
 import io.composecast.protocol.RepeatItems
 import io.composecast.protocol.ScreenDefinition
+import io.composecast.protocol.ScreenValue
 import io.composecast.protocol.ScrollDirection
 import io.composecast.protocol.TextAlign
 import io.composecast.protocol.TextOverflow
@@ -115,6 +116,17 @@ open class ComponentsBuilder internal constructor(private val context: String) {
         modifier: Modifier = Modifier.NONE,
     ) {
         components += Component.Kpi(value, label, caption, color, modifier)
+    }
+
+    /** Horizontal slider updating screen value [controls] locally on the device (no server round-trip). */
+    fun slider(
+        controls: String,
+        step: Float? = null,
+        color: String? = null,
+        trackColor: String? = null,
+        modifier: Modifier = Modifier.NONE,
+    ) {
+        components += Component.Slider(controls, step, color, trackColor, modifier)
     }
 
     /** Vertical container with card defaults (16 dp padding, 12 dp corner radius, surface background). */
@@ -314,8 +326,20 @@ class ScreenBuilder internal constructor(val id: String) : ComponentsBuilder("Sc
     private val params = linkedMapOf<String, ParamSpec>()
     private val data = linkedMapOf<String, DataSource>()
     private val lookups = linkedMapOf<String, Map<String, String>>()
+    private val values = linkedMapOf<String, ScreenValue>()
     private var error = emptyList<Component>()
     private var live: Live? = null
+
+    /** Declares an on-device numeric value read as `{{values.<name>}}` and written by e.g. `slider(name)`. */
+    fun value(name: String, default: Float = 0f, min: Float = 0f, max: Float = 100f) {
+        val text = if (default % 1f == 0f) default.toInt().toString() else default.toString()
+        values[name] = ScreenValue(default = text, min = min, max = max)
+    }
+
+    /** Declares an on-device numeric value whose [default] is a number or a `{{...}}` server binding. */
+    fun value(name: String, default: String, min: Float = 0f, max: Float = 100f) {
+        values[name] = ScreenValue(default = default, min = min, max = max)
+    }
 
     /** Makes this a live screen (T-047, ADR 0029): apps receive its changes every [everyMs] ms. */
     fun live(everyMs: Int = Live.DEFAULT_EVERY_MS) {
@@ -356,6 +380,7 @@ class ScreenBuilder internal constructor(val id: String) : ComponentsBuilder("Sc
         data.toMap(),
         live,
         lookups.toMap(),
+        values.toMap(),
         components.toList(),
         error,
     )

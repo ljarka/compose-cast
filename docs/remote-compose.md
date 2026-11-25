@@ -316,6 +316,20 @@ All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alph
     (`remoteFloat`) and float arrays (`remoteFloatArray`, own typed id space) are not de-duplicated.
     Verified alpha23 sources (T-047, 2026-11-24).
 
+22. **Cross-component `TouchExpression` via `reserveFloatVariable()`**: `TouchExpression` implements
+    `ComponentData` + `TouchListener`, so `LayoutComponent.inflate()` keeps it inside a `Canvas`
+    and binds it to that component's bounds (`mScrLeft..mScrRight`, `mScrTop..mScrBottom`) —
+    multiple sliders on one screen are hit-tested independently. Reserving a float id ahead of time
+    (`writer.reserveFloatVariable()`, no `FloatConstant`) and emitting `addTouchExpression(id, ...)`
+    inside the slider's `Canvas` lets sibling components rendered **above or below** the slider
+    (e.g. `Gauge` arc, `Text` via `createTextFromFloat` + `textMerge`) read the exact same `RcFloat`
+    id on frame 1 and on every drag frame with zero server round-trips. Both `touchPosX()` and
+    `componentWidth()` are in canvas pixels, so delta mode (`STOP_INSTANTLY` / `STOP_NOTCHES_EVEN`)
+    with `(touchPosX() / trackWidth) * range` tracks the finger 1:1 at any layout position and
+    inside `verticalScroll`. `CoreDocument.applyUpdate` ignores `TouchExpression`, so live-screen
+    data updates do not reset an active or finished drag. Verified alpha23 (Robolectric + emulator,
+    2026-11-25).
+
 ## Live updates (verified alpha23, 2026-11-24, PoC on the emulator)
 
 RC has **data-update documents**: a document whose header has `Header.DOC_DATA_UPDATE = 1`

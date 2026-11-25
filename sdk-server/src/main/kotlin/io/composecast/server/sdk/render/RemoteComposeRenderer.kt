@@ -17,9 +17,9 @@ import androidx.compose.remote.core.types.LongConstant
 import androidx.compose.remote.creation.JvmRcPlatformServices
 import androidx.compose.remote.creation.RemoteComposeWriter
 import androidx.compose.remote.creation.dsl.Modifier
+import androidx.compose.remote.creation.dsl.RcCanvas
 import androidx.compose.remote.creation.dsl.RcProfile
 import androidx.compose.remote.creation.dsl.background
-import androidx.compose.remote.creation.dsl.createRcBuffer
 import androidx.compose.remote.creation.dsl.fillMaxSize
 import androidx.compose.remote.creation.dsl.padding
 import androidx.compose.remote.creation.dsl.verticalScroll
@@ -86,11 +86,18 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
             )
         }
         return try {
-            createRcBuffer(profile, *(if (dataUpdate) UPDATE_TAGS else HEADER_TAGS)) {
-                Column(Modifier.fillMaxSize().background(background).verticalScroll().padding(SCREEN_PADDING)) {
-                    renderChildren(env, screen.components, Slot(Axis.Vertical) { m, w -> m.weight(w) })
+            val tags = if (dataUpdate) UPDATE_TAGS else HEADER_TAGS
+            val writer = RemoteComposeWriter(profile.profile, *tags)
+            writer.root {
+                RcCanvas(writer) {
+                    val values = ScreenValues.allocate(this, writer, screen)
+                    val renderEnv = env.withRenderState(writer, values)
+                    Column(Modifier.fillMaxSize().background(background).verticalScroll().padding(SCREEN_PADDING)) {
+                        renderChildren(renderEnv, screen.components, Slot(Axis.Vertical) { m, w -> m.weight(w) })
+                    }
                 }
             }
+            writer.encodeToByteArray()
         } catch (e: Exception) {
             if (targetLevel < MAX_API_LEVEL) {
                 throw UnsupportedClientVersionException(
@@ -209,8 +216,18 @@ internal class RenderEnv(
     val surface: Int,
     val text: Int,
     val outline: Int,
+    private val activeWriter: RemoteComposeWriter? = null,
+    val values: ScreenValues = ScreenValues.EMPTY,
     private val loadImage: (String) -> EncodedImage?,
 ) {
+    /** The active RC writer for the current render pass (used by `ScreenValues` / `Slider`). */
+    val writer: RemoteComposeWriter
+        get() = checkNotNull(activeWriter) { "RenderEnv has no active RemoteComposeWriter" }
+
+    /** Returns a per-render view carrying the active [writer] and allocated [values]. */
+    fun withRenderState(writer: RemoteComposeWriter, values: ScreenValues): RenderEnv =
+        RenderEnv(primary, surface, text, outline, writer, values, loadImage)
+
     /** The fetched image, or null (failed or rejected: callers render the alt text). */
     fun image(url: String): EncodedImage? = loadImage(url)
 }

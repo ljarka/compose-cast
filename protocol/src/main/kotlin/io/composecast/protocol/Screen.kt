@@ -24,6 +24,8 @@ data class ScreenDefinition(
     val live: Live? = null,
     /** Value tables for the `lookup` filter; key `"*"` is the fallback. */
     val lookups: Map<String, Map<String, String>> = emptyMap(),
+    /** Reactive on-device numeric values: written by controls (e.g. `slider`), read as `{{values.<name>}}`. */
+    val values: Map<String, ScreenValue> = emptyMap(),
     val components: List<Component> = emptyList(),
     /** Shown instead of [components] when a non-optional data source fails. */
     val error: List<Component> = emptyList(),
@@ -34,6 +36,7 @@ data class ScreenDefinition(
      */
     val isBound: Boolean
         get() = params.isNotEmpty() || data.isNotEmpty() || Template.hasBindings(title) ||
+            values.values.any { Template.hasBindings(it.default) } ||
             (components + error).any { it.hasBindings() }
 
     /**
@@ -71,6 +74,14 @@ data class Live(val everyMs: Int = DEFAULT_EVERY_MS) {
         const val MAX_EVERY_MS = 3_600_000
     }
 }
+
+/**
+ * A reactive numeric value living on the device (no server round-trip): written by controls such as
+ * [Component.Slider] and read via `{{values.<name>}}` in gauges, texts and KPIs. [default] is a
+ * number or a `{{...}}` server binding resolved at request time.
+ */
+@Serializable
+data class ScreenValue(val default: String = "0", val min: Float = 0f, val max: Float = 100f)
 
 /** The JSON format of [ScreenDefinition]: strict (unknown keys are errors), defaults omitted. */
 object ScreenJson {

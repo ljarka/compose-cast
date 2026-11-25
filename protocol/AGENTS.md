@@ -14,9 +14,9 @@ This module only. **Do not** import `sdk-server`, `server-app`, or `sdk-android`
 | File | Purpose |
 |---|---|
 | `Layout.kt` | `Modifier` (box model, ADR 0020, incl. `scroll`, `semantics`), `Padding` (number or sides), `Dimension` (dp / `fill` / `wrap`), `Border`, `Shape`, `Alignment`, `Arrangement`, `ScrollDirection`, `Semantics`, `SemanticsRole` + their JSON serializers |
-| `Screen.kt` | `ScreenDefinition` (+ `params`, `data`, `live` (`Live(everyMs)`, T-047), `lookups`, `error`; `problems()`/`contentProblems()`/`warnings()`/`validate()`), `ScreenJson` (`encode`, `decode` throws, `check` returns `Checked(screen, problems)` for the admin editor) |
-| `ScreenValidation.kt` | All screen validation (structure, modifiers, colors, actions, bindings, source URLs), called by the `ScreenDefinition` members |
-| `Component.kt` | `Component` (Text, Image, Icon, Divider, Card, Button, Spacer, Repeat, Expandable, Column, Row, Box, FitBox, Flow, Grid; dashboard: Gauge, Sparkline, Kpi — T-047), `strings()`/`childLists()`/`hasBindings()`, `Action.strings()`, `NumberList` (numbers in a bound string: gauge value, sparkline values) |
+| `Screen.kt` | `ScreenDefinition` (+ `params`, `data`, `live` (`Live(everyMs)`, T-047), `lookups`, `values` (`ScreenValue`), `error`; `problems()`/`contentProblems()`/`warnings()`/`validate()`), `ScreenJson` (`encode`, `decode` throws, `check` returns `Checked(screen, problems)` for the admin editor) |
+| `ScreenValidation.kt` | All screen validation (structure, modifiers, colors, actions, bindings, source URLs, screen values & sliders), called by the `ScreenDefinition` members |
+| `Component.kt` | `Component` (Text, Image, Icon, Divider, Card, Button, Spacer, Repeat, Expandable, Column, Row, Box, FitBox, Flow, Grid; dashboard: Gauge, Sparkline, Kpi — T-047; interactive: Slider), `strings()`/`childLists()`/`hasBindings()`, `Action.strings()`, `NumberList` (numbers in a bound string: gauge value, sparkline values) |
 | `ComponentOptions.kt` | `TextStyle`, `FontWeight`, `TextAlign`, `TextOverflow`, `ContentScale`, `ButtonVariant` |
 | `Binding.kt` | Data sources (T-006, [ADR 0008](../docs/decisions/0008-server-side-data-sources.md)): `ParamSpec`, `DataSource`, `RepeatItems` (path or zipped parallel arrays), `Template` parser for `{{path \| filter:arg}}` (unquoted `a.b` args are paths, `FilterCall.paths`, T-041), `Filters` (names/arity, `PATH_ARGUMENTS`), allowed roots |
 | `Action.kt` | `Action` (Navigate, OpenUrl, Reload, Track, Custom) + `ActionCodec` (wire form) |

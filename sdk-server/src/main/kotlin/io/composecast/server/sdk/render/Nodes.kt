@@ -65,6 +65,7 @@ internal fun RcScope.renderNode(env: RenderEnv, node: Component, slot: Slot) {
         is Component.Gauge -> renderGauge(env, node, slot)
         is Component.Sparkline -> renderSparkline(env, node, slot)
         is Component.Kpi -> renderKpi(env, node, slot)
+        is Component.Slider -> renderSlider(env, node, slot)
         // BoundScreen expands repeats before rendering (T-006).
         is Component.Repeat -> error("repeat must be expanded before rendering")
     }
@@ -78,27 +79,48 @@ private fun RcScope.renderText(env: RenderEnv, node: Component.Text, slot: Slot)
         TextStyle.Body -> 16 to RcFontWeight.W400
         TextStyle.Caption -> 12 to RcFontWeight.W400
     }
-    Text(
-        node.text,
-        modifier = boxModel(node.modifier, slot) { m ->
-            if (node.marquee) {
-                m.marquee(
-                    iterations = Int.MAX_VALUE,
-                    animationMode = 0,
-                    repeatDelayMillis = MARQUEE_DELAY_MS,
-                    initialDelayMillis = MARQUEE_DELAY_MS,
-                    spacing = MARQUEE_SPACING_DP,
-                    velocity = MARQUEE_VELOCITY_DP_S,
-                )
-            } else {
-                m
-            }
-        },
-        color = node.color?.let(::parseColor) ?: env.text,
-        fontSize = sp(node.fontSize ?: styleSize),
-        fontWeight = node.fontWeight?.toRc() ?: styleWeight,
-        textAlign = node.textAlign?.toRc() ?: RcTextAlign.Start,
-        overflow = node.overflow?.toRc() ?: RcTextOverflow.Clip,
-        maxLines = node.maxLines ?: Int.MAX_VALUE,
-    )
+    val modifier = boxModel(node.modifier, slot) { m ->
+        if (node.marquee) {
+            m.marquee(
+                iterations = Int.MAX_VALUE,
+                animationMode = 0,
+                repeatDelayMillis = MARQUEE_DELAY_MS,
+                initialDelayMillis = MARQUEE_DELAY_MS,
+                spacing = MARQUEE_SPACING_DP,
+                velocity = MARQUEE_VELOCITY_DP_S,
+            )
+        } else {
+            m
+        }
+    }
+    val color = node.color?.let(::parseColor) ?: env.text
+    val fontSize = sp(node.fontSize ?: styleSize)
+    val fontWeight = node.fontWeight?.toRc() ?: styleWeight
+    val textAlign = node.textAlign?.toRc() ?: RcTextAlign.Start
+    val overflow = node.overflow?.toRc() ?: RcTextOverflow.Clip
+    val maxLines = node.maxLines ?: Int.MAX_VALUE
+    val dynamic = resolveDynamicText(env, node.text)
+    if (dynamic != null) {
+        Text(
+            dynamic,
+            modifier = modifier,
+            color = color,
+            fontSize = fontSize,
+            fontWeight = fontWeight,
+            textAlign = textAlign,
+            overflow = overflow,
+            maxLines = maxLines,
+        )
+    } else {
+        Text(
+            node.text,
+            modifier = modifier,
+            color = color,
+            fontSize = fontSize,
+            fontWeight = fontWeight,
+            textAlign = textAlign,
+            overflow = overflow,
+            maxLines = maxLines,
+        )
+    }
 }

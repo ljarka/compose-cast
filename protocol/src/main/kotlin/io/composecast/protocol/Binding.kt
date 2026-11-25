@@ -237,9 +237,10 @@ class Template private constructor(val parts: List<Part>) {
 internal val BINDING_NAME = Regex("[A-Za-z_][A-Za-z0-9_-]*")
 
 /** Roots that are not data-source names. */
-internal object Roots {
+object Roots {
     const val PARAMS = "params"
     const val SECRET = "secret"
+    const val VALUES = "values"
     const val INDEX = "\$index"
-    val RESERVED = setOf(PARAMS, SECRET, INDEX)
+    val RESERVED = setOf(PARAMS, SECRET, VALUES, INDEX)
 }
