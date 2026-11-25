@@ -38,6 +38,24 @@ internal class DataFields(private val probe: ApiProbe) {
             )
         }
         if (params.isNotEmpty()) add(Group("Screen parameters", params.map { (k, v) -> Field("{{params.$k}}", v) }))
+        val values = (screen["values"] as? JsonObject).orEmpty()
+        if (values.isNotEmpty()) {
+            add(
+                Group(
+                    "Screen values",
+                    values.entries.flatMap { (k, spec) ->
+                        val obj = spec as? JsonObject
+                        val default = (obj?.get("default") as? JsonPrimitive)?.content ?: "0"
+                        val min = (obj?.get("min") as? JsonPrimitive)?.content ?: "0"
+                        val max = (obj?.get("max") as? JsonPrimitive)?.content ?: "100"
+                        listOf(
+                            Field("{{values.$k}}", "default $default ($min..$max)"),
+                            Field("{{values.$k | round}}", "rounded integer"),
+                        )
+                    },
+                ),
+            )
+        }
     }
 
     /** `{{alias.…}}` of a repeat whose items are a path (`shows`, `src.results`) or a zip (`{"day": "…"}`). */

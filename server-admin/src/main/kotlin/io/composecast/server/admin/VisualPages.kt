@@ -127,9 +127,14 @@ internal fun Route.visualPages(screens: ScreenStore, probe: ApiProbe, publishing
                 editing.fields(node)
                     ?: return@post call.respondText("No node '$node'", status = HttpStatusCode.NotFound)
             val params = call.receiveParameters()
+            val screenValues = (editing.root["values"] as? JsonObject)?.keys?.toList().orEmpty()
             call.respondTemplate(
                 "admin/_form.ftl",
-                mapOf("rows" to formRows(fields, params::get), "canEdit" to true, "panelUrl" to call.panelUrl(node)),
+                mapOf(
+                    "rows" to formRows(fields, params::get, screenValues),
+                    "canEdit" to true,
+                    "panelUrl" to call.panelUrl(node),
+                ),
             )
         }
     }
@@ -333,7 +338,11 @@ internal fun visualModel(
                 "isList" to (it.type == null && it.path != "data" && !it.path.startsWith("data.")),
             )
         },
-        "rows" to (editing.fields(node)?.let { formRows(it, value) } ?: emptyList()),
+        "rows" to (
+            editing.fields(node)?.let {
+                formRows(it, value, (editing.root["values"] as? JsonObject)?.keys?.toList().orEmpty())
+            } ?: emptyList()
+            ),
         "palette" to Palette.groups.map { (group, types) -> mapOf("name" to group, "types" to types) },
         "containers" to Palette.containers,
         "panelUrl" to "/admin/screens/${editing.stored.id.urlEncoded()}/visual/panel?node=${node.urlEncoded()}",
@@ -347,7 +356,11 @@ internal fun visualModel(
  * The form as a flat list for the template: inputs plus `group`/`end` rows around nested objects;
  * a variant shows the fields of the type currently picked.
  */
-internal fun formRows(fields: List<FormSchema.Field>, value: (String) -> String?): List<Map<String, Any>> = buildList {
+internal fun formRows(
+    fields: List<FormSchema.Field>,
+    value: (String) -> String?,
+    screenValues: List<String> = emptyList(),
+): List<Map<String, Any>> = buildList {
     for (field in fields) {
         val base = mapOf(
             "path" to field.path,
@@ -359,7 +372,7 @@ internal fun formRows(fields: List<FormSchema.Field>, value: (String) -> String?
             is FormSchema.Kind.Group -> {
                 // Closed unless something in it is set: the modifier alone has 16 fields.
                 add(base + mapOf("input" to "group", "open" to FormSchema.filledIn(kind.fields, value)))
-                addAll(formRows(kind.fields, value))
+                addAll(formRows(kind.fields, value, screenValues))
                 add(mapOf("input" to "end"))
             }
             is FormSchema.Kind.Variant -> {
@@ -372,31 +385,46 @@ internal fun formRows(fields: List<FormSchema.Field>, value: (String) -> String?
                         "open" to (type.isNotEmpty() || !field.optional),
                     ),
                 )
-                kind.variants[type]?.let { addAll(formRows(it, value)) }
+                kind.variants[type]?.let { addAll(formRows(it, value, screenValues)) }
                 add(mapOf("input" to "end"))
             }
-            else -> add(
-                base + mapOf(
-                    "input" to when (kind) {
-                        FormSchema.Kind.Text -> if (field.key.contains("color", ignoreCase = true) ||
-                            field.key == "background"
-                        ) {
-                            "color"
-                        } else {
-                            "text"
-                        }
-                        is FormSchema.Kind.Number -> "number"
-                        FormSchema.Kind.Toggle -> "toggle"
-                        is FormSchema.Kind.Choice -> "choice"
-                        FormSchema.Kind.Dimension -> "dimension"
-                        else -> "json"
-                    },
-                    "value" to value(field.path).orEmpty(),
-                    "lines" to (value(field.path).orEmpty().lines().size.coerceIn(2, 12)),
-                    "options" to ((kind as? FormSchema.Kind.Choice)?.options ?: emptyList<String>()),
-                    "step" to if ((kind as? FormSchema.Kind.Number)?.integer == false) "any" else "1",
-                ),
-            )
+            else -> {
+                val current = value(field.path).orEmpty()
+                val valueChoices = if (field.path == "controls" && screenValues.isNotEmpty()) {
+                    if (current.isNotEmpty() && current !in screenValues) {
+                        listOf(current) + screenValues
+                    } else {
+                        screenValues
+                    }
+                } else {
+                    null
+                }
+                add(
+                    base + mapOf(
+                        "input" to when {
+                            valueChoices != null -> "choice"
+                            kind == FormSchema.Kind.Text -> if (field.key.contains("color", ignoreCase = true) ||
+                                field.key == "background"
+                            ) {
+                                "color"
+                            } else {
+                                "text"
+                            }
+                            kind is FormSchema.Kind.Number -> "number"
+                            kind == FormSchema.Kind.Toggle -> "toggle"
+                            kind is FormSchema.Kind.Choice -> "choice"
+                            kind == FormSchema.Kind.Dimension -> "dimension"
+                            else -> "json"
+                        },
+                        "value" to current,
+                        "lines" to current.lines().size.coerceIn(2, 12),
+                        "options" to (
+                            valueChoices ?: (kind as? FormSchema.Kind.Choice)?.options ?: emptyList<String>()
+                            ),
+                        "step" to if ((kind as? FormSchema.Kind.Number)?.integer == false) "any" else "1",
+                    ),
+                )
+            }
         }
     }
 }
@@ -415,6 +443,8 @@ private val HELP = mapOf(
     "params" to "JSON object, e.g. {\"id\": \"{{item.id}}\"}",
     "data" to "JSON: data sources by name (docs/screen-json-format.md)",
     "lookups" to "JSON: value tables for the lookup filter",
+    "values" to "JSON: on-device values by name, e.g. {\"volume\": {\"default\": \"40\", \"min\": 0, \"max\": 100}}",
+    "controls" to "screen value updated by this slider (declare in Screen → Values)",
     "fillFraction" to "0–1 of the parent's width",
 )
 
