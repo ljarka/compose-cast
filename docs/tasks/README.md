@@ -36,7 +36,7 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-047 Live screens + dashboard components](T-047-live-dashboards.md) | Roadmap G1–G2 | done (`99a932a`) — gauge/sparkline/kpi, live screens over a WebSocket, app keeps them current |
 | [T-032 Live preview on a phone](T-032-live-preview.md) | Roadmap G3 | done (`1087b4b`) — one live preview per editor and screen, every saved edit on the phone in ~1 s (ADR 0030) |
 | [T-030 App templates](T-030-app-templates.md) | Etap 8 | done (`4ab4a14`) — News, Shop, Events, Weather (live), Blank; Templates page applies drafts + Publish all (ADR 0031) |
-| [T-048 Phone preview inside the admin panel](T-048-in-panel-phone-preview.md) | Roadmap G4 | done — optional `preview-renderer` service (real player under Robolectric, linux/amd64), phone frame in the visual editor, edit → image 0.14 s (ADR 0032) |
+| [T-048 Phone preview inside the admin panel](T-048-in-panel-phone-preview.md) | Roadmap G4 | done (`c06d5ea`) — optional `preview-renderer` service (real player under Robolectric, linux/amd64), phone frame in the visual editor, edit → image 0.14 s (ADR 0032) |
 | [T-010 Settings export (properties + icon)](T-010-app-export.md) | Etap 9 | in progress — Design rewritten; next: AppExportService + route |
 | [T-027 Images loaded by the SDK (lists)](T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-010); roadmap F1 |
 | [T-021 Native components via RC `Custom` (text input)](T-021-native-components.md) | Etap 10 | queued (after T-027); roadmap F2; spike first |

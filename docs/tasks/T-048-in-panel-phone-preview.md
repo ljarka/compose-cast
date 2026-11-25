@@ -1,6 +1,6 @@
 # T-048 — Phone preview inside the admin panel (server-rendered PNG)
 
-Status: done · Roadmap: G4 (owner 2026-11-24: do it now, before T-010) · Depends on: T-032, ADR 0013, ADR 0030 · Module: new `preview-renderer`, server-admin, compat-tests
+Status: done (`c06d5ea`) · Roadmap: G4 (owner 2026-11-24: do it now, before T-010) · Depends on: T-032, ADR 0013, ADR 0030 · Module: new `preview-renderer`, server-admin, compat-tests
 
 ## Goal
 The screen editor (JSON and visual) shows the screen **as the phone would draw it**, in a phone
