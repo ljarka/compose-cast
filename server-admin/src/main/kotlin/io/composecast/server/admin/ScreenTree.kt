@@ -17,32 +17,6 @@ internal object ScreenTree {
     private val SCREEN_LISTS = listOf("components", "error")
 
     fun rows(screen: JsonObject): List<Row> = buildList {
-        // T-031 W3: data sources first (what the components bind to), each one a node `data.<name>`.
-        add(Row("data", 0, null, "Data sources"))
-        (screen["data"] as? JsonObject)?.forEach { (name, source) ->
-            add(
-                Row(
-                    "data.$name",
-                    1,
-                    "source",
-                    "$name · ${((source as? JsonObject)?.get("url") as? JsonPrimitive)?.content.orEmpty()}".take(48),
-                ),
-            )
-        }
-        add(Row("values", 0, null, "Screen values"))
-        (screen["values"] as? JsonObject)?.forEach { (name, value) ->
-            val obj = value as? JsonObject
-            val min = (obj?.get("min") as? JsonPrimitive)?.content ?: "0"
-            val max = (obj?.get("max") as? JsonPrimitive)?.content ?: "100"
-            val suffix = if (obj?.containsKey("animate") == true) {
-                val mode = ((obj["animate"] as? JsonObject)?.get("mode") as? JsonPrimitive)?.content ?: "pingPong"
-                "animate: $mode"
-            } else {
-                val def = (obj?.get("default") as? JsonPrimitive)?.content ?: "0"
-                "$def ($min..$max)"
-            }
-            add(Row("values.$name", 1, "value", "$name · $suffix".take(48)))
-        }
         for (list in SCREEN_LISTS) {
             val items = screen[list] as? JsonArray
             // The error list matters only with data sources: shown (and fillable) once there are some.

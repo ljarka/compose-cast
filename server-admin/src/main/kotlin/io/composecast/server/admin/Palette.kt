@@ -90,7 +90,7 @@ internal object Palette {
                 (v as? JsonObject)?.containsKey("animate") != true
             }.map { it.key }
             require(controllable.isNotEmpty()) {
-                "a slider controls a non-animated screen value: add one first (select Screen values)"
+                "a slider controls a non-animated screen value: add one first (select Screen → Screen values)"
             }
             val used = controlledValues(screen)
             val chosen = controllable.firstOrNull { it !in used } ?: controllable.first()
@@ -250,7 +250,7 @@ internal object Palette {
         val name = path.removePrefix("data.")
         val sources = requireNotNull(screen["data"] as? JsonObject) { "no data sources" }
         require(name in sources) { "no data source '$name'" }
-        return Result(JsonObject(screen + ("data" to JsonObject(sources - name))), "data")
+        return Result(JsonObject(screen + ("data" to JsonObject(sources - name))), "")
     }
 
     /** Adds an on-device screen value [name] (default, min, max); editable in its own form node `values.<name>`. */
@@ -284,7 +284,7 @@ internal object Palette {
         } else {
             JsonObject(screen + ("values" to JsonObject(rest)))
         }
-        return Result(updated, "values")
+        return Result(updated, "")
     }
 
     /** The component that owns a list path (`components.1.children` → `components.1`), `""` for the screen's lists. */

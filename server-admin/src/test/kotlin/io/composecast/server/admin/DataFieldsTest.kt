@@ -72,9 +72,10 @@ class DataFieldsTest {
             },
         ) { header(HttpHeaders.Cookie, cookie) }
 
-        val tree = client.get("/admin/screens/list/visual") { header(HttpHeaders.Cookie, cookie) }.bodyAsText()
-        assertContains(tree, "Data sources")
-        assertContains(tree, "shows · https://api.tvmaze.com/shows")
+        val screenPage = client.get("/admin/screens/list/visual") { header(HttpHeaders.Cookie, cookie) }.bodyAsText()
+        assertContains(screenPage, "Data sources")
+        assertContains(screenPage, "<code>shows</code>")
+        assertContains(screenPage, "https://api.tvmaze.com/shows")
 
         val added = post(
             "/admin/screens/list/visual/edit?node=data",

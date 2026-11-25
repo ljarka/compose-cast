@@ -371,6 +371,28 @@ internal fun visualModel(
         "visualProblems" to visualProblems,
         "notice" to notice,
         "isDraft" to (editing.stored.draftJson != null),
+        "sources" to (editing.root["data"] as? JsonObject).orEmpty().map { (name, source) ->
+            mapOf(
+                "name" to name,
+                "path" to "data.$name",
+                "summary" to ((source as? JsonObject)?.get("url") as? JsonPrimitive)?.content.orEmpty(),
+            )
+        },
+        "screenValues" to (editing.root["values"] as? JsonObject).orEmpty().map { (name, value) ->
+            val obj = value as? JsonObject
+            val min = (obj?.get("min") as? JsonPrimitive)?.content ?: "0"
+            val max = (obj?.get("max") as? JsonPrimitive)?.content ?: "100"
+            val summary = if (obj?.containsKey("animate") == true) {
+                val anim = obj["animate"] as? JsonObject
+                val mode = (anim?.get("mode") as? JsonPrimitive)?.content ?: "pingPong"
+                val dur = (anim?.get("durationMs") as? JsonPrimitive)?.content ?: "2000"
+                "animate: $mode (${dur}ms, $min..$max)"
+            } else {
+                val def = (obj?.get("default") as? JsonPrimitive)?.content ?: "0"
+                "default $def ($min..$max)"
+            }
+            mapOf("name" to name, "path" to "values.$name", "summary" to summary)
+        },
     )
 }
 

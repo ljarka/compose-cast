@@ -240,7 +240,10 @@ class VisualPagesTest {
             val canonical = ScreenJson.encode(ScreenJson.decode(file.readText(), file.name))
             screens.publish(id, canonical, by = "import")
             val root = Json.parseToJsonElement(canonical) as JsonObject
-            for (path in listOf("") + ScreenTree.rows(root).filter { it.type != null }.map { it.path }) {
+            val dataPaths = (root["data"] as? JsonObject)?.keys?.map { "data.$it" }.orEmpty()
+            val valuePaths = (root["values"] as? JsonObject)?.keys?.map { "values.$it" }.orEmpty()
+            for (path in listOf("") + dataPaths + valuePaths +
+                ScreenTree.rows(root).filter { it.type != null }.map { it.path }) {
                 val url = "/admin/screens/$id/visual?node=$path"
                 assertEquals(HttpStatusCode.OK, client.page(cookie, url).status, url)
                 val node = ScreenTree.get(root, path) as JsonObject
