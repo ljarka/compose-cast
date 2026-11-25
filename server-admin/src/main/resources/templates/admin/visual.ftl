@@ -116,7 +116,8 @@
             </#if>
             <#include "_form.ftl">
           </fieldset>
-          <#if canEdit><button type="submit"><#if mode == "new-value" || mode == "new-source">Add<#else>Save</#if></button></#if>
+          <#if canEdit && (mode == "new-value" || mode == "new-source")><button type="submit">Add</button></#if>
+          <#if canEdit && mode != "new-value" && mode != "new-source"><p class="muted help" id="autosave-status" role="status" style="margin: 12px 0 0; min-height: 1.4em"></p></#if>
         </form>
       </div>
       <#if mode == "screen">
@@ -353,21 +354,36 @@
       if (e.target.closest(".editor")) saveScroll();
     });
 
-    // Auto-save unsaved edits in the visual property form when switching nodes or clicking Publish/Preview.
+    // Auto-save unsaved edits in the visual property form (debounced while editing, plus immediately on navigation/publish).
     const panelForm = document.querySelector(".panel-form");
     const isNewForm = "${mode}" === "new-value" || "${mode}" === "new-source";
     if (panelForm && !isNewForm) {
       let dirty = false;
       let saving = false;
-      const markDirty = () => { dirty = true; };
-      panelForm.addEventListener("input", markDirty);
-      panelForm.addEventListener("change", markDirty);
+      let timer = null;
+      const statusEl = document.getElementById("autosave-status");
+      const phoneImg = document.querySelector(".phone img");
+      function setStatus(text, isError) {
+        if (!statusEl) return;
+        statusEl.textContent = text;
+        statusEl.className = isError ? "error help" : "muted help";
+      }
+      function scheduleSave(delayMs) {
+        dirty = true;
+        setStatus("Unsaved changes…", false);
+        clearTimeout(timer);
+        timer = setTimeout(() => { flushDirty(false); }, delayMs);
+      }
+      panelForm.addEventListener("input", () => scheduleSave(600));
+      panelForm.addEventListener("change", () => scheduleSave(50));
       document.addEventListener("click", function (e) {
-        if (e.target.closest("[data-binding]") && last && panelForm.contains(last)) dirty = true;
+        if (e.target.closest("[data-binding]") && last && panelForm.contains(last)) scheduleSave(200);
       });
-      async function flushDirty() {
+      async function flushDirty(submitOnError = true) {
+        clearTimeout(timer);
         if (!dirty || saving) return true;
         saving = true;
+        setStatus("Saving…", false);
         try {
           const res = await fetch(panelForm.action, {
             method: "POST",
@@ -375,12 +391,20 @@
             redirect: "manual",
           });
           if (res.status === 422) {
-            // Let a normal submit show the validation errors inline.
             saving = false;
-            panelForm.submit();
+            if (submitOnError) {
+              panelForm.submit();
+            } else {
+              setStatus("Invalid value — fix highlighted fields", true);
+            }
             return false;
           }
           dirty = false;
+          setStatus("Saved", false);
+          if (phoneImg) {
+            const base = phoneImg.src.split("?")[0];
+            phoneImg.src = base + "?t=" + Date.now();
+          }
           return true;
         } finally {
           saving = false;
