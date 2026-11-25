@@ -92,6 +92,22 @@
     textarea.json { min-height: 0; }
     label.toggle { font-weight: normal; }
     label.toggle input { width: auto; }
+    .card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .card-head h2 { margin: 0; }
+    .btn-link { display: inline-block; padding: 6px 14px; font-size: 14px; font-weight: 600; color: #fff;
+                background: var(--accent); border-radius: 6px; text-decoration: none; white-space: nowrap; }
+    .btn-link:hover { opacity: .9; }
+    .item-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .item-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 14px;
+                border: 1px solid var(--line); border-radius: 8px; background: var(--bg); text-decoration: none;
+                color: inherit; transition: border-color .15s ease; }
+    .item-row:hover { border-color: var(--accent); }
+    .item-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .item-name { font-weight: 600; color: var(--fg); }
+    .item-meta { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .item-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600;
+                  background: var(--card); border: 1px solid var(--line); color: var(--accent); white-space: nowrap; }
+    .item-chevron { color: var(--muted); font-size: 18px; line-height: 1; flex-shrink: 0; }
   </style>
   <#if htmx><script src="https://unpkg.com/htmx.org@2.0.11/dist/htmx.min.js" integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg" crossorigin="anonymous"></script></#if>
 </head>

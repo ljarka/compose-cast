@@ -74,8 +74,30 @@ class DataFieldsTest {
 
         val screenPage = client.get("/admin/screens/list/visual") { header(HttpHeaders.Cookie, cookie) }.bodyAsText()
         assertContains(screenPage, "Data sources")
-        assertContains(screenPage, "<code>shows</code>")
+        assertContains(screenPage, "<code class=\"item-name\">shows</code>")
         assertContains(screenPage, "https://api.tvmaze.com/shows")
+        assertContains(screenPage, "node=values.__new__")
+        assertContains(screenPage, "node=data.__new__")
+
+        // New screen value page uses the same generated form with Add button and no Delete button.
+        val newValueForm = client.get("/admin/screens/list/visual?node=values.__new__") {
+            header(HttpHeaders.Cookie, cookie)
+        }.bodyAsText()
+        assertContains(newValueForm, ">Add</button>")
+        assertEquals(false, "Delete this value" in newValueForm)
+        val createdValue = post(
+            "/admin/screens/list/visual?node=values.__new__",
+            "__name" to "pulse",
+            "default" to "0",
+            "min" to "0",
+            "max" to "100",
+            "animate.durationMs" to "2500",
+            "animate.mode" to "pingPong",
+            "animate.easing" to "easeInOut",
+        )
+        assertEquals("/admin/screens/list/visual?node=&saved", createdValue.headers[HttpHeaders.Location])
+        val afterAdd = io.composecast.protocol.ScreenJson.decode(host.screens.get("list")!!.draftJson!!, "v")
+        assertEquals(2500, afterAdd.values["pulse"]?.animate?.durationMs)
 
         val added = post(
             "/admin/screens/list/visual/edit?node=data",

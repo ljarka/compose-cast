@@ -44,6 +44,25 @@ internal fun Route.visualPages(screens: ScreenStore, probe: ApiProbe, publishing
             val params = call.receiveParameters()
             val problems = mutableListOf<String>()
             val parsed = FormSchema.parse(fields, params::get, problems)
+            if (node == Editing.NEW_VALUE || node == Editing.NEW_SOURCE) {
+                val isValue = node == Editing.NEW_VALUE
+                val section = if (isValue) "values" else "data"
+                val kind = if (isValue) "screen value" else "data source"
+                val name = params["__name"].orEmpty().trim()
+                val existing = editing.root[section] as? JsonObject ?: JsonObject(emptyMap())
+                if (!NEW_ENTRY_NAME.matches(name)) {
+                    problems += "name: use letters, digits and _ (starting with a letter)"
+                } else if (name in existing) {
+                    problems += "name: there is already a $kind '$name'"
+                }
+                val updated = if (problems.isEmpty()) {
+                    JsonObject(editing.root + (section to JsonObject(existing + (name to parsed))))
+                } else {
+                    editing.root
+                }
+                call.saveOrShow(screens, publishing, editing, updated, "", problems) { params[it] }
+                return@post
+            }
             val screen = ScreenTree.set(editing.root, node, editing.rebuild(node, parsed))
             call.saveOrShow(screens, publishing, editing, screen, node, problems) { params[it] }
         }
@@ -188,19 +207,19 @@ internal class Editing(
     private fun type(path: String) = (node(path)?.get("type") as? JsonPrimitive)?.content
 
     /** A data source node `data.<name>` (T-031 W3). */
-    fun isSource(path: String) = path.startsWith("data.") && path.count { it == '.' } == 1
+    fun isSource(path: String) = path != NEW_SOURCE && path.startsWith("data.") && path.count { it == '.' } == 1
 
     /** An on-device screen value node `values.<name>`. */
-    fun isValue(path: String) = path.startsWith("values.") && path.count { it == '.' } == 1
+    fun isValue(path: String) = path != NEW_VALUE && path.startsWith("values.") && path.count { it == '.' } == 1
 
     /** A component list path (`components`, `components.2.empty`): its last segment is a name. */
-    fun isList(path: String) = path != "data" && !isSource(path) &&
-        path != "values" && !isValue(path) &&
+    fun isList(path: String) = path != "data" && path != NEW_SOURCE && !isSource(path) &&
+        path != "values" && path != NEW_VALUE && !isValue(path) &&
         path.isNotEmpty() && path.substringAfterLast('.').toIntOrNull() == null
 
     /** The selection exists: the screen, a component, or a component list of the screen or a component. */
     fun exists(path: String): Boolean = when {
-        path.isEmpty() || path == "data" || path == "values" -> true
+        path.isEmpty() || path == "data" || path == "values" || path == NEW_SOURCE || path == NEW_VALUE -> true
         isSource(path) -> (root["data"] as? JsonObject)?.containsKey(path.removePrefix("data.")) == true
         isValue(path) -> (root["values"] as? JsonObject)?.containsKey(path.removePrefix("values.")) == true
         isList(path) -> {
@@ -220,6 +239,8 @@ internal class Editing(
     fun fields(path: String): List<FormSchema.Field>? = when {
         path.isEmpty() -> FormSchema.screenFields
         path == "data" || path == "values" -> null
+        path == NEW_SOURCE -> FormSchema.sourceFields
+        path == NEW_VALUE -> FormSchema.valueFields
         isSource(path) -> FormSchema.sourceFields.takeIf { node(path) != null }
         isValue(path) -> FormSchema.valueFields.takeIf { node(path) != null }
         isList(path) || node(path) == null -> null
@@ -230,6 +251,15 @@ internal class Editing(
     fun values(path: String): Map<String, String> {
         val fields = fields(path) ?: return emptyMap()
         if (path.isEmpty()) return FormSchema.values(fields, root)
+        if (path == NEW_SOURCE) {
+            return FormSchema.values(
+                fields,
+                FormSchema.sourceWithDefaults(JsonObject(mapOf("url" to JsonPrimitive("")))),
+            )
+        }
+        if (path == NEW_VALUE) {
+            return FormSchema.values(fields, FormSchema.valueWithDefaults(JsonObject(emptyMap())))
+        }
         if (isSource(path)) return FormSchema.values(fields, FormSchema.sourceWithDefaults(node(path)!!))
         if (isValue(path)) return FormSchema.values(fields, FormSchema.valueWithDefaults(node(path)!!))
         val component = Json.decodeFromJsonElement(Component.serializer(), node(path)!!)
@@ -263,12 +293,14 @@ internal class Editing(
         return JsonObject(kept + parsed)
     }
 
-    /** What the panel offers for [path]: `screen`, `sources`, `source`, `values`, `value`, `list` or `component`. */
+    /** What the panel offers for [path]. */
     fun mode(path: String) = when {
         path.isEmpty() -> "screen"
         path == "data" -> "sources"
+        path == NEW_SOURCE -> "new-source"
         isSource(path) -> "source"
         path == "values" -> "values"
+        path == NEW_VALUE -> "new-value"
         isValue(path) -> "value"
         isList(path) -> "list"
         else -> "component"
@@ -279,13 +311,22 @@ internal class Editing(
     fun label(path: String) = when (mode(path)) {
         "screen" -> "Screen"
         "sources" -> "Data sources"
+        "new-source" -> "Add data source"
         "source" -> "Data source: ${path.removePrefix("data.")}"
         "values" -> "Screen values"
+        "new-value" -> "Add screen value"
         "value" -> "Screen value: ${path.removePrefix("values.")}"
         "list" -> "List: ${path.substringAfterLast('.')}"
         else -> type(path).orEmpty()
     }
+
+    companion object {
+        const val NEW_SOURCE = "data.__new__"
+        const val NEW_VALUE = "values.__new__"
+    }
 }
+
+private val NEW_ENTRY_NAME = Regex("[A-Za-z][A-Za-z0-9_]{0,63}")
 
 private suspend fun ApplicationCall.editing(screens: ScreenStore): Editing? {
     val id = screenId
@@ -371,6 +412,7 @@ internal fun visualModel(
         "visualProblems" to visualProblems,
         "notice" to notice,
         "isDraft" to (editing.stored.draftJson != null),
+        "newName" to value("__name").orEmpty(),
         "sources" to (editing.root["data"] as? JsonObject).orEmpty().map { (name, source) ->
             mapOf(
                 "name" to name,
@@ -382,16 +424,22 @@ internal fun visualModel(
             val obj = value as? JsonObject
             val min = (obj?.get("min") as? JsonPrimitive)?.content ?: "0"
             val max = (obj?.get("max") as? JsonPrimitive)?.content ?: "100"
-            val summary = if (obj?.containsKey("animate") == true) {
-                val anim = obj["animate"] as? JsonObject
-                val mode = (anim?.get("mode") as? JsonPrimitive)?.content ?: "pingPong"
+            val isAnim = obj?.containsKey("animate") == true
+            val badge = if (isAnim) {
+                val anim = obj?.get("animate") as? JsonObject
+                "animate · ${(anim?.get("mode") as? JsonPrimitive)?.content ?: "pingPong"}"
+            } else {
+                "$min..$max"
+            }
+            val summary = if (isAnim) {
+                val anim = obj?.get("animate") as? JsonObject
                 val dur = (anim?.get("durationMs") as? JsonPrimitive)?.content ?: "2000"
-                "animate: $mode (${dur}ms, $min..$max)"
+                "${dur}ms · $min..$max"
             } else {
                 val def = (obj?.get("default") as? JsonPrimitive)?.content ?: "0"
-                "default $def ($min..$max)"
+                "default $def"
             }
-            mapOf("name" to name, "path" to "values.$name", "summary" to summary)
+            mapOf("name" to name, "path" to "values.$name", "badge" to badge, "summary" to summary)
         },
     )
 }

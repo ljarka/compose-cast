@@ -40,7 +40,7 @@
   </#if>
   <div class="split<#if phone> with-phone</#if>">
     <nav class="card tree" aria-label="Component tree">
-      <a href="/admin/screens/${id?url}/visual?node="<#if canEdit> data-path="" data-list="true"</#if><#if node == "" || mode == "source" || mode == "value" || mode == "sources" || mode == "values"> class="selected"</#if>>Screen</a>
+      <a href="/admin/screens/${id?url}/visual?node="<#if canEdit> data-path="" data-list="true"</#if><#if node == "" || mode == "source" || mode == "value" || mode == "new-source" || mode == "new-value" || mode == "sources" || mode == "values"> class="selected"</#if>>Screen</a>
       <#list tree as t>
         <a href="/admin/screens/${id?url}/visual?node=${t.path?url}" style="padding-left: ${t.depth * 16 + 8}px"
            <#if canEdit><#if t.type?has_content>draggable="true" data-path="${t.path}" data-container="${t.isContainer?c}"<#elseif t.isList>data-path="${t.path}" data-list="true"</#if></#if>
@@ -52,7 +52,7 @@
         <div class="card"><p class="error" role="alert">Not changed:</p>
           <ul class="problems"><#list visualProblems as p><li><code>${p}</code></li></#list></ul></div>
       </#if>
-      <#if canEdit && mode != "source" && mode != "value">
+      <#if canEdit && mode != "source" && mode != "value" && mode != "new-source" && mode != "new-value">
       <form class="card tools" method="post" action="/admin/screens/${id?url}/visual/edit?node=${node?url}">
         <#if mode == "sources">
           <div class="toolbar">
@@ -87,7 +87,7 @@
       </#if>
       <#if mode != "list" && mode != "sources" && mode != "values">
       <div class="card">
-        <#if mode == "source" || mode == "value">
+        <#if mode == "source" || mode == "value" || mode == "new-source" || mode == "new-value">
           <p style="margin-top: 0"><a href="/admin/screens/${id?url}/visual?node=">← Back to Screen</a></p>
         </#if>
         <h2 style="margin-top: 0">${nodeLabel}</h2>
@@ -107,56 +107,66 @@
         </#if>
         <form class="panel-form" method="post" action="/admin/screens/${id?url}/visual?node=${node?url}">
           <fieldset class="plain"<#if !canEdit> disabled</#if>>
+            <#if mode == "new-value" || mode == "new-source">
+            <div class="field">
+              <label for="f-__name">Name <span class="required" title="required">*</span></label>
+              <input id="f-__name" name="__name" value="${newName}" placeholder="<#if mode == 'new-value'>volume<#else>shows</#if>" required>
+              <span class="muted help">Letters, digits and _ (starting with a letter).</span>
+            </div>
+            </#if>
             <#include "_form.ftl">
           </fieldset>
-          <#if canEdit><button type="submit">Save</button></#if>
+          <#if canEdit><button type="submit"><#if mode == "new-value" || mode == "new-source">Add<#else>Save</#if></button></#if>
         </form>
       </div>
       <#if mode == "screen">
       <div class="card">
-        <h2 style="margin-top: 0">Screen values</h2>
-        <p class="muted help" style="margin-top: 0">On-device reactive values for sliders and automatic animations. Read as <code>{{values.name}}</code>.</p>
+        <div class="card-head">
+          <h2>Screen values</h2>
+          <#if canEdit><a class="btn-link" href="/admin/screens/${id?url}/visual?node=values.__new__">+ Add value</a></#if>
+        </div>
+        <p class="muted help" style="margin: 0">On-device reactive values for sliders and automatic animations. Read as <code>{{values.name}}</code>.</p>
         <#if screenValues?has_content>
-        <ul style="list-style: none; padding: 0; margin: 0 0 12px 0">
+        <div class="item-list">
           <#list screenValues as v>
-          <li style="padding: 4px 0"><a href="/admin/screens/${id?url}/visual?node=${v.path?url}"><code>${v.name}</code></a> <span class="muted">${v.summary}</span></li>
+          <a class="item-row" href="/admin/screens/${id?url}/visual?node=${v.path?url}">
+            <span class="item-main">
+              <code class="item-name">${v.name}</code>
+              <span class="item-badge">${v.badge}</span>
+              <span class="item-meta">${v.summary}</span>
+            </span>
+            <span class="item-chevron" aria-hidden="true">›</span>
+          </a>
           </#list>
-        </ul>
-        </#if>
-        <#if canEdit>
-        <form class="tools" method="post" action="/admin/screens/${id?url}/visual/edit?node=values">
-          <div class="toolbar" style="margin-bottom: 0">
-            <label class="inline">Name <input name="name" placeholder="volume" style="width: 120px"></label>
-            <label class="inline">Default <input name="default" value="40" style="width: 72px"></label>
-            <label class="inline">Min <input name="min" value="0" style="width: 64px"></label>
-            <label class="inline">Max <input name="max" value="100" style="width: 64px"></label>
-            <button name="op" value="add-value">Add value</button>
-          </div>
-        </form>
+        </div>
+        <#else>
+        <p class="muted help" style="margin: 12px 0 0">No screen values yet.</p>
         </#if>
       </div>
       <div class="card">
-        <h2 style="margin-top: 0">Data sources</h2>
-        <p class="muted help" style="margin-top: 0">APIs this screen reads as <code>{{name.field}}</code>. Or <a href="/admin/wizard">create screens from an API</a>.</p>
+        <div class="card-head">
+          <h2>Data sources</h2>
+          <#if canEdit><a class="btn-link" href="/admin/screens/${id?url}/visual?node=data.__new__">+ Add data source</a></#if>
+        </div>
+        <p class="muted help" style="margin: 0">APIs this screen reads as <code>{{name.field}}</code>. Or <a href="/admin/wizard">create screens from an API</a>.</p>
         <#if sources?has_content>
-        <ul style="list-style: none; padding: 0; margin: 0 0 12px 0">
+        <div class="item-list">
           <#list sources as s>
-          <li style="padding: 4px 0"><a href="/admin/screens/${id?url}/visual?node=${s.path?url}"><code>${s.name}</code></a> <span class="muted">${s.summary}</span></li>
+          <a class="item-row" href="/admin/screens/${id?url}/visual?node=${s.path?url}">
+            <span class="item-main">
+              <code class="item-name">${s.name}</code>
+              <span class="item-meta">${s.summary}</span>
+            </span>
+            <span class="item-chevron" aria-hidden="true">›</span>
+          </a>
           </#list>
-        </ul>
-        </#if>
-        <#if canEdit>
-        <form class="tools" method="post" action="/admin/screens/${id?url}/visual/edit?node=data">
-          <div class="toolbar" style="margin-bottom: 0">
-            <label class="inline">Name <input name="name" placeholder="shows" style="width: 120px"></label>
-            <label class="inline">Address <input name="url" placeholder="https://api.tvmaze.com/shows" style="width: 280px"></label>
-            <button name="op" value="add-source">Add data source</button>
-          </div>
-        </form>
+        </div>
+        <#else>
+        <p class="muted help" style="margin: 12px 0 0">No data sources yet.</p>
         </#if>
       </div>
       </#if>
-      <#if canEdit && mode != "source" && mode != "value">
+      <#if canEdit && mode != "source" && mode != "value" && mode != "new-source" && mode != "new-value">
       <div class="card">
         <button type="button" hx-get="/admin/screens/${id?url}/visual/fields?node=${node?url}" hx-target="#data-fields" hx-indicator="#data-fields">Show fields from the data</button>
         <p class="muted help" id="picker-hint">Click a text field above, then a field below: its <code>{{binding}}</code> is inserted there.</p>
