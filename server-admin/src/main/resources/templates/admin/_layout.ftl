@@ -113,6 +113,18 @@
     .item-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600;
                   background: var(--card); border: 1px solid var(--line); color: var(--accent); white-space: nowrap; }
     .item-chevron { color: var(--muted); font-size: 18px; line-height: 1; flex-shrink: 0; }
+    .action-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin: 16px 0 20px; }
+    .action-card { display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px; background: var(--card);
+                   border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: inherit;
+                   transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease; }
+    .action-card:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,.06); }
+    .action-icon { flex: 0 0 38px; height: 38px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line);
+                   display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .action-body { flex: 1; min-width: 0; }
+    .action-title { font-weight: 600; color: var(--fg); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .action-desc { font-size: 13px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+    .action-arrow { color: var(--accent); font-size: 16px; transition: transform .15s ease; }
+    .action-card:hover .action-arrow { transform: translateX(3px); }
   </style>
   <#if htmx><script src="https://unpkg.com/htmx.org@2.0.11/dist/htmx.min.js" integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg" crossorigin="anonymous"></script></#if>
 </head>

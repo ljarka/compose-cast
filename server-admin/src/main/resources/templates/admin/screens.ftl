@@ -3,8 +3,22 @@
 <main class="wide">
   <h1>Screens</h1>
   <#if canEdit>
-  <p><a href="/admin/templates">Start from a template…</a> <span class="muted">— a whole app (news, shop, events, weather) in one click</span></p>
-  <p><a href="/admin/wizard">Create screens from an API…</a> <span class="muted">— paste a JSON API's address, get a list and a detail screen</span></p>
+  <div class="action-cards">
+    <a class="action-card" href="/admin/templates">
+      <span class="action-icon" aria-hidden="true">🧩</span>
+      <span class="action-body">
+        <span class="action-title">Start from a template <span class="action-arrow" aria-hidden="true">→</span></span>
+        <span class="action-desc">A whole app (news, shop, events, weather) in one click.</span>
+      </span>
+    </a>
+    <a class="action-card" href="/admin/wizard">
+      <span class="action-icon" aria-hidden="true">⚡</span>
+      <span class="action-body">
+        <span class="action-title">Create screens from an API <span class="action-arrow" aria-hidden="true">→</span></span>
+        <span class="action-desc">Paste a JSON API's address to generate a list and detail screen.</span>
+      </span>
+    </a>
+  </div>
   </#if>
   <#if homeError??><p class="error" role="alert">${homeError}</p></#if>
   <div class="card">
