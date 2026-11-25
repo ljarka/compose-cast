@@ -90,21 +90,26 @@
         <#if mode == "source" || mode == "value" || mode == "new-source" || mode == "new-value">
           <p style="margin-top: 0"><a href="/admin/screens/${id?url}/visual?node=">← Back to Screen</a></p>
         </#if>
-        <h2 style="margin-top: 0">${nodeLabel}</h2>
-        <#if canEdit && (mode == "component" || mode == "source" || mode == "value")>
-        <form class="tools" method="post" action="/admin/screens/${id?url}/visual/edit?node=${node?url}" style="margin-bottom: 12px">
-          <#if mode == "component">
-            <div class="toolbar" role="group" aria-label="Edit component" style="margin-bottom: 0">
-              <button name="op" value="duplicate">Duplicate</button>
-              <button name="op" value="delete" class="danger">Delete</button>
+        <div class="card-head">
+          <h2>${nodeLabel}</h2>
+          <#if canEdit && (mode == "component" || mode == "source" || mode == "value")>
+          <details class="menu">
+            <summary aria-label="Actions for ${nodeLabel}">⋯</summary>
+            <div class="menu-list">
+              <form class="tools" method="post" action="/admin/screens/${id?url}/visual/edit?node=${node?url}" style="margin: 0">
+                <#if mode == "component">
+                  <button name="op" value="duplicate">Duplicate</button>
+                  <button name="op" value="delete" class="danger">Delete</button>
+                <#elseif mode == "source">
+                  <button name="op" value="delete-source" class="danger">Delete this data source</button>
+                <#else>
+                  <button name="op" value="delete-value" class="danger">Delete this value</button>
+                </#if>
+              </form>
             </div>
-          <#elseif mode == "source">
-            <div class="toolbar" style="margin-bottom: 0"><button name="op" value="delete-source" class="danger">Delete this data source</button></div>
-          <#else>
-            <div class="toolbar" style="margin-bottom: 0"><button name="op" value="delete-value" class="danger">Delete this value</button></div>
+          </details>
           </#if>
-        </form>
-        </#if>
+        </div>
         <form class="panel-form" method="post" action="/admin/screens/${id?url}/visual?node=${node?url}">
           <fieldset class="plain"<#if !canEdit> disabled</#if>>
             <#if mode == "new-value" || mode == "new-source">
