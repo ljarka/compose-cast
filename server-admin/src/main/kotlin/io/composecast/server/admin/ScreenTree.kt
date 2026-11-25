@@ -21,7 +21,7 @@ internal object ScreenTree {
             val items = screen[list] as? JsonArray
             // The error list matters only with data sources: shown (and fillable) once there are some.
             if (list == "error" && items.isNullOrEmpty() && (screen["data"] as? JsonObject).isNullOrEmpty()) continue
-            add(Row(list, 0, null, if (list == "error") "Shown when a data source fails" else "Components"))
+            if (list == "error") add(Row(list, 0, null, "Shown when a data source fails"))
             items?.forEachIndexed { i, item -> addNode(this, "$list.$i", item, 1) }
         }
     }
