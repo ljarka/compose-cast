@@ -330,6 +330,17 @@ All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alph
     data updates do not reset an active or finished drag. Verified alpha23 (Robolectric + emulator,
     2026-11-25).
 
+23. **Dragging a `TouchExpression` inside a scrollable `Column` triggers parent scroll & sibling
+    scrollables** (`Component.java` lines 1050–1070 & 1258–1275, `CoreDocument.java` line 2069 —
+    verified in **both alpha23 and alpha24** sources, 2026-11-25): `Component.onTouchDown` only
+    skips sibling `Component`s when `componentHandled == true`, not its own `TouchHandler`
+    (`ScrollModifierOperation`), so both the child `Canvas` (`TouchExpression`) and the root
+    scrollable `Column` get added to `CoreDocument.mAppliedTouchOperations`. On `touchDrag`,
+    `CoreDocument` invokes `rootColumn.onTouchDrag(..., force = true)`, which pulls the root
+    vertical overscroll `EdgeEffect` and, because `force = true` bypasses `contains(x, y)`, also
+    propagates drag into sibling scrollable children (e.g. a horizontal carousel `Row`). Re-check
+    on every RC upgrade (`alpha25+`).
+
 ## Live updates (verified alpha23, 2026-11-24, PoC on the emulator)
 
 RC has **data-update documents**: a document whose header has `Header.DOC_DATA_UPDATE = 1`
