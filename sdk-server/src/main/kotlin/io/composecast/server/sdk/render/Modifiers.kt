@@ -6,6 +6,7 @@ import androidx.compose.remote.creation.dsl.Modifier
 import androidx.compose.remote.creation.dsl.RcFloat
 import androidx.compose.remote.creation.dsl.RcScope
 import androidx.compose.remote.creation.dsl.RcSp
+import androidx.compose.remote.creation.dsl.animationSpec
 import androidx.compose.remote.creation.dsl.background
 import androidx.compose.remote.creation.dsl.border
 import androidx.compose.remote.creation.dsl.clip
@@ -20,15 +21,19 @@ import androidx.compose.remote.creation.dsl.padding
 import androidx.compose.remote.creation.dsl.semantics
 import androidx.compose.remote.creation.dsl.verticalCollapsiblePriority
 import androidx.compose.remote.creation.dsl.verticalScroll
+import androidx.compose.remote.creation.dsl.visibility
 import androidx.compose.remote.creation.dsl.width
 import androidx.compose.remote.creation.dsl.widthIn
 import androidx.compose.remote.creation.modifiers.RoundedRectShape
+import io.composecast.protocol.Action
 import io.composecast.protocol.ActionCodec
 import io.composecast.protocol.Dimension
 import io.composecast.protocol.Padding
 import io.composecast.protocol.ScrollDirection
 import io.composecast.protocol.Shape
+import io.composecast.protocol.VisibilityTransition
 import io.composecast.server.sdk.render.RemoteComposeRenderer.Companion.parseColor
+import androidx.compose.remote.core.operations.layout.Component as RcComponent
 import io.composecast.protocol.Modifier as CcModifier
 
 /** Direction of the list a node is rendered in; [Slot.weigh] applies `weight` (rows/columns only). */
@@ -43,6 +48,7 @@ internal class Slot(val axis: Axis, val weigh: ((Modifier, Float) -> Modifier)? 
  * the order only matters for painting: decorations before the padding cover the whole size.
  */
 internal fun RcScope.boxModel(
+    env: RenderEnv,
     m: CcModifier,
     slot: Slot,
     defaultWidth: Dimension? = defaultWidth(slot),
@@ -55,6 +61,22 @@ internal fun RcScope.boxModel(
     decorate: (Modifier) -> Modifier = { it },
 ): Modifier {
     var r: Modifier = Modifier
+    m.visibility?.let { vis ->
+        env.visibility[vis.id]?.let { bound ->
+            r = r.visibility(bound.state)
+            r = if (vis.transition == VisibilityTransition.None) {
+                r.animationSpec(animationId = 0)
+            } else {
+                val (enter, exit) = vis.transition.toRc()
+                r.animationSpec(
+                    motionDuration = vis.durationMs.toFloat(),
+                    visibilityDuration = vis.durationMs.toFloat(),
+                    enterAnimation = enter,
+                    exitAnimation = exit,
+                )
+            }
+        }
+    }
     m.weight?.let { weight -> r = slot.weigh?.invoke(r, weight) ?: r }
     m.collapsePriority?.let { p ->
         r = when (slot.axis) {
@@ -92,7 +114,7 @@ internal fun RcScope.boxModel(
         }
         r = r.border(border.width.toFloat(), radius ?: 0f, parseColor(border.color), shape)
     }
-    m.action?.let { action -> r = r.onClick { hostAction(ActionCodec.encode(action)) } }
+    m.action?.let { action -> r = r.applyAction(env, action) }
     r = r.semantics(m, defaultRole, hasAction = m.action != null || defaultClickable)
     r = decorate(r)
     when (m.scroll) {
@@ -110,6 +132,20 @@ internal fun RcScope.boxModel(
             )
     }
     return r
+}
+
+/** Applies [action] as a click handler: on-device RC state mutations stay local, others call the host. */
+internal fun Modifier.applyAction(env: RenderEnv, action: Action): Modifier = when (action) {
+    is Action.Toggle -> env.visibility[action.target]?.let { v ->
+        onClick { setValue(v.state, v.toggled) }
+    } ?: this
+    is Action.Show -> env.visibility[action.target]?.let { v ->
+        onClick { setValue(v.state, RcComponent.Visibility.VISIBLE) }
+    } ?: this
+    is Action.Hide -> env.visibility[action.target]?.let { v ->
+        onClick { setValue(v.state, RcComponent.Visibility.GONE) }
+    } ?: this
+    else -> onClick { hostAction(ActionCodec.encode(action)) }
 }
 
 /** Accessibility semantics (T-016): hidden → cleared; otherwise description, state, role, clickable. */

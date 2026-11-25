@@ -170,6 +170,7 @@ internal fun RcScope.renderSlider(env: RenderEnv, node: Component.Slider, slot: 
     val range = bound.max - bound.min
     Canvas(
         boxModel(
+            env,
             node.modifier,
             slot,
             defaultWidth = Dimension.Fill,

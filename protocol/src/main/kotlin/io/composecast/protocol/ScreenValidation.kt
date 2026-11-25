@@ -30,32 +30,74 @@ internal fun ScreenDefinition.screenContentProblems(): List<String> = buildList 
         }
     }
     val slidersByValue = mutableSetOf<String>()
-    addAll(componentProblems(components, "components", values = values, slidersByValue = slidersByValue))
-    addAll(componentProblems(error, "error", values = emptyMap(), slidersByValue = mutableSetOf()))
+    val visibilityIds = collectVisibilityIds(components)
+    addAll(
+        componentProblems(
+            components,
+            "components",
+            values = values,
+            slidersByValue = slidersByValue,
+            visibilityIds = visibilityIds,
+        ),
+    )
+    addAll(
+        componentProblems(
+            error,
+            "error",
+            values = emptyMap(),
+            slidersByValue = mutableSetOf(),
+            visibilityIds = collectVisibilityIds(error),
+        ),
+    )
+}
+
+private fun collectVisibilityIds(components: List<Component>): Set<String> = buildSet {
+    fun walk(list: List<Component>) {
+        for (c in list) {
+            c.modifier.visibility?.id?.takeIf { it.isNotBlank() }?.let(::add)
+            c.childLists().forEach { (_, children) -> walk(children) }
+        }
+    }
+    walk(components)
 }
 
 /** Non-fatal accessibility/authoring warnings (T-016). */
 internal fun ScreenDefinition.screenWarnings(): List<String> =
-    componentWarnings(components, "components") + componentWarnings(error, "error")
+    componentWarnings(components, "components", collectVisibilityIds(components)) +
+        componentWarnings(error, "error", collectVisibilityIds(error))
 
-private fun componentWarnings(list: List<Component>, path: String): List<String> = buildList {
-    list.forEachIndexed { i, component ->
-        val at = "$path[$i]"
-        if ((component is Component.Image || component is Component.Icon) &&
-            component.modifier.action != null &&
-            component.modifier.semantics?.hidden != true &&
-            component.modifier.semantics?.description.isNullOrBlank()
-        ) {
-            val alt = if (component is Component.Image) component.alt else (component as Component.Icon).alt
-            if (alt.isBlank()) {
-                add("$at: clickable image/icon has no alt or semantics.description")
+private fun componentWarnings(list: List<Component>, path: String, visibilityIds: Set<String>): List<String> =
+    buildList {
+        list.forEachIndexed { i, component ->
+            val at = "$path[$i]"
+            if ((component is Component.Image || component is Component.Icon) &&
+                component.modifier.action != null &&
+                component.modifier.semantics?.hidden != true &&
+                component.modifier.semantics?.description.isNullOrBlank()
+            ) {
+                val alt = if (component is Component.Image) component.alt else (component as Component.Icon).alt
+                if (alt.isBlank()) {
+                    add("$at: clickable image/icon has no alt or semantics.description")
+                }
+            }
+            fun checkTarget(action: Action?, field: String) {
+                val target = when (action) {
+                    is Action.Toggle -> action.target
+                    is Action.Show -> action.target
+                    is Action.Hide -> action.target
+                    else -> null
+                } ?: return
+                if (target.isNotBlank() && !Template.hasBindings(target) && target !in visibilityIds) {
+                    add("$at.$field: unknown visibility target '$target' (set modifier.visibility.id on a component)")
+                }
+            }
+            if (component is Component.Button) checkTarget(component.action, "action")
+            checkTarget(component.modifier.action, "modifier.action")
+            component.childLists().forEach { (field, children) ->
+                addAll(componentWarnings(children, "$at.$field", visibilityIds))
             }
         }
-        component.childLists().forEach { (field, children) ->
-            addAll(componentWarnings(children, "$at.$field"))
-        }
     }
-}
 
 /** Where a component list sits: decides whether `weight` is allowed. */
 private enum class Parent { Screen, Column, Row, Other }
@@ -67,6 +109,7 @@ private fun componentProblems(
     depth: Int = 1,
     values: Map<String, ScreenValue> = emptyMap(),
     slidersByValue: MutableSet<String> = mutableSetOf(),
+    visibilityIds: Set<String> = emptySet(),
 ): List<String> = buildList {
     if (depth > MAX_DEPTH) {
         add("$path: nested deeper than $MAX_DEPTH levels")
@@ -74,7 +117,9 @@ private fun componentProblems(
     }
     list.forEachIndexed { i, component ->
         val at = "$path[$i]"
-        if (component !is Component.Repeat) addAll(modifierProblems(component.modifier, "$at.modifier", parent))
+        if (component !is Component.Repeat) {
+            addAll(modifierProblems(component.modifier, "$at.modifier", parent, visibilityIds))
+        }
         when (component) {
             is Component.Text -> {
                 component.color?.let { colorProblem(it)?.let { problem -> add("$at.color: $problem") } }
@@ -97,7 +142,7 @@ private fun componentProblems(
                 component.color?.let { colorProblem(it)?.let { problem -> add("$at.color: $problem") } }
             }
             is Component.Button -> {
-                actionProblem(component.action)?.let { add("$at.action: $it") }
+                actionProblem(component.action, visibilityIds)?.let { add("$at.action: $it") }
                 if (component.icon != null && component.icon.isBlank()) add("$at.icon: must not be blank")
             }
             is Component.Card -> {
@@ -110,6 +155,7 @@ private fun componentProblems(
                         depth + 1,
                         values,
                         slidersByValue,
+                        visibilityIds,
                     ),
                 )
             }
@@ -169,8 +215,28 @@ private fun componentProblems(
                     add("$at.items: must name at least one array")
                 }
                 // Expanded in place: its components are children of this repeat's parent.
-                addAll(componentProblems(component.template, "$at.template", parent, depth, values, slidersByValue))
-                addAll(componentProblems(component.empty, "$at.empty", parent, depth, values, slidersByValue))
+                addAll(
+                    componentProblems(
+                        component.template,
+                        "$at.template",
+                        parent,
+                        depth,
+                        values,
+                        slidersByValue,
+                        visibilityIds,
+                    ),
+                )
+                addAll(
+                    componentProblems(
+                        component.empty,
+                        "$at.empty",
+                        parent,
+                        depth,
+                        values,
+                        slidersByValue,
+                        visibilityIds,
+                    ),
+                )
             }
             is Component.Expandable -> {
                 if (component.title.isBlank()) add("$at.title: must not be blank")
@@ -183,6 +249,7 @@ private fun componentProblems(
                         depth + 1,
                         values,
                         slidersByValue,
+                        visibilityIds,
                     ),
                 )
             }
@@ -196,6 +263,7 @@ private fun componentProblems(
                         depth + 1,
                         values,
                         slidersByValue,
+                        visibilityIds,
                     ),
                 )
             }
@@ -209,14 +277,31 @@ private fun componentProblems(
                         depth + 1,
                         values,
                         slidersByValue,
+                        visibilityIds,
                     ),
                 )
             }
             is Component.Box -> addAll(
-                componentProblems(component.children, "$at.children", Parent.Other, depth + 1, values, slidersByValue),
+                componentProblems(
+                    component.children,
+                    "$at.children",
+                    Parent.Other,
+                    depth + 1,
+                    values,
+                    slidersByValue,
+                    visibilityIds,
+                ),
             )
             is Component.FitBox -> addAll(
-                componentProblems(component.children, "$at.children", Parent.Other, depth + 1, values, slidersByValue),
+                componentProblems(
+                    component.children,
+                    "$at.children",
+                    Parent.Other,
+                    depth + 1,
+                    values,
+                    slidersByValue,
+                    visibilityIds,
+                ),
             )
             is Component.Flow -> {
                 component.maxItemsInEachRow?.let {
@@ -231,6 +316,7 @@ private fun componentProblems(
                         depth + 1,
                         values,
                         slidersByValue,
+                        visibilityIds,
                     ),
                 )
             }
@@ -247,6 +333,7 @@ private fun componentProblems(
                         depth + 1,
                         values,
                         slidersByValue,
+                        visibilityIds,
                     ),
                 )
             }
@@ -254,53 +341,72 @@ private fun componentProblems(
     }
 }
 
-private fun modifierProblems(m: Modifier, at: String, parent: Parent): List<String> = buildList {
-    m.padding?.let { p ->
-        if (listOf(p.start, p.top, p.end, p.bottom).any { it < 0 }) add("$at.padding: must be >= 0, was $p")
-    }
-    listOf("width" to m.width, "height" to m.height).forEach { (field, dimension) ->
-        if (dimension is Dimension.Dp &&
-            dimension.value < 0
-        ) {
-            add("$at.$field: must be >= 0, was ${dimension.value}")
+private fun modifierProblems(m: Modifier, at: String, parent: Parent, visibilityIds: Set<String>): List<String> =
+    buildList {
+        m.padding?.let { p ->
+            if (listOf(p.start, p.top, p.end, p.bottom).any { it < 0 }) add("$at.padding: must be >= 0, was $p")
+        }
+        listOf("width" to m.width, "height" to m.height).forEach { (field, dimension) ->
+            if (dimension is Dimension.Dp &&
+                dimension.value < 0
+            ) {
+                add("$at.$field: must be >= 0, was ${dimension.value}")
+            }
+        }
+        m.weight?.let { weight ->
+            if (!(weight > 0f) || weight.isInfinite()) add("$at.weight: must be > 0, was $weight")
+            if (parent != Parent.Column && parent != Parent.Row) {
+                add("$at.weight: only allowed for direct children of a row or column")
+            }
+        }
+        m.background?.let { colorProblem(it)?.let { problem -> add("$at.background: $problem") } }
+        m.cornerRadius?.let { if (it < 0) add("$at.cornerRadius: must be >= 0, was $it") }
+        if (m.cornerRadius != null && m.shape != null) add("$at: set either cornerRadius or shape, not both")
+        m.border?.let { border ->
+            if (border.width <= 0) add("$at.border.width: must be > 0, was ${border.width}")
+            colorProblem(border.color)?.let { add("$at.border.color: $it") }
+        }
+        m.action?.let { action -> actionProblem(action, visibilityIds)?.let { add("$at.action: $it") } }
+        m.minWidth?.let { if (it < 0) add("$at.minWidth: must be >= 0, was $it") }
+        m.maxWidth?.let { if (it < 0) add("$at.maxWidth: must be >= 0, was $it") }
+        if (m.minWidth != null && m.maxWidth != null && m.minWidth > m.maxWidth) {
+            add("$at.minWidth: must be <= maxWidth (${m.maxWidth}), was ${m.minWidth}")
+        }
+        m.minHeight?.let { if (it < 0) add("$at.minHeight: must be >= 0, was $it") }
+        m.maxHeight?.let { if (it < 0) add("$at.maxHeight: must be >= 0, was $it") }
+        if (m.minHeight != null && m.maxHeight != null && m.minHeight > m.maxHeight) {
+            add("$at.minHeight: must be <= maxHeight (${m.maxHeight}), was ${m.minHeight}")
+        }
+        m.fillFraction?.let {
+            if (it.isNaN() || it <= 0f || it > 1f) add("$at.fillFraction: must be in (0, 1], was $it")
+        }
+        m.collapsePriority?.let {
+            if (it.isNaN() || it.isInfinite()) add("$at.collapsePriority: must be finite, was $it")
+        }
+        m.visibility?.let { vis ->
+            if (vis.id.isBlank()) add("$at.visibility.id: must not be blank")
+            if (vis.durationMs !in Visibility.MIN_DURATION_MS..Visibility.MAX_DURATION_MS) {
+                add(
+                    "$at.visibility.durationMs: must be " +
+                        "${Visibility.MIN_DURATION_MS}..${Visibility.MAX_DURATION_MS}, was ${vis.durationMs}",
+                )
+            }
         }
     }
-    m.weight?.let { weight ->
-        if (!(weight > 0f) || weight.isInfinite()) add("$at.weight: must be > 0, was $weight")
-        if (parent != Parent.Column && parent != Parent.Row) {
-            add("$at.weight: only allowed for direct children of a row or column")
-        }
-    }
-    m.background?.let { colorProblem(it)?.let { problem -> add("$at.background: $problem") } }
-    m.cornerRadius?.let { if (it < 0) add("$at.cornerRadius: must be >= 0, was $it") }
-    if (m.cornerRadius != null && m.shape != null) add("$at: set either cornerRadius or shape, not both")
-    m.border?.let { border ->
-        if (border.width <= 0) add("$at.border.width: must be > 0, was ${border.width}")
-        colorProblem(border.color)?.let { add("$at.border.color: $it") }
-    }
-    m.action?.let { action -> actionProblem(action)?.let { add("$at.action: $it") } }
-    m.minWidth?.let { if (it < 0) add("$at.minWidth: must be >= 0, was $it") }
-    m.maxWidth?.let { if (it < 0) add("$at.maxWidth: must be >= 0, was $it") }
-    if (m.minWidth != null && m.maxWidth != null && m.minWidth > m.maxWidth) {
-        add("$at.minWidth: must be <= maxWidth (${m.maxWidth}), was ${m.minWidth}")
-    }
-    m.minHeight?.let { if (it < 0) add("$at.minHeight: must be >= 0, was $it") }
-    m.maxHeight?.let { if (it < 0) add("$at.maxHeight: must be >= 0, was $it") }
-    if (m.minHeight != null && m.maxHeight != null && m.minHeight > m.maxHeight) {
-        add("$at.minHeight: must be <= maxHeight (${m.maxHeight}), was ${m.minHeight}")
-    }
-    m.fillFraction?.let {
-        if (it.isNaN() || it <= 0f || it > 1f) add("$at.fillFraction: must be in (0, 1], was $it")
-    }
-    m.collapsePriority?.let {
-        if (it.isNaN() || it.isInfinite()) add("$at.collapsePriority: must be finite, was $it")
-    }
-}
 
 internal fun colorProblem(color: String): String? =
     if (COLOR.matches(color)) null else "expected #RRGGBB or #AARRGGBB, was '$color'"
 
-private fun actionProblem(action: Action): String? {
+private fun actionProblem(action: Action, visibilityIds: Set<String>): String? {
+    val target = when (action) {
+        is Action.Toggle -> action.target
+        is Action.Show -> action.target
+        is Action.Hide -> action.target
+        else -> null
+    }
+    if (target != null) {
+        return if (target.isBlank()) "target must not be blank" else null
+    }
     val encoded = ActionCodec.encode(action)
     return when {
         encoded.length > ActionCodec.MAX_ENCODED_LENGTH ->

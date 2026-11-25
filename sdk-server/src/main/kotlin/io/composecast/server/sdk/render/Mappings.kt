@@ -1,5 +1,6 @@
 package io.composecast.server.sdk.render
 
+import androidx.compose.remote.core.operations.layout.animation.AnimationSpec
 import androidx.compose.remote.core.semantics.AccessibleComponent
 import androidx.compose.remote.creation.dsl.RcColumnVerticalPositioning
 import androidx.compose.remote.creation.dsl.RcContentScale
@@ -17,6 +18,7 @@ import io.composecast.protocol.FontWeight
 import io.composecast.protocol.SemanticsRole
 import io.composecast.protocol.TextAlign
 import io.composecast.protocol.TextOverflow
+import io.composecast.protocol.VisibilityTransition
 
 // Screen model enums → Remote Compose creation enums (one-to-one).
 
@@ -99,4 +101,17 @@ internal fun Alignment.vertical(): RcVerticalPositioning = when (this) {
     Alignment.Start -> RcVerticalPositioning.Top
     Alignment.Center -> RcVerticalPositioning.Center
     Alignment.End -> RcVerticalPositioning.Bottom
+}
+
+internal fun VisibilityTransition.toRc(): Pair<AnimationSpec.ANIMATION, AnimationSpec.ANIMATION> = when (this) {
+    VisibilityTransition.Fade, VisibilityTransition.None ->
+        AnimationSpec.ANIMATION.FADE_IN to AnimationSpec.ANIMATION.FADE_OUT
+    VisibilityTransition.SlideTop ->
+        AnimationSpec.ANIMATION.SLIDE_TOP to AnimationSpec.ANIMATION.SLIDE_TOP
+    VisibilityTransition.SlideBottom ->
+        AnimationSpec.ANIMATION.SLIDE_BOTTOM to AnimationSpec.ANIMATION.SLIDE_BOTTOM
+    VisibilityTransition.SlideLeft ->
+        AnimationSpec.ANIMATION.SLIDE_LEFT to AnimationSpec.ANIMATION.SLIDE_LEFT
+    VisibilityTransition.SlideRight ->
+        AnimationSpec.ANIMATION.SLIDE_RIGHT to AnimationSpec.ANIMATION.SLIDE_RIGHT
 }

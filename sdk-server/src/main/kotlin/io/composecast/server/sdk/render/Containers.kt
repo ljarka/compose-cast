@@ -13,6 +13,7 @@ import io.composecast.protocol.Padding
 
 internal fun RcScope.renderCard(env: RenderEnv, node: Component.Card, slot: Slot) = Column(
     modifier = boxModel(
+        env,
         node.modifier,
         slot,
         defaultPadding = Padding(CARD_PADDING),
@@ -25,7 +26,7 @@ internal fun RcScope.renderCard(env: RenderEnv, node: Component.Card, slot: Slot
 
 internal fun RcScope.renderColumn(env: RenderEnv, node: Component.Column, slot: Slot) = if (node.collapsible) {
     CollapsibleColumn(
-        modifier = boxModel(node.modifier, slot),
+        modifier = boxModel(env, node.modifier, slot),
         horizontal = node.horizontalAlignment.horizontal(),
         vertical = node.verticalArrangement.vertical(),
     ) {
@@ -33,7 +34,7 @@ internal fun RcScope.renderColumn(env: RenderEnv, node: Component.Column, slot: 
     }
 } else {
     Column(
-        modifier = boxModel(node.modifier, slot),
+        modifier = boxModel(env, node.modifier, slot),
         horizontal = node.horizontalAlignment.horizontal(),
         vertical = node.verticalArrangement.vertical(),
     ) {
@@ -43,7 +44,7 @@ internal fun RcScope.renderColumn(env: RenderEnv, node: Component.Column, slot: 
 
 internal fun RcScope.renderRow(env: RenderEnv, node: Component.Row, slot: Slot) = if (node.collapsible) {
     CollapsibleRow(
-        modifier = boxModel(node.modifier, slot),
+        modifier = boxModel(env, node.modifier, slot),
         horizontal = node.horizontalAlignment(),
         vertical = node.verticalAlignment.vertical(),
     ) {
@@ -51,7 +52,7 @@ internal fun RcScope.renderRow(env: RenderEnv, node: Component.Row, slot: Slot) 
     }
 } else {
     Row(
-        modifier = boxModel(node.modifier, slot),
+        modifier = boxModel(env, node.modifier, slot),
         horizontal = node.horizontalAlignment(),
         vertical = node.verticalAlignment.vertical(),
     ) {
@@ -60,7 +61,7 @@ internal fun RcScope.renderRow(env: RenderEnv, node: Component.Row, slot: Slot) 
 }
 
 internal fun RcScope.renderBox(env: RenderEnv, node: Component.Box, slot: Slot) = Box(
-    modifier = boxModel(node.modifier, slot),
+    modifier = boxModel(env, node.modifier, slot),
     horizontal = node.horizontalAlignment.horizontal(),
     vertical = node.verticalAlignment.vertical(),
 ) {
@@ -68,7 +69,7 @@ internal fun RcScope.renderBox(env: RenderEnv, node: Component.Box, slot: Slot) 
 }
 
 internal fun RcScope.renderFitBox(env: RenderEnv, node: Component.FitBox, slot: Slot) = FitBox(
-    modifier = boxModel(node.modifier, slot),
+    modifier = boxModel(env, node.modifier, slot),
     horizontal = node.horizontalAlignment.horizontal(),
     vertical = node.verticalAlignment.vertical(),
 ) {
@@ -76,7 +77,7 @@ internal fun RcScope.renderFitBox(env: RenderEnv, node: Component.FitBox, slot: 
 }
 
 internal fun RcScope.renderFlow(env: RenderEnv, node: Component.Flow, slot: Slot) = Flow(
-    modifier = boxModel(node.modifier, slot),
+    modifier = boxModel(env, node.modifier, slot),
     horizontal = node.horizontalAlignment.horizontal(),
     vertical = node.verticalAlignment.vertical(),
     maxItemsInEachRow = node.maxItemsInEachRow ?: Int.MAX_VALUE,
@@ -87,7 +88,7 @@ internal fun RcScope.renderFlow(env: RenderEnv, node: Component.Flow, slot: Slot
 
 /** A grid is rows of `columns` equal-weight cells; missing cells of the last row are spacers. */
 internal fun RcScope.renderGrid(env: RenderEnv, node: Component.Grid, slot: Slot) = Column(
-    modifier = boxModel(node.modifier, slot),
+    modifier = boxModel(env, node.modifier, slot),
 ) {
     val rows = node.children.chunked(node.columns)
     rows.forEachIndexed { rowIndex, rowItems ->

@@ -91,7 +91,8 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
             writer.root {
                 RcCanvas(writer) {
                     val values = ScreenValues.allocate(this, writer, screen)
-                    val renderEnv = env.withRenderState(writer, values)
+                    val visibility = VisibilityStates.allocate(this, screen)
+                    val renderEnv = env.withRenderState(writer, values, visibility)
                     Column(Modifier.fillMaxSize().background(background).verticalScroll().padding(SCREEN_PADDING)) {
                         renderChildren(renderEnv, screen.components, Slot(Axis.Vertical) { m, w -> m.weight(w) })
                     }
@@ -218,15 +219,19 @@ internal class RenderEnv(
     val outline: Int,
     private val activeWriter: RemoteComposeWriter? = null,
     val values: ScreenValues = ScreenValues.EMPTY,
+    val visibility: VisibilityStates = VisibilityStates.EMPTY,
     private val loadImage: (String) -> EncodedImage?,
 ) {
     /** The active RC writer for the current render pass (used by `ScreenValues` / `Slider`). */
     val writer: RemoteComposeWriter
         get() = checkNotNull(activeWriter) { "RenderEnv has no active RemoteComposeWriter" }
 
-    /** Returns a per-render view carrying the active [writer] and allocated [values]. */
-    fun withRenderState(writer: RemoteComposeWriter, values: ScreenValues): RenderEnv =
-        RenderEnv(primary, surface, text, outline, writer, values, loadImage)
+    /** Returns a per-render view carrying the active [writer], [values], and [visibility]. */
+    fun withRenderState(
+        writer: RemoteComposeWriter,
+        values: ScreenValues,
+        visibility: VisibilityStates = VisibilityStates.EMPTY,
+    ): RenderEnv = RenderEnv(primary, surface, text, outline, writer, values, visibility, loadImage)
 
     /** The fetched image, or null (failed or rejected: callers render the alt text). */
     fun image(url: String): EncodedImage? = loadImage(url)

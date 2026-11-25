@@ -289,10 +289,13 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
                 stateDescription = s.stateDescription?.let { render(it, roots) },
             )
         }
-        return if (boundAction == m.action && boundSemantics == m.semantics) {
+        val boundVisibility = m.visibility?.let { vis ->
+            vis.copy(id = render(vis.id, roots))
+        }
+        return if (boundAction == m.action && boundSemantics == m.semantics && boundVisibility == m.visibility) {
             m
         } else {
-            m.copy(action = boundAction, semantics = boundSemantics)
+            m.copy(action = boundAction, semantics = boundSemantics, visibility = boundVisibility)
         }
     }
 
@@ -304,6 +307,9 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
         is Action.Track ->
             Action.Track(render(action.event, roots), action.params.mapValues { render(it.value, roots) })
         is Action.Custom -> Action.Custom(render(action.payload, roots))
+        is Action.Toggle -> Action.Toggle(render(action.target, roots))
+        is Action.Show -> Action.Show(render(action.target, roots))
+        is Action.Hide -> Action.Hide(render(action.target, roots))
     }
 
     /** [text] with every `{{ }}` replaced; `{{values.*}}` stays for the renderer; [escape] applies to substituted values. */

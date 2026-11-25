@@ -21,7 +21,8 @@ Strict: unknown keys/types fail with the source and the JSON path.
 ] }
 ```
 Actions: `navigate` (screen, params), `open_url` (url), `reload`, `track` (event, params),
-`custom` (payload). Full examples: `examples/demo/screens/`; cases: `ScreenJsonTest`.
+`custom` (payload), and on-device visibility actions `toggle` (target), `show` (target), `hide` (target).
+Full examples: `examples/demo/screens/`; cases: `ScreenJsonTest`.
 
 ### Containers and modifiers (T-012, [ADR 0020](decisions/0020-component-tree-and-modifiers.md))
 
@@ -61,6 +62,9 @@ Actions: `navigate` (screen, params), `open_url` (url), `reload`, `track` (event
 - Accessibility semantics (T-016):
   - `modifier.semantics`: `{description, role (button|checkbox|switch|radioButton|tab|image|dropdownList|picker|carousel), stateDescription, hidden, enabled}`.
   - `ScreenDefinition.warnings()`: non-fatal warnings (e.g. clickable image/icon without `alt` or `semantics.description`), surfaced in `/screens/{id}/debug`.
+- Animated on-device visibility:
+  - `modifier.visibility`: `{id, hidden (default false), transition (fade|slideTop|slideBottom|slideLeft|slideRight|none), durationMs (50..5000, default 300)}`.
+  - Controlled locally with zero network round trips by `toggle`, `show`, or `hide` actions targeting `id`. Multiple components may share one `id`.
 
 ### Live screens (T-047, [ADR 0029](decisions/0029-live-screens-websocket-data-updates.md))
 

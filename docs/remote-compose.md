@@ -340,6 +340,12 @@ All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alph
     vertical overscroll `EdgeEffect` and, because `force = true` bypasses `contains(x, y)`, also
     propagates drag into sibling scrollable children (e.g. a horizontal carousel `Row`). Re-check
     on every RC upgrade (`alpha25+`).
+24. **`remoteInteger(v)` deduplicates via `mState.cacheInteger(v)`** (verified alpha23, 2026-11-25):
+    `RemoteComposeWriter.addInteger(value)` returns the same id for equal initial values, so two
+    mutable state integers (e.g. two visibility groups starting `VISIBLE = 1`) would alias each
+    other if created with `remoteInteger(1)`. Allocate mutable integer state with
+    `remoteNamedInteger("vis:<id>", initial)` (`mState.createNextAvailableId()`), and toggle via
+    `setValue(state, (state + 1) % 2)`.
 
 ## Live updates (verified alpha23, 2026-11-24, PoC on the emulator)
 

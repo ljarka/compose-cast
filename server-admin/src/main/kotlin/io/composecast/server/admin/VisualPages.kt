@@ -155,10 +155,11 @@ internal fun Route.visualPages(screens: ScreenStore, probe: ApiProbe, publishing
                     ?: return@post call.respondText("No node '$node'", status = HttpStatusCode.NotFound)
             val params = call.receiveParameters()
             val screenValues = (editing.root["values"] as? JsonObject)?.keys?.toList().orEmpty()
+            val visibilityIds = collectVisibilityIds(editing.root)
             call.respondTemplate(
                 "admin/_form.ftl",
                 mapOf(
-                    "rows" to formRows(fields, params::get, screenValues),
+                    "rows" to formRows(fields, params::get, screenValues, visibilityIds),
                     "canEdit" to true,
                     "panelUrl" to call.panelUrl(node),
                 ),
@@ -404,7 +405,12 @@ internal fun visualModel(
         },
         "rows" to (
             editing.fields(node)?.let {
-                formRows(it, value, (editing.root["values"] as? JsonObject)?.keys?.toList().orEmpty())
+                formRows(
+                    it,
+                    value,
+                    (editing.root["values"] as? JsonObject)?.keys?.toList().orEmpty(),
+                    collectVisibilityIds(editing.root),
+                )
             } ?: emptyList()
             ),
         "palette" to Palette.groups.map { (group, types) -> mapOf("name" to group, "types" to types) },
@@ -453,6 +459,7 @@ internal fun formRows(
     fields: List<FormSchema.Field>,
     value: (String) -> String?,
     screenValues: List<String> = emptyList(),
+    visibilityIds: List<String> = emptyList(),
 ): List<Map<String, Any>> = buildList {
     for (field in fields) {
         val base = mapOf(
@@ -465,7 +472,7 @@ internal fun formRows(
             is FormSchema.Kind.Group -> {
                 // Closed unless something in it is set: the modifier alone has 16 fields.
                 add(base + mapOf("input" to "group", "open" to FormSchema.filledIn(kind.fields, value)))
-                addAll(formRows(kind.fields, value, screenValues))
+                addAll(formRows(kind.fields, value, screenValues, visibilityIds))
                 add(mapOf("input" to "end"))
             }
             is FormSchema.Kind.Variant -> {
@@ -478,24 +485,22 @@ internal fun formRows(
                         "open" to (type.isNotEmpty() || !field.optional),
                     ),
                 )
-                kind.variants[type]?.let { addAll(formRows(it, value, screenValues)) }
+                kind.variants[type]?.let { addAll(formRows(it, value, screenValues, visibilityIds)) }
                 add(mapOf("input" to "end"))
             }
             else -> {
                 val current = value(field.path).orEmpty()
-                val valueChoices = if (field.path == "controls" && screenValues.isNotEmpty()) {
-                    if (current.isNotEmpty() && current !in screenValues) {
-                        listOf(current) + screenValues
-                    } else {
-                        screenValues
-                    }
-                } else {
-                    null
+                val dynamicChoices = when {
+                    field.path == "controls" && screenValues.isNotEmpty() -> screenValues
+                    field.key == "target" && visibilityIds.isNotEmpty() -> visibilityIds
+                    else -> null
+                }?.let { choices ->
+                    if (current.isNotEmpty() && current !in choices) listOf(current) + choices else choices
                 }
                 add(
                     base + mapOf(
                         "input" to when {
-                            valueChoices != null -> "choice"
+                            dynamicChoices != null -> "choice"
                             kind == FormSchema.Kind.Text -> if (field.key.contains("color", ignoreCase = true) ||
                                 field.key == "background"
                             ) {
@@ -512,7 +517,7 @@ internal fun formRows(
                         "value" to current,
                         "lines" to current.lines().size.coerceIn(2, 12),
                         "options" to (
-                            valueChoices ?: (kind as? FormSchema.Kind.Choice)?.options ?: emptyList<String>()
+                            dynamicChoices ?: (kind as? FormSchema.Kind.Choice)?.options ?: emptyList<String>()
                             ),
                         "step" to if ((kind as? FormSchema.Kind.Number)?.integer == false) "any" else "1",
                     ),
@@ -520,6 +525,24 @@ internal fun formRows(
             }
         }
     }
+}
+
+private fun collectVisibilityIds(root: JsonObject): List<String> {
+    val ids = linkedSetOf<String>()
+    fun walk(el: kotlinx.serialization.json.JsonElement?) {
+        when (el) {
+            is JsonObject -> {
+                val vis = (el["modifier"] as? JsonObject)?.get("visibility") as? JsonObject
+                val id = (vis?.get("id") as? JsonPrimitive)?.content?.trim()
+                if (!id.isNullOrEmpty()) ids += id
+                el.values.forEach(::walk)
+            }
+            is kotlinx.serialization.json.JsonArray -> el.forEach(::walk)
+            else -> Unit
+        }
+    }
+    walk(root["components"])
+    return ids.toList()
 }
 
 /** Short help by field name; the rest is self-explaining or in docs/screen-json-format.md. */
@@ -538,6 +561,10 @@ private val HELP = mapOf(
     "lookups" to "JSON: value tables for the lookup filter",
     "values" to "JSON: on-device values by name, e.g. {\"volume\": {\"default\": \"40\", \"min\": 0, \"max\": 100}}",
     "controls" to "screen value updated by this slider (declare in Screen → Values)",
+    "visibility" to "show/hide this component on-device when another element triggers toggle/show/hide",
+    "target" to "visibility id of the component(s) to toggle, show, or hide",
+    "transition" to "enter/exit animation (fade, slideTop, slideBottom, slideLeft, slideRight, none)",
+    "durationMs" to "animation duration in milliseconds",
     "fillFraction" to "0–1 of the parent's width",
 )
 

@@ -1,9 +1,13 @@
 package io.composecast.server.demo
 
+import io.composecast.protocol.Action
 import io.composecast.protocol.Alignment
+import io.composecast.protocol.ButtonVariant
 import io.composecast.protocol.Dimension
 import io.composecast.protocol.Modifier
 import io.composecast.protocol.TextAlign
+import io.composecast.protocol.Visibility
+import io.composecast.protocol.VisibilityTransition
 import io.composecast.server.sdk.RegistryBuilder
 
 /**
@@ -54,6 +58,29 @@ internal fun RegistryBuilder.interactiveScreen() {
                 )
             }
             slider("temp", step = 0.5f, color = "#E8590C")
+        }
+
+        spacer(16)
+        text("Animated visibility", style = "h2")
+        text("Tap a button to show or hide another element with an on-device transition.", style = "caption")
+        spacer(8)
+        row(spacing = 8, modifier = Modifier(width = Dimension.Fill)) {
+            button("Toggle card", Action.Toggle("details"), modifier = Modifier(weight = 1f))
+            button("Hide", Action.Hide("details"), variant = ButtonVariant.Outlined)
+        }
+        spacer(8)
+        card(
+            spacing = 6,
+            modifier = Modifier(
+                visibility = Visibility(
+                    id = "details",
+                    transition = VisibilityTransition.Fade,
+                    durationMs = 300,
+                ),
+            ),
+        ) {
+            text("Animated panel", style = "h3")
+            text("This card fades in and out locally on the device while sibling layout reflows smoothly.")
         }
     }
 }

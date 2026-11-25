@@ -36,6 +36,7 @@ internal fun RcScope.renderButton(env: RenderEnv, node: Component.Button, slot: 
     val iconImage = node.icon?.let { env.image(it) }
     Box(
         modifier = boxModel(
+            env,
             node.modifier,
             slot,
             defaultPadding = Padding(BUTTON_PADDING),
@@ -49,7 +50,7 @@ internal fun RcScope.renderButton(env: RenderEnv, node: Component.Button, slot: 
                 r = r.border(1f, BUTTON_RADIUS, primary, ShapeType.ROUNDED_RECTANGLE)
             }
             if (node.modifier.action == null) {
-                r = r.onClick { hostAction(ActionCodec.encode(node.action)) }
+                r = r.applyAction(env, node.action)
             }
             r
         },
@@ -136,7 +137,7 @@ internal fun RcScope.renderExpandable(env: RenderEnv, node: Component.Expandable
     // own (mX, mY), so a StateLayout placed directly in a Column paints at (0, 0) of the
     // Column. Wrapping it in a Box puts the vertical offset on the Box (which translates
     // properly) while StateLayout sits at (0, 0) inside the Box.
-    Box(modifier = boxModel(node.modifier, slot)) {
+    Box(modifier = boxModel(env, node.modifier, slot)) {
         StateLayout(state, modifier = Modifier.fillMaxWidth()) {
             if (node.expanded) {
                 expandedBranch(nextState = 1)

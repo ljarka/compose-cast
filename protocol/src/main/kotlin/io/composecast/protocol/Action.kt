@@ -40,6 +40,21 @@ sealed interface Action {
     @Serializable
     @SerialName("custom")
     data class Custom(val payload: String) : Action
+
+    /** On-device: toggle animated visibility of components with `modifier.visibility.id == target`. */
+    @Serializable
+    @SerialName("toggle")
+    data class Toggle(val target: String) : Action
+
+    /** On-device: show components with `modifier.visibility.id == target`. */
+    @Serializable
+    @SerialName("show")
+    data class Show(val target: String) : Action
+
+    /** On-device: hide components with `modifier.visibility.id == target`. */
+    @Serializable
+    @SerialName("hide")
+    data class Hide(val target: String) : Action
 }
 
 /**
@@ -65,6 +80,9 @@ object ActionCodec {
         Action.Reload -> "${Actions.RELOAD}:"
         is Action.Track -> "${Actions.TRACK}:${enc(action.event)}${query(action.params)}"
         is Action.Custom -> "${Actions.CUSTOM}:${action.payload}"
+        is Action.Toggle -> "${Actions.TOGGLE}:${enc(action.target)}"
+        is Action.Show -> "${Actions.SHOW}:${enc(action.target)}"
+        is Action.Hide -> "${Actions.HIDE}:${enc(action.target)}"
     }
 
     /** Returns `null` for an unknown type or a malformed payload; never throws. */
@@ -80,6 +98,9 @@ object ActionCodec {
                 Actions.RELOAD -> if (payload.isEmpty()) Action.Reload else null
                 Actions.TRACK -> nameAndParams(payload)?.let { (event, params) -> Action.Track(event, params) }
                 Actions.CUSTOM -> Action.Custom(payload)
+                Actions.TOGGLE -> payload.takeIf { it.isNotEmpty() }?.let { Action.Toggle(dec(it)) }
+                Actions.SHOW -> payload.takeIf { it.isNotEmpty() }?.let { Action.Show(dec(it)) }
+                Actions.HIDE -> payload.takeIf { it.isNotEmpty() }?.let { Action.Hide(dec(it)) }
                 else -> null
             }
         }

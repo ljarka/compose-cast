@@ -258,6 +258,7 @@ sealed interface Component {
         listOfNotNull(
             modifier.semantics?.description?.let { "modifier.semantics.description" to it },
             modifier.semantics?.stateDescription?.let { "modifier.semantics.stateDescription" to it },
+            modifier.visibility?.id?.let { "modifier.visibility.id" to it },
         )
 
     /** Nested component lists by field name (`children`, `content`, `template`, `empty`). */
@@ -301,4 +302,7 @@ fun Action.strings(): List<Pair<String, String>> = when (this) {
     is Action.Reload -> emptyList()
     is Action.Track -> listOf("event" to event) + params.map { (k, v) -> "params.$k" to v }
     is Action.Custom -> listOf("payload" to payload)
+    is Action.Toggle -> listOf("target" to target)
+    is Action.Show -> listOf("target" to target)
+    is Action.Hide -> listOf("target" to target)
 }

@@ -341,6 +341,7 @@ private fun ComposeCastApp(
                                 Action.Reload -> reloadKey++
                                 is Action.Track -> { /* analytics hook */ }
                                 is Action.Custom -> scope.launch { snackbar.showSnackbar("Custom: ${action.payload}") }
+                                is Action.Toggle, is Action.Show, is Action.Hide -> { /* handled on-device by RC */ }
                             }
                         },
                     )

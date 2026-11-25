@@ -7,6 +7,7 @@ import androidx.compose.remote.creation.dsl.RcTextAlign
 import androidx.compose.remote.creation.dsl.RcTextOverflow
 import androidx.compose.remote.creation.dsl.height
 import androidx.compose.remote.creation.dsl.marquee
+import androidx.compose.remote.creation.dsl.visibility
 import androidx.compose.remote.creation.dsl.width
 import io.composecast.protocol.Component
 import io.composecast.protocol.Dimension
@@ -17,12 +18,12 @@ import io.composecast.server.sdk.render.RemoteComposeRenderer.Companion.parseCol
 internal fun RcScope.renderChildren(env: RenderEnv, children: List<Component>, slot: Slot, spacing: Int = 0) {
     children.forEachIndexed { i, child ->
         if (i > 0 && spacing > 0) {
-            Spacer(
-                when (slot.axis) {
-                    Axis.Horizontal -> Modifier.width(spacing.toFloat())
-                    Axis.Vertical, Axis.Stack -> Modifier.height(spacing.toFloat())
-                },
-            )
+            val baseSpacer = when (slot.axis) {
+                Axis.Horizontal -> Modifier.width(spacing.toFloat())
+                Axis.Vertical, Axis.Stack -> Modifier.height(spacing.toFloat())
+            }
+            val visState = child.modifier.visibility?.id?.let { env.visibility[it]?.state }
+            Spacer(if (visState != null) baseSpacer.visibility(visState) else baseSpacer)
         }
         renderNode(env, child, slot)
     }
@@ -36,6 +37,7 @@ internal fun RcScope.renderNode(env: RenderEnv, node: Component, slot: Slot) {
         is Component.Icon -> renderIcon(env, node, slot)
         is Component.Divider -> Box(
             modifier = boxModel(
+                env,
                 node.modifier,
                 slot,
                 defaultWidth = Dimension.Fill,
@@ -47,9 +49,9 @@ internal fun RcScope.renderNode(env: RenderEnv, node: Component, slot: Slot) {
             val size = Dimension.Dp(node.height)
             Spacer(
                 if (slot.axis == Axis.Horizontal) {
-                    boxModel(node.modifier, slot, defaultWidth = size)
+                    boxModel(env, node.modifier, slot, defaultWidth = size)
                 } else {
-                    boxModel(node.modifier, slot, defaultWidth = null, defaultHeight = size)
+                    boxModel(env, node.modifier, slot, defaultWidth = null, defaultHeight = size)
                 },
             )
         }
@@ -79,7 +81,7 @@ private fun RcScope.renderText(env: RenderEnv, node: Component.Text, slot: Slot)
         TextStyle.Body -> 16 to RcFontWeight.W400
         TextStyle.Caption -> 12 to RcFontWeight.W400
     }
-    val modifier = boxModel(node.modifier, slot) { m ->
+    val modifier = boxModel(env, node.modifier, slot) { m ->
         if (node.marquee) {
             m.marquee(
                 iterations = Int.MAX_VALUE,

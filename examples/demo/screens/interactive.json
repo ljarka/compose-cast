@@ -102,6 +102,75 @@
         }
       ],
       "spacing": 12
+    },
+    {
+      "type": "spacer",
+      "height": 16
+    },
+    {
+      "type": "text",
+      "text": "Animated visibility",
+      "style": "h2"
+    },
+    {
+      "type": "text",
+      "text": "Tap a button to show or hide another element with an on-device transition.",
+      "style": "caption"
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "row",
+      "children": [
+        {
+          "type": "button",
+          "label": "Toggle card",
+          "action": {
+            "type": "toggle",
+            "target": "details"
+          },
+          "modifier": {
+            "weight": 1.0
+          }
+        },
+        {
+          "type": "button",
+          "label": "Hide",
+          "action": {
+            "type": "hide",
+            "target": "details"
+          },
+          "variant": "outlined"
+        }
+      ],
+      "spacing": 8,
+      "modifier": {
+        "width": "fill"
+      }
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "card",
+      "children": [
+        {
+          "type": "text",
+          "text": "Animated panel",
+          "style": "h3"
+        },
+        {
+          "type": "text",
+          "text": "This card fades in and out locally on the device while sibling layout reflows smoothly."
+        }
+      ],
+      "spacing": 6,
+      "modifier": {
+        "visibility": {
+          "id": "details"
+        }
+      }
     }
   ]
 }

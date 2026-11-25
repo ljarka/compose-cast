@@ -56,6 +56,8 @@ data class Modifier(
     val collapsePriority: Float? = null,
     /** Accessibility semantics overrides (T-016). */
     val semantics: Semantics? = null,
+    /** Animated on-device visibility controlled by `toggle` / `show` / `hide` actions. */
+    val visibility: Visibility? = null,
 ) {
     val isEmpty: Boolean get() = this == NONE
 
@@ -171,6 +173,48 @@ enum class SemanticsRole {
 
     @SerialName("carousel")
     Carousel,
+}
+
+/**
+ * Animated on-device visibility of a component: controlled by `Action.Toggle`, `Action.Show`, or
+ * `Action.Hide` targeting [id]. Multiple components can share the same [id].
+ */
+@Serializable
+data class Visibility(
+    val id: String,
+    /** Starts hidden (`GONE`) when true; starts visible (`VISIBLE`) by default. */
+    val hidden: Boolean = false,
+    /** Enter/exit transition when visibility changes. */
+    val transition: VisibilityTransition = VisibilityTransition.Fade,
+    /** Transition and sibling-reflow duration in ms. */
+    val durationMs: Int = DEFAULT_DURATION_MS,
+) {
+    companion object {
+        const val DEFAULT_DURATION_MS = 300
+        const val MIN_DURATION_MS = 50
+        const val MAX_DURATION_MS = 5_000
+    }
+}
+
+@Serializable
+enum class VisibilityTransition {
+    @SerialName("fade")
+    Fade,
+
+    @SerialName("slideTop")
+    SlideTop,
+
+    @SerialName("slideBottom")
+    SlideBottom,
+
+    @SerialName("slideLeft")
+    SlideLeft,
+
+    @SerialName("slideRight")
+    SlideRight,
+
+    @SerialName("none")
+    None,
 }
 
 internal object PaddingSerializer : KSerializer<Padding> {

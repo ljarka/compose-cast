@@ -37,6 +37,7 @@ internal fun RcScope.renderGauge(env: RenderEnv, node: Component.Gauge, slot: Sl
     val range = node.max - node.min
     Box(
         modifier = boxModel(
+            env,
             node.modifier,
             slot,
             defaultWidth = Dimension.Dp(node.size),
@@ -116,7 +117,7 @@ internal fun RcScope.renderSparkline(env: RenderEnv, node: Component.Sparkline, 
     val normalized = values.map { ((it - low) / range).coerceIn(0f, 1f) }.toFloatArray()
     val stroke = node.thickness.toFloat()
     Canvas(
-        boxModel(node.modifier, slot, defaultWidth = Dimension.Fill, defaultHeight = Dimension.Dp(node.height)),
+        boxModel(env, node.modifier, slot, defaultWidth = Dimension.Fill, defaultHeight = Dimension.Dp(node.height)),
     ) {
         if (normalized.size < 2) return@Canvas
         val points = remoteFloatArray(normalized)
@@ -144,7 +145,7 @@ internal fun RcScope.renderSparkline(env: RenderEnv, node: Component.Sparkline, 
 /** Label (muted), the value (large, bold), caption (muted, small); texts full width for live updates. */
 internal fun RcScope.renderKpi(env: RenderEnv, node: Component.Kpi, slot: Slot) {
     val muted = (env.text and RGB_MASK) or MUTED_ALPHA
-    Column(boxModel(node.modifier, slot, defaultWidth = Dimension.Fill)) {
+    Column(boxModel(env, node.modifier, slot, defaultWidth = Dimension.Fill)) {
         if (node.label.isNotBlank()) {
             val dynamicLabel = resolveDynamicText(env, node.label)
             if (dynamicLabel != null) {

@@ -15,7 +15,7 @@ internal fun RcScope.renderImage(env: RenderEnv, node: Component.Image, slot: Sl
     if (image == null) {
         Text(
             node.alt.ifBlank { node.url },
-            modifier = boxModel(node.modifier, slot),
+            modifier = boxModel(env, node.modifier, slot),
             color = PLACEHOLDER_COLOR,
             fontSize = sp(12),
         )
@@ -31,29 +31,31 @@ internal fun RcScope.renderImage(env: RenderEnv, node: Component.Image, slot: Sl
             } else {
                 defaultWidth(slot)
             }
-            boxModel(node.modifier, slot, defaultWidth = defaultWidth)
+            boxModel(env, node.modifier, slot, defaultWidth = defaultWidth)
         }
         aspectRatio != null -> when {
             widthMod is Dimension.Dp -> boxModel(
+                env,
                 node.modifier,
                 slot,
                 defaultHeight = Dimension.Dp((widthMod.value / aspectRatio).roundToInt()),
             )
             widthMod == Dimension.Wrap ||
                 (widthMod == null && slot.axis == Axis.Horizontal && node.modifier.weight == null) -> boxModel(
+                env,
                 node.modifier,
                 slot,
                 defaultHeight = Dimension.Dp((image.width / aspectRatio).roundToInt()),
             )
             else -> {
                 val contentWidthDp = windowWidth() / density() - 2 * SCREEN_PADDING
-                boxModel(node.modifier, slot).height(written(contentWidthDp / aspectRatio))
+                boxModel(env, node.modifier, slot).height(written(contentWidthDp / aspectRatio))
             }
         }
         else -> {
             val ratio = image.height.toFloat() / image.width
             val contentWidthDp = windowWidth() / density() - 2 * SCREEN_PADDING
-            boxModel(node.modifier, slot)
+            boxModel(env, node.modifier, slot)
                 .height(written(min(contentWidthDp * ratio, image.height.toFloat())))
         }
     }
@@ -69,7 +71,7 @@ internal fun RcScope.renderImage(env: RenderEnv, node: Component.Image, slot: Sl
 internal fun RcScope.renderIcon(env: RenderEnv, node: Component.Icon, slot: Slot) {
     val image = env.image(node.url)
     val sizeDp = Dimension.Dp(node.size)
-    val modifier = boxModel(node.modifier, slot, defaultWidth = sizeDp, defaultHeight = sizeDp)
+    val modifier = boxModel(env, node.modifier, slot, defaultWidth = sizeDp, defaultHeight = sizeDp)
     if (image != null) {
         Icon(
             remoteNamedBitmap("$IMAGE_NAME_PREFIX${node.url}", image),

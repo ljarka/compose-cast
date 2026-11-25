@@ -16,6 +16,15 @@ object Actions {
 
     /** Host-defined behavior; payload is passed through unchanged. */
     const val CUSTOM = "custom"
+
+    /** On-device: toggle animated visibility of a target group. */
+    const val TOGGLE = "toggle"
+
+    /** On-device: show a target visibility group. */
+    const val SHOW = "show"
+
+    /** On-device: hide a target visibility group. */
+    const val HIDE = "hide"
 }
 
 /**
