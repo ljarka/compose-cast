@@ -352,6 +352,68 @@
     document.addEventListener("submit", function (e) {
       if (e.target.closest(".editor")) saveScroll();
     });
+
+    // Auto-save unsaved edits in the visual property form when switching nodes or clicking Publish/Preview.
+    const panelForm = document.querySelector(".panel-form");
+    const isNewForm = "${mode}" === "new-value" || "${mode}" === "new-source";
+    if (panelForm && !isNewForm) {
+      let dirty = false;
+      let saving = false;
+      const markDirty = () => { dirty = true; };
+      panelForm.addEventListener("input", markDirty);
+      panelForm.addEventListener("change", markDirty);
+      document.addEventListener("click", function (e) {
+        if (e.target.closest("[data-binding]") && last && panelForm.contains(last)) dirty = true;
+      });
+      async function flushDirty() {
+        if (!dirty || saving) return true;
+        saving = true;
+        try {
+          const res = await fetch(panelForm.action, {
+            method: "POST",
+            body: new URLSearchParams(new FormData(panelForm)),
+            redirect: "manual",
+          });
+          if (res.status === 422) {
+            // Let a normal submit show the validation errors inline.
+            saving = false;
+            panelForm.submit();
+            return false;
+          }
+          dirty = false;
+          return true;
+        } finally {
+          saving = false;
+        }
+      }
+      document.addEventListener("click", async function (e) {
+        const link = e.target.closest(".tree a, .item-row, a[href*='/visual?node=']");
+        if (link && dirty && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
+          e.preventDefault();
+          saveScroll();
+          if (await flushDirty()) location.href = link.href;
+          return;
+        }
+        const btn = e.target.closest("button[form='screen-json-form'][formaction]");
+        if (btn && dirty) {
+          e.preventDefault();
+          if (await flushDirty()) {
+            const f = document.createElement("form");
+            f.method = "POST";
+            f.action = btn.getAttribute("formaction");
+            document.body.appendChild(f);
+            f.submit();
+          }
+        }
+      });
+      document.addEventListener("submit", async function (e) {
+        if (e.target === panelForm) { dirty = false; return; }
+        if (dirty && e.target.closest(".tools")) {
+          e.preventDefault();
+          if (await flushDirty()) e.target.submit();
+        }
+      });
+    }
   })();
 </script>
 </@layout.page>

@@ -103,7 +103,7 @@ internal fun Route.screenPages(screens: ScreenStore, settings: SettingsStore, pu
             // The editor's "Publish" submits the textarea: exactly what is shown goes live.
             post("/publish") {
                 val stored = screens.get(call.screenId) ?: return@post call.notFound()
-                val json = call.receiveParameters()["json"].orEmpty()
+                val json = call.receiveParameters()["json"] ?: stored.draftJson ?: stored.liveJson.orEmpty()
                 val checked = problems(stored.id, json)
                 val shown = checked.screen?.let { screen ->
                     val failure = publishOrProblem {
@@ -120,7 +120,7 @@ internal fun Route.screenPages(screens: ScreenStore, settings: SettingsStore, pu
             // T-045 B2: the textarea as a temporary screen for the Preview app; nothing is saved.
             post("/preview") {
                 val stored = screens.get(call.screenId) ?: return@post call.notFound()
-                val json = call.receiveParameters()["json"].orEmpty()
+                val json = call.receiveParameters()["json"] ?: stored.draftJson ?: stored.liveJson.orEmpty()
                 val checked = problems(stored.id, json)
                 val screen = checked.screen ?: run {
                     call.response.status(HttpStatusCode.UnprocessableEntity)
