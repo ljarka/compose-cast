@@ -11,7 +11,7 @@
 <@layout.page title=title user=user role=role htmx=canEdit>
 <main class="wide editor<#if phone> with-phone</#if>">
   <p><a href="/admin/screens">← Screens</a> · <a href="#json-editor">JSON</a> · <a href="#history">History</a></p>
-  <h1><code>${id}</code> <span class="status status-${status}">${status}</span></h1>
+  <h1><code>${id}</code> <span class="status status-${status}">${status}</span><#if liveEveryMs gt 0> <span class="live-badge" title="Live updates every ${liveEveryMs?c} ms"><span class="live-dot" style="animation-duration: ${liveEveryMs?c}ms"></span>live</span></#if></h1>
   <p class="muted">
     <#if publishedAt?has_content>Live since ${publishedAt} (${publishedBy}).<#else>Never published: apps do not see this screen.</#if>
     <#if status == "draft"> The editor shows the draft; apps still get the live version.</#if>
@@ -227,7 +227,7 @@
       <tbody>
       <#list history as h>
         <tr>
-          <td><a href="/admin/screens/${id?url}/revisions/${h.revision?c}">#${h.revision?c}</a><#if h?is_first> <span class="status status-live">live</span></#if></td>
+          <td><a href="/admin/screens/${id?url}/revisions/${h.revision?c}">#${h.revision?c}</a><#if h?is_first> <span class="status status-published">published</span></#if></td>
           <td>${h.publishedAt}</td>
           <td>${h.publishedBy}</td>
           <td><#if canEdit && !h?is_first>

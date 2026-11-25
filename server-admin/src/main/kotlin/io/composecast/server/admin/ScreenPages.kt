@@ -237,10 +237,12 @@ private fun rows(screens: ScreenStore, settings: SettingsStore): List<Map<String
     val home = settings[SettingsStore.HOME_SCREEN]?.takeIf { it.isNotBlank() } ?: "main"
     return screens.list().map { stored ->
         val json = stored.draftJson ?: stored.liveJson
+        val parsed = json?.let { ScreenJson.check(it).screen }
         mapOf(
             "id" to stored.id,
-            "title" to (json?.let { ScreenJson.check(it).screen?.title } ?: stored.id),
+            "title" to (parsed?.title ?: stored.id),
             "status" to screenStatus(stored),
+            "liveEveryMs" to (parsed?.live?.everyMs ?: 0),
             "isHome" to (stored.id == home),
             "isLive" to (stored.liveJson != null),
             "publishedAt" to stored.publishedAt?.toString().orEmpty(),
@@ -252,11 +254,11 @@ private fun rows(screens: ScreenStore, settings: SettingsStore): List<Map<String
 /** New screen ids: safe in URLs and file names (`<id>.json`, ADR 0011). */
 private val ID = Regex("[a-z0-9][a-z0-9_-]{0,63}")
 
-/** `live` (published, no pending edit), `draft` (published + pending edit), `unpublished` (only a draft). */
+/** `published` (no pending edit), `draft` (published + pending edit), `unpublished` (only a draft). */
 internal fun screenStatus(screen: ScreenStore.StoredScreen) = when {
     screen.liveJson == null -> "unpublished"
     screen.draftJson != null -> "draft"
-    else -> "live"
+    else -> "published"
 }
 
 internal fun historyRows(screens: ScreenStore, id: String) = screens.history(id).map {

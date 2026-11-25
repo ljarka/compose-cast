@@ -49,7 +49,7 @@ class ScreenPagesTest {
         listOf(
             "Home",
             "About (edited)",
-            "status-live",
+            "status-published",
             "status-draft",
             "status-unpublished",
             "import",

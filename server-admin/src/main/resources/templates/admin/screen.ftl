@@ -41,7 +41,7 @@
       <tbody>
       <#list history as h>
         <tr>
-          <td><a href="/admin/screens/${id?url}/revisions/${h.revision?c}">#${h.revision?c}</a><#if h?is_first> <span class="status status-live">live</span></#if></td>
+          <td><a href="/admin/screens/${id?url}/revisions/${h.revision?c}">#${h.revision?c}</a><#if h?is_first> <span class="status status-published">published</span></#if></td>
           <td>${h.publishedAt}</td>
           <td>${h.publishedBy}</td>
           <td><#if canEdit && !h?is_first>

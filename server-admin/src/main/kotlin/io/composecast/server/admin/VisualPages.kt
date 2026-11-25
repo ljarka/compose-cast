@@ -371,6 +371,7 @@ internal fun visualModel(
     return mapOf(
         "id" to editing.stored.id,
         "status" to screenStatus(editing.stored),
+        "liveEveryMs" to (checked.screen?.live?.everyMs ?: 0),
         "publishedAt" to editing.stored.publishedAt?.toString().orEmpty(),
         "publishedBy" to editing.stored.publishedBy.orEmpty(),
         "json" to editing.json,

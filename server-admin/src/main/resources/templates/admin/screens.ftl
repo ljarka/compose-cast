@@ -15,7 +15,7 @@
         <tr>
           <td><a href="/admin/screens/${s.id?url}"><code>${s.id}</code></a><#if s.isHome> <span class="status status-live">home</span></#if></td>
           <td>${s.title}</td>
-          <td><span class="status status-${s.status}">${s.status}</span></td>
+          <td><span class="status status-${s.status}">${s.status}</span><#if s.liveEveryMs gt 0> <span class="live-badge" title="Live updates every ${s.liveEveryMs?c} ms"><span class="live-dot" style="animation-duration: ${s.liveEveryMs?c}ms"></span>live</span></#if></td>
           <td class="muted"><#if s.publishedAt?has_content>${s.publishedAt} · ${s.publishedBy}<#else>never</#if></td>
           <td style="text-align: right">
             <#if canEdit && !s.isHome>

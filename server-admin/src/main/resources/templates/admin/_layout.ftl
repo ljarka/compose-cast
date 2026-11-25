@@ -33,7 +33,12 @@
     th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); }
     td a { color: var(--accent); }
     .status { display: inline-block; padding: 0 8px; border-radius: 999px; font-size: 14px; border: 1px solid var(--line); }
-    .status-live { color: #2b8a3e; } .status-draft { color: #e67700; } .status-unpublished { color: var(--muted); }
+    .status-published, .status-live { color: #2b8a3e; } .status-draft { color: #e67700; } .status-unpublished { color: var(--muted); }
+    .live-badge { display: inline-flex; align-items: center; gap: 5px; padding: 0 8px; border-radius: 999px;
+                  font-size: 13px; font-weight: 600; border: 1px solid var(--line); color: #e03131; vertical-align: middle; }
+    .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #e03131;
+                animation: live-pulse 1000ms ease-in-out infinite; }
+    @keyframes live-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .25; transform: scale(.75); } }
     textarea { width: 100%; min-height: 60vh; padding: 12px; font: 14px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
                color: inherit; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; tab-size: 2; }
     .problems { margin: 12px 0 0; padding-left: 20px; }
