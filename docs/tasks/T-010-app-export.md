@@ -1,6 +1,6 @@
 # T-010 — White-label app export (setup wizard)
 
-Status: ready · Roadmap: Etap 9 · Depends on: T-007 (admin panel + App Settings), T-011 (`compose-cast.properties`), SDK distribution (below) · Module: gradle-plugins, server-admin
+Status: in progress · Roadmap: Etap 9 · Depends on: T-007 (admin panel + App Settings), T-011 (`compose-cast.properties`), SDK distribution (below) · Module: gradle-plugins, server-admin
 
 ## Scope note (2026-11-16)
 
@@ -53,25 +53,7 @@ edit Kotlin/Gradle files manually — this removes that barrier.
 3. Download a ZIP file: `compose-cast-app-<appname>-<date>.zip`.
 4. Unzip → open in Android Studio → build → submit to Google Play.
 
-## Design
-
-### `app-template` configuration
-
-All runtime values must be externalised into `compose-cast.properties` (checked into the template
-but overridden at export time):
-
-```properties
-# compose-cast.properties (at app-template root)
-app.name=ComposeCast Demo
-app.applicationId=io.composecast.demo
-app.serverUrl=http://localhost:8080
-app.brand.primaryColor=#6200EE
-app.brand.backgroundColor=#FFFFFF
-app.brand.logoPath=  # relative path inside res/drawable; empty = default
-```
-
-The Android `build.gradle.kts` reads this file and feeds values into `BuildConfig`, `strings.xml`,
-and `applicationId`. The logo is a PNG placed in `res/drawable/` or `res/mipmap-*/` (ic_launcher).
+## Design (rewritten 2026-11-25 per scope note; original vendored-SDK design removed)
 
 ### Export endpoint
 
@@ -81,31 +63,38 @@ POST /admin/api/app/export
   → 401 if not authenticated
 ```
 
-Server-side:
-1. Read App Settings from DB (name, applicationId, serverUrl, frame colors, logo).
-2. Load `app-template` from the server's classpath resources or a bundled directory.
-3. Substitute values into `compose-cast.properties`.
-4. If logo uploaded: include the PNG in `res/drawable/app_logo.png`; replace `ic_launcher` PNGs
-   with scaled versions (use Java `ImageIO`; scaling only, no complex generation).
-5. Stream the ZIP to the client.
+Server-side steps:
+1. Read App Settings from DB via `SettingsStore` (name, applicationId, serverUrl, logo bytes).
+2. Load `distribution/android-app/compose-cast.properties` from the server classpath
+   (`/android-app/compose-cast.properties`, packaged into `server-app` resources).
+3. Replace placeholder values in the template:
+   - `app.name` → brand name (from `SettingsStore[AppKeys.NAME]`)
+   - `app.applicationId` → `SettingsStore[AppKeys.APPLICATION_ID]`
+   - `app.serverUrl` → `SettingsStore[AppKeys.SERVER_URL]`
+   - `app.frame.primaryColor` → brand primaryColor
+   - `app.frame.backgroundColor` → brand backgroundColor or secondaryColor
+   - `app.icon` → `app-icon.png` when a logo is stored, else empty string
+4. Build a ZIP with all files from `distribution/android-app/` (read from classpath), replacing
+   `compose-cast.properties` with the filled version.
+5. If logo bytes are in `SettingsStore[AppKeys.LOGO]` (Base64): decode and add `app-icon.png` to
+   the ZIP.
 
-### App Settings page (prerequisite — part of T-007)
+### New files
 
-The admin panel must have an "App Settings" section (not per-screen, but global):
-- App name (displayed in Play Store)
-- `applicationId` (reverse-domain format, e.g. `com.example.myapp`)
-- Server URL (the VPS URL Android clients connect to)
-- Primary colour (colour picker)
-- Background colour (colour picker)
-- Logo upload (PNG/JPG, max 1 MB; stored in DB as bytes or on disk)
+- `server-admin/src/main/kotlin/…/AppExportService.kt` — `AppExportService(settings: SettingsStore)`
+  with `fun export(out: OutputStream)`; uses `java.util.zip.ZipOutputStream`; reads classpath
+  resources via `ClassLoader.getResourceAsStream("/android-app/…")`.
+- `server-admin/src/test/kotlin/…/AppExportServiceTest.kt` — verifies ZIP contains a filled
+  `compose-cast.properties` and that `app-icon.png` appears when a logo is set.
 
-### AI brand setup (optional enhancement)
+### Wiring (existing files touched)
 
-A text field: "Describe your brand in a few words (e.g. dark blue, minimalist, fintech)".
-On submit, calls the configured LLM API (Claude via OpenClaw or similar) to suggest a BrandConfig.
-Result shown as a colour palette preview; user can accept or adjust.
+- `SettingsPages.kt`: add `POST /api/app/export` route that streams `AppExportService.export()` to
+  the response with `Content-Disposition: attachment`.
+- `AdminPanel.kt`: no change needed if `settingsPages()` already covers `/api/app/export`.
+- `server-app/build.gradle.kts` or `src/main/resources/android-app/`: copy
+  `distribution/android-app/` once so it is on the classpath at runtime.
 
-This is optional for the first release of T-010 (needs an LLM API key configured on the server). Add after the basic export works.
 
 ## Steps (files to touch)
 
