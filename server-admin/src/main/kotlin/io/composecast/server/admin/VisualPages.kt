@@ -83,6 +83,14 @@ internal fun Route.visualPages(screens: ScreenStore, probe: ApiProbe, publishing
                     )
                     "add-source" -> Palette.addSource(root, params["name"].orEmpty(), params["url"].orEmpty())
                     "delete-source" -> Palette.deleteSource(root, node)
+                    "add-value" -> Palette.addValue(
+                        root,
+                        params["name"].orEmpty(),
+                        params["default"].orEmpty(),
+                        params["min"].orEmpty(),
+                        params["max"].orEmpty(),
+                    )
+                    "delete-value" -> Palette.deleteValue(root, node)
                     else -> throw IllegalArgumentException("unknown operation '${params["op"]}'")
                 }
             } catch (e: IllegalArgumentException) {
@@ -182,14 +190,19 @@ internal class Editing(
     /** A data source node `data.<name>` (T-031 W3). */
     fun isSource(path: String) = path.startsWith("data.") && path.count { it == '.' } == 1
 
+    /** An on-device screen value node `values.<name>`. */
+    fun isValue(path: String) = path.startsWith("values.") && path.count { it == '.' } == 1
+
     /** A component list path (`components`, `components.2.empty`): its last segment is a name. */
-    fun isList(path: String) =
-        path != "data" && !isSource(path) && path.isNotEmpty() && path.substringAfterLast('.').toIntOrNull() == null
+    fun isList(path: String) = path != "data" && !isSource(path) &&
+        path != "values" && !isValue(path) &&
+        path.isNotEmpty() && path.substringAfterLast('.').toIntOrNull() == null
 
     /** The selection exists: the screen, a component, or a component list of the screen or a component. */
     fun exists(path: String): Boolean = when {
-        path.isEmpty() || path == "data" -> true
+        path.isEmpty() || path == "data" || path == "values" -> true
         isSource(path) -> (root["data"] as? JsonObject)?.containsKey(path.removePrefix("data.")) == true
+        isValue(path) -> (root["values"] as? JsonObject)?.containsKey(path.removePrefix("values.")) == true
         isList(path) -> {
             val owner = if ('.' in path) path.substringBeforeLast('.') else ""
             val name = path.substringAfterLast('.')
@@ -206,8 +219,9 @@ internal class Editing(
     /** Form fields of the node at [path] (the screen for `""`); null for a list or nothing. */
     fun fields(path: String): List<FormSchema.Field>? = when {
         path.isEmpty() -> FormSchema.screenFields
-        path == "data" -> null
+        path == "data" || path == "values" -> null
         isSource(path) -> FormSchema.sourceFields.takeIf { node(path) != null }
+        isValue(path) -> FormSchema.valueFields.takeIf { node(path) != null }
         isList(path) || node(path) == null -> null
         else -> type(path)?.let(FormSchema::componentFields)
     }
@@ -217,6 +231,7 @@ internal class Editing(
         val fields = fields(path) ?: return emptyMap()
         if (path.isEmpty()) return FormSchema.values(fields, root)
         if (isSource(path)) return FormSchema.values(fields, FormSchema.sourceWithDefaults(node(path)!!))
+        if (isValue(path)) return FormSchema.values(fields, FormSchema.valueWithDefaults(node(path)!!))
         val component = Json.decodeFromJsonElement(Component.serializer(), node(path)!!)
         return FormSchema.values(fields, FormSchema.withDefaults(component))
     }
@@ -227,10 +242,10 @@ internal class Editing(
      */
     fun rebuild(path: String, parsed: JsonObject): JsonObject {
         val node = node(path)!!
-        if (isSource(path)) return parsed
+        if (isSource(path) || isValue(path)) return parsed
         val keep = if (path.isEmpty()) {
-            // Not in the screen form: the id, the component lists and the data sources (own nodes).
-            listOf("id", "data", "components", "error")
+            // Not in the screen form: id, component lists, data sources and screen values (own nodes).
+            listOf("id", "data", "values", "components", "error")
         } else {
             listOf("type") + FormSchema.componentLists(FormSchema.componentTypes.getValue(type(path)!!))
         }
@@ -248,11 +263,13 @@ internal class Editing(
         return JsonObject(kept + parsed)
     }
 
-    /** What the panel offers for [path]: `screen`, `list` or `component`. */
+    /** What the panel offers for [path]: `screen`, `sources`, `source`, `values`, `value`, `list` or `component`. */
     fun mode(path: String) = when {
         path.isEmpty() -> "screen"
         path == "data" -> "sources"
         isSource(path) -> "source"
+        path == "values" -> "values"
+        isValue(path) -> "value"
         isList(path) -> "list"
         else -> "component"
     }
@@ -263,6 +280,8 @@ internal class Editing(
         "screen" -> "Screen"
         "sources" -> "Data sources"
         "source" -> "Data source: ${path.removePrefix("data.")}"
+        "values" -> "Screen values"
+        "value" -> "Screen value: ${path.removePrefix("values.")}"
         "list" -> "List: ${path.substringAfterLast('.')}"
         else -> type(path).orEmpty()
     }
@@ -335,7 +354,10 @@ internal fun visualModel(
                 "type" to it.type.orEmpty(),
                 "label" to it.label,
                 "isContainer" to (it.type in Palette.containers),
-                "isList" to (it.type == null && it.path != "data" && !it.path.startsWith("data.")),
+                "isList" to (
+                    it.type == null && it.path != "data" && !it.path.startsWith("data.") &&
+                        it.path != "values" && !it.path.startsWith("values.")
+                    ),
             )
         },
         "rows" to (

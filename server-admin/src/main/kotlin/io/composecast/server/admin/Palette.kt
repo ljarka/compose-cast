@@ -85,12 +85,15 @@ internal object Palette {
             return JsonObject(starter + ("items" to JsonPrimitive(source)))
         }
         if (type == "slider") {
-            val values = (screen["values"] as? JsonObject)?.keys.orEmpty()
-            require(values.isNotEmpty()) {
-                "a slider controls a screen value: add a value first (select Screen, field Values)"
+            val valuesObj = (screen["values"] as? JsonObject).orEmpty()
+            val controllable = valuesObj.entries.filter { (_, v) ->
+                (v as? JsonObject)?.containsKey("animate") != true
+            }.map { it.key }
+            require(controllable.isNotEmpty()) {
+                "a slider controls a non-animated screen value: add one first (select Screen values)"
             }
             val used = controlledValues(screen)
-            val chosen = values.firstOrNull { it !in used } ?: values.first()
+            val chosen = controllable.firstOrNull { it !in used } ?: controllable.first()
             return JsonObject(starter + ("controls" to JsonPrimitive(chosen)))
         }
         return starter
@@ -208,7 +211,12 @@ internal object Palette {
                 location(dest) != null ->
                     "$dest." + requireNotNull(firstList(removed, dest)) { "cannot move inside '$dest'" }
                 else -> {
-                    require(dest != "data" && !dest.startsWith("data.")) { "cannot move into data sources" }
+                    require(
+                        dest != "data" && !dest.startsWith("data.") &&
+                            dest != "values" && !dest.startsWith("values."),
+                    ) {
+                        "cannot move into data sources or screen values"
+                    }
                     dest
                 }
             }
@@ -243,6 +251,40 @@ internal object Palette {
         val sources = requireNotNull(screen["data"] as? JsonObject) { "no data sources" }
         require(name in sources) { "no data source '$name'" }
         return Result(JsonObject(screen + ("data" to JsonObject(sources - name))), "data")
+    }
+
+    /** Adds an on-device screen value [name] (default, min, max); editable in its own form node `values.<name>`. */
+    fun addValue(
+        screen: JsonObject,
+        name: String,
+        default: String = "0",
+        min: String = "0",
+        max: String = "100",
+    ): Result {
+        require(SOURCE_NAME.matches(name)) { "a value name uses letters, digits and _ (starting with a letter)" }
+        val existing = screen["values"] as? JsonObject ?: JsonObject(emptyMap())
+        require(name !in existing) { "there is already a screen value '$name'" }
+        val fields = linkedMapOf<String, JsonElement>()
+        val trimmedDefault = default.trim().ifEmpty { "0" }
+        if (trimmedDefault != "0") fields["default"] = JsonPrimitive(trimmedDefault)
+        min.trim().toFloatOrNull()?.let { if (it != 0f) fields["min"] = JsonPrimitive(it) }
+        max.trim().toFloatOrNull()?.let { if (it != 100f) fields["max"] = JsonPrimitive(it) }
+        val added = JsonObject(existing + (name to JsonObject(fields)))
+        return Result(JsonObject(screen + ("values" to added)), "values.$name")
+    }
+
+    /** Removes the screen value at `values.<name>`; components still referencing it make the screen invalid. */
+    fun deleteValue(screen: JsonObject, path: String): Result {
+        val name = path.removePrefix("values.")
+        val existing = requireNotNull(screen["values"] as? JsonObject) { "no screen values" }
+        require(name in existing) { "no screen value '$name'" }
+        val rest = existing - name
+        val updated = if (rest.isEmpty()) {
+            JsonObject(screen - "values")
+        } else {
+            JsonObject(screen + ("values" to JsonObject(rest)))
+        }
+        return Result(updated, "values")
     }
 
     /** The component that owns a list path (`components.1.children` → `components.1`), `""` for the screen's lists. */

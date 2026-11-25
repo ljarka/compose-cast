@@ -20,6 +20,14 @@ internal fun ScreenDefinition.screenContentProblems(): List<String> = buildList 
         if (!Template.hasBindings(spec.default) && NumberList.single(spec.default) == null) {
             add("$at.default: expected a number or a {{binding}}, was '${spec.default}'")
         }
+        spec.animate?.let { anim ->
+            if (anim.durationMs !in ValueAnimation.MIN_DURATION_MS..ValueAnimation.MAX_DURATION_MS) {
+                add(
+                    "$at.animate.durationMs: must be " +
+                        "${ValueAnimation.MIN_DURATION_MS}..${ValueAnimation.MAX_DURATION_MS}, was ${anim.durationMs}",
+                )
+            }
+        }
     }
     val slidersByValue = mutableSetOf<String>()
     addAll(componentProblems(components, "components", values = values, slidersByValue = slidersByValue))
@@ -138,6 +146,10 @@ private fun componentProblems(
                 val spec = values[component.controls]
                 if (spec == null) {
                     add("$at.controls: unknown value '${component.controls}' (declare it in \"values\")")
+                } else if (spec.animate != null) {
+                    add(
+                        "$at.controls: value '${component.controls}' is animated and cannot also be controlled by a slider",
+                    )
                 } else if (!slidersByValue.add(component.controls)) {
                     add("$at.controls: value '${component.controls}' is already controlled by another slider")
                 }

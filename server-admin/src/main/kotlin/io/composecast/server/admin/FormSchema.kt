@@ -3,6 +3,7 @@ package io.composecast.server.admin
 import io.composecast.protocol.Component
 import io.composecast.protocol.DataSource
 import io.composecast.protocol.ScreenDefinition
+import io.composecast.protocol.ScreenValue
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -71,8 +72,9 @@ internal object FormSchema {
     /** Fields of a component of [type] (null for an unknown type). */
     fun componentFields(type: String): List<Field>? = componentTypes[type]?.let { fields(it, "") }
 
-    /** Screen-level fields: everything but the id (fixed) and the component lists. */
-    val screenFields: List<Field> = fields(ScreenDefinition.serializer().descriptor, "", skip = setOf("id", "data"))
+    /** Screen-level fields: everything but id (fixed), component lists, and data/values (tree nodes). */
+    val screenFields: List<Field> =
+        fields(ScreenDefinition.serializer().descriptor, "", skip = setOf("id", "data", "values"))
 
     /** Fields of one data source (T-031 W3): the sources are nodes of the tree (`data.<name>`), not a JSON field. */
     val sourceFields: List<Field> = fields(DataSource.serializer().descriptor, "")
@@ -82,6 +84,16 @@ internal object FormSchema {
         DataSource.serializer(),
         Json.decodeFromJsonElement(DataSource.serializer(), source),
     ) as JsonObject
+
+    /** Fields of one on-device screen value (`values.<name>` tree node): default, min, max, animate (mode/easing dropdowns). */
+    val valueFields: List<Field> = fields(ScreenValue.serializer().descriptor, "")
+
+    /** A screen value's JSON with its defaults written out (keeping `animate` absent when unset). */
+    fun valueWithDefaults(value: JsonObject): JsonObject {
+        val decoded = Json.decodeFromJsonElement(ScreenValue.serializer(), value)
+        val encoded = withDefaults.encodeToJsonElement(ScreenValue.serializer(), decoded) as JsonObject
+        return if (decoded.animate == null) JsonObject(encoded - "animate") else encoded
+    }
 
     /** Component-list field names of [descriptor] (`children`, `content`, `template`, `empty`, `components`, `error`). */
     fun componentLists(descriptor: SerialDescriptor): List<String> =

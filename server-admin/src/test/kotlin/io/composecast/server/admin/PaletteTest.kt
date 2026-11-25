@@ -22,7 +22,8 @@ class PaletteTest {
     /** Types of the screen's top-level components, nested ones in brackets. */
     private fun shape(screen: JsonObject): String = ScreenTree.rows(screen).filter {
         it.type != null &&
-            it.type != "source"
+            it.type != "source" &&
+            it.type != "value"
     }
         .joinToString(" ") { "${"·".repeat(it.depth - 1)}${it.type}" }
 
@@ -112,7 +113,7 @@ class PaletteTest {
         assertEquals(
             listOf("template", "empty"),
             ScreenTree.rows(s).filter {
-                it.type == null && it.path !in setOf("data", "components", "error")
+                it.type == null && it.path !in setOf("data", "values", "components", "error")
             }.map { it.label },
         )
         val filled = Palette.add(s, "components.0.empty", null, "text")

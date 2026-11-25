@@ -249,6 +249,9 @@ class VisualPagesTest {
                     path.startsWith(
                         "data.",
                     ) -> FormSchema.values(FormSchema.sourceFields, FormSchema.sourceWithDefaults(node))
+                    path.startsWith(
+                        "values.",
+                    ) -> FormSchema.values(FormSchema.valueFields, FormSchema.valueWithDefaults(node))
                     else -> FormSchema.values(
                         FormSchema.componentFields((node["type"] as JsonPrimitive).content)!!,
                         FormSchema.withDefaults(Json.decodeFromJsonElement(Component.serializer(), node)),

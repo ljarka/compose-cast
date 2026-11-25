@@ -108,10 +108,10 @@ Reactive numeric values that live on the phone (no server round-trip): declared 
     { "type": "slider", "controls": "volume", "step": 5 }
   ] }
 ```
-- `values.<name>`: `{ "default": "0", "min": 0, "max": 100 }` (`default` may be a number or a
-  server `{{binding}}`, e.g. `"{{device.volume}}"`).
+- `values.<name>`: `{ "default": "0", "min": 0, "max": 100, "animate": { "durationMs": 2000, "mode": "once|loop|pingPong", "easing": "linear|easeInOut" } }`
+  (`default` may be a number or a server `{{binding}}`, e.g. `"{{device.volume}}"`; `animate` drives the value automatically on the phone via RC `animationTime()`).
 - `slider`: `{ "type": "slider", "controls": "<name>", "step": 5, "color": "#...", "trackColor": "#..." }`.
-  At most one slider per value; optional `step` snaps to evenly spaced notches with haptic ticks.
+  At most one slider per value (and not on an animated value); optional `step` snaps to evenly spaced notches with haptic ticks.
 
 ### Data sources and bindings (T-006)
 

@@ -1,5 +1,6 @@
 package io.composecast.protocol
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -77,11 +78,51 @@ data class Live(val everyMs: Int = DEFAULT_EVERY_MS) {
 
 /**
  * A reactive numeric value living on the device (no server round-trip): written by controls such as
- * [Component.Slider] and read via `{{values.<name>}}` in gauges, texts and KPIs. [default] is a
- * number or a `{{...}}` server binding resolved at request time.
+ * [Component.Slider] or driven automatically by [animate], and read via `{{values.<name>}}` in
+ * gauges, texts and KPIs. [default] is a number or a `{{...}}` server binding resolved at request time.
  */
 @Serializable
-data class ScreenValue(val default: String = "0", val min: Float = 0f, val max: Float = 100f)
+data class ScreenValue(
+    val default: String = "0",
+    val min: Float = 0f,
+    val max: Float = 100f,
+    val animate: ValueAnimation? = null,
+)
+
+/** Automatic on-device animation of a [ScreenValue] from `min` to `max` using RC `animationTime()`. */
+@Serializable
+data class ValueAnimation(
+    val durationMs: Int = DEFAULT_DURATION_MS,
+    val mode: AnimationMode = AnimationMode.PingPong,
+    val easing: AnimationEasing = AnimationEasing.EaseInOut,
+) {
+    companion object {
+        const val DEFAULT_DURATION_MS = 2000
+        const val MIN_DURATION_MS = 100
+        const val MAX_DURATION_MS = 60_000
+    }
+}
+
+@Serializable
+enum class AnimationMode {
+    @SerialName("once")
+    Once,
+
+    @SerialName("loop")
+    Loop,
+
+    @SerialName("pingPong")
+    PingPong,
+}
+
+@Serializable
+enum class AnimationEasing {
+    @SerialName("linear")
+    Linear,
+
+    @SerialName("easeInOut")
+    EaseInOut,
+}
 
 /** The JSON format of [ScreenDefinition]: strict (unknown keys are errors), defaults omitted. */
 object ScreenJson {

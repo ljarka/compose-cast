@@ -19,6 +19,7 @@ import io.composecast.protocol.ScrollDirection
 import io.composecast.protocol.TextAlign
 import io.composecast.protocol.TextOverflow
 import io.composecast.protocol.TextStyle
+import io.composecast.protocol.ValueAnimation
 
 @DslMarker
 annotation class ScreenDslMarker
@@ -330,15 +331,15 @@ class ScreenBuilder internal constructor(val id: String) : ComponentsBuilder("Sc
     private var error = emptyList<Component>()
     private var live: Live? = null
 
-    /** Declares an on-device numeric value read as `{{values.<name>}}` and written by e.g. `slider(name)`. */
-    fun value(name: String, default: Float = 0f, min: Float = 0f, max: Float = 100f) {
+    /** Declares an on-device numeric value read as `{{values.<name>}}` and written by e.g. `slider(name)` or [animate]. */
+    fun value(name: String, default: Float = 0f, min: Float = 0f, max: Float = 100f, animate: ValueAnimation? = null) {
         val text = if (default % 1f == 0f) default.toInt().toString() else default.toString()
-        values[name] = ScreenValue(default = text, min = min, max = max)
+        values[name] = ScreenValue(default = text, min = min, max = max, animate = animate)
     }
 
     /** Declares an on-device numeric value whose [default] is a number or a `{{...}}` server binding. */
-    fun value(name: String, default: String, min: Float = 0f, max: Float = 100f) {
-        values[name] = ScreenValue(default = default, min = min, max = max)
+    fun value(name: String, default: String, min: Float = 0f, max: Float = 100f, animate: ValueAnimation? = null) {
+        values[name] = ScreenValue(default = default, min = min, max = max, animate = animate)
     }
 
     /** Makes this a live screen (T-047, ADR 0029): apps receive its changes every [everyMs] ms. */

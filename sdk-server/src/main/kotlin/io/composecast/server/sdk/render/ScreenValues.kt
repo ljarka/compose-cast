@@ -10,6 +10,8 @@ import androidx.compose.remote.creation.dsl.RcScope
 import androidx.compose.remote.creation.dsl.RcStrokeCap
 import androidx.compose.remote.creation.dsl.RcText
 import androidx.compose.remote.creation.dsl.touchPosX
+import io.composecast.protocol.AnimationEasing
+import io.composecast.protocol.AnimationMode
 import io.composecast.protocol.Component
 import io.composecast.protocol.Dimension
 import io.composecast.protocol.NumberList
@@ -18,7 +20,9 @@ import io.composecast.protocol.Roots
 import io.composecast.protocol.ScreenDefinition
 import io.composecast.protocol.ScreenValue
 import io.composecast.protocol.Template
+import io.composecast.protocol.ValueAnimation
 import io.composecast.server.sdk.render.RemoteComposeRenderer.Companion.parseColor
+import kotlin.math.PI
 import kotlin.math.roundToInt
 
 /**
@@ -61,7 +65,7 @@ internal class ScreenValues private constructor(private val entries: Map<String,
                 scope.Global {
                     nonSlider.forEach { (name, pair) ->
                         val (spec, defaultValue) = pair
-                        val rc = remoteFloat(defaultValue)
+                        val rc = spec.animate?.let { animatedFloat(spec, it) } ?: remoteFloat(defaultValue)
                         entries[name] = BoundValue(
                             id = Utils.idFromNan(rc.toFloat()),
                             rcFloat = rc,
@@ -73,6 +77,21 @@ internal class ScreenValues private constructor(private val entries: Map<String,
                 }
             }
             return ScreenValues(entries)
+        }
+
+        private fun RcScope.animatedFloat(spec: ScreenValue, anim: ValueAnimation): RcFloat {
+            val durationSec = anim.durationMs / 1000f
+            val cycles = animationTime() / durationSec
+            val rawT = when (anim.mode) {
+                AnimationMode.Once -> min(max(cycles, 0f), 1f)
+                AnimationMode.Loop -> cycles % 1f
+                AnimationMode.PingPong -> (abs((cycles % 2f) - 1f) * -1f) + 1f
+            }
+            val easedT = when (anim.easing) {
+                AnimationEasing.Linear -> rawT
+                AnimationEasing.EaseInOut -> ((cos(rawT * PI.toFloat()) * -1f) + 1f) * 0.5f
+            }
+            return (easedT * (spec.max - spec.min) + spec.min).flush()
         }
 
         private fun collectSliderTargets(components: List<Component>): Set<String> = buildSet {

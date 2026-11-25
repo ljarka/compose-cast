@@ -4,7 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-/** Screen-level on-device values (`values`) and `slider` component validation & JSON round-trip. */
+/** Screen-level on-device values (`values`), `animate`, and `slider` validation & JSON round-trip. */
 class ScreenValuesTest {
 
     @Test
@@ -75,5 +75,39 @@ class ScreenValuesTest {
         )
         assertEquals(emptyList(), screen.problems())
         assertTrue(screen.isBound)
+    }
+
+    @Test
+    fun `animated screen value round-trips and rejects slider conflict or bad duration`() {
+        val json = """
+            {
+              "id": "pulse",
+              "values": {
+                "p": {
+                  "min": 0,
+                  "max": 100,
+                  "animate": { "durationMs": 3000, "mode": "loop", "easing": "linear" }
+                }
+              },
+              "components": [
+                { "type": "gauge", "value": "{{values.p}}", "label": "{{values.p | round}}%" }
+              ]
+            }
+        """.trimIndent()
+        val decoded = ScreenJson.decode(json, "pulse.json")
+        assertEquals(
+            ValueAnimation(durationMs = 3000, mode = AnimationMode.Loop, easing = AnimationEasing.Linear),
+            decoded.values["p"]?.animate,
+        )
+        assertEquals(decoded, ScreenJson.decode(ScreenJson.encode(decoded), "round-trip"))
+
+        val bad = ScreenDefinition(
+            id = "bad-anim",
+            values = mapOf("p" to ScreenValue(animate = ValueAnimation(durationMs = 10))),
+            components = listOf(Component.Slider(controls = "p")),
+        )
+        val problems = bad.problems()
+        assertTrue(problems.any { "values.p.animate.durationMs" in it }, "$problems")
+        assertTrue(problems.any { "components[0].controls" in it && "animated" in it }, "$problems")
     }
 }

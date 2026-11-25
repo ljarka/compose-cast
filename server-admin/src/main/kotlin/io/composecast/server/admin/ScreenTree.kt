@@ -29,6 +29,20 @@ internal object ScreenTree {
                 ),
             )
         }
+        add(Row("values", 0, null, "Screen values"))
+        (screen["values"] as? JsonObject)?.forEach { (name, value) ->
+            val obj = value as? JsonObject
+            val min = (obj?.get("min") as? JsonPrimitive)?.content ?: "0"
+            val max = (obj?.get("max") as? JsonPrimitive)?.content ?: "100"
+            val suffix = if (obj?.containsKey("animate") == true) {
+                val mode = ((obj["animate"] as? JsonObject)?.get("mode") as? JsonPrimitive)?.content ?: "pingPong"
+                "animate: $mode"
+            } else {
+                val def = (obj?.get("default") as? JsonPrimitive)?.content ?: "0"
+                "$def ($min..$max)"
+            }
+            add(Row("values.$name", 1, "value", "$name · $suffix".take(48)))
+        }
         for (list in SCREEN_LISTS) {
             val items = screen[list] as? JsonArray
             // The error list matters only with data sources: shown (and fillable) once there are some.
@@ -55,7 +69,7 @@ internal object ScreenTree {
 
     /** What a component shows, for the outline: its text, label, title or URL. */
     private fun summary(obj: JsonObject): String {
-        val text = listOf("text", "label", "title", "url", "items").firstNotNullOfOrNull { key ->
+        val text = listOf("text", "label", "title", "controls", "url", "items").firstNotNullOfOrNull { key ->
             (obj[key] as? JsonPrimitive)?.content
         }.orEmpty()
         return if (text.length > 40) text.take(39) + "…" else text

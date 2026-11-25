@@ -52,7 +52,7 @@
         <div class="card"><p class="error" role="alert">Not changed:</p>
           <ul class="problems"><#list visualProblems as p><li><code>${p}</code></li></#list></ul></div>
       </#if>
-      <#if canEdit && mode != "source">
+      <#if canEdit && mode != "source" && mode != "value">
       <form class="card tools" method="post" action="/admin/screens/${id?url}/visual/edit?node=${node?url}">
         <#if mode == "sources">
           <div class="toolbar">
@@ -61,6 +61,15 @@
             <button name="op" value="add-source">Add data source</button>
           </div>
           <p class="muted help">Bind to it as <code>{{name.field}}</code>; a key goes into the server's .env and here as <code>{{secret.NAME}}</code>. Or <a href="/admin/wizard">create screens from an API</a>.</p>
+        <#elseif mode == "values">
+          <div class="toolbar">
+            <label class="inline">Name <input name="name" placeholder="volume" style="width: 130px"></label>
+            <label class="inline">Default <input name="default" value="40" style="width: 80px"></label>
+            <label class="inline">Min <input name="min" value="0" style="width: 70px"></label>
+            <label class="inline">Max <input name="max" value="100" style="width: 70px"></label>
+            <button name="op" value="add-value">Add screen value</button>
+          </div>
+          <p class="muted help">On-device reactive values: control them with a <code>slider</code> or turn on <strong>Animate</strong> inside the value's form. Read as <code>{{values.name}}</code>.</p>
         <#else>
         <div class="toolbar" style="margin-bottom: 0">
           <label class="inline">Add <@typeSelect/></label>
@@ -76,18 +85,20 @@
         </#if>
       </form>
       </#if>
-      <#if mode != "list" && mode != "sources">
+      <#if mode != "list" && mode != "sources" && mode != "values">
       <div class="card">
         <h2 style="margin-top: 0">${nodeLabel}</h2>
-        <#if canEdit && (mode == "component" || mode == "source")>
+        <#if canEdit && (mode == "component" || mode == "source" || mode == "value")>
         <form class="tools" method="post" action="/admin/screens/${id?url}/visual/edit?node=${node?url}" style="margin-bottom: 12px">
           <#if mode == "component">
             <div class="toolbar" role="group" aria-label="Edit component" style="margin-bottom: 0">
               <button name="op" value="duplicate">Duplicate</button>
               <button name="op" value="delete" class="danger">Delete</button>
             </div>
-          <#else>
+          <#elseif mode == "source">
             <div class="toolbar" style="margin-bottom: 0"><button name="op" value="delete-source" class="danger">Delete this data source</button></div>
+          <#else>
+            <div class="toolbar" style="margin-bottom: 0"><button name="op" value="delete-value" class="danger">Delete this value</button></div>
           </#if>
         </form>
         </#if>
@@ -98,7 +109,7 @@
           <#if canEdit><button type="submit">Save</button></#if>
         </form>
       </div>
-      <#if canEdit && mode != "source">
+      <#if canEdit && mode != "source" && mode != "value">
       <div class="card">
         <button type="button" hx-get="/admin/screens/${id?url}/visual/fields?node=${node?url}" hx-target="#data-fields" hx-indicator="#data-fields">Show fields from the data</button>
         <p class="muted help" id="picker-hint">Click a text field above, then a field below: its <code>{{binding}}</code> is inserted there.</p>
@@ -108,6 +119,9 @@
       <#elseif mode == "sources">
       <div class="card"><h2 style="margin-top: 0">${nodeLabel}</h2>
         <p class="muted">The APIs this screen reads. Add one above, then select it in the tree to set headers, timeout and caching.</p></div>
+      <#elseif mode == "values">
+      <div class="card"><h2 style="margin-top: 0">${nodeLabel}</h2>
+        <p class="muted">Reactive numbers that live on the phone. Add one above, then select it in the tree to set its range or configure automatic animation (mode &amp; easing dropdowns).</p></div>
       <#else>
       <div class="card"><h2 style="margin-top: 0">${nodeLabel}</h2>
         <p class="muted">A list of components. Add one above, or select a component in the tree.</p></div>

@@ -54,6 +54,17 @@ class BuildFromEmptyTest {
                 FormSchema.values(FormSchema.sourceFields, FormSchema.sourceWithDefaults(source)),
             )
         }
+        // Screen values: "Add screen value", then its own form (including animate mode/easing dropdowns).
+        (target["values"] as? JsonObject)?.forEach { (name, value) ->
+            val obj = value as JsonObject
+            val path = submit(cookie, "$visual/edit?node=values", mapOf("op" to "add-value", "name" to name))
+            assertEquals("values.$name", path)
+            submit(
+                cookie,
+                "$visual?node=$path",
+                FormSchema.values(FormSchema.valueFields, FormSchema.valueWithDefaults(obj)),
+            )
+        }
 
         suspend fun fill(list: String, items: JsonArray) {
             val current = (ScreenTree.get(currentDraft(id), list) as? JsonArray)?.size ?: 0

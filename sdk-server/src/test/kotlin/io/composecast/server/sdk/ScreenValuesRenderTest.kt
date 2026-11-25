@@ -46,4 +46,27 @@ class ScreenValuesRenderTest {
         assertTrue("TouchExpression" in dump, dump)
         assertTrue("TextFromFloat" in dump, dump)
     }
+
+    @Test
+    fun `animated screen value emits animationTime float expression for gauge and text`() {
+        val registry = composeCast {
+            screen("anim") {
+                value(
+                    "pulse",
+                    min = 0f,
+                    max = 100f,
+                    animate = io.composecast.protocol.ValueAnimation(
+                        durationMs = 2000,
+                        mode = io.composecast.protocol.AnimationMode.PingPong,
+                        easing = io.composecast.protocol.AnimationEasing.EaseInOut,
+                    ),
+                )
+                gauge("{{values.pulse}}", label = "{{values.pulse | round}}%")
+            }
+        }
+        val dump = registry.render("anim")!!.describe()
+        assertTrue("FloatExpression" in dump, dump)
+        assertTrue("TextFromFloat" in dump, dump)
+        assertTrue("TouchExpression" !in dump, dump)
+    }
 }
