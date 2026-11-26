@@ -141,6 +141,23 @@ internal fun thumbnail(png: ByteArray, width: Int): ByteArray {
     return ByteArrayOutputStream().also { ImageIO.write(image, "png", it) }.toByteArray()
 }
 
+/**
+ * A component's phone PNG cut to the component (the screen background below it removed, judged by
+ * the bottom left pixel, plus a small margin), then scaled to [width] px: for the Components list.
+ */
+internal fun componentThumbnail(png: ByteArray, width: Int = COMPONENT_THUMB_WIDTH): ByteArray {
+    val image = requireNotNull(ImageIO.read(ByteArrayInputStream(png))) { "not an image" }
+    val background = image.getRGB(0, image.height - 1)
+    var last = image.height - 1
+    while (last > 0 && (0 until image.width).all { x -> image.getRGB(x, last) == background }) last--
+    val height = (last + 1 + image.height / 100).coerceIn(1, image.height)
+    val cut = image.getSubimage(0, 0, image.width, height)
+    return thumbnail(ByteArrayOutputStream().also { ImageIO.write(cut, "png", it) }.toByteArray(), width)
+}
+
+/** Width of the Components list thumbnails in pixels (shown at 180 CSS px). */
+internal const val COMPONENT_THUMB_WIDTH = 360
+
 private fun scaled(source: BufferedImage, width: Int, height: Int): BufferedImage {
     val target = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
     val g = target.createGraphics()

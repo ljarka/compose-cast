@@ -8,6 +8,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsBytes
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
@@ -63,6 +64,7 @@ class DesignerPagesTest {
             assertContains(page, "<script type=\"application/json\" id=\"definition\">")
             assertContains(page, "\"{{params.title}}\"") // raw JSON in the script, not HTML-escaped
             assertContains(page, "src=\"/admin/components/designer.js\"")
+            assertContains(page, "id=\"code-json\"") // the JSON under the artboard
             val script = client.page(cookie, "/admin/components/designer.js")
             assertEquals(ContentType.Application.JavaScript, script.contentType()?.withoutParameters())
             assertContains(script.bodyAsText(), "normalizePath")
@@ -74,6 +76,8 @@ class DesignerPagesTest {
             assertEquals(HttpStatusCode.OK, saved.status)
             val answer = Json.parseToJsonElement(saved.bodyAsText()).jsonObject
             assertEquals("true", answer["saved"]!!.jsonPrimitive.content)
+            // The compiled RC JSON comes back for the designer's "Remote Compose" tab.
+            assertEquals("box", answer["body"]!!.jsonObject["type"]!!.jsonPrimitive.content)
             assertEquals(80f, ComponentJson.decode(host.components.get("card")!!.draftJson!!, "t").design!!.height)
 
             // Problems come back with their path; nothing is saved.
@@ -121,5 +125,45 @@ class DesignerPagesTest {
         ) { header(HttpHeaders.Cookie, cookie) }
         assertContains(client.page(cookie, "/admin/components/card").bodyAsText(), "Open in the designer")
         assertContains(client.page(cookie, "/admin/components").bodyAsText(), "href=\"/admin/components/card/design\"")
+    }
+
+    @Test
+    fun `the Components list shows each component's image, only with a renderer`() {
+        host.run(withComponents = true) { client ->
+            val cookie = with(host) { client.loginAs(Role.EDITOR) }
+            client.submitForm(
+                "/admin/components",
+                parameters {
+                    append("id", "card")
+                    append("start", "design")
+                },
+            ) { header(HttpHeaders.Cookie, cookie) }
+            assertFalse("thumb.png" in client.page(cookie, "/admin/components").bodyAsText())
+        }
+        val phone = java.io.ByteArrayOutputStream().also {
+            javax.imageio.ImageIO.write(
+                java.awt.image.BufferedImage(1078, 2399, java.awt.image.BufferedImage.TYPE_INT_ARGB),
+                "png",
+                it,
+            )
+        }.toByteArray()
+        val other = AdminTestHost()
+        other.run(withComponents = true, phoneRenderer = { phone }) { client ->
+            val cookie = with(other) { client.loginAs(Role.EDITOR) }
+            client.submitForm(
+                "/admin/components",
+                parameters {
+                    append("id", "card")
+                    append("start", "design")
+                },
+            ) { header(HttpHeaders.Cookie, cookie) }
+            assertContains(
+                client.page(cookie, "/admin/components").bodyAsText(),
+                "src=\"/admin/components/card/thumb.png\"",
+            )
+            val thumb = client.page(cookie, "/admin/components/card/thumb.png")
+            assertEquals(ContentType.Image.PNG, thumb.contentType())
+            assertEquals(COMPONENT_THUMB_WIDTH, javax.imageio.ImageIO.read(thumb.bodyAsBytes().inputStream()).width)
+        }
     }
 }

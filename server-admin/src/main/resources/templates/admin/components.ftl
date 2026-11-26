@@ -2,16 +2,17 @@
 <@layout.page title=title user=user role=role>
 <main class="wide">
   <h1>Components</h1>
-  <p class="muted">Your own components, written in raw Remote Compose JSON: any shape, gradient or vector
-    icon RC can draw. Use them on screens by id (<code>{"type": "custom", "component": "…"}</code>) or from
+  <p class="muted">Your own components: draw them in the <strong>designer</strong> (shapes, gradients,
+    imported SVG icons, texts, tap areas), or write raw Remote Compose JSON. Use them on screens by id (<code>{"type": "custom", "component": "…"}</code>) or from
     <strong>My components</strong> in the visual editor's palette. This server renders with RC ${rcVersion}.</p>
   <#if error?has_content><p class="error" role="alert">${error}</p></#if>
   <div class="card">
     <table>
-      <thead><tr><th>Id</th><th>Title</th><th>Status</th><th>Version</th><th>Last published</th><th></th></tr></thead>
+      <thead><tr><#if phone><th><span class="visually-hidden">Preview</span></th></#if><th>Id</th><th>Title</th><th>Status</th><th>Version</th><th>Last published</th><th></th></tr></thead>
       <tbody>
       <#list components as c>
         <tr>
+          <#if phone><td class="thumb thumb-wide"><a href="/admin/components/${c.id?url}<#if c.designed>/design</#if>" tabindex="-1" aria-hidden="true"><img src="/admin/components/${c.id?url}/thumb.png" width="180" loading="lazy" alt=""></a></td></#if>
           <td><a href="/admin/components/${c.id?url}<#if c.designed>/design</#if>"><code>${c.id}</code></a></td>
           <td>${c.title}<#if c.description?has_content><br><span class="muted">${c.description}</span></#if></td>
           <td><span class="status status-${c.status}">${c.status}</span></td>
@@ -29,7 +30,7 @@
           </td>
         </tr>
       <#else>
-        <tr><td colspan="6" class="muted">No components yet.</td></tr>
+        <tr><td colspan="<#if phone>7<#else>6</#if>" class="muted">No components yet.</td></tr>
       </#list>
       </tbody>
     </table>

@@ -175,4 +175,21 @@ class PhonePreviewTest {
             assertEquals(ContentType.Image.SVG, thumb.contentType())
             assertContains(thumb.bodyAsText(), "renderer down")
         }
+
+    @Test
+    fun `a component thumbnail is cut to the component and scaled`() {
+        val image = java.awt.image.BufferedImage(1078, 2399, java.awt.image.BufferedImage.TYPE_INT_ARGB)
+        val g = image.createGraphics()
+        g.color = java.awt.Color.WHITE
+        g.fillRect(0, 0, 1078, 2399)
+        g.color = java.awt.Color.RED
+        g.fillRect(40, 0, 1000, 400) // the component: 400 px at the top
+        g.dispose()
+        val png = java.io.ByteArrayOutputStream().also { javax.imageio.ImageIO.write(image, "png", it) }.toByteArray()
+
+        val thumb = javax.imageio.ImageIO.read(componentThumbnail(png).inputStream())
+        assertEquals(COMPONENT_THUMB_WIDTH, thumb.width)
+        val expected = (400 + 2399 / 100) * COMPONENT_THUMB_WIDTH / 1078 // the band + a 1% margin
+        assertTrue(kotlin.math.abs(thumb.height - expected) <= 1, "height ${thumb.height}, expected ~$expected")
+    }
 }

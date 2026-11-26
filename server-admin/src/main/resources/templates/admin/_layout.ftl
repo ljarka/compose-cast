@@ -57,6 +57,9 @@
     td.thumb img { display: block; width: 90px; height: auto; aspect-ratio: 1078 / 2399; border: 4px solid #1d1d1f;
       border-radius: 14px; background: #fff; object-fit: cover; }
     td.thumb + td, td.thumb ~ td { vertical-align: middle; }
+    /* Components: the component alone, landscape, no phone frame. */
+    td.thumb-wide { width: 180px; }
+    td.thumb-wide img { width: 180px; aspect-ratio: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
     .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     .phone img { display: block; width: 100%; height: auto; box-sizing: border-box; border: 10px solid #1d1d1f; border-radius: 32px; background: #fff; }
     @media (max-width: 1100px) { .split.with-phone { grid-template-columns: minmax(240px, 1fr) 2fr; } .split.with-phone .phone { grid-column: 1 / -1; position: static; max-width: 320px; } }

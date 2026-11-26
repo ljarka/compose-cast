@@ -787,11 +787,78 @@
     renderStage();
     renderLayers();
     renderProps();
+    renderCode();
+  }
+
+  // ---------- code (JSON under the artboard, like the screen editor) ----------
+  const codeEl = $('#code-json');
+  const codeStatus = $('#code-status');
+  const rcEl = $('#code-rc');
+  let compiled = null;
+
+  /** The definition as JSON; left alone while the owner is typing in it. */
+  function renderCode() {
+    if (!codeEl || document.activeElement === codeEl) return;
+    codeEl.value = JSON.stringify(clean(), null, 2);
+  }
+
+  let codeTimer = null;
+  if (codeEl && canEdit) {
+    codeEl.addEventListener('input', () => {
+      clearTimeout(codeTimer);
+      codeTimer = setTimeout(applyCode, 500);
+    });
+    codeEl.addEventListener('blur', renderCode);
+  }
+
+  /** Typed JSON → the design (redrawn and saved); the server checks it like any save. */
+  function applyCode() {
+    let parsed;
+    try {
+      parsed = JSON.parse(codeEl.value);
+    } catch (err) {
+      codeStatus.textContent = `Not valid JSON yet: ${err.message}`;
+      codeStatus.className = 'error';
+      return;
+    }
+    if (!parsed || typeof parsed !== 'object' || !parsed.design) {
+      codeStatus.textContent = 'The designer needs a "design" object (raw Remote Compose bodies are edited in the JSON editor).';
+      codeStatus.className = 'error';
+      return;
+    }
+    codeStatus.textContent = '';
+    codeStatus.className = 'muted';
+    undoStack.push(JSON.stringify(def));
+    redoStack.length = 0;
+    def = parsed;
+    normalize();
+    if (selected && !el(selected)) selected = null;
+    renderStage();
+    renderLayers();
+    renderProps();
+    renderComponent();
+    scheduleSave();
+  }
+
+  function showTab(rc) {
+    $('#code-json-pane').hidden = rc;
+    $('#code-rc-pane').hidden = !rc;
+    $('#tab-json').setAttribute('aria-selected', String(!rc));
+    $('#tab-rc').setAttribute('aria-selected', String(rc));
+    if (rc && !compiled) rcEl.textContent = 'Compiled on the next save…';
+  }
+  if ($('#tab-json')) {
+    $('#tab-json').addEventListener('click', () => showTab(false));
+    $('#tab-rc').addEventListener('click', () => {
+      showTab(true);
+      if (!compiled && canEdit) save();
+    });
   }
 
   // ---------- saving ----------
   let saveTimer = null;
   function scheduleSave() {
+    renderCode();
     if (!canEdit) return;
     statusEl.textContent = 'Saving…';
     statusEl.className = 'muted';
@@ -818,6 +885,10 @@
       });
       const answer = await res.json();
       showProblems(answer.problems || []);
+      if (answer.body) {
+        compiled = answer.body;
+        rcEl.textContent = JSON.stringify(compiled, null, 2);
+      }
       if (answer.saved) {
         statusEl.textContent = 'Draft saved.';
         statusEl.className = 'ok';

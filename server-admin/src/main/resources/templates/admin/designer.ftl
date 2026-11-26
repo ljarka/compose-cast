@@ -36,9 +36,12 @@
   #problems li { color: var(--error); font-size: 14px; }
   .phone-preview img { width: 100%; border-radius: 12px; border: 1px solid var(--line); }
   @media (max-width: 1100px) { .designer { grid-template-columns: 1fr; } }
+  .designer-code { margin-top: 24px; }
+  .designer-code textarea { min-height: 420px; }
+  .designer-code pre { margin: 0; max-height: 70vh; overflow: auto; font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; }
 </style>
 <div style="max-width: 1500px; margin: 16px auto 0; padding: 0 16px">
-  <p style="margin: 0"><a href="/admin/components">← Components</a> · <a href="/admin/components/${id?url}">JSON</a></p>
+  <p style="margin: 0"><a href="/admin/components">← Components</a> · <a href="#code">Code</a> · <a href="/admin/components/${id?url}">JSON editor</a></p>
   <h1 style="margin: 8px 0"><code>${id}</code> <span class="status status-${status}">${status}</span> <span class="muted" style="font-size: 16px">Designer</span></h1>
 </div>
 <div class="designer" id="designer" data-id="${id}" data-can-edit="${canEdit?c}">
@@ -79,6 +82,24 @@
     <ul id="problems" aria-live="polite"></ul>
     <p class="muted" style="font-size: 13px">Sizes are dp. The component fills the screen width; on wider or narrower phones each element keeps its <em>anchor</em>. Texts and colors can use <code>{{params.name}}</code> or <code>{{brand.primaryColor}}</code>. Every change is saved as the draft; screens use the component after <strong>Publish</strong>.</p>
     <#if canEdit><form method="post" action="/admin/components/${id?url}/publish" id="publish-form"><input type="hidden" name="json" id="publish-json"><button type="submit">Publish</button></form></#if>
+<div class="designer-code">
+  <h2 id="code">Code</h2>
+  <div class="card">
+    <div class="toolbar" role="tablist" aria-label="Code view">
+      <button type="button" id="tab-json" class="chip" role="tab" aria-selected="true">JSON</button>
+      <button type="button" id="tab-rc" class="chip" role="tab" aria-selected="false">Remote Compose</button>
+    </div>
+    <div id="code-json-pane">
+      <label for="code-json">Component JSON <span class="muted">(<a href="https://github.com/ljarka/compose-cast/blob/main/docs/screen-json-format.md#custom-components-t-049-adr-0033">format</a>; follows the artboard, and edits here redraw it)</span></label>
+      <textarea id="code-json" spellcheck="false"<#if !canEdit> readonly</#if>></textarea>
+      <p id="code-status" class="muted" aria-live="polite"></p>
+    </div>
+    <div id="code-rc-pane" hidden>
+      <p class="muted">The Remote Compose JSON the server compiled from the last saved design (read only).</p>
+      <pre><code id="code-rc"></code></pre>
+    </div>
+  </div>
+</div>
   </section>
   <aside>
     <div class="card">
@@ -94,6 +115,7 @@
     </#if>
   </aside>
 </div>
+
 <script type="application/json" id="definition">${json?no_esc}</script>
 <script type="application/json" id="brand">${brand?no_esc}</script>
 <script src="/admin/components/designer.js"></script>

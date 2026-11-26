@@ -24,6 +24,8 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.ktor.util.AttributeKey
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -117,6 +119,8 @@ internal fun Route.componentPages(
                 }
                 val answer = buildJsonObject {
                     put("saved", checked.problems.isEmpty())
+                    // The compiled RC JSON for the designer's "Remote Compose" tab.
+                    checked.definition?.let { put("body", it.body) }
                     putJsonArray("problems") { checked.problems.forEach { add(JsonPrimitive(it)) } }
                 }
                 call.respondText(
@@ -202,6 +206,23 @@ internal fun Route.componentPages(
                     val json = stored.draftJson ?: stored.liveJson.orEmpty()
                     val png = try {
                         phoneRenderer.png(publishing.componentDocument(json))
+                    } catch (e: Exception) {
+                        return@get call.respondBytes(
+                            placeholderSvg("No preview of this component", e.message.orEmpty()).toByteArray(),
+                            ContentType.Image.SVG,
+                        )
+                    }
+                    call.respondBytes(png, ContentType.Image.PNG)
+                }
+                // The Components list: the component alone, cut from the phone image and scaled down.
+                get("/thumb.png") {
+                    val stored = components.get(call.screenId)
+                        ?: return@get call.respondBytes(ByteArray(0), ContentType.Text.Plain, HttpStatusCode.NotFound)
+                    val json = stored.draftJson ?: stored.liveJson.orEmpty()
+                    val png = try {
+                        withContext(Dispatchers.IO) {
+                            componentThumbnail(phoneRenderer.png(publishing.componentDocument(json)))
+                        }
                     } catch (e: Exception) {
                         return@get call.respondBytes(
                             placeholderSvg("No preview of this component", e.message.orEmpty()).toByteArray(),
