@@ -364,10 +364,12 @@
     const isNewForm = "${mode}" === "new-value" || "${mode}" === "new-source";
     if (panelForm && !isNewForm) {
       let dirty = false;
-      let saving = false;
+      let savingPromise = null;
       let timer = null;
       const statusEl = document.getElementById("autosave-status");
       const phoneImg = document.querySelector(".phone img");
+      const jsonTextarea = document.getElementById("json");
+      const screenJsonForm = document.getElementById("screen-json-form");
       function setStatus(text, isError) {
         if (!statusEl) return;
         statusEl.textContent = text;
@@ -386,60 +388,91 @@
       });
       async function flushDirty(submitOnError = true) {
         clearTimeout(timer);
-        if (!dirty || saving) return true;
-        saving = true;
-        setStatus("Saving…", false);
-        try {
-          const res = await fetch(panelForm.action, {
-            method: "POST",
-            body: new URLSearchParams(new FormData(panelForm)),
-            redirect: "manual",
-          });
-          if (res.status === 422) {
-            saving = false;
-            if (submitOnError) {
-              panelForm.submit();
-            } else {
-              setStatus("Invalid value — fix highlighted fields", true);
-            }
-            return false;
+        while (dirty || savingPromise) {
+          if (savingPromise) {
+            const ok = await savingPromise;
+            if (!ok) return false;
+            continue;
           }
           dirty = false;
-          setStatus("Saved", false);
-          if (phoneImg) {
-            const base = phoneImg.src.split("?")[0];
-            phoneImg.src = base + "?t=" + Date.now();
+          setStatus("Saving…", false);
+          const run = (async () => {
+            const res = await fetch(panelForm.action, {
+              method: "POST",
+              headers: { "Accept": "application/json" },
+              body: new URLSearchParams(new FormData(panelForm)),
+            });
+            if (res.status === 422) {
+              dirty = true;
+              if (submitOnError) {
+                panelForm.submit();
+              } else {
+                setStatus("Invalid value — fix highlighted fields", true);
+              }
+              return false;
+            }
+            if (!res.ok) {
+              dirty = true;
+              setStatus("Save failed — try again", true);
+              return false;
+            }
+            const savedJson = await res.text();
+            if (jsonTextarea) jsonTextarea.value = savedJson;
+            setStatus("Saved", false);
+            if (phoneImg) {
+              const base = phoneImg.src.split("?")[0];
+              phoneImg.src = base + "?t=" + Date.now();
+            }
+            return true;
+          })();
+          savingPromise = run;
+          let ok;
+          try {
+            ok = await run;
+          } catch (err) {
+            dirty = true;
+            setStatus("Save failed — try again", true);
+            return false;
+          } finally {
+            savingPromise = null;
           }
-          return true;
-        } finally {
-          saving = false;
+          if (!ok) return false;
         }
+        return true;
       }
       document.addEventListener("click", async function (e) {
         const link = e.target.closest(".tree a, .item-row, a[href*='/visual?node=']");
-        if (link && dirty && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
+        if (link && (dirty || savingPromise) && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
           e.preventDefault();
           saveScroll();
           if (await flushDirty()) location.href = link.href;
           return;
         }
-        const btn = e.target.closest("button[form='screen-json-form'][formaction]");
-        if (btn && dirty) {
+        const btn = e.target.closest("button[form='screen-json-form'][formaction], #screen-json-form button[type='submit']");
+        if (btn && (dirty || savingPromise)) {
           e.preventDefault();
           if (await flushDirty()) {
-            const f = document.createElement("form");
-            f.method = "POST";
-            f.action = btn.getAttribute("formaction");
-            document.body.appendChild(f);
-            f.submit();
+            if (screenJsonForm && screenJsonForm.requestSubmit) {
+              screenJsonForm.requestSubmit(btn);
+            } else {
+              const f = document.createElement("form");
+              f.method = "POST";
+              f.action = btn.getAttribute("formaction") || screenJsonForm.action;
+              document.body.appendChild(f);
+              f.submit();
+            }
           }
         }
       });
       document.addEventListener("submit", async function (e) {
         if (e.target === panelForm) { dirty = false; return; }
-        if (dirty && e.target.closest(".tools")) {
+        if ((dirty || savingPromise) && e.target.closest(".tools")) {
           e.preventDefault();
-          if (await flushDirty()) e.target.submit();
+          const submitter = e.submitter;
+          if (await flushDirty()) {
+            if (submitter && e.target.requestSubmit) e.target.requestSubmit(submitter);
+            else e.target.submit();
+          }
         }
       });
     }

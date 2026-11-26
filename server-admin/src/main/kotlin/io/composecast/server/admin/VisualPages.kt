@@ -5,6 +5,8 @@ import io.composecast.protocol.ComponentDefinition
 import io.composecast.protocol.ScreenJson
 import io.composecast.server.sdk.CustomComponents
 import io.composecast.server.store.ScreenStore
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.freemarker.respondTemplate
@@ -199,6 +201,9 @@ private suspend fun ApplicationCall.saveOrShow(
     val saved = ScreenJson.encode(valid)
     screens.saveDraft(editing.stored.id, saved)
     publishing.updatePreview(saved, adminUser.previewOwner) // T-032: an open phone shows the edit
+    if (request.headers[HttpHeaders.Accept]?.contains(ContentType.Application.Json.toString()) == true) {
+        return respondText(saved, ContentType.Application.Json)
+    }
     seeOther("/admin/screens/${editing.stored.id.urlEncoded()}/visual?node=${select.urlEncoded()}&saved")
 }
 

@@ -309,4 +309,30 @@ class VisualPagesTest {
             client.page(cookie, "/admin/screens/main/visual?node=components.0.nope").status,
         )
     }
+
+    @Test
+    fun `autosave request returns canonical JSON so the publish textarea stays in sync`() = host.run { client ->
+        screens.publish("main", json, by = "import")
+        val cookie = with(host) { client.loginAs(Role.EDITOR) }
+
+        val autosaved = client.submitForm(
+            "/admin/screens/main/visual?node=",
+            parameters {
+                append("title", "Home")
+                append("live.everyMs", "2000")
+            },
+        ) {
+            header(HttpHeaders.Cookie, cookie)
+            header(HttpHeaders.Accept, "application/json")
+        }
+        assertEquals(HttpStatusCode.OK, autosaved.status)
+        val returnedJson = autosaved.bodyAsText()
+        assertEquals(screens.get("main")!!.draftJson, returnedJson)
+        assertEquals(2000, ScreenJson.decode(returnedJson, "d").live?.everyMs)
+
+        // Publishing what the textarea now holds publishes the updated live interval.
+        val published = client.save(cookie, "/admin/screens/main/publish", mapOf("json" to returnedJson))
+        assertEquals(HttpStatusCode.SeeOther, published.status)
+        assertEquals(2000, ScreenJson.decode(screens.get("main")!!.liveJson!!, "l").live?.everyMs)
+    }
 }
