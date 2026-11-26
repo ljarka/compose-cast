@@ -4,7 +4,7 @@ import io.composecast.protocol.ComponentJson
 import io.composecast.server.sdk.RegistryBuilder
 
 /** Ids of the demo's custom components (`examples/demo/components/<id>.json`, same files as resources). */
-internal val demoComponentIds = listOf("parcel-tile")
+internal val demoComponentIds = listOf("parcel-tile", "promo-card")
 
 /** The demo's custom components (ADR 0033), read from `server-app` resources `demo/components/`. */
 internal fun RegistryBuilder.demoComponents() {
@@ -33,6 +33,18 @@ internal fun RegistryBuilder.customScreen() {
             custom("parcel-tile", tile("Nadaj lub zwróć", PARCEL, "navigate:layouts"))
             custom("parcel-tile", tile("Zamówienia", RECEIPT, "navigate:dashboard") + ("accent" to "#FF8A65"))
         }
+        spacer(16)
+        text("Drawn in the component designer (shapes, texts and a tap area on an artboard):", style = "caption")
+        spacer(8)
+        custom(
+            "promo-card",
+            mapOf(
+                "title" to "Free delivery",
+                "subtitle" to "On every parcel sent this week from a parcel locker.",
+                "cta" to "Send now",
+                "action" to "navigate:data",
+            ),
+        )
     }
 }
 

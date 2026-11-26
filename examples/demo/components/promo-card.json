@@ -1,0 +1,131 @@
+{
+  "id": "promo-card",
+  "title": "Promo card",
+  "description": "Drawn in the component designer: a gradient card with decorative circles and a vector icon at the right edge, a title, a subtitle and a pill button that runs the action.",
+  "rcVersion": "1.0.0-alpha23",
+  "params": {
+    "title": {
+      "description": "headline"
+    },
+    "subtitle": {
+      "default": "",
+      "description": "up to two lines under the title"
+    },
+    "cta": {
+      "default": "Open",
+      "description": "button label"
+    },
+    "color": {
+      "type": "color",
+      "default": "#FF3B5BDB",
+      "description": "card color (left end of the gradient)"
+    },
+    "action": {
+      "type": "action",
+      "description": "what the button does, e.g. navigate:data"
+    }
+  },
+  "design": {
+    "cornerRadius": 20.0,
+    "elements": [
+      {
+        "id": "bg",
+        "type": "rect",
+        "w": 360.0,
+        "h": 160.0,
+        "anchor": "stretch",
+        "fill": "{{params.color}}",
+        "fill2": "#FF7048E8",
+        "gradientAngle": 0.0,
+        "name": "Background"
+      },
+      {
+        "id": "c1",
+        "type": "ellipse",
+        "x": 250.0,
+        "y": -40.0,
+        "w": 160.0,
+        "h": 160.0,
+        "anchor": "right",
+        "fill": "#26FFFFFF",
+        "name": "Big circle"
+      },
+      {
+        "id": "c2",
+        "type": "ellipse",
+        "x": 300.0,
+        "y": 100.0,
+        "w": 90.0,
+        "h": 90.0,
+        "anchor": "right",
+        "fill": "#1AFFFFFF",
+        "name": "Small circle"
+      },
+      {
+        "id": "icon",
+        "type": "path",
+        "x": 290.0,
+        "y": 28.0,
+        "w": 48.0,
+        "h": 48.0,
+        "anchor": "right",
+        "stroke": "#FFFFFFFF",
+        "strokeWidth": 3.0,
+        "path": "M8 16 L24 8 L40 16 L40 36 L24 44 L8 36 Z M8 16 L24 24 L40 16 M24 24 L24 44",
+        "name": "Icon"
+      },
+      {
+        "id": "title",
+        "type": "text",
+        "x": 20.0,
+        "y": 22.0,
+        "w": 250.0,
+        "h": 30.0,
+        "fill": "#FFFFFFFF",
+        "text": "{{params.title}}",
+        "fontSize": 22.0,
+        "bold": true,
+        "name": "Title"
+      },
+      {
+        "id": "subtitle",
+        "type": "text",
+        "x": 20.0,
+        "y": 56.0,
+        "w": 240.0,
+        "h": 40.0,
+        "fill": "#DDFFFFFF",
+        "text": "{{params.subtitle}}",
+        "fontSize": 14.0,
+        "maxLines": 2,
+        "name": "Subtitle"
+      },
+      {
+        "id": "pill",
+        "type": "rect",
+        "x": 20.0,
+        "y": 108.0,
+        "w": 120.0,
+        "h": 36.0,
+        "fill": "#FFFFFFFF",
+        "radius": 18.0,
+        "action": "{{params.action}}",
+        "name": "Button"
+      },
+      {
+        "id": "cta",
+        "type": "text",
+        "x": 20.0,
+        "y": 116.0,
+        "w": 120.0,
+        "h": 20.0,
+        "fill": "{{params.color}}",
+        "text": "{{params.cta}}",
+        "fontSize": 14.0,
+        "bold": true,
+        "textAlign": "center",
+        "name": "Button label"
+      }
+    ]
+  }
+}

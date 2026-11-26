@@ -339,7 +339,7 @@ class AdminScreensTest {
         val admin = admin()
         admin.importIfEmpty(dataDir)
         val store = io.composecast.server.store.ComponentStore(AdminScreens.openDatabase(dataDir))
-        assertEquals(setOf("parcel-tile"), store.live().keys)
+        assertEquals(setOf("parcel-tile", "promo-card"), store.live().keys)
         var served = admin.load()
         val before = served.render("custom")!!.document
 

@@ -59,6 +59,28 @@
         }
       ],
       "spacing": 12
+    },
+    {
+      "type": "spacer",
+      "height": 16
+    },
+    {
+      "type": "text",
+      "text": "Drawn in the component designer (shapes, texts and a tap area on an artboard):",
+      "style": "caption"
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "custom",
+      "component": "promo-card",
+      "args": {
+        "title": "Free delivery",
+        "subtitle": "On every parcel sent this week from a parcel locker.",
+        "cta": "Send now",
+        "action": "navigate:data"
+      }
     }
   ]
 }

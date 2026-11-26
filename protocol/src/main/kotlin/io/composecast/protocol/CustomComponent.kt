@@ -28,8 +28,13 @@ data class ComponentDefinition(
     /** Clients with an older RC document API level get nothing in the component's place. */
     val minApiLevel: Int = DEFAULT_MIN_API_LEVEL,
     val params: Map<String, ComponentParam> = emptyMap(),
-    /** One RC JSON component (`{"type": "box", "modifiers": [...], "children": [...]}`). */
-    val body: JsonObject,
+    /**
+     * One RC JSON component (`{"type": "box", "modifiers": [...], "children": [...]}`). With a
+     * [design] it is compiled from it ([ComponentJson] replaces it on every decode).
+     */
+    val body: JsonObject = JsonObject(emptyMap()),
+    /** Drawn in the component designer (T-057, ADR 0034): the source of [body]. */
+    val design: ComponentDesign? = null,
 ) {
     /** Problems with this definition itself (not the RC grammar — the renderer checks that). */
     fun problems(): List<String> = buildList {
@@ -41,6 +46,7 @@ data class ComponentDefinition(
             if (!PARAM_NAME.matches(name)) add("params.$name: name must be an identifier")
             param.default?.let { d -> param.type.problem(d)?.let { add("params.$name.default: $it") } }
         }
+        design?.let { addAll(it.problems()) }
         if ((body["type"] as? JsonPrimitive)?.contentOrNull.isNullOrBlank()) {
             add("body.type: the body must be one RC JSON component with a \"type\"")
         }
@@ -170,8 +176,11 @@ object ComponentJson {
         prettyPrintIndent = "  "
     }
 
-    fun encode(definition: ComponentDefinition): String =
-        json.encodeToString(ComponentDefinition.serializer(), definition)
+    /** A definition with a [ComponentDefinition.design] is stored without its compiled body. */
+    fun encode(definition: ComponentDefinition): String = json.encodeToString(
+        ComponentDefinition.serializer(),
+        if (definition.design != null) definition.copy(body = JsonObject(emptyMap())) else definition,
+    )
 
     /** Decodes and checks [ComponentDefinition.problems]; errors start with [source]. */
     fun decode(text: String, source: String): ComponentDefinition {
@@ -191,7 +200,13 @@ object ComponentJson {
         } catch (e: IllegalArgumentException) {
             return Checked(null, listOf(e.message ?: "invalid value"))
         }
-        val problems = definition.problems()
-        return Checked(definition.takeIf { problems.isEmpty() }, problems)
+        return check(definition)
+    }
+
+    /** Compiles a [ComponentDefinition.design] into its body, then checks the definition. */
+    fun check(definition: ComponentDefinition): Checked {
+        val compiled = definition.design?.let { definition.copy(body = it.toBody()) } ?: definition
+        val problems = compiled.problems()
+        return Checked(compiled.takeIf { problems.isEmpty() }, problems)
     }
 }
