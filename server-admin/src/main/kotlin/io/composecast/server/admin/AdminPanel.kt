@@ -104,6 +104,7 @@ internal fun Route.adminRoutes(
 ) {
     phoneRenderer?.let { application.attributes.put(PhoneRendererKey, it) } // T-048: editors show the phone frame
     components?.let { application.attributes.put(ComponentStoreKey, it) } // T-049: palette "My components"
+    application.attributes.put(SettingsStoreKey, settings)
     route("/admin") {
         install(SecurityHeaders)
         install(Sessions) {
@@ -178,9 +179,16 @@ internal fun ApplicationCall.page(title: String): Map<String, Any> = adminUser.l
         "canEdit" to it.role.canEdit,
         "phone" to hasPhonePreview,
         "hasComponents" to application.attributes.contains(ComponentStoreKey),
+        "debugMode" to isDebugMode,
         "section" to section(request.path()),
     )
 }
+
+/** Whether admin debug mode (AI section reference IDs on headings) is enabled in settings. */
+internal val ApplicationCall.isDebugMode: Boolean
+    get() = application.attributes.getOrNull(SettingsStoreKey)?.get(AppKeys.DEBUG_MODE) == "true"
+
+private val SettingsStoreKey = AttributeKey<SettingsStore>("composecast.settingsStore")
 
 /** The side menu item a page belongs to (`_layout.ftl` marks it as the current page). */
 internal fun section(path: String): String = when {

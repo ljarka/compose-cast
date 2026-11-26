@@ -77,6 +77,9 @@ internal object AppKeys {
     /** Base64 of the uploaded PNG/JPEG (for the launcher icon, T-010). */
     const val LOGO = "app.icon"
     const val LOGO_TYPE = "app.icon.type"
+
+    /** Admin debug mode: `"true"` shows copyable AI reference IDs next to headings. */
+    const val DEBUG_MODE = "admin.debugMode"
 }
 
 private const val MAX_LOGO_BYTES = 1024 * 1024
@@ -90,6 +93,7 @@ private data class SettingsForm(
     val applicationId: String,
     val serverUrl: String,
     val logo: Logo?,
+    val debugMode: Boolean = false,
 ) {
     class Logo(val bytes: ByteArray, val type: String)
 
@@ -97,6 +101,7 @@ private data class SettingsForm(
         settings[AppKeys.NAME] = brand.name
         settings[AppKeys.APPLICATION_ID] = applicationId
         settings[AppKeys.SERVER_URL] = serverUrl
+        settings[AppKeys.DEBUG_MODE] = if (debugMode) "true" else ""
         when {
             logo == null -> Unit
             logo.bytes.isEmpty() -> {
@@ -120,6 +125,7 @@ private data class SettingsForm(
             applicationId = settings[AppKeys.APPLICATION_ID].orEmpty(),
             serverUrl = settings[AppKeys.SERVER_URL].orEmpty(),
             logo = null,
+            debugMode = settings[AppKeys.DEBUG_MODE] == "true",
         )
 
         /** Reads the multipart form; returns it with every problem, each starting with the field name. */
@@ -158,7 +164,8 @@ private data class SettingsForm(
                 upload == null || upload!!.isEmpty() -> null
                 else -> logo(upload!!).also { (_, problem) -> problem?.let { problems += "logo: $it" } }.first
             }
-            return SettingsForm(brand, applicationId, serverUrl, logo) to problems
+            val debugMode = fields["debugMode"] == "on"
+            return SettingsForm(brand, applicationId, serverUrl, logo, debugMode) to problems
         }
 
         private fun serverUrlProblem(url: String): String? {
@@ -203,6 +210,7 @@ private suspend fun ApplicationCall.settingsPage(
         "applicationId" to form.applicationId,
         "serverUrl" to form.serverUrl,
         "hasLogo" to !settings[AppKeys.LOGO].isNullOrEmpty(),
+        "debugMode" to form.debugMode,
         "problems" to problems,
         "saved" to saved,
     ),

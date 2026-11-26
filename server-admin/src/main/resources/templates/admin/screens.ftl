@@ -1,7 +1,7 @@
 <#import "_layout.ftl" as layout>
 <@layout.page title=title user=user role=role>
 <main class="wide">
-  <h1>Screens</h1>
+  <h1>Screens<@layout.uid "admin:screens.header"/></h1>
   <#if canEdit>
   <div class="action-cards">
     <a class="action-card" href="/admin/templates">
@@ -56,7 +56,7 @@
     </#list>
   </div>
   <#if canEdit>
-  <h2>New screen</h2>
+  <h2>New screen<@layout.uid "admin:screens.new"/></h2>
   <form class="card" method="post" action="/admin/screens">
     <#if error??><p class="error" role="alert">${error}</p></#if>
     <div class="row">

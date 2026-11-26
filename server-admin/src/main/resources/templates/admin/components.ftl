@@ -1,7 +1,7 @@
 <#import "_layout.ftl" as layout>
 <@layout.page title=title user=user role=role>
 <main class="wide">
-  <h1>Components</h1>
+  <h1>Components<@layout.uid "admin:components.header"/></h1>
   <p class="muted">Your own components: draw them in the <strong>designer</strong> (shapes, gradients,
     imported SVG icons, texts, tap areas), or write raw Remote Compose JSON. Use them on screens by id (<code>{"type": "custom", "component": "…"}</code>) or from
     <strong>My components</strong> in the visual editor's palette. This server renders with RC ${rcVersion}.</p>
@@ -36,7 +36,7 @@
     </table>
   </div>
   <#if canEdit>
-  <h2>New component</h2>
+  <h2>New component<@layout.uid "admin:components.new"/></h2>
   <form class="card" method="post" action="/admin/components">
     <div class="row">
       <div><label for="id">Id</label><input id="id" name="id" required pattern="[a-z0-9][a-z0-9_\-]{0,63}" value="${newId}" placeholder="e.g. promo-tile"></div>

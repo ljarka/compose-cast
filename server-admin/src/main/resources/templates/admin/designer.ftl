@@ -42,12 +42,12 @@
 </style>
 <div style="max-width: 1500px; margin: 16px auto 0; padding: 0 16px">
   <p style="margin: 0"><a href="/admin/components">← Components</a> · <a href="#code">Code</a> · <a href="/admin/components/${id?url}">JSON editor</a></p>
-  <h1 style="margin: 8px 0"><code>${id}</code> <span class="status status-${status}">${status}</span> <span class="muted" style="font-size: 16px">Designer</span></h1>
+  <h1 style="margin: 8px 0"><code>${id}</code> <span class="status status-${status}">${status}</span> <span class="muted" style="font-size: 16px">Designer</span><@layout.uid "admin:designer.header"/></h1>
 </div>
 <div class="designer" id="designer" data-id="${id}" data-can-edit="${canEdit?c}">
   <aside>
     <div class="card">
-      <h2>Layers</h2>
+      <h2>Layers<@layout.uid "admin:designer.layers"/></h2>
       <ul class="layers" id="layers"></ul>
       <div class="layer-actions">
         <button type="button" data-cmd="up" title="Bring forward">▲</button>
@@ -57,7 +57,7 @@
       </div>
     </div>
     <div class="card" style="margin-top: 16px">
-      <h2>Component</h2>
+      <h2>Component<@layout.uid "admin:designer.component"/></h2>
       <div class="props" id="component-props"></div>
     </div>
   </aside>
@@ -83,7 +83,7 @@
     <p class="muted" style="font-size: 13px">Sizes are dp. The component fills the screen width; on wider or narrower phones each element keeps its <em>anchor</em>. Texts and colors can use <code>{{params.name}}</code> or <code>{{brand.primaryColor}}</code>. Every change is saved as the draft; screens use the component after <strong>Publish</strong>.</p>
     <#if canEdit><form method="post" action="/admin/components/${id?url}/publish" id="publish-form"><input type="hidden" name="json" id="publish-json"><button type="submit">Publish</button></form></#if>
 <div class="designer-code">
-  <h2 id="code">Code</h2>
+  <h2 id="code">Code<@layout.uid "admin:designer.code"/></h2>
   <div class="card">
     <div class="toolbar" role="tablist" aria-label="Code view">
       <button type="button" id="tab-json" class="chip" role="tab" aria-selected="true">JSON</button>
@@ -103,12 +103,12 @@
   </section>
   <aside>
     <div class="card">
-      <h2>Properties</h2>
+      <h2>Properties<@layout.uid "admin:designer.properties"/></h2>
       <div class="props" id="props"><p class="muted">Select a layer.</p></div>
     </div>
     <#if phoneImage>
     <div class="card phone-preview" style="margin-top: 16px">
-      <h2>On the phone</h2>
+      <h2>On the phone<@layout.uid "admin:designer.phone"/></h2>
       <img id="phone" src="/admin/components/${id?url}/phone.png" alt="The saved draft drawn by the app's player">
       <p class="hint muted" style="font-size: 12px">Drawn by the app's own player after each save.</p>
     </div>

@@ -11,7 +11,7 @@
 <@layout.page title=title user=user role=role htmx=canEdit>
 <main class="wide editor<#if phone> with-phone</#if>">
   <p><a href="/admin/screens">← Screens</a> · <a href="#json-editor">JSON</a> · <a href="#history">History</a></p>
-  <h1><code>${id}</code> <span class="status status-${status}">${status}</span><#if liveEveryMs gt 0> <span class="live-badge" title="Live updates every ${liveEveryMs?c} ms"><span class="live-dot" style="animation-duration: ${liveEveryMs?c}ms"></span>live</span></#if></h1>
+  <h1><code>${id}</code> <span class="status status-${status}">${status}</span><#if liveEveryMs gt 0> <span class="live-badge" title="Live updates every ${liveEveryMs?c} ms"><span class="live-dot" style="animation-duration: ${liveEveryMs?c}ms"></span>live</span></#if><@layout.uid "admin:visual.header"/></h1>
   <p class="muted">
     <#if publishedAt?has_content>Published <time datetime="${publishedAtIso}" title="${publishedAtExact}">${publishedAt}</time> by ${publishedBy}.<#else>Never published: apps do not see this screen.</#if>
     <#if status == "draft"> The editor shows the draft; apps still get the live version.</#if>
@@ -26,7 +26,7 @@
   </#if>
   <#if preview?has_content>
   <div class="card" id="preview" style="margin-bottom: 16px">
-    <h2 style="margin-top: 0">Preview on your phone</h2>
+    <h2 style="margin-top: 0">Preview on your phone<@layout.uid "admin:visual.preview"/></h2>
     <div class="row" style="align-items: center">
       <div style="flex: 0 0 auto">${preview.qr?no_esc}</div>
       <div>
@@ -91,7 +91,7 @@
           <p style="margin-top: 0"><a href="/admin/screens/${id?url}/visual?node=">← Back to Screen</a></p>
         </#if>
         <div class="card-head">
-          <h2>${nodeLabel}</h2>
+          <h2>${nodeLabel}<@layout.uid "admin:visual.panel.${mode}"/></h2>
           <#if canEdit && (mode == "component" || mode == "source" || mode == "value")>
           <details class="menu">
             <summary aria-label="Actions for ${nodeLabel}">⋯</summary>
@@ -128,7 +128,7 @@
       <#if mode == "screen">
       <div class="card">
         <div class="card-head">
-          <h2>Screen values</h2>
+          <h2>Screen values<@layout.uid "admin:visual.values"/></h2>
           <#if canEdit><a class="btn-link" href="/admin/screens/${id?url}/visual?node=values.__new__">+ Add value</a></#if>
         </div>
         <p class="muted help" style="margin: 0">On-device reactive values for sliders and automatic animations. Read as <code>{{values.name}}</code>.</p>
@@ -151,7 +151,7 @@
       </div>
       <div class="card">
         <div class="card-head">
-          <h2>Data sources</h2>
+          <h2>Data sources<@layout.uid "admin:visual.sources"/></h2>
           <#if canEdit><a class="btn-link" href="/admin/screens/${id?url}/visual?node=data.__new__">+ Add data source</a></#if>
         </div>
         <p class="muted help" style="margin: 0">APIs this screen reads as <code>{{name.field}}</code>. Or <a href="/admin/wizard">create screens from an API</a>.</p>
@@ -180,13 +180,13 @@
       </div>
       </#if>
       <#elseif mode == "sources">
-      <div class="card"><h2 style="margin-top: 0">${nodeLabel}</h2>
+      <div class="card"><h2 style="margin-top: 0">${nodeLabel}<@layout.uid "admin:visual.panel.sources"/></h2>
         <p class="muted">The APIs this screen reads. Add one above, then select it in the tree to set headers, timeout and caching.</p></div>
       <#elseif mode == "values">
-      <div class="card"><h2 style="margin-top: 0">${nodeLabel}</h2>
+      <div class="card"><h2 style="margin-top: 0">${nodeLabel}<@layout.uid "admin:visual.panel.values"/></h2>
         <p class="muted">Reactive numbers that live on the phone. Add one above, then select it in the tree to set its range or configure automatic animation (mode &amp; easing dropdowns).</p></div>
       <#else>
-      <div class="card"><h2 style="margin-top: 0">${nodeLabel}</h2>
+      <div class="card"><h2 style="margin-top: 0">${nodeLabel}<@layout.uid "admin:visual.panel.list"/></h2>
         <p class="muted">A list of components. Add one above, or select a component in the tree.</p></div>
       </#if>
     </div>
@@ -199,7 +199,7 @@
     </#if>
   </div>
 
-  <h2 id="json-editor">Code</h2>
+  <h2 id="json-editor">Code<@layout.uid "admin:visual.code"/></h2>
   <form id="screen-json-form" class="card" method="post" action="/admin/screens/${id?url}">
     <div class="toolbar" role="tablist" aria-label="Code view">
       <button type="button" id="tab-json" class="chip" role="tab" aria-selected="true">JSON</button>
@@ -220,7 +220,7 @@
     </#if>
   </form>
 
-  <h2 id="history">History</h2>
+  <h2 id="history">History<@layout.uid "admin:visual.history"/></h2>
   <div class="card">
     <table>
       <thead><tr><th>Version</th><th>Published</th><th>By</th><th></th></tr></thead>

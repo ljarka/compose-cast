@@ -2,13 +2,13 @@
 <@layout.page title=title user=user role=role>
 <main class="wide">
   <p><a href="/admin/screens">← Screens</a></p>
-  <h1>Start from a template</h1>
+  <h1>Start from a template<@layout.uid "admin:templates.header"/></h1>
   <p class="muted">A template is a whole app: its screens, their data and the navigation between them. Its screens
     are added as <strong>drafts</strong> — nothing changes in the app until you publish.</p>
 
   <#if applied?has_content>
   <div class="card" id="applied" style="margin-bottom: 16px">
-    <h2 style="margin-top: 0">${applied.name}: ${applied.screens?size} drafts added</h2>
+    <h2 style="margin-top: 0">${applied.name}: ${applied.screens?size} drafts added<@layout.uid "admin:templates.applied"/></h2>
     <ul>
       <#list applied.screens as s><li><a href="/admin/screens/${s?url}/visual?node="><code>${s}</code></a><#if s == applied.home> — home screen</#if></li></#list>
     </ul>
@@ -32,7 +32,7 @@
 
   <#list templates as t>
   <div class="card" id="template-${t.id}" style="margin-bottom: 16px">
-    <h2 style="margin-top: 0">${t.name}<#if t.live> <span class="status status-live">live</span></#if></h2>
+    <h2 style="margin-top: 0">${t.name}<#if t.live> <span class="status status-live">live</span></#if><@layout.uid "admin:templates.card.${t.id}"/></h2>
     <p>${t.description}</p>
     <p class="muted">Screens: <#list t.screens as s><code>${s}</code><#sep>, </#list></p>
     <#if t.secrets?has_content>

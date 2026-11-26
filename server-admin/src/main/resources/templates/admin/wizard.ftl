@@ -8,7 +8,7 @@
 <@layout.page title=title user=user role=role>
 <main class="wide">
   <p><a href="/admin/screens">← Screens</a></p>
-  <h1>Create screens from an API</h1>
+  <h1>Create screens from an API<@layout.uid "admin:wizard.header"/></h1>
   <p class="muted">Paste the address of a JSON API. The server fetches it, finds the list in the answer and
     creates a list screen and a detail screen you can then change in the visual editor.</p>
   <#if problems?has_content>
@@ -35,13 +35,13 @@
         <#list lists as l><option value="${l.path}"<#if l.path == list> selected</#if>>${l.label} — ${l.size} items</option></#list>
       </select>
 
-      <h2>Fields of one item</h2>
+      <h2>Fields of one item<@layout.uid "admin:wizard.fields"/></h2>
       <table>
         <thead><tr><th>Field</th><th>Kind</th><th>Example</th></tr></thead>
         <tbody><#list fields as f><tr><td><code>${f.path}</code></td><td class="muted">${f.kind}</td><td>${f.sample}</td></tr></#list></tbody>
       </table>
 
-      <h2>What goes where</h2>
+      <h2>What goes where<@layout.uid "admin:wizard.mapping"/></h2>
       <div class="row">
         <div><label for="title">Title <span class="required">*</span></label><@fieldSelect "title" plan.title false/></div>
         <div><label for="subtitle">Subtitle</label><@fieldSelect "subtitle" plan.subtitle/></div>
@@ -49,7 +49,7 @@
         <div><label for="id">Id (opens the detail)</label><@fieldSelect "id" plan.id/></div>
       </div>
 
-      <h2>Screens</h2>
+      <h2>Screens<@layout.uid "admin:wizard.screens"/></h2>
       <div class="row">
         <div><label for="listScreen">List screen id</label><input id="listScreen" name="listScreen" value="${plan.listScreen}"></div>
         <div><label for="listTitle">List title</label><input id="listTitle" name="listTitle" value="${plan.listTitle}"></div>

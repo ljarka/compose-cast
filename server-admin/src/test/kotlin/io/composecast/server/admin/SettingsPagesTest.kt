@@ -149,4 +149,31 @@ class SettingsPagesTest {
         assertFalse("Save settings" in page)
         assertNull(settings[SettingsStore.BRAND])
     }
+
+    @Test
+    fun `debug mode toggle shows and hides AI reference ID buttons across admin pages`() = host.run { client ->
+        val cookie = with(host) { client.loginAs(Role.ADMIN) }
+
+        val offSettings = client.get("/admin/settings") { header(HttpHeaders.Cookie, cookie) }.bodyAsText()
+        assertFalse("data-ui-id=" in offSettings, "debug buttons hidden by default")
+        val offScreens = client.get("/admin/screens") { header(HttpHeaders.Cookie, cookie) }.bodyAsText()
+        assertFalse("data-ui-id=" in offScreens)
+
+        val enabled = client.save(cookie, valid + ("debugMode" to "on"))
+        assertEquals(HttpStatusCode.SeeOther, enabled.status)
+        assertEquals("true", settings[AppKeys.DEBUG_MODE])
+
+        val onSettings = client.get("/admin/settings") { header(HttpHeaders.Cookie, cookie) }.bodyAsText()
+        assertContains(onSettings, """data-ui-id="admin:settings.header"""")
+        assertContains(onSettings, """data-ui-id="admin:settings.developer"""")
+        val onScreens = client.get("/admin/screens") { header(HttpHeaders.Cookie, cookie) }.bodyAsText()
+        assertContains(onScreens, """data-ui-id="admin:screens.header"""")
+        assertContains(onScreens, """data-ui-id="admin:screens.new"""")
+
+        val disabled = client.save(cookie, valid)
+        assertEquals(HttpStatusCode.SeeOther, disabled.status)
+        assertEquals("", settings[AppKeys.DEBUG_MODE])
+        val offAgain = client.get("/admin/screens") { header(HttpHeaders.Cookie, cookie) }.bodyAsText()
+        assertFalse("data-ui-id=" in offAgain)
+    }
 }

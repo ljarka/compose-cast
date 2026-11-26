@@ -2,7 +2,7 @@
 <@layout.page title=title user=user role=role htmx=canEdit>
 <main class="wide">
   <p><a href="/admin/components">← Components</a></p>
-  <h1><code>${id}</code> <span class="status status-${status}">${status}</span></h1>
+  <h1><code>${id}</code> <span class="status status-${status}">${status}</span><@layout.uid "admin:component.header"/></h1>
   <p class="muted">
     <#if publishedAt?has_content>Published <time datetime="${publishedAtIso}" title="${publishedAtExact}">${publishedAt}</time> by ${publishedBy}.<#else>Never published: screens cannot use it yet.</#if>
     <#if status == "draft"> The editor shows the draft; screens still use the published version.</#if>
@@ -24,20 +24,20 @@
     <div style="flex: 1 1 300px">
       <#if phoneImage>
       <div class="card">
-        <h2 style="margin-top: 0">Preview</h2>
+        <h2 style="margin-top: 0">Preview<@layout.uid "admin:component.preview"/></h2>
         <p class="muted">The saved draft alone, with its sample arguments.</p>
         <img src="/admin/components/${id?url}/phone.png" alt="Phone preview of ${id}" style="width: 100%; border-radius: 12px">
       </div>
       </#if>
       <#if usage?has_content>
       <div class="card" style="margin-top: 16px">
-        <h2 style="margin-top: 0">Use on a screen</h2>
+        <h2 style="margin-top: 0">Use on a screen<@layout.uid "admin:component.usage"/></h2>
         <pre><code>${usage}</code></pre>
       </div>
       </#if>
     </div>
   </div>
-  <h2>History</h2>
+  <h2>History<@layout.uid "admin:component.history"/></h2>
   <div class="card">
     <table>
       <thead><tr><th>Version</th><th>Published</th><th>By</th><th></th></tr></thead>

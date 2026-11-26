@@ -1,3 +1,5 @@
+<#-- uid: copyable AI reference ID icon button next to headings when debug mode is enabled in Settings. -->
+<#macro uid id><#if debugMode!false><button type="button" class="ui-id-btn" data-ui-id="${id}" title="Copy AI reference ID: ${id}" aria-label="Copy ID ${id}"><svg class="icon-link" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.5 9.5l3-3M5 7.5L3.6 8.9a2.5 2.5 0 0 0 3.5 3.5L8.5 11M11 8.5l1.4-1.4a2.5 2.5 0 0 0-3.5-3.5L7.5 5"/></svg><svg class="icon-ok" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></button></#if></#macro>
 <#-- page: the HTML page. With `user` (logged-in pages) a header with navigation and logout; with htmx=true HTMX 2.0.11 (ADR 0012: CDN + integrity hash). -->
 <#macro page title user="" role="" htmx=false>
 <!doctype html>
@@ -164,13 +166,27 @@
     .action-desc { font-size: 13px; color: var(--muted); margin-top: 3px; line-height: 1.4; }
     .action-arrow { color: var(--accent); font-size: 16px; transition: transform .15s ease; }
     .action-card:hover .action-arrow { transform: translateX(3px); }
+    .debug-badge { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 999px; font-size: 11px;
+                   font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--accent);
+                   background: color-mix(in srgb, var(--accent) 12%, transparent); vertical-align: middle; }
+    button.ui-id-btn { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px;
+                       padding: 0; margin: 0 0 0 6px; vertical-align: middle; background: transparent;
+                       color: var(--muted); border: 1px solid transparent; border-radius: 5px; opacity: .55;
+                       cursor: pointer; transition: opacity .12s ease, color .12s ease, border-color .12s ease; }
+    button.ui-id-btn:hover { opacity: 1; color: var(--accent); border-color: var(--line); background: var(--bg); }
+    button.ui-id-btn svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8;
+                           stroke-linecap: round; stroke-linejoin: round; }
+    button.ui-id-btn .icon-ok { display: none; }
+    button.ui-id-btn.copied { opacity: 1; color: #2b8a3e; border-color: #2b8a3e; background: var(--bg); }
+    button.ui-id-btn.copied .icon-link { display: none; }
+    button.ui-id-btn.copied .icon-ok { display: block; }
   </style>
   <#if htmx><script src="https://unpkg.com/htmx.org@2.0.11/dist/htmx.min.js" integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg" crossorigin="anonymous"></script></#if>
 </head>
 <body>
 <#if user?has_content>
 <header>
-  <strong>compose-cast admin</strong>
+  <strong>compose-cast admin<#if debugMode!false><span class="debug-badge">debug</span></#if></strong>
   <form method="post" action="/admin/logout">
     <span class="muted">${user.email} (${role})</span>
     <button type="submit">Log out</button>
@@ -204,6 +220,36 @@
 </div>
 <#else>
 <#nested>
+</#if>
+<#if debugMode!false>
+<script>
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest("button.ui-id-btn[data-ui-id]");
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const id = btn.dataset.uiId;
+    const mark = () => {
+      btn.classList.add("copied");
+      clearTimeout(btn._t);
+      btn._t = setTimeout(() => btn.classList.remove("copied"), 1200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(id).then(mark).catch(() => fallbackCopy(id, mark));
+    } else {
+      fallbackCopy(id, mark);
+    }
+    function fallbackCopy(text, done) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); done(); } finally { ta.remove(); }
+    }
+  });
+</script>
 </#if>
 </body>
 </html>

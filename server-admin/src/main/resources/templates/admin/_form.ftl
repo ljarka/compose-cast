@@ -1,13 +1,14 @@
+<#import "_layout.ftl" as layout>
 <#-- The generated property form (T-029 C2): rows from VisualPages.formRows; also the HTMX fragment
      of POST …/visual/panel. Nested objects are fieldsets ("group" … "end"). -->
 <div id="form-fields">
 <#list rows as r>
   <#if r.input == "group">
-  <details class="group"<#if r.open> open</#if>><summary>${r.label}<#if r.help?has_content> <span class="muted help">${r.help}</span></#if></summary><div class="fields">
+  <details class="group"<#if r.open> open</#if>><summary>${r.label}<@layout.uid "admin:visual.group.${r.path}"/><#if r.help?has_content> <span class="muted help">${r.help}</span></#if></summary><div class="fields">
   <#elseif r.input == "end">
   </div></details>
   <#elseif r.input == "variant">
-  <details class="group"<#if r.open> open</#if>><summary>${r.label}</summary><div class="fields">
+  <details class="group"<#if r.open> open</#if>><summary>${r.label}<@layout.uid "admin:visual.group.${r.path}"/></summary><div class="fields">
     <div class="field variant-type">
       <label for="f-${r.path}.type">Type<#if !r.optional> <span class="required" title="required">*</span></#if></label>
       <select id="f-${r.path}.type" name="${r.path}.type"<#if canEdit> hx-post="${panelUrl}" hx-trigger="change" hx-target="#form-fields" hx-swap="outerHTML" hx-include="closest form"</#if>>

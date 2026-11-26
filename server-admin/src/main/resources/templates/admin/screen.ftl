@@ -2,7 +2,7 @@
 <@layout.page title=title user=user role=role htmx=canEdit>
 <main class="wide">
   <p><a href="/admin/screens">← Screens</a> · <a href="/admin/screens/${id?url}/visual">Visual editor</a></p>
-  <h1><code>${id}</code> <span class="status status-${status}">${status}</span></h1>
+  <h1><code>${id}</code> <span class="status status-${status}">${status}</span><@layout.uid "admin:screen.header"/></h1>
   <p class="muted">
     <#if publishedAt?has_content>Published <time datetime="${publishedAtIso}" title="${publishedAtExact}">${publishedAt}</time> by ${publishedBy}.<#else>Never published: apps do not see this screen.</#if>
     <#if status == "draft"> The editor shows the draft; apps still get the live version.</#if>
@@ -22,7 +22,7 @@
   </form>
   <#if preview?has_content>
   <div class="card" id="preview" style="margin-top: 16px">
-    <h2 style="margin-top: 0">Preview on your phone</h2>
+    <h2 style="margin-top: 0">Preview on your phone<@layout.uid "admin:screen.preview"/></h2>
     <div class="row" style="align-items: center">
       <div style="flex: 0 0 auto">${preview.qr?no_esc}</div>
       <div>
@@ -34,7 +34,7 @@
     </div>
   </div>
   </#if>
-  <h2>History</h2>
+  <h2>History<@layout.uid "admin:screen.history"/></h2>
   <div class="card">
     <table>
       <thead><tr><th>Version</th><th>Published</th><th>By</th><th></th></tr></thead>

@@ -170,6 +170,7 @@ internal fun Route.visualPages(screens: ScreenStore, probe: ApiProbe, publishing
                     "rows" to formRows(fields, params::get, screenValues, visibilityIds),
                     "canEdit" to true,
                     "panelUrl" to call.panelUrl(node),
+                    "debugMode" to call.isDebugMode,
                 ),
             )
         }

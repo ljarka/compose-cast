@@ -30,6 +30,7 @@ This file is the index. Keep it short (< 150 lines); details live where the tabl
 | Why something is the way it is | [docs/decisions/](docs/decisions/README.md) (ADRs) |
 | Screen JSON format (every component, modifier, binding) | [docs/screen-json-format.md](docs/screen-json-format.md) |
 | Admin visual editor, palette, data source wizard, field picker (how + why) | [docs/admin-editor.md](docs/admin-editor.md) |
+| Admin UI reference IDs (`admin:…` debug mode map) | [docs/admin-ui-map.md](docs/admin-ui-map.md) |
 | How Remote Compose actually behaves (per version) | [docs/remote-compose.md](docs/remote-compose.md) |
 | New RC release? (watch it: alpha, semantics change) | `./scripts/check-rc-release.sh`, [release notes](https://developer.android.com/jetpack/androidx/releases/compose-remote), [upgrade playbook](docs/playbooks/upgrade-remote-compose.md) |
 | What was done when | [docs/history.md](docs/history.md) |
