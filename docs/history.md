@@ -449,3 +449,7 @@ README roadmap's "Etap" numbers.
     Ktor `OkHttp` engine (removed `ktor-client-android`), added configurable `HttpTimeout`
     defaults (with infinite timeout on WebSocket sessions), and restricted `app-shell` HTTP logging
     to debuggable builds.
+89. **T-053 — SQLite migrations, foreign keys & session cleanup** (2026-11-26): enabled
+    `PRAGMA foreign_keys = ON` and `PRAGMA user_version` schema versioning in `StoreDatabase`, added
+    `ping()` and `StoreDatabaseTest`, and wired startup + hourly `deleteExpiredSessions()` in admin
+    mode.

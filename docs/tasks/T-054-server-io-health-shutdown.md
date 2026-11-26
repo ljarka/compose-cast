@@ -1,6 +1,6 @@
 # T-054 — Server I/O offloading, database-aware `/health`, and graceful shutdown
 
-Status: queued (after T-053) · Roadmap: quality · Depends on: — · Module: server-admin, server-app
+Status: in progress · Roadmap: quality · Depends on: — · Module: server-admin, server-app
 
 ## Goal
 

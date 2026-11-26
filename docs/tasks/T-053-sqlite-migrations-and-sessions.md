@@ -1,6 +1,6 @@
 # T-053 — SQLite schema migrations, foreign keys, and expired session cleanup
 
-Status: in progress · Roadmap: quality · Depends on: — · Module: server-store, server-app
+Status: done · Roadmap: quality · Depends on: — · Module: server-store, server-app
 
 ## Goal
 

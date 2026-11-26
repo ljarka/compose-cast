@@ -56,9 +56,9 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-022 Advanced RC features (templates, drag, sensors)](T-022-advanced-rc-features.md) | Etap 10 | later (pick by real use case) |
 | [T-050 Close CI verification gaps (`app-templates` and `sdk-android` tests)](T-050-ci-gaps-and-sdk-android-tests.md) | quality | done (`9ec5ede`) |
 | [T-051 Server security hardening (SSRF, login rate limit, 500, CSP)](T-051-server-security-hardening.md) | quality | done (`3fa809d`) |
-| [T-052 Android client cleanup (single OkHttp engine, timeouts, release logging)](T-052-sdk-android-cleanup.md) | quality | done |
-| [T-053 SQLite schema migrations, foreign keys, and expired session cleanup](T-053-sqlite-migrations-and-sessions.md) | quality | in progress |
-| [T-054 Server I/O offloading, database-aware `/health`, and graceful shutdown](T-054-server-io-health-shutdown.md) | quality | queued (after T-053) |
+| [T-052 Android client cleanup (single OkHttp engine, timeouts, release logging)](T-052-sdk-android-cleanup.md) | quality | done (`8cb0af1`) |
+| [T-053 SQLite schema migrations, foreign keys, and expired session cleanup](T-053-sqlite-migrations-and-sessions.md) | quality | done |
+| [T-054 Server I/O offloading, database-aware `/health`, and graceful shutdown](T-054-server-io-health-shutdown.md) | quality | in progress |
 | [T-055 Static analysis (`detekt`) and `explicitApi()` for published libraries](T-055-explicit-api-and-detekt.md) | quality | queued (after T-054) |
 | [T-056 Live screen fan-out and refactoring of largest files](T-056-live-fanout-and-refactoring.md) | quality | queued (after T-055) |
 | [T-005 iOS spike](T-005-ios-spike.md) | Etap 3 | dropped (Android only, ADR 0022) |

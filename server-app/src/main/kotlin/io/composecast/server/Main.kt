@@ -26,9 +26,15 @@ import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.time.Duration.Companion.hours
 
 /**
  * Configuration (environment variables):
@@ -84,7 +90,9 @@ fun main() {
                 components = ComponentStore(database),
             )
             adminScreens.importIfEmpty(dataDir)
-            val auth = AdminAuth(UserStore(database))
+            val userStore = UserStore(database)
+            userStore.deleteExpiredSessions()
+            val auth = AdminAuth(userStore)
             auth.bootstrapFromEnv(System.getenv("COMPOSECAST_ADMIN_EMAIL"), System.getenv("COMPOSECAST_ADMIN_PASSWORD"))
             LiveScreens(adminScreens.load(), initialHome = adminScreens.homeScreen()).also { live ->
                 admin = AdminPanelConfig(
@@ -98,6 +106,7 @@ fun main() {
                     allowPrivateApiHosts = allowPrivateImageHosts,
                     phoneRenderer = System.getenv("COMPOSECAST_PREVIEW_RENDERER_URL")?.takeIf { it.isNotBlank() }
                         ?.let { CachingPhoneRenderer(HttpPhoneRenderer(it)) },
+                    pruneExpiredSessions = userStore::deleteExpiredSessions,
                 )
             }
         }
@@ -117,6 +126,8 @@ class AdminPanelConfig(
     val phoneRenderer: PhoneRenderer? = null,
     /** Custom components page (T-049); null = not shown. */
     val components: ComponentStore? = null,
+    /** Periodically removes expired admin sessions (T-053); null in tests without a background loop. */
+    val pruneExpiredSessions: (() -> Int)? = null,
 )
 
 fun Application.module(screens: LiveScreens, admin: AdminPanelConfig? = null) {
@@ -158,5 +169,14 @@ fun Application.module(screens: LiveScreens, admin: AdminPanelConfig? = null) {
             it.phoneRenderer,
             it.components,
         )
+        it.pruneExpiredSessions?.let { prune ->
+            launch {
+                while (isActive) {
+                    delay(1.hours)
+                    runCatching { withContext(Dispatchers.IO) { prune() } }
+                        .onFailure { e -> environment.log.warn("Failed to prune expired sessions", e) }
+                }
+            }
+        }
     }
 }
