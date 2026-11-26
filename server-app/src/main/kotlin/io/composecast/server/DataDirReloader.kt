@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.fileSize
 import kotlin.io.path.getLastModifiedTime
@@ -32,6 +33,9 @@ class DataDirReloader(
     @Volatile
     private var seen: List<String> = fingerprint()
 
+    @Volatile
+    private var executor: ScheduledExecutorService? = null
+
     /**
      * One poll: reloads when the directory changed since the last poll.
      * @return true when new screens are served
@@ -52,15 +56,16 @@ class DataDirReloader(
         }
     }
 
-    /** Polls on a daemon thread until the JVM exits. */
+    /** Polls on a daemon thread until [stop] is called or the JVM exits. */
     fun start() {
-        val executor = Executors.newSingleThreadScheduledExecutor {
+        val scheduled = Executors.newSingleThreadScheduledExecutor {
             Thread(it, "data-dir-reload").apply {
                 isDaemon =
                     true
             }
         }
-        executor.scheduleWithFixedDelay(
+        executor = scheduled
+        scheduled.scheduleWithFixedDelay(
             {
                 try {
                     reloadIfChanged()
@@ -73,6 +78,12 @@ class DataDirReloader(
             TimeUnit.MILLISECONDS,
         )
         log.info("Watching {} for changes every {} ms", dataDir, intervalMs)
+    }
+
+    /** Stops the polling thread on server shutdown (T-054). */
+    fun stop() {
+        executor?.shutdownNow()
+        executor = null
     }
 
     private fun fingerprint(): List<String> = Files.walk(dataDir).use { files ->

@@ -19,6 +19,7 @@ import io.composecast.server.store.UserStore
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationStopping
 import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -63,16 +64,20 @@ fun main() {
     val dataLoader = HttpDataLoader(allowPrivateHosts = allowPrivateImageHosts)
     val dataDir = System.getenv("COMPOSECAST_DATA_DIR")?.let(Path::of)
     var admin: AdminPanelConfig? = null
+    var healthCheck: () -> Boolean = { true }
+    var onStop: () -> Unit = {}
     val screens = when (val mode = System.getenv("COMPOSECAST_MODE") ?: "files") {
         "files" -> LiveScreens(
             loadScreens(dataDir, imageLoader = imageLoader, dataLoader = dataLoader),
         ).also { screens ->
             if (dataDir != null && System.getenv("COMPOSECAST_RELOAD")?.toBoolean() != false) {
-                DataDirReloader(
+                val reloader = DataDirReloader(
                     dataDir,
                     screens,
                     load = { loadScreens(it, imageLoader = imageLoader, dataLoader = dataLoader) },
-                ).start()
+                )
+                reloader.start()
+                onStop = reloader::stop
             }
         }
         "admin" -> {
@@ -82,6 +87,7 @@ fun main() {
                     "which is not writable: in Docker drop ':ro' from the volume and run 'sudo chown -R 1000:1000 <data dir>'"
             }
             val database = AdminScreens.openDatabase(dataDir)
+            healthCheck = database::ping
             val adminScreens = AdminScreens(
                 ScreenStore(database),
                 SettingsStore(database),
@@ -112,7 +118,9 @@ fun main() {
         }
         else -> error("COMPOSECAST_MODE must be 'files' or 'admin', was '$mode'")
     }
-    embeddedServer(Netty, port = port, host = "0.0.0.0") { module(screens, admin) }.start(wait = true)
+    embeddedServer(Netty, port = port, host = "0.0.0.0") {
+        module(screens, admin, healthCheck = healthCheck, onStop = onStop)
+    }.start(wait = true)
 }
 
 /** The admin panel of admin mode (T-007); `null` in files mode, where `/admin` does not exist. */
@@ -130,7 +138,13 @@ class AdminPanelConfig(
     val pruneExpiredSessions: (() -> Int)? = null,
 )
 
-fun Application.module(screens: LiveScreens, admin: AdminPanelConfig? = null) {
+fun Application.module(
+    screens: LiveScreens,
+    admin: AdminPanelConfig? = null,
+    healthCheck: () -> Boolean = { true },
+    onStop: () -> Unit = {},
+) {
+    monitor.subscribe(ApplicationStopping) { onStop() }
     install(CallLogging)
     installLiveScreens()
     install(ContentNegotiation) {
@@ -157,7 +171,7 @@ fun Application.module(screens: LiveScreens, admin: AdminPanelConfig? = null) {
             call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "internal error"))
         }
     }
-    configureRouting(screens)
+    configureRouting(screens, healthCheck)
     admin?.let {
         adminPanel(
             it.auth,

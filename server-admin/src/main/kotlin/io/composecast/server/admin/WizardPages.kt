@@ -11,6 +11,8 @@ import io.ktor.server.request.receiveParameters
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.net.URI
 import java.net.URLEncoder
 
@@ -24,7 +26,7 @@ internal fun Route.wizardPages(screens: ScreenStore, settings: SettingsStore, pr
     post("/wizard") {
         val form = WizardForm(call.receiveParameters())
         if (form.url.isBlank()) return@post call.wizardPage(form, null, listOf("Enter the API's address."))
-        val result = probe.probe(form.url, form.headers)
+        val result = withContext(Dispatchers.IO) { probe.probe(form.url, form.headers) }
         val json = result.json
         if (json == null) {
             call.response.status(HttpStatusCode.UnprocessableEntity)

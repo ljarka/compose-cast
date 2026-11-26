@@ -227,4 +227,13 @@ class RoutingTest {
         assertTrue("internal error" in body)
         assertTrue("sensitive-db-path" !in body)
     }
+
+    @Test
+    fun `health returns 200 when ready and 503 when readiness check fails (T-054)`() = testApplication {
+        var ready = true
+        application { module(screens, healthCheck = { ready }) }
+        assertEquals(HttpStatusCode.OK, client.get("/health").status)
+        ready = false
+        assertEquals(HttpStatusCode.ServiceUnavailable, client.get("/health").status)
+    }
 }

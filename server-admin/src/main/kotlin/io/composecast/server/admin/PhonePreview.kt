@@ -10,6 +10,8 @@ import io.ktor.server.response.respondBytes
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.util.AttributeKey
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.net.http.HttpClient
@@ -84,7 +86,7 @@ internal fun Route.phonePreview(screens: ScreenStore, publishing: ScreenPublishi
         val stored = screens.get(call.screenId) ?: return@get call.respond404()
         val json = stored.draftJson ?: stored.liveJson.orEmpty()
         val png = try {
-            renderer.png(publishing.document(json))
+            withContext(Dispatchers.IO) { renderer.png(publishing.document(json)) }
         } catch (e: PublishException) {
             return@get call.placeholder("Cannot build this screen", e.message.orEmpty())
         } catch (e: Exception) {

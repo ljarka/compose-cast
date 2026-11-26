@@ -453,3 +453,7 @@ README roadmap's "Etap" numbers.
     `PRAGMA foreign_keys = ON` and `PRAGMA user_version` schema versioning in `StoreDatabase`, added
     `ping()` and `StoreDatabaseTest`, and wired startup + hourly `deleteExpiredSessions()` in admin
     mode.
+90. **T-054 — server I/O offloading, `/health` DB readiness & shutdown** (2026-11-26): offloaded
+    blocking HTTP calls in `PhonePreview`, `WizardPages`, and `VisualPages` to `Dispatchers.IO`;
+    `/health` pings SQLite in admin mode (503 on failure); `DataDirReloader.stop()` wired to
+    `ApplicationStopping`.

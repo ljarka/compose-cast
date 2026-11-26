@@ -14,6 +14,8 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -136,7 +138,7 @@ internal fun Route.visualPages(screens: ScreenStore, probe: ApiProbe, publishing
             val editing = call.editing(screens) ?: return@get
             val node = call.request.queryParameters["node"].orEmpty()
             if (!editing.exists(node)) return@get call.respondText("No node '$node'", status = HttpStatusCode.NotFound)
-            val groups = dataFields.groups(editing.root, node)
+            val groups = withContext(Dispatchers.IO) { dataFields.groups(editing.root, node) }
             call.respondTemplate(
                 "admin/_fields.ftl",
                 mapOf(

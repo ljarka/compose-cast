@@ -22,10 +22,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URLEncoder
 
-fun Application.configureRouting(screens: LiveScreens) {
+fun Application.configureRouting(screens: LiveScreens, healthCheck: () -> Boolean = { true }) {
     routing {
         get("/health") {
-            call.respondText("ok")
+            val healthy = runCatching { withContext(Dispatchers.IO) { healthCheck() } }.getOrDefault(false)
+            if (healthy) {
+                call.respondText("ok")
+            } else {
+                call.respond(HttpStatusCode.ServiceUnavailable, ErrorResponse("unhealthy", "Service is not ready"))
+            }
         }
         // Where the admin's QR code points: hands this server to the compose-cast Preview app (T-045).
         get("/connect") {
