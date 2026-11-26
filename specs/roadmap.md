@@ -91,7 +91,7 @@ data-update documents, PoC: 10 updates/s on the emulator).
 Not ordered yet; each becomes a step when a real app needs it: feature flags and A/B tests (T-038), analytics in the panel (T-037), AI assistant
 (T-033), offline cache (T-028), canvas charts (T-018), forms (T-034), app user accounts (T-035),
 push (T-036), stateful components (T-017), gestures/effects (T-019), dynamic values incl.
-light/dark (T-020), advanced RC features (T-022).
+light/dark (T-020), advanced RC features (T-022), custom components written in RC JSON (T-049, ADR 0033, owner 2026-11-26).
 
 ## Changing this roadmap
 

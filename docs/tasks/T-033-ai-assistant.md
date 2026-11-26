@@ -23,6 +23,11 @@ Self-hosted fits "bring your own key": the key stays on the user's server. The s
 - Privacy: only what the user typed, the schema and optionally a truncated API sample are sent.
   The panel says so. No screen data is sent without an explicit action.
 
+- **Custom components (T-049, ADR 0033):** a chat that writes a component body in RC JSON. The
+  prompt is the definition format, the whitelist and the Compose modifier order. The loop feeds back
+  parser/whitelist errors (with `ContextPath`) and the `preview-renderer` PNG. Saving creates a
+  draft definition, never a published one.
+
 ## Acceptance criteria
 - With a key configured: 5 fixed prompts produce valid drafts (an integration test, skipped without
   a key). Without a key, the feature is hidden.

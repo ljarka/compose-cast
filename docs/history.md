@@ -422,4 +422,5 @@ README roadmap's "Etap" numbers.
     a whole-document RC JSON path (variant a) lacks `image` and closes extension points, so b wins.
     `definePattern` macros work when parsed before `root {}`. Facts:
     [remote-compose.md → RC JSON](remote-compose.md#rc-json-remotecomposejsonparser--spike-for-custom-components-verified-alpha23-2026-11-26).
-    Next: ADR + task (emulator check still open).
+    Then [ADR 0033](decisions/0033-custom-components-raw-rc-json.md) (raw RC JSON only in component
+    bodies, screens stay semantic, versioned by RC release) and task T-049 (emulator check in K2).

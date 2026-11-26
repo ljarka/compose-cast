@@ -45,6 +45,7 @@ Android only ([ADR 0022](decisions/0022-android-only.md), owner 2026-11-16).
 - [x] Adaptive layouts: FitBox, collapsible rows/columns, min/max sizes — T-015
 - [x] Accessibility: content descriptions, roles — T-016
 - [ ] Canvas: progress bar/ring, line/bar charts, rating, gradients — T-018
+- [ ] Custom components written in raw RC JSON (any shape, gradient, vector icon), reused by name — T-049 ([ADR 0033](decisions/0033-custom-components-raw-rc-json.md); spike done)
 - [x] Dashboard components on canvas: `gauge`, `sparkline`, `kpi` — T-047 step 1
 - [x] Live screens, server: opt-in `live`, `/screens/{id}/live` WebSocket with RC data-update documents (ADR 0029) — T-047 step 2
 - [x] Live screens in the app: `sdk-android` keeps the socket open while the screen is shown, data updates in place — T-047 step 3

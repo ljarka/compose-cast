@@ -43,6 +43,7 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-046 Milestone 2: TV shows app built only in the admin](T-046-tv-shows-milestone.md) | Roadmap F | queued (after T-021); roadmap F3 — success criterion 1 |
 | [T-038 Feature flags and A/B tests](T-038-feature-flags-ab.md) | Etap 12 | queued (after T-046) |
 | [T-037 Analytics in the panel](T-037-analytics.md) | Etap 12 | queued (after T-038) |
+| [T-049 Custom components written in RC JSON](T-049-custom-components-rc-json.md) | after success criteria | queued (not ordered; owner places it) — spike done, ADR 0033 |
 | [T-033 AI assistant in the panel](T-033-ai-assistant.md) | Etap 8 | queued (after T-037) |
 | [T-028 Offline: disk cache of the last screen](T-028-offline-disk-cache.md) | Etap 7 | queued (after T-033) |
 | [T-018 Canvas: progress, charts, gradients](T-018-canvas-charts.md) | Etap 5 | queued (after T-028) |

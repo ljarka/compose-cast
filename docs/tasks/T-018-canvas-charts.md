@@ -23,6 +23,8 @@ Charts are a key DivKit-class feature and need no native code.
   `rating { value, max }`.
 - Gradients: `modifier.background` accepts `{ "gradient": "linear|radial", "colors": [...],
   "angle" }` (verify shader support in the View player).
+- Arbitrary shapes and custom drawings: custom components in RC JSON (T-049, ADR 0033), not
+  shape primitives in the screen model. This task keeps only the high-level components.
 - Low-level `shape { kind: rect|circle|line|path(svgPathData?), fill, stroke }` only if needed by a
   real screen — decide in the task; avoid exposing raw draw ops in the model (ADR 0015: semantic
   model).

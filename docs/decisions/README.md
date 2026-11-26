@@ -38,6 +38,7 @@ one (never silently contradict an accepted ADR).
 | [0030](0030-live-draft-previews.md) | Live draft previews: one preview per editor and screen, updated on every save | Accepted (amends 0027, 0013) |
 | [0031](0031-app-bundle-format.md) | App bundle format (templates now, export/import later) | Accepted |
 | [0032](0032-phone-preview-rendered-by-robolectric.md) | Phone preview in the panel: the real player under Robolectric, optional amd64 service | Accepted |
+| [0033](0033-custom-components-raw-rc-json.md) | Custom components: raw RC JSON bodies, versioned by RC release (amends 0015) | Accepted |
 
 ## Template
 
