@@ -55,4 +55,6 @@ dependencies {
     implementation(libs.compose.foundation)
     implementation(libs.compose.ui)
     testImplementation(libs.kotlin.test)
+    testImplementation(libs.junit)
+    testImplementation(libs.ktor.client.mock)
 }

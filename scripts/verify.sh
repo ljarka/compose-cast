@@ -52,7 +52,7 @@ if ! gradle spotlessCheck; then
 fi
 
 step "JVM modules: build + tests"
-gradle :protocol:build :sdk-server:build :server-scripting:build :server-store:build :server-admin:build :server-app:build
+gradle :protocol:build :sdk-server:build :server-scripting:build :server-store:build :app-templates:build :server-admin:build :server-app:build
 
 if $QUICK; then
   echo; echo "verify --quick: OK (Android and screenshots skipped)"
@@ -60,7 +60,8 @@ if $QUICK; then
 fi
 
 step "Android modules: build + lint"
-gradle :sdk-android:assembleDebug :sdk-android:lintDebug :app-shell:assembleDebug :app-shell:lintDebug \
+gradle :sdk-android:assembleDebug :sdk-android:lintDebug :sdk-android:testDebugUnitTest \
+  :app-shell:assembleDebug :app-shell:lintDebug \
   :app-shell:testDebugUnitTest :app-template:assembleDebug :app-template:lintDebug \
   :app-preview:assembleDebug :app-preview:lintDebug :app-preview:assembleRelease \
   :preview-renderer:testDebugUnitTest  # Preview: http allowed in release (T-045); phone preview renderer (T-048)

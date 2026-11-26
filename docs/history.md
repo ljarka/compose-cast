@@ -436,3 +436,7 @@ README roadmap's "Etap" numbers.
     editor gets one input per param of its component (description, type hint, default, required
     mark) and a choice of live components, instead of a raw JSON `args` field; empty optional args
     are left out, switching components starts from the new one's required samples.
+86. **T-050 — close CI gaps & `sdk-android` unit tests** (2026-11-26): added `:app-templates:build`
+    and `:sdk-android:testDebugUnitTest` to `scripts/verify.sh`; added `ComposeCastClientTest` on
+    `ktor-client-mock` covering 200/304 ETag cache, LRU eviction, 426 Upgrade Required, HTTP errors,
+    `listScreens`, and `getBrand`.

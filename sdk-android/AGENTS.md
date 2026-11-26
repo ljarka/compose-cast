@@ -77,3 +77,9 @@ installs an `android.util.Log` logger.
 Published as `io.composecast:sdk-android:<version>` (`maven-publish`; repository setup in the root
 `build.gradle.kts`: dry run into `build/maven-dry-run`, Reposilite in the release workflow). Its
 public API is used by published apps: a breaking change needs a new compose-cast version.
+
+## Tests (T-050)
+
+`ComposeCastClientTest` runs on the JVM with `ktor-client-mock` (via internal constructor) and covers
+200/304 ETag caching, LRU eviction, 426 Upgrade Required, HTTP errors, `listScreens`, and `getBrand`.
+Run via `./gradlew :sdk-android:testDebugUnitTest` (included in `./scripts/verify.sh`).

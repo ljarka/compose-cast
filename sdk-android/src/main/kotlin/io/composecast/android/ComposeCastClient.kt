@@ -9,7 +9,9 @@ import io.composecast.protocol.BrandConfig
 import io.composecast.protocol.Headers
 import io.composecast.protocol.UpgradeRequiredResponse
 import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
+import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.android.Android
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -40,9 +42,22 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.net.URLDecoder
 
-class ComposeCastClient(private val config: ComposeCastConfig) {
+class ComposeCastClient internal constructor(
+    private val config: ComposeCastConfig,
+    engine: HttpClientEngine?,
+    private val decode: (id: String, title: String, bytes: ByteArray, liveEveryMs: Int?) -> ScreenDocument =
+        ScreenDocument::fromBytes,
+    private val cacheSize: Int = CACHE_SIZE,
+) {
+    constructor(config: ComposeCastConfig) : this(config, engine = null)
 
-    private val http = HttpClient(Android) {
+    private val http = if (engine != null) {
+        HttpClient(engine) { configureHttp() }
+    } else {
+        HttpClient(Android) { configureHttp() }
+    }
+
+    private fun HttpClientConfig<*>.configureHttp() {
         // Non-2xx responses throw (e.g. 404 for an unknown screen) instead of failing to decode.
         expectSuccess = true
         install(ContentNegotiation) {
@@ -64,7 +79,7 @@ class ComposeCastClient(private val config: ComposeCastConfig) {
 
     /** Last document per (screen, params), revalidated with `If-None-Match`. Bounded LRU. */
     private val cache = object : LinkedHashMap<String, CachedScreen>(16, 0.75f, true) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, CachedScreen>) = size > CACHE_SIZE
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, CachedScreen>) = size > cacheSize
     }
 
     private class CachedScreen(val etag: String, val title: String, val bytes: ByteArray, val liveEveryMs: Int?)
@@ -121,7 +136,7 @@ class ComposeCastClient(private val config: ComposeCastConfig) {
             }
         }
         return withContext(Dispatchers.Default) {
-            ScreenDocument.fromBytes(id, screen.title, screen.bytes, screen.liveEveryMs)
+            decode(id, screen.title, screen.bytes, screen.liveEveryMs)
         }
     }
 

@@ -11,7 +11,7 @@ class ScreenDocument internal constructor(
     val title: String,
     /** Size of the Remote Compose document as received, in bytes. */
     val sizeBytes: Int,
-    internal val document: RemoteDocument,
+    private val rawDocument: RemoteDocument?,
     /**
      * For a live screen (T-047, ADR 0029) the server's update interval in ms: pass
      * [ComposeCastClient.liveScreen] to [ComposeCastScreen] to keep it current. Null otherwise.
@@ -20,6 +20,9 @@ class ScreenDocument internal constructor(
     /** Identifies the document's bytes: a live stream's first frame equal to it is skipped. */
     internal val contentHash: Int = 0,
 ) {
+    internal val document: RemoteDocument
+        get() = checkNotNull(rawDocument) { "ScreenDocument '$id' has no decoded RemoteDocument" }
+
     /** A data-update document (live screens): replaces only the values of the shown screen. */
     internal val isDataUpdate: Boolean get() = document.isUpdateDoc
 
