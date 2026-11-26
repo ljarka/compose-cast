@@ -457,3 +457,9 @@ README roadmap's "Etap" numbers.
     blocking HTTP calls in `PhonePreview`, `WizardPages`, and `VisualPages` to `Dispatchers.IO`;
     `/health` pings SQLite in admin mode (503 on failure); `DataDirReloader.stop()` wired to
     `ApplicationStopping`.
+91. **T-057 — component designer** (2026-11-26, [ADR 0034](decisions/0034-component-designer.md)):
+    owner: "I cannot create any meaningful component" (raw RC JSON only). `design` on component
+    definitions, compiled to the RC JSON body (`ComponentDesign.toBody`); demo `promo-card`
+    (golden, tap test); admin designer (`designer.js`: SVG artboard, tools, layers, properties,
+    params, undo, SVG import, auto-save). Found: RC `offset` moves drawing but not touch, and a
+    click covers padding (remote-compose.md → RC JSON 14–15).

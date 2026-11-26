@@ -2,8 +2,12 @@ package io.composecast.server.admin
 
 import io.composecast.protocol.BrandConfig
 import io.composecast.protocol.ComponentDefinition
+import io.composecast.protocol.ComponentDesign
 import io.composecast.protocol.ComponentJson
 import io.composecast.protocol.ComponentParam
+import io.composecast.protocol.DesignAnchor
+import io.composecast.protocol.DesignElement
+import io.composecast.protocol.DesignElementType
 import io.composecast.server.sdk.CustomComponents
 import io.composecast.server.store.ComponentStore
 import io.composecast.server.store.SettingsStore
@@ -12,6 +16,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.freemarker.respondTemplate
 import io.ktor.server.request.receiveParameters
+import io.ktor.server.request.receiveText
 import io.ktor.server.response.respondBytes
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route
@@ -21,7 +26,11 @@ import io.ktor.server.routing.route
 import io.ktor.util.AttributeKey
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 import java.net.URLEncoder
 
 /**
@@ -51,8 +60,19 @@ internal fun Route.componentPages(
                 call.response.status(HttpStatusCode.UnprocessableEntity)
                 return@post call.list(components, error, id)
             }
+            if (form["start"] == "design") {
+                components.saveDraft(id, ComponentJson.encode(starterDesign(id)))
+                return@post call.seeOther("/admin/components/${id.urlEncoded()}/design")
+            }
             components.saveDraft(id, ComponentJson.encode(starter(id)))
             call.seeOther("/admin/components/${id.urlEncoded()}")
+        }
+        // T-057: the designer's script (a vanilla JS island, ADR 0034); ids cannot contain '.'.
+        get("/designer.js") {
+            val js = checkNotNull(ComponentStore::class.java.getResource("/admin-assets/designer.js")) {
+                "missing resource admin-assets/designer.js"
+            }.readBytes()
+            call.respondBytes(js, ContentType.Application.JavaScript)
         }
         route("/{id}") {
             get {
@@ -71,6 +91,39 @@ internal fun Route.componentPages(
                 }
                 components.saveDraft(stored.id, ComponentJson.encode(checked.definition!!))
                 call.seeOther("/admin/components/${stored.id.urlEncoded()}?saved")
+            }
+            get("/design") {
+                val stored = components.get(call.screenId) ?: return@get call.notFound()
+                val json = stored.draftJson ?: stored.liveJson.orEmpty()
+                val brand = settings[SettingsStore.BRAND]?.let { Json.decodeFromString(BrandConfig.serializer(), it) }
+                call.respondTemplate(
+                    "admin/designer.ftl",
+                    call.page(stored.id) + mapOf(
+                        "id" to stored.id,
+                        "json" to json.scriptSafe(),
+                        "brand" to brandColors(brand).scriptSafe(),
+                        "status" to screenStatus(stored),
+                        "phoneImage" to (phoneRenderer != null),
+                    ),
+                )
+            }
+            // The designer saves the whole definition as JSON on every change (debounced) and gets
+            // the problems back; a valid one becomes the draft.
+            post("/design") {
+                val stored = components.get(call.screenId) ?: return@post call.notFound()
+                val checked = check(stored.id, call.receiveText(), settings)
+                if (checked.problems.isEmpty()) {
+                    components.saveDraft(stored.id, ComponentJson.encode(checked.definition!!))
+                }
+                val answer = buildJsonObject {
+                    put("saved", checked.problems.isEmpty())
+                    putJsonArray("problems") { checked.problems.forEach { add(JsonPrimitive(it)) } }
+                }
+                call.respondText(
+                    answer.toString(),
+                    ContentType.Application.Json,
+                    if (checked.problems.isEmpty()) HttpStatusCode.OK else HttpStatusCode.UnprocessableEntity,
+                )
             }
             post("/validate") {
                 val json = call.receiveParameters()["json"].orEmpty()
@@ -192,6 +245,54 @@ private fun starter(id: String) = ComponentDefinition(
     ).jsonObject,
 )
 
+/** A first design: a rounded card in the brand color with a title param (T-057). */
+private fun starterDesign(id: String) = ComponentDefinition(
+    id = id,
+    rcVersion = CustomComponents.RC_VERSION,
+    params = mapOf("title" to ComponentParam(default = "Hello", description = "the card's title")),
+    design = ComponentDesign(
+        height = 120f,
+        cornerRadius = 16f,
+        elements = listOf(
+            DesignElement(
+                id = "bg",
+                name = "Background",
+                type = DesignElementType.Rect,
+                w = ComponentDesign.DEFAULT_WIDTH,
+                h = 120f,
+                anchor = DesignAnchor.Stretch,
+                fill = "{{brand.primaryColor}}",
+            ),
+            DesignElement(
+                id = "title",
+                name = "Title",
+                type = DesignElementType.Text,
+                x = 20f,
+                y = 20f,
+                w = 280f,
+                h = 30f,
+                fill = "#FFFFFFFF",
+                text = "{{params.title}}",
+                fontSize = 22f,
+                bold = true,
+            ),
+        ),
+    ),
+)
+
+/** `{{brand.<field>}}` values for the designer's preview: the set brand, else the renderer's look. */
+private fun brandColors(brand: BrandConfig?): String = buildJsonObject {
+    put("primaryColor", brand?.primaryColor ?: "#FF3B5BDB")
+    put("secondaryColor", brand?.secondaryColor ?: brand?.primaryColor ?: "#FF3B5BDB")
+    put("backgroundColor", brand?.backgroundColor ?: "#FFFFFFFF")
+    put("surfaceColor", brand?.surfaceColor ?: "#FFF4F4F6")
+    put("textColor", brand?.textColor ?: "#FF1D1D1F")
+    put("outlineColor", brand?.outlineColor ?: "#FFDCDCE0")
+}.toString()
+
+/** JSON for a `<script type="application/json">`: `</` cannot end the script element early. */
+private fun String.scriptSafe() = replace("</", "<\\/")
+
 /**
  * [ComponentJson.check] + the id rule + [CustomComponents.check] (whitelist, trial parse) with the
  * live brand: what publishing would find, while typing.
@@ -219,6 +320,7 @@ private suspend fun ApplicationCall.list(components: ComponentStore, error: Stri
             "status" to screenStatus(stored),
             "publishedAt" to stored.publishedAt?.toString().orEmpty(),
             "publishedBy" to stored.publishedBy.orEmpty(),
+            "designed" to (definition?.design != null),
         )
     }
     respondTemplate(
@@ -256,6 +358,7 @@ private suspend fun ApplicationCall.editor(
                 mapOf("revision" to it.id, "publishedAt" to it.publishedAt.toString(), "publishedBy" to it.publishedBy)
             },
             "usage" to (definition?.let(::usage) ?: ""),
+            "designed" to (definition?.design != null || "\"design\"" in json),
             "phoneImage" to phone,
             "rcVersion" to CustomComponents.RC_VERSION,
         ),

@@ -12,7 +12,7 @@
       <tbody>
       <#list components as c>
         <tr>
-          <td><a href="/admin/components/${c.id?url}"><code>${c.id}</code></a></td>
+          <td><a href="/admin/components/${c.id?url}<#if c.designed>/design</#if>"><code>${c.id}</code></a></td>
           <td>${c.title}<#if c.description?has_content><br><span class="muted">${c.description}</span></#if></td>
           <td><span class="status status-${c.status}">${c.status}</span></td>
           <td class="muted">v${c.version?c}<#if c.rcVersion?has_content> · RC ${c.rcVersion}</#if></td>
@@ -39,6 +39,10 @@
   <form class="card" method="post" action="/admin/components">
     <div class="row">
       <div><label for="id">Id</label><input id="id" name="id" required pattern="[a-z0-9][a-z0-9_\-]{0,63}" value="${newId}" placeholder="e.g. promo-tile"></div>
+      <div><label for="start">Start with</label><select id="start" name="start" style="width:100%;padding:8px 10px;font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:6px">
+        <option value="design" selected>Drawing in the designer (shapes, texts, icons)</option>
+        <option value="json">Raw Remote Compose JSON (experts, AI)</option>
+      </select></div>
       <div style="flex: 0 0 auto"><button type="submit">Create draft</button></div>
     </div>
   </form>

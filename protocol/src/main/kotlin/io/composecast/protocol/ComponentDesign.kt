@@ -39,7 +39,8 @@ data class ComponentDesign(
         elements.forEachIndexed { i, e ->
             val at = "design.elements[$i]"
             if (!ids.add(e.id)) add("$at.id: '${e.id}' is used twice")
-            if (e.w < 0f || e.h < 0f) add("$at: width and height must be >= 0")
+            // A line goes from (x, y) to (x + w, y + h): it may point up or left.
+            if (e.type != DesignElementType.Line && (e.w < 0f || e.h < 0f)) add("$at: width and height must be >= 0")
             if (e.opacity !in 0f..1f) add("$at.opacity: expected 0..1, was ${e.opacity}")
             if (e.strokeWidth < 0f) add("$at.strokeWidth: must be >= 0")
             if (e.type == DesignElementType.Path && e.path.isNullOrBlank()) add("$at.path: a path needs path data")
@@ -113,6 +114,11 @@ data class ComponentDesign(
                     ),
                 )
             }
+            val pw = e.pathWidth
+            val ph = e.pathHeight
+            if (e.type == DesignElementType.Path && pw != null && ph != null && pw > 0f && ph > 0f) {
+                add(command("scale", "sx" to JsonPrimitive(e.w / pw), "sy" to JsonPrimitive(e.h / ph)))
+            }
             val right = localRight(e)
             e.fill?.let { fill ->
                 add(paint(e, fill, style = "fill"))
@@ -142,11 +148,14 @@ data class ComponentDesign(
 
     /** From [from] to [to] across the element's box at [DesignElement.gradientAngle] (0 = left to right, 90 = top to bottom). */
     private fun gradient(e: DesignElement, from: String, to: String): JsonObject {
+        // A scaled path paints in its own box (pathWidth × pathHeight).
+        val w = e.pathWidth?.takeIf { e.type == DesignElementType.Path } ?: e.w
+        val h = e.pathHeight?.takeIf { e.type == DesignElementType.Path } ?: e.h
         val rad = Math.toRadians(e.gradientAngle.toDouble())
-        val dx = (cos(rad) * e.w / 2).toFloat()
-        val dy = (sin(rad) * e.h / 2).toFloat()
-        val cx = e.w / 2
-        val cy = e.h / 2
+        val dx = (cos(rad) * w / 2).toFloat()
+        val dy = (sin(rad) * h / 2).toFloat()
+        val cx = w / 2
+        val cy = h / 2
         return buildJsonObject {
             putJsonArray("colors") {
                 add(JsonPrimitive(from))
@@ -362,6 +371,12 @@ data class DesignElement(
     val rotation: Float = 0f,
     /** SVG path data in the element's own dp box (absolute `M L H C S Q A Z`, RC fact 10). */
     val path: String? = null,
+    /**
+     * The box [path] was drawn in (e.g. an imported icon's 24×24 viewBox); the path is scaled from
+     * it to [w]×[h]. Null = the path's numbers are already dp in the element's box.
+     */
+    val pathWidth: Float? = null,
+    val pathHeight: Float? = null,
     val text: String? = null,
     val fontSize: Float = 16f,
     val bold: Boolean = false,

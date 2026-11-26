@@ -38,6 +38,7 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-030 App templates](T-030-app-templates.md) | Etap 8 | done (`4ab4a14`) — News, Shop, Events, Weather (live), Blank; Templates page applies drafts + Publish all (ADR 0031) |
 | [T-048 Phone preview inside the admin panel](T-048-in-panel-phone-preview.md) | Roadmap G4 | done (`c06d5ea`) — optional `preview-renderer` service (real player under Robolectric, linux/amd64), phone frame in the visual editor, edit → image 0.14 s (ADR 0032) |
 | [T-049 Custom components written in RC JSON](T-049-custom-components-rc-json.md) | Roadmap G5 | done (`12697bc`) — custom components in raw RC JSON, admin Components page, palette, ADR 0033 |
+| [T-057 Component designer (draw on an artboard)](T-057-component-designer.md) | Roadmap G6 | in progress — model + compiler, admin routes, designer with SVG import done (ADR 0034); next: owner tries it, then multi-select, Bézier pen, images |
 | [T-010 Settings export (properties + icon)](T-010-app-export.md) | Etap 9 | in progress — Design rewritten; next: AppExportService + route |
 | [T-027 Images loaded by the SDK (lists)](T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-010); roadmap F1 |
 | [T-021 Native components via RC `Custom` (text input)](T-021-native-components.md) | Etap 10 | queued (after T-027); roadmap F2; spike first |
@@ -65,7 +66,7 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 
 Rows are in priority order, mirroring [specs/roadmap.md](../../specs/roadmap.md) (constitution,
 owner 2026-11-23): admin panel MVP (T-007, steps A1–A5) → Preview app (T-045) → visual editor
-(T-029) → data wizard (T-031) → live screens + dashboards (T-047) → live edit preview (T-032) → templates (T-030) (owner 2026-11-24: live first, templates build on it) → phone preview in the panel (T-048, owner 2026-11-24) → custom components in RC JSON (T-049, owner 2026-11-26) → export + GitHub Actions build (T-010) → SDK
+(T-029) → data wizard (T-031) → live screens + dashboards (T-047) → live edit preview (T-032) → templates (T-030) (owner 2026-11-24: live first, templates build on it) → phone preview in the panel (T-048, owner 2026-11-24) → custom components in RC JSON (T-049, owner 2026-11-26) → component designer (T-057, owner 2026-11-26) → export + GitHub Actions build (T-010) → SDK
 images (T-027) → text input (T-021) → TV shows app built only in the admin (T-046, success
 criterion 1). Rows after T-046 are not ordered yet. T-025 only waits for the owner's domain.
 Reorder the roadmap first, then this table. Statuses `later` and `dropped` are never picked

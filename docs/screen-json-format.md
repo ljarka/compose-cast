@@ -141,6 +141,32 @@ Full example: `examples/demo/screens/data.json`; cases: `BindingTest`, `DataBind
 
 ## Custom components (T-049, [ADR 0033](decisions/0033-custom-components-raw-rc-json.md))
 
+A definition has either a hand-written RC JSON `body` or a **`design`** drawn in the admin's
+component designer (T-057, [ADR 0034](decisions/0034-component-designer.md)), from which the body
+is compiled on every read (designed components are stored without `body`):
+
+```json
+{ "id": "promo-card", "rcVersion": "1.0.0-alpha23", "params": { "title": {} },
+  "design": { "width": 360, "height": 160, "cornerRadius": 20, "elements": [
+    { "id": "bg", "type": "rect", "w": 360, "h": 160, "anchor": "stretch", "fill": "#FF3B5BDB", "fill2": "#FF7048E8", "gradientAngle": 0 },
+    { "id": "icon", "type": "path", "x": 290, "y": 28, "w": 48, "h": 48, "anchor": "right", "stroke": "#FFFFFFFF", "strokeWidth": 3,
+      "path": "M8 16 L24 8 L40 16 L40 36 L24 44 L8 36 Z", "pathWidth": 48, "pathHeight": 48 },
+    { "id": "title", "type": "text", "x": 20, "y": 22, "w": 250, "h": 30, "text": "{{params.title}}", "fill": "#FFFFFFFF", "fontSize": 22, "bold": true },
+    { "id": "go", "type": "tap", "x": 20, "y": 108, "w": 120, "h": 36, "action": "navigate:data" } ] } }
+```
+
+- Units are dp on an artboard `width` wide (default 360); the component fills the screen width and
+  is `height` high. Elements are listed bottom first.
+- Types: `rect` (`radius`), `ellipse`, `line` (from x,y to x+w,y+h; w/h may be negative), `path`
+  (SVG data in the element's box, or in `pathWidth`×`pathHeight` scaled to w×h), `text` (`text`,
+  `fontSize`, `bold`, `textAlign` start/center/end, `maxLines`; `fill` is its color), `tap` (an
+  invisible area with `action`).
+- Paint: `fill` (`#AARRGGBB`, `{{params.x}}`, `{{brand.x}}`), `fill2` + `gradientAngle` (linear
+  gradient, 0 = left to right), `stroke` + `strokeWidth`, `opacity` 0..1, `rotation` (degrees,
+  shapes). Any element may have an `action` (tap area on top). `hidden: true` keeps it unrendered.
+- `anchor` on other widths: `left` (default), `right`, `center`, `stretch` (grows with the
+  component). Texts and tap areas cannot start above the top or outside the sides.
+
 A screen uses a custom component by id; `args` are strings (bindable like any text):
 
 ```json

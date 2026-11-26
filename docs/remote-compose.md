@@ -403,6 +403,16 @@ Verified while building T-049 (alpha23, 2026-11-26; Robolectric + emulator):
 13. `org.json` (needed by the parser) is not on a plain JVM classpath: `sdk-server` depends on
     `org.json:json`.
 
+Verified while building T-057 (alpha23, 2026-11-26; Robolectric, a grid of taps over the component):
+
+14. **`offset` moves the drawing, not the touch area**: a box with `offset {x: 20, y: 108}` and
+    `onClick` drew in the right place but answered taps at its un-offset place (the parent's top
+    left). Place clickable things with `padding` (layout), never `offset`.
+15. **A click covers the component's whole bounds, padding included**, whatever the modifier order
+    (`[padding, width, height, onClick]` still answered taps in the padding). For an exact tap area,
+    put the padding on an outer box and the `onClick` on an inner box of the wanted size
+    (`ComponentDesign.tapArea`).
+
 ## Live updates (verified alpha23, 2026-11-24, PoC on the emulator)
 
 RC has **data-update documents**: a document whose header has `Header.DOC_DATA_UPDATE = 1`

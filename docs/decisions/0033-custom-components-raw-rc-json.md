@@ -1,6 +1,6 @@
 # 0033 — Custom components: raw RC JSON bodies, versioned by RC release
 
-- Status: Accepted
+- Status: Accepted (amended by [0034](0034-component-designer.md): a body can be compiled from a drawn `design`)
 - Date: 2026-11-26
 - Amends: [0015](0015-screen-model-is-the-product.md) (screens stay the semantic model; a custom
   component's *body* is the one place raw Remote Compose JSON is allowed) and the direction in

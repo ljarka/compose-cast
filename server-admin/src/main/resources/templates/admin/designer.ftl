@@ -1,0 +1,100 @@
+<#import "_layout.ftl" as layout>
+<#-- T-057 component designer (ADR 0034): an SVG artboard edited by designer.js; every change is saved as the draft (debounced) and checked by the server like the JSON editor. -->
+<@layout.page title=title user=user role=role>
+<style>
+  .designer { display: grid; grid-template-columns: 220px minmax(0, 1fr) 280px; gap: 16px; align-items: start;
+    max-width: 1500px; margin: 16px auto; padding: 0 16px; }
+  .designer .card { padding: 12px; }
+  .designer h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 8px; }
+  .tools { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; align-items: center; }
+  .tools button { margin: 0; padding: 6px 10px; background: var(--card); color: var(--fg); border: 1px solid var(--line); }
+  .tools button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tools .sep { width: 1px; height: 24px; background: var(--line); margin: 0 4px; }
+  .stage { background: repeating-conic-gradient(var(--line) 0 25%, transparent 0 50%) 0 0 / 16px 16px;
+    border: 1px solid var(--line); border-radius: 8px; padding: 32px; overflow: auto; }
+  .stage svg { display: block; margin: 0 auto; overflow: visible; user-select: none; touch-action: none; }
+  .layers { list-style: none; margin: 0; padding: 0; max-height: 50vh; overflow: auto; }
+  .layers li { display: flex; gap: 6px; align-items: center; padding: 4px 6px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+  .layers li.selected { outline: 2px solid var(--accent); background: var(--bg); }
+  .layers li .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .layers li.hidden .name { opacity: .45; text-decoration: line-through; }
+  .layer-actions button { margin: 0; padding: 4px 10px; background: var(--card); color: var(--fg); border: 1px solid var(--line); }
+  .layers button, .props button.small { margin: 0; padding: 0 6px; font-size: 13px; background: transparent; color: var(--accent); border: 1px solid var(--line); }
+  .layer-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .props label { margin: 8px 0 2px; font-size: 13px; }
+  .props input, .props select, .props textarea { width: 100%; padding: 4px 6px; font: 14px system-ui, sans-serif; color: inherit;
+    background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+  .props textarea { min-height: 70px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+  .props .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 8px; }
+  .props .color { display: flex; gap: 4px; }
+  .props .color input[type=color] { width: 36px; flex: 0 0 36px; padding: 0; height: 30px; }
+  .props .check { display: flex; gap: 6px; align-items: center; margin-top: 8px; font-size: 14px; }
+  .props .check input { width: auto; }
+  .props .hint { font-size: 12px; color: var(--muted); margin: 2px 0 0; }
+  .param { border: 1px solid var(--line); border-radius: 6px; padding: 6px; margin-bottom: 6px; }
+  #status { font-size: 14px; min-height: 1.5em; }
+  #problems li { color: var(--error); font-size: 14px; }
+  .phone-preview img { width: 100%; border-radius: 12px; border: 1px solid var(--line); }
+  @media (max-width: 1100px) { .designer { grid-template-columns: 1fr; } }
+</style>
+<div style="max-width: 1500px; margin: 16px auto 0; padding: 0 16px">
+  <p style="margin: 0"><a href="/admin/components">← Components</a> · <a href="/admin/components/${id?url}">JSON</a></p>
+  <h1 style="margin: 8px 0"><code>${id}</code> <span class="status status-${status}">${status}</span> <span class="muted" style="font-size: 16px">Designer</span></h1>
+</div>
+<div class="designer" id="designer" data-id="${id}" data-can-edit="${canEdit?c}">
+  <aside>
+    <div class="card">
+      <h2>Layers</h2>
+      <ul class="layers" id="layers"></ul>
+      <div class="layer-actions">
+        <button type="button" data-cmd="up" title="Bring forward">▲</button>
+        <button type="button" data-cmd="down" title="Send backward">▼</button>
+        <button type="button" data-cmd="duplicate" title="Duplicate (Ctrl+D)">⧉</button>
+        <button type="button" data-cmd="delete" title="Delete (Del)">✕</button>
+      </div>
+    </div>
+    <div class="card" style="margin-top: 16px">
+      <h2>Component</h2>
+      <div class="props" id="component-props"></div>
+    </div>
+  </aside>
+  <section>
+    <div class="tools" id="tools">
+      <button type="button" data-tool="select" title="Select and move (V)">↖ Select</button>
+      <button type="button" data-tool="rect" title="Rectangle (R)">▭ Rect</button>
+      <button type="button" data-tool="ellipse" title="Ellipse (O)">◯ Ellipse</button>
+      <button type="button" data-tool="line" title="Line (L)">╱ Line</button>
+      <button type="button" data-tool="pen" title="Pen: click points, click the first point or press Enter to finish (P)">✎ Pen</button>
+      <button type="button" data-tool="text" title="Text (T)">T Text</button>
+      <button type="button" data-tool="tap" title="Tap area: an invisible area that runs an action (A)">☝ Tap area</button>
+      <span class="sep"></span>
+      <button type="button" data-cmd="import-svg" title="Paste an SVG icon (path elements)">⇪ SVG</button>
+      <button type="button" data-cmd="undo" title="Undo (Ctrl+Z)">↶</button>
+      <button type="button" data-cmd="redo" title="Redo (Ctrl+Shift+Z)">↷</button>
+      <span class="sep"></span>
+      <label class="muted" style="margin: 0; font-weight: 400">Zoom <select id="zoom"><option value="1">100%</option><option value="1.5">150%</option><option value="2" selected>200%</option><option value="3">300%</option></select></label>
+    </div>
+    <div class="stage" id="stage"></div>
+    <div id="status" aria-live="polite"></div>
+    <ul id="problems" aria-live="polite"></ul>
+    <p class="muted" style="font-size: 13px">Sizes are dp. The component fills the screen width; on wider or narrower phones each element keeps its <em>anchor</em>. Texts and colors can use <code>{{params.name}}</code> or <code>{{brand.primaryColor}}</code>. Every change is saved as the draft; screens use the component after <strong>Publish</strong>.</p>
+    <#if canEdit><form method="post" action="/admin/components/${id?url}/publish" id="publish-form"><input type="hidden" name="json" id="publish-json"><button type="submit">Publish</button></form></#if>
+  </section>
+  <aside>
+    <div class="card">
+      <h2>Properties</h2>
+      <div class="props" id="props"><p class="muted">Select a layer.</p></div>
+    </div>
+    <#if phoneImage>
+    <div class="card phone-preview" style="margin-top: 16px">
+      <h2>On the phone</h2>
+      <img id="phone" src="/admin/components/${id?url}/phone.png" alt="The saved draft drawn by the app's player">
+      <p class="hint muted" style="font-size: 12px">Drawn by the app's own player after each save.</p>
+    </div>
+    </#if>
+  </aside>
+</div>
+<script type="application/json" id="definition">${json?no_esc}</script>
+<script type="application/json" id="brand">${brand?no_esc}</script>
+<script src="/admin/components/designer.js"></script>
+</@layout.page>

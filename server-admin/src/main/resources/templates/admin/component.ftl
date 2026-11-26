@@ -7,6 +7,7 @@
     <#if publishedAt?has_content>Live since ${publishedAt} (${publishedBy}).<#else>Never published: screens cannot use it yet.</#if>
     <#if status == "draft"> The editor shows the draft; screens still use the published version.</#if>
   </p>
+  <p><#if designed><a href="/admin/components/${id?url}/design"><strong>Open in the designer →</strong></a> <span class="muted">This component is drawn in the designer: its body is compiled from <code>design</code>, edit that or use the designer.</span><#else><span class="muted">Hand-written Remote Compose JSON. The <a href="/admin/components/${id?url}/design">designer</a> can replace it with a drawing.</span></#if></p>
   <#if notice?has_content><p class="ok" role="status">${notice}</p></#if>
   <div class="row" style="align-items: flex-start">
     <form class="card" method="post" action="/admin/components/${id?url}" style="flex: 2 1 480px">

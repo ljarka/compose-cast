@@ -70,6 +70,7 @@ data-update documents, PoC: 10 updates/s on the emulator).
 | G3 | Live edit preview on the same channel (T-032) | An edit in the panel shows on the phone in under 2 s |
 | G4 | Phone preview inside the panel: server-rendered PNG from the real RC player under Robolectric, optional amd64 service (T-048; owner 2026-11-24: before E) | Saving an edit updates a phone frame in the editor in under 2 s, no device needed |
 | G5 | Custom components written in raw RC JSON, reused by name (T-049, [ADR 0033](../docs/decisions/0033-custom-components-raw-rc-json.md); owner 2026-11-26: before E) | A demo screen uses a custom RC JSON component on the emulator; definitions edited in the panel; an RC upgrade re-validates them |
+| G6 | Component designer: draw custom components (shapes, gradients, imported SVG icons, texts, tap areas) on an artboard, compiled to RC JSON (T-057, [ADR 0034](../docs/decisions/0034-component-designer.md); owner 2026-11-26) | The demo `promo-card` drawn in the designer renders like the designer shows it, and only its button navigates |
 
 ### E. Ship the owner's app
 

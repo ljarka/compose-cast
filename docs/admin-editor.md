@@ -14,6 +14,13 @@ How the screen-building parts of the admin panel (`server-admin`) work and why. 
   optional group nobody filled in, so a required field inside it cannot create it). Component lists
   are never form fields — they are the tree, kept from the stored JSON on save. Saving = the whole
   screen through `ScreenJson.check`, so the visual and JSON editors share one draft and one rule set.
+- **Component designer (T-057, [ADR 0034](decisions/0034-component-designer.md)):** a separate,
+  free-form editor for custom components (`/admin/components/{id}/design`), not the tree editor:
+  shapes, pen, texts and tap areas drawn on an artboard in dp, layers, properties, params, SVG icon
+  import, undo, auto-save as the draft with the server's check, and the phone image. Each element's
+  anchor decides how it follows other phone widths. The design is compiled to the RC JSON body, so
+  publishing, the palette and screens work as for hand-written components. New components start as
+  a drawing.
 - **Custom components (T-049, ADR 0033):** their own page (**Components**), a JSON editor because the
   body is raw RC JSON (an LLM writes it best; AI chat = T-033). The editor runs the same check as
   publishing (definition, whitelist, trial parse with the live brand) while typing, and shows the
