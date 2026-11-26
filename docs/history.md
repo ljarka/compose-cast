@@ -415,3 +415,11 @@ README roadmap's "Etap" numbers.
     Verified on Robolectric (`InteractiveSliderTest`: drag updates gauge above, leaves second slider
     untouched, survives `DOC_DATA_UPDATE`) and on the Android emulator (zero server requests during
     drag; 1:1 finger tracking inside `verticalScroll`). Demo screen `interactive` + golden.
+83. **Spike: custom components as raw RC JSON** (2026-11-26, branch `spike/rc-json-fragment`, not
+    merged): owner's idea — components written (also by an LLM) as `RemoteComposeJsonParser` JSON,
+    stored by name, used in our screen JSON and rendered into the same RC document. A fragment
+    parsed into our `RemoteComposeWriter` mid-`Column` renders and routes `hostAction` (variant b);
+    a whole-document RC JSON path (variant a) lacks `image` and closes extension points, so b wins.
+    `definePattern` macros work when parsed before `root {}`. Facts:
+    [remote-compose.md → RC JSON](remote-compose.md#rc-json-remotecomposejsonparser--spike-for-custom-components-verified-alpha23-2026-11-26).
+    Next: ADR + task (emulator check still open).

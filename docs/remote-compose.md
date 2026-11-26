@@ -84,7 +84,8 @@ use on the JVM** — no Compose runtime needed (answers T-008 questions 1–4):
 
 Also present but `@RestrictTo`: `creation/json/RemoteComposeJsonParser` — a low-level
 JSON form of RC operations (resources, expressions, modifiers); not a replacement for the semantic
-`ScreenDefinition` model ([ADR 0015](decisions/0015-screen-model-is-the-product.md)).
+`ScreenDefinition` model ([ADR 0015](decisions/0015-screen-model-is-the-product.md)). What it can
+and cannot do (fragments, patterns, no `image`): [RC JSON spike](#rc-json-remotecomposejsonparser--spike-for-custom-components-verified-alpha23-2026-11-26).
 
 ### Component catalog (from official docs, alpha23)
 
@@ -346,6 +347,41 @@ All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alph
     other if created with `remoteInteger(1)`. Allocate mutable integer state with
     `remoteNamedInteger("vis:<id>", initial)` (`mState.createNextAvailableId()`), and toggle via
     `setValue(state, (state + 1) % 2)`.
+
+## RC JSON (`RemoteComposeJsonParser`) — spike for custom components (verified alpha23, 2026-11-26)
+
+Spike code: branch `spike/rc-json-fragment` (`compat-tests/.../RcJsonFragmentSpikeTest.kt`), run on
+the real player under Robolectric, PNGs looked at; **not yet checked on the emulator**. Sources:
+`remote-creation-core/.../creation/json/*`, `remote-core/.../layout/managers/CanvasLayout.java`.
+
+1. **The parser is in the JVM jar** (`remote-creation-core`), but it needs `org.json`, which is not
+   on a plain JVM classpath (Android/Robolectric have it; `sdk-server` would need `org.json:json`).
+2. **Public `parse(json)` accepts only a whole document**: it wraps the content in
+   `mWriter.root {}`. A single component goes through package-private
+   `parseComponent(JSONObject)`. A helper in package `androidx.compose.remote.creation.json`
+   (split package on the classpath) can call it on **the same `RemoteComposeWriter`** our renderer
+   uses, in the middle of an `RcScope` `Column`: the fragment renders between our components and
+   its `onClick` → `hostAction("navigate:parcels")` reaches `ComposeCastScreen.onAction` as
+   `Action.Navigate("parcels")` (our `ActionCodec` wire form works unchanged).
+3. **Extension points are closed**: `registerComponentParser` is public but its `JsonComponentParser`
+   interface is package-private + `@RestrictTo` — custom node types also need the split package.
+4. **No `image` component** in RC JSON alpha23 (`Unknown component type: image`): bitmaps exist only
+   as resources (`defineBitmap(name, obj)` on the parser) drawn by `drawBitmap*` in a canvas.
+5. **JSON `canvas` takes only `commands`**: `parseCanvas` ignores `children` (they are silently
+   dropped). Components over a drawing = a `box` with a `canvas` (`fillMaxSize`) and siblings on
+   top. (The `RcScope` `Canvas` *can* hold children: `CanvasLayout extends BoxLayout`; at API level
+   ≥ 8 there is no `CanvasContent` wrapper, children lay out like a box, and all draw operations are
+   painted **before** (under) the children — `LayoutComponent` `handleOperations`, then children.)
+6. **What worked in a canvas**: `paint.ops` `linearGradient` (with `"width"`/`"height"` ends),
+   `shader: 0` to reset, color/style/strokeWidth; `drawRoundRect`, `drawCircle`, `drawPath` with
+   SVG path data (`M L Z`; parser also knows `H C S Q A`); infix expressions like `"width - 30"`
+   become `ComponentValue` + float expression; `clip: 16` = rounded clip on the box.
+7. **`definePattern` (on-device macro with parameters)** works when parsed in the **first pass
+   before `root {}`** (spike sets the private `mInFirstPass` by reflection); then
+   `{ "type": "<name>", "<param>": "…" }` inflates it anywhere, `"$param"` in the body is replaced.
+8. **Modifier order is Compose order**: `[padding, background, clip]` puts padding *outside* the
+   background (like `Modifier.padding().background()`), unlike our model's unordered box model
+   (ADR 0020).
 
 ## Live updates (verified alpha23, 2026-11-24, PoC on the emulator)
 
