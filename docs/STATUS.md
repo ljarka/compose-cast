@@ -84,9 +84,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- T-049 follow-up — argument form from params
 - T-049 — custom components in raw RC JSON
 - Spike: custom components as raw RC JSON
 - On-device screen values & `slider` → `gauge` / `text` interaction
 - T-048 — phone preview in the panel
 - T-030 — app templates
-- T-032 — live draft preview

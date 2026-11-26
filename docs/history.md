@@ -432,3 +432,7 @@ README roadmap's "Etap" numbers.
     an older RC release that fails is `broken` and skipped, not fatal. Demo `custom` (four tiles with
     SVG-path icons, like a parcel app's home) checked on the emulator; new RC facts 9–13 (canvas units
     are pixels, path commands, Robolectric taps need a drawn frame).
+85. **T-049 follow-up — argument form from params** (owner 2026-11-26): a `custom` use in the visual
+    editor gets one input per param of its component (description, type hint, default, required
+    mark) and a choice of live components, instead of a raw JSON `args` field; empty optional args
+    are left out, switching components starts from the new one's required samples.

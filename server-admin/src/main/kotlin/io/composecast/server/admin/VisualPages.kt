@@ -204,6 +204,8 @@ private suspend fun ApplicationCall.saveOrShow(
 internal class Editing(
     val stored: ScreenStore.StoredScreen,
     val json: String = stored.draftJson ?: stored.liveJson.orEmpty(),
+    /** Live custom components (T-049): a `custom` node gets a form from its definition's params. */
+    private val custom: Map<String, ComponentDefinition> = emptyMap(),
 ) {
     val root: JsonObject = Json.parseToJsonElement(json) as JsonObject
 
@@ -249,8 +251,14 @@ internal class Editing(
         isSource(path) -> FormSchema.sourceFields.takeIf { node(path) != null }
         isValue(path) -> FormSchema.valueFields.takeIf { node(path) != null }
         isList(path) || node(path) == null -> null
+        type(path) == "custom" -> customDefinition(path)
+            ?.let { FormSchema.customFields(it, custom.keys.sorted()) }
+            ?: FormSchema.componentFields("custom") // unknown component: args as JSON
         else -> type(path)?.let(FormSchema::componentFields)
     }
+
+    private fun customDefinition(path: String): ComponentDefinition? =
+        (node(path)?.get("component") as? JsonPrimitive)?.content?.let(custom::get)
 
     /** Current values, defaults written out (components) so the form shows what is really used. */
     fun values(path: String): Map<String, String> {
@@ -285,6 +293,15 @@ internal class Editing(
             listOf("type") + FormSchema.componentLists(FormSchema.componentTypes.getValue(type(path)!!))
         }
         var kept = keep.mapNotNull { key -> node[key]?.let { key to it } }.toMap()
+        if (type(path) == "custom") {
+            // Another component picked: its own params, required ones filled with samples (T-049).
+            val picked = (parsed["component"] as? JsonPrimitive)?.content
+            val next = custom[picked]
+            if (picked != (node["component"] as? JsonPrimitive)?.content && next != null) {
+                val starter = Palette.customStarter(next.id, CustomComponents.requiredSampleArgs(next))
+                return JsonObject(kept + (parsed - "args") + starter.filterKeys { it == "args" })
+            }
+        }
         if (type(path) == "repeat") {
             val old = (node["as"] as? JsonPrimitive)?.content ?: "item"
             val new = (parsed["as"] as? JsonPrimitive)?.content ?: "item"
@@ -340,7 +357,7 @@ private suspend fun ApplicationCall.editing(screens: ScreenStore): Editing? {
         respondText("No screen '$id'", status = HttpStatusCode.NotFound)
         return null
     }
-    return Editing(stored)
+    return Editing(stored, custom = customComponents())
 }
 
 private suspend fun ApplicationCall.visualPage(
@@ -477,7 +494,7 @@ internal fun formRows(
         val base = mapOf(
             "path" to field.path,
             "label" to field.label,
-            "help" to (HELP[field.key] ?: ""),
+            "help" to (field.help ?: HELP[field.key] ?: ""),
             "optional" to field.optional,
         )
         when (val kind = field.kind) {
@@ -513,6 +530,7 @@ internal fun formRows(
                     base + mapOf(
                         "input" to when {
                             dynamicChoices != null -> "choice"
+                            field.input != null -> field.input
                             kind == FormSchema.Kind.Text -> if (field.key.contains("color", ignoreCase = true) ||
                                 field.key == "background"
                             ) {

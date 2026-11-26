@@ -1,6 +1,9 @@
 package io.composecast.server.admin
 
 import io.composecast.protocol.Component
+import io.composecast.protocol.ComponentDefinition
+import io.composecast.protocol.ComponentParam
+import io.composecast.protocol.ComponentParamType
 import io.composecast.protocol.DataSource
 import io.composecast.protocol.ScreenDefinition
 import io.composecast.protocol.ScreenValue
@@ -50,7 +53,16 @@ internal object FormSchema {
         data object JsonValue : Kind
     }
 
-    data class Field(val key: String, val path: String, val label: String, val kind: Kind, val optional: Boolean)
+    /** [help] and [input] override the defaults by key (`VisualPages.HELP`, input type from the kind). */
+    data class Field(
+        val key: String,
+        val path: String,
+        val label: String,
+        val kind: Kind,
+        val optional: Boolean,
+        val help: String? = null,
+        val input: String? = null,
+    )
 
     private const val COMPONENT = "io.composecast.protocol.Component"
 
@@ -71,6 +83,50 @@ internal object FormSchema {
 
     /** Fields of a component of [type] (null for an unknown type). */
     fun componentFields(type: String): List<Field>? = componentTypes[type]?.let { fields(it, "") }
+
+    /**
+     * T-049: the form of a `custom` use of [definition]: `component` picks one of [componentIds] and
+     * `args` is one input per param (typed hint, description, default) instead of a JSON object.
+     * Args are strings in the model, so every input is text (bindings like `{{item.title}}` work).
+     */
+    fun customFields(definition: ComponentDefinition, componentIds: List<String>): List<Field> =
+        componentFields("custom")!!.map { field ->
+            when (field.key) {
+                "component" -> field.copy(kind = Kind.Choice(componentIds), help = "the custom component to show")
+                "args" -> Field(
+                    key = "args",
+                    path = "args",
+                    label = "Arguments",
+                    kind = Kind.Group(
+                        definition.params.map { (name, param) ->
+                            Field(
+                                key = name,
+                                path = "args.$name",
+                                label = label(name),
+                                kind = Kind.Text,
+                                optional = param.default != null,
+                                help = paramHelp(param),
+                                input = if (param.type == ComponentParamType.Color) "color" else "text",
+                            )
+                        },
+                    ),
+                    optional = definition.params.values.all { it.default != null },
+                    help = definition.description.ifBlank { null },
+                )
+                else -> field
+            }
+        }
+
+    private fun paramHelp(param: ComponentParam): String = listOfNotNull(
+        param.description.ifBlank { null },
+        when (param.type) {
+            ComponentParamType.Text -> null
+            ComponentParamType.Color -> "#RRGGBB or #AARRGGBB"
+            ComponentParamType.Number -> "a number"
+            ComponentParamType.Action -> "an action, e.g. navigate:detail?id=1 or open_url:https://…"
+        },
+        param.default?.let { "empty = $it" } ?: "required",
+    ).joinToString(" · ")
 
     /** Screen-level fields: everything but id (fixed), component lists, and data/values (tree nodes). */
     val screenFields: List<Field> =

@@ -34,8 +34,9 @@ Facts: [remote-compose.md → RC JSON](../remote-compose.md#rc-json-remotecompos
   `density`), path data only absolute `M L H C S Q A Z`, `save`/`restore`/`scale`/`clipRect` exist,
   a placeholder can break the parse (hence trial parses with sample and real args), Robolectric
   needs a drawn frame before taps.
-- **Not done (follow-ups):** K5 `definePattern` (measure first); a form generated from `params`
-  for `args` in the visual editor (today a JSON-value field); `image` params; components in the
+- Then (owner, 2026-11-26): the visual editor's form for a `custom` use is generated from the
+  component's `params` (`FormSchema.customFields`).
+- **Not done (follow-ups):** K5 `definePattern` (measure first); `image` params; components in the
   app bundle format (ADR 0031) and templates; the AI chat (T-033).
 
 ## Design

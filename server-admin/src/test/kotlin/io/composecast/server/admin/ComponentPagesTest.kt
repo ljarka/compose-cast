@@ -1,6 +1,10 @@
 package io.composecast.server.admin
 
+import io.composecast.protocol.Component
+import io.composecast.protocol.ComponentDefinition
 import io.composecast.protocol.ComponentJson
+import io.composecast.protocol.ComponentParam
+import io.composecast.protocol.ComponentParamType
 import io.composecast.protocol.ScreenDefinition
 import io.composecast.protocol.ScreenJson
 import io.ktor.client.HttpClient
@@ -13,6 +17,8 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.parameters
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -91,5 +97,67 @@ class ComponentPagesTest {
         val cookie = with(host) { client.loginAs(Role.VIEWER) }
         assertEquals(HttpStatusCode.OK, client.page(cookie, "/admin/components").status)
         assertEquals(HttpStatusCode.Forbidden, client.post(cookie, "/admin/components", "id" to "x").status)
+    }
+
+    @Test
+    fun `a custom use gets a form generated from the component's params`() = host.run(withComponents = true) { client ->
+        val cookie = with(host) { client.loginAs(Role.EDITOR) }
+        fun definition(id: String, params: Map<String, ComponentParam>) = ComponentJson.encode(
+            ComponentDefinition(
+                id = id,
+                description = "A promo card",
+                rcVersion = "1.0.0-alpha23",
+                params = params,
+                body = Json.parseToJsonElement("""{ "type": "text", "text": "x" }""").jsonObject,
+            ),
+        )
+        host.components.publish(
+            "promo",
+            definition(
+                "promo",
+                mapOf(
+                    "title" to ComponentParam(description = "big text"),
+                    "accent" to ComponentParam(ComponentParamType.Color, default = "#FFCD00"),
+                    "action" to ComponentParam(ComponentParamType.Action, default = "reload:"),
+                ),
+            ),
+            by = "a@x",
+        )
+        host.components.publish(
+            "badge",
+            definition("badge", mapOf("count" to ComponentParam(ComponentParamType.Number))),
+            by = "a@x",
+        )
+        val use = Component.Custom("promo", mapOf("title" to "Hi"))
+        host.screens.saveDraft("main", ScreenJson.encode(ScreenDefinition(id = "main", components = listOf(use))))
+
+        val form = client.page(cookie, "/admin/screens/main/visual?node=components.0").bodyAsText()
+        assertContains(form, "name=\"args.title\" value=\"Hi\"")
+        assertContains(form, "big text · required")
+        assertContains(form, "name=\"args.accent\"")
+        assertContains(form, "#RRGGBB or #AARRGGBB · empty = #FFCD00")
+        assertContains(form, "<option value=\"badge\"")
+        assertFalse("name=\"args\"" in form, "no raw JSON field for a known component")
+
+        // Empty optional args are left out (their defaults apply).
+        val saved = client.post(
+            cookie,
+            "/admin/screens/main/visual?node=components.0",
+            "component" to "promo",
+            "args.title" to "Witaj",
+            "args.accent" to "",
+            "args.action" to "navigate:detail",
+        )
+        assertEquals(HttpStatusCode.SeeOther, saved.status, saved.bodyAsText())
+        val stored = ScreenJson.decode(host.screens.get("main")!!.draftJson!!, "t").components.single()
+        assertEquals(
+            Component.Custom("promo", mapOf("title" to "Witaj", "action" to "navigate:detail")),
+            stored,
+        )
+
+        // Picking another component starts from its own params, not the old ones.
+        client.post(cookie, "/admin/screens/main/visual?node=components.0", "component" to "badge", "args.title" to "x")
+        val switched = ScreenJson.decode(host.screens.get("main")!!.draftJson!!, "t").components.single()
+        assertEquals(Component.Custom("badge", mapOf("count" to "1")), switched)
     }
 }

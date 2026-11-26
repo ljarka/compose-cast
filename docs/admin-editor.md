@@ -19,9 +19,14 @@ How the screen-building parts of the admin panel (`server-admin`) work and why. 
   publishing (definition, whitelist, trial parse with the live brand) while typing, and shows the
   draft alone with sample args in the phone image plus the JSON to use it. In the visual editor a
   use is a black box: **My components** in the palette adds `{"type": "custom", "component": id,
-  "args": {required params: samples}}`, and `args` is a JSON-value field (params differ per
-  component; a form generated from `params` is a later step). Publishing a component builds every
-  live screen with it first: a change that breaks a use is refused.
+  "args": {required params: samples}}`. Its form is generated from the component's `params`
+  (`FormSchema.customFields`): `component` is a choice of the live components, `args` one text input
+  per param with the param's description, type hint and default (`empty = …`; required params are
+  marked), a color param gets the color placeholder. Args stay strings, so bindings work and are
+  validated like any text. Empty optional args are left out (the default applies); picking another
+  component replaces the args with its required samples. An unknown component falls back to `args`
+  as a JSON field. Publishing a component builds every live screen with it first: a change that
+  breaks a use is refused.
 - **Palette (C3):** structural edits are pure functions on the JSON (`Palette`), then the same
   check + save; a refused edit (`IllegalArgumentException`, or an invalid screen such as an
   expandable without content) shows the message and changes nothing. A new component type needs a

@@ -287,7 +287,7 @@ private suspend fun ApplicationCall.editor(
     preview: Map<String, String>? = null,
 ) {
     if (checked.screen != null) {
-        val editing = Editing(stored, json)
+        val editing = Editing(stored, json, customComponents())
         return respondTemplate(
             "admin/visual.ftl",
             page(stored.id) + visualModel(
