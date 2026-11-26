@@ -33,6 +33,11 @@ same as arranging components in a tree".
    - Checked in headless Chrome (render, draw, move, import of a Lucide and a Material icon) and on
      the real player through the local preview renderer.
 
+- Fixed after the owner's first try (2026-11-26): dragging to move or resize stopped after the
+  first step (each move redraws the `<svg>`, and the listeners were on the old one). Drags are now
+  followed on `window`. Headless checks must send **several** moves to the element under the
+  pointer (`document.elementFromPoint`), like a browser, not one move to the artboard.
+
 ## Next steps
 4. **Not yet tried by the owner in a real browser session**: do that first, then fix what they hit.
 5. Multi-select + align/distribute; groups; snapping to other elements' edges; copy/paste.

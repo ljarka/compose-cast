@@ -302,12 +302,15 @@
     return [Math.round(r.x), Math.round(r.y)];
   }
 
-  function capture(ev) {
-    try {
-      svg.setPointerCapture(ev.pointerId);
-    } catch (err) {
-      // Not an active pointer (e.g. a synthetic event): moves still arrive over the artboard.
-    }
+  /**
+   * Moves and the release are followed on the window, not on the artboard: every move redraws the
+   * artboard (a new <svg>), so listeners or a pointer capture on the old one would stop after the
+   * first step. The window also keeps the drag going when the pointer leaves the artboard.
+   */
+  function listenToDrag() {
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
   }
 
   function onPointerDown(ev) {
@@ -332,9 +335,7 @@
       D().elements.push(e);
       selected = e.id;
       drag = { kind: 'create', id: e.id, x0: x, y0: y };
-      capture(ev);
-      svg.addEventListener('pointermove', onPointerMove);
-      svg.addEventListener('pointerup', onPointerUp);
+      listenToDrag();
       return;
     }
     const handle = target.getAttribute('data-handle');
@@ -355,9 +356,7 @@
       return;
     }
     if (drag) {
-      capture(ev);
-      svg.addEventListener('pointermove', onPointerMove);
-      svg.addEventListener('pointerup', onPointerUp);
+      listenToDrag();
     }
   }
 
@@ -403,8 +402,9 @@
   }
 
   function onPointerUp() {
-    svg.removeEventListener('pointermove', onPointerMove);
-    svg.removeEventListener('pointerup', onPointerUp);
+    window.removeEventListener('pointermove', onPointerMove);
+    window.removeEventListener('pointerup', onPointerUp);
+    window.removeEventListener('pointercancel', onPointerUp);
     const e = drag && el(drag.id);
     if (e && e.type !== 'line') {
       // Drawn right-to-left or bottom-up: keep x, y the top left corner.
