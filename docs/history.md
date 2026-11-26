@@ -466,3 +466,8 @@ README roadmap's "Etap" numbers.
 92. **Screens list thumbnails** (2026-11-26, owner): each row of the admin's Screens list shows the
     screen as the phone draws it (`/admin/screens/{id}/thumb.png`: the T-048 preview PNG scaled to
     180 px by the server, lazy-loaded); without a preview renderer the list is unchanged.
+93. **Admin side menu, component images, designer Code panel** (2026-11-26, owner): the top
+    navigation became a side menu with icons and labels (like Canva); the Components list shows
+    each component cut from its phone preview; the designer shows the component JSON (kept in sync
+    both ways) and the compiled Remote Compose JSON under the artboard; new components always start
+    as a drawing (the "Start with" choice was removed).

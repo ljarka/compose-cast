@@ -166,4 +166,15 @@ class DesignerPagesTest {
             assertEquals(COMPONENT_THUMB_WIDTH, javax.imageio.ImageIO.read(thumb.bodyAsBytes().inputStream()).width)
         }
     }
+
+    @Test
+    fun `a new component starts as a drawing, with no choice to make`() = host.run(withComponents = true) { client ->
+        val cookie = with(host) { client.loginAs(Role.EDITOR) }
+        assertFalse("Start with" in client.page(cookie, "/admin/components").bodyAsText())
+        val created = client.submitForm("/admin/components", parameters { append("id", "plain") }) {
+            header(HttpHeaders.Cookie, cookie)
+        }
+        assertEquals("/admin/components/plain/design", created.headers[HttpHeaders.Location])
+        assertNotNull(ComponentJson.decode(host.components.get("plain")!!.draftJson!!, "t").design)
+    }
 }

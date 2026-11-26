@@ -19,6 +19,7 @@ import io.ktor.server.freemarker.respondTemplate
 import io.ktor.server.plugins.origin
 import io.ktor.server.request.host
 import io.ktor.server.request.httpMethod
+import io.ktor.server.request.path
 import io.ktor.server.request.receiveParameters
 import io.ktor.server.response.header
 import io.ktor.server.response.respond
@@ -177,7 +178,16 @@ internal fun ApplicationCall.page(title: String): Map<String, Any> = adminUser.l
         "canEdit" to it.role.canEdit,
         "phone" to hasPhonePreview,
         "hasComponents" to application.attributes.contains(ComponentStoreKey),
+        "section" to section(request.path()),
     )
+}
+
+/** The side menu item a page belongs to (`_layout.ftl` marks it as the current page). */
+internal fun section(path: String): String = when {
+    path.startsWith("/admin/components") -> "components"
+    path.startsWith("/admin/templates") -> "templates"
+    path.startsWith("/admin/settings") -> "settings"
+    else -> "screens" // screens, the visual editor, the wizard, revisions
 }
 
 /** Whose draft previews these are (T-032, ADR 0030): one preview per user and screen. */

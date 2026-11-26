@@ -62,7 +62,9 @@ internal fun Route.componentPages(
                 call.response.status(HttpStatusCode.UnprocessableEntity)
                 return@post call.list(components, error, id)
             }
-            if (form["start"] == "design") {
+            // New components start as a drawing (T-057; the designer shows the JSON too). Only
+            // `start=json` (API, tests) creates a hand-written RC JSON starter.
+            if (form["start"] != "json") {
                 components.saveDraft(id, ComponentJson.encode(starterDesign(id)))
                 return@post call.seeOther("/admin/components/${id.urlEncoded()}/design")
             }

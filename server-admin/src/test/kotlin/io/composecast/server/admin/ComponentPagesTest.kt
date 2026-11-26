@@ -54,7 +54,7 @@ class ComponentPagesTest {
         val cookie = with(host) { client.loginAs(Role.EDITOR) }
         assertContains(client.page(cookie, "/admin/screens").bodyAsText(), "href=\"/admin/components\"")
 
-        val created = client.post(cookie, "/admin/components", "id" to "promo")
+        val created = client.post(cookie, "/admin/components", "id" to "promo", "start" to "json")
         assertEquals(HttpStatusCode.SeeOther, created.status)
         val draft = assertNotNull(host.components.get("promo")?.draftJson)
         val editor = client.page(cookie, "/admin/components/promo").bodyAsText()
@@ -96,7 +96,10 @@ class ComponentPagesTest {
     fun `a viewer can read but not change components`() = host.run(withComponents = true) { client ->
         val cookie = with(host) { client.loginAs(Role.VIEWER) }
         assertEquals(HttpStatusCode.OK, client.page(cookie, "/admin/components").status)
-        assertEquals(HttpStatusCode.Forbidden, client.post(cookie, "/admin/components", "id" to "x").status)
+        assertEquals(
+            HttpStatusCode.Forbidden,
+            client.post(cookie, "/admin/components", "id" to "x", "start" to "json").status,
+        )
     }
 
     @Test

@@ -28,6 +28,21 @@
     .error { color: var(--error); font-weight: 600; }
     .muted { color: var(--muted); }
     nav a { margin-right: 16px; color: var(--accent); text-decoration: none; font-weight: 600; }
+    /* Side menu (owner 2026-11-26, like Canva): icon with its label underneath. */
+    .shell { display: flex; align-items: flex-start; }
+    .shell-main { flex: 1; min-width: 0; overflow-x: auto; } /* wide tables scroll here, the menu stays put */
+    .rail { position: sticky; top: 0; flex: 0 0 80px; min-height: calc(100vh - 58px); display: flex; flex-direction: column;
+      gap: 4px; padding: 12px 6px; background: var(--card); border-right: 1px solid var(--line); box-sizing: border-box; }
+    .rail a { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 2px 8px;
+      border-radius: 12px; color: var(--muted); font-size: 11px; font-weight: 600; text-decoration: none; text-align: center; }
+    .rail svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .rail a:hover { background: var(--bg); color: var(--fg); }
+    .rail a[aria-current="page"] { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+    @media (max-width: 760px) {
+      .shell { flex-direction: column; align-items: stretch; }
+      .rail { position: static; flex-direction: row; justify-content: space-around; min-height: 0; border-right: 0; border-bottom: 1px solid var(--line); }
+      .rail a { flex: 1; }
+    }
     .wide { max-width: 1100px; }
     table { width: 100%; border-collapse: collapse; }
     th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); }
@@ -140,14 +155,41 @@
 <body>
 <#if user?has_content>
 <header>
-  <nav><strong>compose-cast admin</strong>&nbsp;&nbsp;<a href="/admin/screens">Screens</a><#if hasComponents!false><a href="/admin/components">Components</a></#if><a href="/admin/templates">Templates</a><a href="/admin/settings">Settings</a></nav>
+  <strong>compose-cast admin</strong>
   <form method="post" action="/admin/logout">
     <span class="muted">${user.email} (${role})</span>
     <button type="submit">Log out</button>
   </form>
 </header>
-</#if>
+<div class="shell">
+  <#assign current = section!"">
+  <nav class="rail" aria-label="Main">
+    <a href="/admin/screens"<#if current == "screens"> aria-current="page"</#if>>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg>
+      <span>Screens</span>
+    </a>
+    <#if hasComponents!false>
+    <a href="/admin/components"<#if current == "components"> aria-current="page"</#if>>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><circle cx="17" cy="7" r="4"/><path d="M7 13.5 L11 20.5 H3 Z"/><rect x="13" y="13" width="8" height="8" rx="4" ry="1.5"/></svg>
+      <span>Components</span>
+    </a>
+    </#if>
+    <a href="/admin/templates"<#if current == "templates"> aria-current="page"</#if>>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M3 9h18M9 9v12"/></svg>
+      <span>Templates</span>
+    </a>
+    <a href="/admin/settings"<#if current == "settings"> aria-current="page"</#if>>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
+      <span>Settings</span>
+    </a>
+  </nav>
+  <div class="shell-main">
 <#nested>
+  </div>
+</div>
+<#else>
+<#nested>
+</#if>
 </body>
 </html>
 </#macro>
