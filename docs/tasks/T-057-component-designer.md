@@ -38,10 +38,16 @@ same as arranging components in a tree".
   followed on `window`. Headless checks must send **several** moves to the element under the
   pointer (`document.elementFromPoint`), like a browser, not one move to the artboard.
 
+- Pen like Figma (owner, 2026-11-26): click = corner, press and drag = smooth point with mirrored
+  handles (Alt breaks them), rubber band to the pointer, click the first point to close (dragging
+  there shapes the closing curve), Enter/Esc finish, Backspace removes the last point. Segments are
+  `L` or cubic `C` (RC path subset); the element box holds anchors and handles.
+
 ## Next steps
 4. **Not yet tried by the owner in a real browser session**: do that first, then fix what they hit.
 5. Multi-select + align/distribute; groups; snapping to other elements' edges; copy/paste.
-6. Pen with Bézier handles; editing path points; radial gradient; dashed strokes (`pathEffect`).
+6. Editing the points of an existing path (the pen draws Bézier curves since 2026-11-26); radial
+   gradient; dashed strokes (`pathEffect`).
 7. Images on the artboard (needs the image pipeline in components, ADR 0033 out of scope); built-in
    components (gauge, button) as elements.
 8. Bind numbers to params (e.g. a progress bar's width from `{{params.value}}`).

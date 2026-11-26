@@ -67,7 +67,7 @@
       <button type="button" data-tool="rect" title="Rectangle (R)">▭ Rect</button>
       <button type="button" data-tool="ellipse" title="Ellipse (O)">◯ Ellipse</button>
       <button type="button" data-tool="line" title="Line (L)">╱ Line</button>
-      <button type="button" data-tool="pen" title="Pen: click points, click the first point or press Enter to finish (P)">✎ Pen</button>
+      <button type="button" data-tool="pen" title="Pen (P): click for a corner, press and drag for a curve (Alt: break the handles); click the first point to close, Enter or Esc to finish, Backspace removes the last point">✎ Pen</button>
       <button type="button" data-tool="text" title="Text (T)">T Text</button>
       <button type="button" data-tool="tap" title="Tap area: an invisible area that runs an action (A)">☝ Tap area</button>
       <span class="sep"></span>

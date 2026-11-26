@@ -176,6 +176,7 @@
     drawSelection();
     if (pen) drawPen();
     svg.addEventListener('pointerdown', onPointerDown);
+    if (tool === 'pen') svg.addEventListener('pointermove', penHover);
   }
 
   function paintAttrs(e, defs) {
@@ -283,14 +284,98 @@
     });
   }
 
+  /** The pen path so far: segments, the rubber band to the pointer, anchors and Bézier handles. */
   function drawPen() {
-    if (!pen.points.length) return;
-    const pts = pen.points.map((p) => p.join(',')).join(' ');
-    node('polyline', { points: pts, fill: 'none', stroke: '#3b5bdb', 'stroke-width': 1.5 / zoom, 'pointer-events': 'none' }, svg);
-    pen.points.forEach(([x, y], i) => node('circle', {
-      cx: x, cy: y, r: (i === 0 ? 5 : 3) / zoom, fill: i === 0 ? '#fff' : '#3b5bdb', stroke: '#3b5bdb', 'stroke-width': 1 / zoom,
-      'data-pen-start': i === 0 ? '1' : null,
-    }, svg));
+    const pts = pen.points;
+    if (!pts.length) return;
+    const blue = '#3b5bdb';
+    const thin = 1.5 / zoom;
+    let d = `M${pts[0].x} ${pts[0].y}`;
+    for (let i = 1; i < pts.length; i++) d += ' ' + segment(pts[i - 1], pts[i]);
+    // A white halo under the blue line keeps it visible on any fill (blue cards included).
+    node('path', { d, fill: 'none', stroke: '#fff', 'stroke-width': thin * 3, 'stroke-opacity': 0.8, 'pointer-events': 'none' }, svg);
+    node('path', { d, fill: 'none', stroke: blue, 'stroke-width': thin, 'pointer-events': 'none' }, svg);
+    const last = pts[pts.length - 1];
+    if (pen.cursor && pen.drag === null) {
+      const c = { x: pen.cursor[0], y: pen.cursor[1], hin: pen.cursor, hout: pen.cursor };
+      node('path', {
+        d: `M${last.x} ${last.y} ${segment(last, c)}`, fill: 'none', stroke: blue, 'stroke-width': thin,
+        'stroke-dasharray': `${4 / zoom} ${3 / zoom}`, 'pointer-events': 'none',
+      }, svg);
+    }
+    pts.forEach((p, i) => {
+      [p.hin, p.hout].forEach((h) => {
+        if (h[0] === p.x && h[1] === p.y) return;
+        node('line', { x1: p.x, y1: p.y, x2: h[0], y2: h[1], stroke: blue, 'stroke-width': 1 / zoom, 'pointer-events': 'none' }, svg);
+        node('circle', { cx: h[0], cy: h[1], r: 2.5 / zoom, fill: '#fff', stroke: blue, 'stroke-width': 1 / zoom, 'pointer-events': 'none' }, svg);
+      });
+      const first = i === 0 && pts.length > 2;
+      node('rect', {
+        x: p.x - (first ? 5 : 3.5) / zoom, y: p.y - (first ? 5 : 3.5) / zoom, width: (first ? 10 : 7) / zoom, height: (first ? 10 : 7) / zoom,
+        fill: i === pts.length - 1 ? blue : '#fff', stroke: blue, 'stroke-width': 1 / zoom, 'data-pen-start': i === 0 ? '1' : null,
+        style: first ? 'cursor: pointer' : null,
+      }, svg);
+    });
+  }
+
+  /**
+   * The SVG segment from anchor [a] to anchor [b]: a straight `L` when neither has a handle on that
+   * side, else a cubic `C` (a's out-handle, b's in-handle) — both are in RC's path subset (fact 10).
+   */
+  function segment(a, b) {
+    const straight = a.hout[0] === a.x && a.hout[1] === a.y && b.hin[0] === b.x && b.hin[1] === b.y;
+    return straight ? `L${b.x} ${b.y}` : `C${a.hout[0]} ${a.hout[1]} ${b.hin[0]} ${b.hin[1]} ${b.x} ${b.y}`;
+  }
+
+  // ---------- the pen (like Figma) ----------
+  // Click: a corner point. Press and drag: a smooth point whose handles follow the pointer
+  // (mirrored; Alt moves only the outgoing one). Click the first point to close, Enter or Esc to
+  // finish an open path, Backspace removes the last point.
+  function penDown(ev, x, y) {
+    pen = pen || { points: [], drag: null, cursor: null };
+    if (ev.target.getAttribute('data-pen-start') && pen.points.length > 2) {
+      pen.closing = true;
+      pen.drag = 0;
+    } else {
+      pen.points.push({ x, y, hin: [x, y], hout: [x, y] });
+      pen.drag = pen.points.length - 1;
+    }
+    window.addEventListener('pointermove', penMove);
+    window.addEventListener('pointerup', penUp);
+    window.addEventListener('pointercancel', penUp);
+    renderStage();
+  }
+
+  function penMove(ev) {
+    if (!pen || pen.drag === null) return;
+    const [x, y] = point(ev);
+    const p = pen.points[pen.drag];
+    if (Math.abs(x - p.x) < 2 && Math.abs(y - p.y) < 2) return; // a click, not a drag
+    if (pen.closing) {
+      // Dragging on the first point shapes the closing curve: its in-handle follows, mirrored out.
+      p.hin = [2 * p.x - x, 2 * p.y - y];
+      if (!ev.altKey) p.hout = [x, y];
+    } else {
+      p.hout = [x, y];
+      if (!ev.altKey) p.hin = [2 * p.x - x, 2 * p.y - y];
+    }
+    renderStage();
+  }
+
+  function penUp() {
+    window.removeEventListener('pointermove', penMove);
+    window.removeEventListener('pointerup', penUp);
+    window.removeEventListener('pointercancel', penUp);
+    if (!pen) return;
+    pen.drag = null;
+    if (pen.closing) return finishPen(true);
+    renderStage();
+  }
+
+  function penHover(ev) {
+    if (!pen || pen.drag !== null) return;
+    pen.cursor = point(ev);
+    renderStage();
   }
 
   // ---------- pointer interaction ----------
@@ -317,13 +402,7 @@
     if (!canEdit && tool !== 'select') return;
     const [x, y] = point(ev);
     const target = ev.target;
-    if (tool === 'pen') {
-      if (target.getAttribute('data-pen-start') && pen && pen.points.length > 2) return finishPen(true);
-      pen = pen || { points: [] };
-      pen.points.push([x, y]);
-      renderStage();
-      return;
-    }
+    if (tool === 'pen') return penDown(ev, x, y);
     if (tool !== 'select') {
       pushUndo();
       const type = tool;
@@ -431,16 +510,22 @@
       return;
     }
     pushUndo();
-    const xs = pen.points.map((p) => p[0]);
-    const ys = pen.points.map((p) => p[1]);
+    const pts = pen.points;
+    // The box holds the anchors and the handles: a cubic curve stays inside its control points.
+    const xs = pts.flatMap((p) => [p.x, p.hin[0], p.hout[0]]);
+    const ys = pts.flatMap((p) => [p.y, p.hin[1], p.hout[1]]);
     const minX = Math.min(...xs);
     const minY = Math.min(...ys);
     const w = Math.max(Math.max(...xs) - minX, 1);
     const h = Math.max(Math.max(...ys) - minY, 1);
-    const d = pen.points.map(([x, y], i) => `${i ? 'L' : 'M'}${x - minX} ${y - minY}`).join(' ') + (closed ? ' Z' : '');
+    const local = (p) => ({ x: p.x - minX, y: p.y - minY, hin: [p.hin[0] - minX, p.hin[1] - minY], hout: [p.hout[0] - minX, p.hout[1] - minY] });
+    const lp = pts.map(local);
+    let d = `M${lp[0].x} ${lp[0].y}`;
+    for (let i = 1; i < lp.length; i++) d += ' ' + segment(lp[i - 1], lp[i]);
+    if (closed) d += ' ' + segment(lp[lp.length - 1], lp[0]) + ' Z';
     const e = Object.assign({}, DEFAULTS, {
       id: newId('path'), type: 'path', x: minX, y: minY, w, h, path: d, pathWidth: w, pathHeight: h,
-      stroke: '#FF1D1D1F', strokeWidth: 2, fill: closed ? '{{brand.primaryColor}}' : null,
+      stroke: '#FF1D1D1F', strokeWidth: 2, fill: closed ? '#FFB0B4BC' : null,
     });
     D().elements.push(e);
     selected = e.id;
@@ -494,6 +579,7 @@
     tool = t;
     if (t !== 'pen') pen = null;
     document.querySelectorAll('[data-tool]').forEach((b) => b.classList.toggle('active', b.dataset.tool === t));
+    if (svg) renderStage(); // the pen's rubber band listens on the artboard
     if (svg) svg.style.cursor = t === 'select' ? 'default' : 'crosshair';
   }
 
@@ -513,7 +599,16 @@
     if (mod && ev.key.toLowerCase() === 'y') { ev.preventDefault(); return redo(); }
     if (mod && ev.key.toLowerCase() === 'd') { ev.preventDefault(); return command('duplicate'); }
     if (!canEdit) return;
-    if (ev.key === 'Enter' && pen) return finishPen(false);
+    if ((ev.key === 'Enter' || ev.key === 'Escape') && pen && pen.points.length) {
+      ev.preventDefault();
+      return finishPen(false);
+    }
+    if ((ev.key === 'Delete' || ev.key === 'Backspace') && pen && pen.points.length) {
+      ev.preventDefault();
+      pen.points.pop();
+      if (!pen.points.length) pen = null;
+      return renderStage();
+    }
     if (ev.key === 'Escape') {
       pen = null;
       selected = null;
