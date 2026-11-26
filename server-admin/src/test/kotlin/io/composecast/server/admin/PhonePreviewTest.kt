@@ -192,4 +192,36 @@ class PhonePreviewTest {
         val expected = (400 + 2399 / 100) * COMPONENT_THUMB_WIDTH / 1078 // the band + a 1% margin
         assertTrue(kotlin.math.abs(thumb.height - expected) <= 1, "height ${thumb.height}, expected ~$expected")
     }
+
+    @Test
+    fun `phone preview forwards theme=dark, caches themes separately, and editor renders switchers`() {
+        val calls = mutableListOf<String>()
+        val themedRenderer = object : PhoneRenderer {
+            override fun png(document: ByteArray) = png(document, false)
+            override fun png(document: ByteArray, dark: Boolean): ByteArray {
+                val tag = if (dark) "dark" else "light"
+                calls += tag
+                return "$tag:${document.decodeToString()}".toByteArray()
+            }
+        }
+        val cached = CachingPhoneRenderer(themedRenderer, size = 4)
+        assertEquals("light:doc", cached.png("doc".toByteArray(), false).decodeToString())
+        assertEquals("dark:doc", cached.png("doc".toByteArray(), true).decodeToString())
+        assertEquals("dark:doc", cached.png("doc".toByteArray(), true).decodeToString())
+        assertEquals(listOf("light", "dark"), calls)
+
+        host.run(phoneRenderer = themedRenderer) { client ->
+            host.screens.publish("main", live, by = "import")
+            val cookie = with(host) { client.loginAs(Role.EDITOR) }
+            val editor = client.page(cookie, "/admin/screens/main").bodyAsText()
+            assertContains(editor, """id="theme-toggle"""")
+            assertContains(editor, """data-preview-mode="dark"""")
+            assertContains(editor, """data-preview-mode="light"""")
+            assertEquals("light:rc:$live", client.page(cookie, "/admin/screens/main/phone.png").bodyAsText())
+            assertEquals(
+                "dark:rc:$live",
+                client.page(cookie, "/admin/screens/main/phone.png?theme=dark").bodyAsText(),
+            )
+        }
+    }
 }

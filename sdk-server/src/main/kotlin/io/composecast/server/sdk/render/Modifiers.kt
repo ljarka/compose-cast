@@ -3,6 +3,7 @@ package io.composecast.server.sdk.render
 import androidx.compose.remote.core.operations.layout.modifiers.ShapeType
 import androidx.compose.remote.core.semantics.AccessibleComponent
 import androidx.compose.remote.creation.dsl.Modifier
+import androidx.compose.remote.creation.dsl.RcColor
 import androidx.compose.remote.creation.dsl.RcFloat
 import androidx.compose.remote.creation.dsl.RcScope
 import androidx.compose.remote.creation.dsl.RcSp
@@ -54,7 +55,7 @@ internal fun RcScope.boxModel(
     defaultWidth: Dimension? = defaultWidth(slot),
     defaultHeight: Dimension? = null,
     defaultPadding: Padding? = null,
-    defaultBackground: Int? = null,
+    defaultBackground: RcColor? = null,
     defaultCornerRadius: Float? = null,
     defaultRole: AccessibleComponent.Role? = null,
     defaultClickable: Boolean = false,
@@ -105,7 +106,12 @@ internal fun RcScope.boxModel(
         // encoded); an oversized corner radius is clamped by the canvas into a circle/pill.
         r = r.clip(RoundedRectShape(CIRCLE_RADIUS, CIRCLE_RADIUS, CIRCLE_RADIUS, CIRCLE_RADIUS))
     }
-    (m.background?.let(::parseColor) ?: defaultBackground)?.let { r = r.background(it) }
+    val explicitBackground = m.background?.let(::parseColor)
+    if (explicitBackground != null) {
+        r = r.background(explicitBackground)
+    } else if (defaultBackground != null) {
+        r = r.background(defaultBackground)
+    }
     m.border?.let { border ->
         val shape = when {
             radius != null -> ShapeType.ROUNDED_RECTANGLE

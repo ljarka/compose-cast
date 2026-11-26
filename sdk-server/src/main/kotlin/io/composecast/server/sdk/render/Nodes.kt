@@ -38,11 +38,19 @@ internal fun RcScope.renderNode(env: RenderEnv, node: Component, slot: Slot) {
         is Component.Divider -> Box(
             modifier = boxModel(
                 env,
-                node.modifier,
+                node.modifier.let {
+                    if (it.background == null &&
+                        node.color != null
+                    ) {
+                        it.copy(background = node.color)
+                    } else {
+                        it
+                    }
+                },
                 slot,
                 defaultWidth = Dimension.Fill,
                 defaultHeight = Dimension.Dp(node.thickness),
-                defaultBackground = node.color?.let(::parseColor) ?: env.outline,
+                defaultBackground = env.theme.outline,
             ),
         ) {}
         is Component.Spacer -> {
@@ -96,7 +104,7 @@ private fun RcScope.renderText(env: RenderEnv, node: Component.Text, slot: Slot)
             m
         }
     }
-    val color = node.color?.let(::parseColor) ?: env.text
+    val explicitColor = node.color?.let(::parseColor)
     val fontSize = sp(node.fontSize ?: styleSize)
     val fontWeight = node.fontWeight?.toRc() ?: styleWeight
     val textAlign = node.textAlign?.toRc() ?: RcTextAlign.Start
@@ -104,10 +112,34 @@ private fun RcScope.renderText(env: RenderEnv, node: Component.Text, slot: Slot)
     val maxLines = node.maxLines ?: Int.MAX_VALUE
     val dynamic = resolveDynamicText(env, node.text)
     if (dynamic != null) {
+        if (explicitColor != null) {
+            Text(
+                dynamic,
+                modifier = modifier,
+                color = explicitColor,
+                fontSize = fontSize,
+                fontWeight = fontWeight,
+                textAlign = textAlign,
+                overflow = overflow,
+                maxLines = maxLines,
+            )
+        } else {
+            Text(
+                dynamic,
+                modifier = modifier,
+                color = env.theme.text,
+                fontSize = fontSize,
+                fontWeight = fontWeight,
+                textAlign = textAlign,
+                overflow = overflow,
+                maxLines = maxLines,
+            )
+        }
+    } else if (explicitColor != null) {
         Text(
-            dynamic,
+            node.text,
             modifier = modifier,
-            color = color,
+            color = explicitColor,
             fontSize = fontSize,
             fontWeight = fontWeight,
             textAlign = textAlign,
@@ -118,7 +150,7 @@ private fun RcScope.renderText(env: RenderEnv, node: Component.Text, slot: Slot)
         Text(
             node.text,
             modifier = modifier,
-            color = color,
+            color = env.theme.text,
             fontSize = fontSize,
             fontWeight = fontWeight,
             textAlign = textAlign,

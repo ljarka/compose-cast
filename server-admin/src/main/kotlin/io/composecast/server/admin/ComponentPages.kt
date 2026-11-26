@@ -271,11 +271,12 @@ internal fun Route.componentPages(
                     val stored = components.get(call.screenId)
                         ?: return@get call.respondBytes(ByteArray(0), ContentType.Text.Plain, HttpStatusCode.NotFound)
                     val json = stored.draftJson ?: stored.liveJson.orEmpty()
+                    val dark = call.request.queryParameters["theme"] == "dark"
                     val png = try {
-                        phoneRenderer.png(publishing.componentDocument(json))
+                        phoneRenderer.png(publishing.componentDocument(json), dark)
                     } catch (e: Exception) {
                         return@get call.respondBytes(
-                            placeholderSvg("No preview of this component", e.message.orEmpty()).toByteArray(),
+                            placeholderSvg("No preview of this component", e.message.orEmpty(), dark).toByteArray(),
                             ContentType.Image.SVG,
                         )
                     }
@@ -286,13 +287,14 @@ internal fun Route.componentPages(
                     val stored = components.get(call.screenId)
                         ?: return@get call.respondBytes(ByteArray(0), ContentType.Text.Plain, HttpStatusCode.NotFound)
                     val json = stored.draftJson ?: stored.liveJson.orEmpty()
+                    val dark = call.request.queryParameters["theme"] == "dark"
                     val png = try {
                         withContext(Dispatchers.IO) {
-                            componentThumbnail(phoneRenderer.png(publishing.componentDocument(json)))
+                            componentThumbnail(phoneRenderer.png(publishing.componentDocument(json), dark))
                         }
                     } catch (e: Exception) {
                         return@get call.respondBytes(
-                            placeholderSvg("No preview of this component", e.message.orEmpty()).toByteArray(),
+                            placeholderSvg("No preview of this component", e.message.orEmpty(), dark).toByteArray(),
                             ContentType.Image.SVG,
                         )
                     }

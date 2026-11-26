@@ -24,22 +24,26 @@ import java.time.Duration
  * on the test's main thread only.
  */
 class Renderer(private val compose: ComposeContentTestRule) {
-    private var current by mutableStateOf<ScreenDocument?>(null)
+    private var current by mutableStateOf<Pair<ScreenDocument, Boolean>?>(null)
     private var started = false
 
-    /** Renders [bytes] (an RC document); throws [IllegalArgumentException] if they do not decode. */
-    fun render(bytes: ByteArray): ByteArray {
+    /** Renders [bytes] (an RC document) in light or [darkTheme]; throws [IllegalArgumentException] if they do not decode. */
+    fun render(bytes: ByteArray, darkTheme: Boolean = false): ByteArray {
         val document = try {
             ScreenDocument.fromBytes(id = "preview", title = "", bytes = bytes)
         } catch (e: Exception) {
             throw IllegalArgumentException("not a Remote Compose document: ${e.message}", e)
         }
         if (!started) {
-            // A fresh player per document (key): no scroll position or state from the previous one.
-            compose.setContent { current?.let { key(it) { ComposeCastScreen(it, Modifier.fillMaxSize()) } } }
+            // A fresh player per document+theme (key): no scroll position or state from the previous one.
+            compose.setContent {
+                current?.let { (doc, dark) ->
+                    key(doc, dark) { ComposeCastScreen(doc, Modifier.fillMaxSize(), darkTheme = dark) }
+                }
+            }
             started = true
         }
-        current = document
+        current = document to darkTheme
         compose.waitForIdle()
         // RC animations (gauges, anim() expressions) run on the player's clock: let them finish
         // so the preview shows the end state, not the first frame.

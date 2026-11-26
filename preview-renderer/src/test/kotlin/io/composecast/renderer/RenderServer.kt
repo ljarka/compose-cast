@@ -36,7 +36,11 @@ class RenderServer {
     @get:Rule
     val compose = createComposeRule()
 
-    private class Job(val document: ByteArray, val result: CompletableFuture<ByteArray> = CompletableFuture())
+    private class Job(
+        val document: ByteArray,
+        val dark: Boolean = false,
+        val result: CompletableFuture<ByteArray> = CompletableFuture(),
+    )
 
     @Test
     fun serve() {
@@ -59,7 +63,8 @@ class RenderServer {
                 ) {
                     return@createContext exchange.respond(413, "text/plain", "document too large".toByteArray())
                 }
-                val job = Job(body).also(jobs::put)
+                val dark = exchange.requestURI.rawQuery?.split('&')?.any { it == "theme=dark" } == true
+                val job = Job(body, dark).also(jobs::put)
                 try {
                     exchange.respond(200, "image/png", job.result.get(RENDER_TIMEOUT_S, TimeUnit.SECONDS))
                 } catch (e: java.util.concurrent.ExecutionException) {
@@ -78,7 +83,7 @@ class RenderServer {
             val job = jobs.take()
             val started = System.nanoTime()
             try {
-                job.result.complete(renderer.render(job.document))
+                job.result.complete(renderer.render(job.document, job.dark))
             } catch (e: Throwable) {
                 job.result.completeExceptionally(e)
             }

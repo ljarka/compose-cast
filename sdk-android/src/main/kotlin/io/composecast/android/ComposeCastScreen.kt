@@ -1,6 +1,7 @@
 package io.composecast.android
 
 import android.util.Log
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.remote.player.core.RemoteDocument
 import androidx.compose.remote.player.view.RemoteComposePlayer
 import androidx.compose.runtime.Composable
@@ -35,18 +36,27 @@ fun ComposeCastScreen(
     screen: ScreenDocument,
     modifier: Modifier = Modifier,
     live: Flow<ScreenDocument>? = null,
+    darkTheme: Boolean = isSystemInDarkTheme(),
     onAction: (Action) -> Unit = {},
 ) {
     val currentOnAction by rememberUpdatedState(onAction)
+    val rcTheme = if (darkTheme) RemoteComposePlayer.THEME_DARK else RemoteComposePlayer.THEME_LIGHT
     var player by remember { mutableStateOf<RemoteComposePlayer?>(null) }
     AndroidView(
         modifier = modifier,
-        factory = { context -> RemoteComposePlayer(context).also { player = it } },
+        factory = { context ->
+            RemoteComposePlayer(context).also {
+                it.setTheme(rcTheme)
+                player = it
+            }
+        },
         update = { player ->
+            player.setTheme(rcTheme)
             // update runs on every recomposition; only (re)load when the document changes.
             if (player.tag !== screen.document) {
                 player.tag = screen.document
                 player.show(screen.document) { currentOnAction(it) }
+                player.setTheme(rcTheme)
             }
         },
     )

@@ -1429,7 +1429,10 @@
         statusEl.textContent = 'Draft saved.';
         statusEl.className = 'ok';
         const phone = document.getElementById('phone');
-        if (phone) phone.src = `/admin/components/${encodeURIComponent(id)}/phone.png?t=${Date.now()}`;
+        if (phone) {
+          const theme = window.composeCastPreviewTheme ? window.composeCastPreviewTheme(phone) : 'light';
+          phone.src = `/admin/components/${encodeURIComponent(id)}/phone.png?theme=${theme}&t=${Date.now()}`;
+        }
       } else {
         statusEl.textContent = 'Not saved: fix the problems below.';
         statusEl.className = 'error';

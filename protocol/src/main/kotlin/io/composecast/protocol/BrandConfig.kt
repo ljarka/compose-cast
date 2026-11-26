@@ -29,6 +29,12 @@ data class BrandConfig(
     val textColor: String? = null,
     val outlineColor: String? = null,
     val homeScreen: String? = null,
+    val darkPrimaryColor: String? = null,
+    val darkSecondaryColor: String? = null,
+    val darkBackgroundColor: String? = null,
+    val darkSurfaceColor: String? = null,
+    val darkTextColor: String? = null,
+    val darkOutlineColor: String? = null,
 ) {
     /**
      * Every problem, each starting with the field name (`primaryColor: expected #RRGGBB …`); empty
@@ -43,6 +49,12 @@ data class BrandConfig(
             "surfaceColor" to surfaceColor,
             "textColor" to textColor,
             "outlineColor" to outlineColor,
+            "darkPrimaryColor" to darkPrimaryColor,
+            "darkSecondaryColor" to darkSecondaryColor,
+            "darkBackgroundColor" to darkBackgroundColor,
+            "darkSurfaceColor" to darkSurfaceColor,
+            "darkTextColor" to darkTextColor,
+            "darkOutlineColor" to darkOutlineColor,
         ).forEach { (field, color) -> color?.let(::colorProblem)?.let { add("$field: $it") } }
     }
 }

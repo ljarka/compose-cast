@@ -101,5 +101,6 @@ headings in `server-admin`.
 | `admin:settings.header` | `settings.ftl` | `SettingsPages.kt` | Settings page title |
 | `admin:settings.app` | `settings.ftl` | `SettingsPages.kt` | App name, applicationId, server URL fields |
 | `admin:settings.brand` | `settings.ftl` | `SettingsPages.kt` | Brand color inputs (primary, secondary, background, surface, text, outline) |
+| `admin:settings.brandDark` | `settings.ftl` | `SettingsPages.kt` | Optional dark-mode brand color overrides |
 | `admin:settings.logo` | `settings.ftl` | `SettingsPages.kt` | App launcher logo upload & removal |
 | `admin:settings.developer` | `settings.ftl` | `SettingsPages.kt` | Debug mode toggle (enables/hides AI reference ID copy buttons) |

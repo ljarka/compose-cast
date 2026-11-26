@@ -151,6 +151,12 @@ private data class SettingsForm(
                 surfaceColor = optional("surfaceColor"),
                 textColor = optional("textColor"),
                 outlineColor = optional("outlineColor"),
+                darkPrimaryColor = optional("darkPrimaryColor"),
+                darkSecondaryColor = optional("darkSecondaryColor"),
+                darkBackgroundColor = optional("darkBackgroundColor"),
+                darkSurfaceColor = optional("darkSurfaceColor"),
+                darkTextColor = optional("darkTextColor"),
+                darkOutlineColor = optional("darkOutlineColor"),
             )
             val problems = brand.problems().toMutableList()
             val applicationId = fields["applicationId"].orEmpty()

@@ -153,6 +153,7 @@
     <#if phoneImage>
     <div class="card phone-preview" style="margin-top: 16px">
       <h2>On the phone<@layout.uid "admin:designer.phone"/></h2>
+      <@layout.previewTheme "#phone"/>
       <img id="phone" src="/admin/components/${id?url}/phone.png" alt="The saved draft drawn by the app's player">
       <p class="hint muted" style="font-size: 12px">Drawn by the app's own player after each save.</p>
     </div>

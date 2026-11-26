@@ -16,7 +16,7 @@ internal fun RcScope.renderImage(env: RenderEnv, node: Component.Image, slot: Sl
         Text(
             node.alt.ifBlank { node.url },
             modifier = boxModel(env, node.modifier, slot),
-            color = PLACEHOLDER_COLOR,
+            color = env.theme.placeholder,
             fontSize = sp(12),
         )
         return
@@ -79,6 +79,6 @@ internal fun RcScope.renderIcon(env: RenderEnv, node: Component.Icon, slot: Slot
             contentDescription = node.modifier.imageDescription(node.alt),
         )
     } else {
-        Text(node.alt.ifBlank { node.url }, modifier = modifier, color = PLACEHOLDER_COLOR, fontSize = sp(12))
+        Text(node.alt.ifBlank { node.url }, modifier = modifier, color = env.theme.placeholder, fontSize = sp(12))
     }
 }

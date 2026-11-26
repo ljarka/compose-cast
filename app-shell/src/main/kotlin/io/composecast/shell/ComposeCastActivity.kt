@@ -10,6 +10,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -103,7 +105,8 @@ class ComposeCastActivity : ComponentActivity() {
         }
         enableEdgeToEdge(statusBarStyle = statusBar)
         setContent {
-            MaterialTheme(colorScheme = frameColorScheme(framePrimary, frameBackground)) {
+            val darkTheme = isSystemInDarkTheme()
+            MaterialTheme(colorScheme = frameColorScheme(framePrimary, frameBackground, darkTheme)) {
                 val url = serverUrl
                 if (url == null) {
                     ConnectScreen(initialAddress = lastServerUrl.orEmpty(), onConnect = ::connect)
@@ -167,14 +170,26 @@ private data class OpenRequest(val screen: String, val seq: Int)
  * Colors of the native frame around the server documents (top app bar, loading/error states) from
  * `app.frame.*`. Content colors are the server's brand, rendered into the documents.
  */
-private fun frameColorScheme(primary: Color, background: Color): ColorScheme = lightColorScheme(
-    primary = primary,
-    onPrimary = contentColorFor(primary),
-    background = background,
-    onBackground = contentColorFor(background),
-    surface = background,
-    onSurface = contentColorFor(background),
-)
+private fun frameColorScheme(primary: Color, background: Color, darkTheme: Boolean): ColorScheme = if (darkTheme) {
+    val darkBg = Color(0xFF141218)
+    darkColorScheme(
+        primary = primary,
+        onPrimary = contentColorFor(primary),
+        background = darkBg,
+        onBackground = Color(0xFFE6E0E9),
+        surface = Color(0xFF211F26),
+        onSurface = Color(0xFFE6E0E9),
+    )
+} else {
+    lightColorScheme(
+        primary = primary,
+        onPrimary = contentColorFor(primary),
+        background = background,
+        onBackground = contentColorFor(background),
+        surface = background,
+        onSurface = contentColorFor(background),
+    )
+}
 
 /** Black or white, whichever reads better on [color]. */
 private fun contentColorFor(color: Color): Color = if (color.luminance() > 0.5f) Color.Black else Color.White

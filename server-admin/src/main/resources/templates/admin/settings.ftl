@@ -36,6 +36,19 @@
     </div>
     <p class="muted">Colors as <code>#RRGGBB</code> or <code>#AARRGGBB</code>. Saving re-renders every screen with them.</p>
 
+    <h2>Brand colors (Dark mode)<@layout.uid "admin:settings.brandDark"/></h2>
+    <div class="row">
+      <@color "darkPrimaryColor" "Primary" brand.darkPrimaryColor!"" true/>
+      <@color "darkSecondaryColor" "Secondary" brand.darkSecondaryColor!"" true/>
+      <@color "darkBackgroundColor" "Background" brand.darkBackgroundColor!"" true/>
+    </div>
+    <div class="row">
+      <@color "darkSurfaceColor" "Surface (cards)" brand.darkSurfaceColor!"" true/>
+      <@color "darkTextColor" "Text" brand.darkTextColor!"" true/>
+      <@color "darkOutlineColor" "Outline (dividers)" brand.darkOutlineColor!"" true/>
+    </div>
+    <p class="muted">Optional dark-mode overrides. Empty fields use built-in dark defaults automatically when the phone is in dark mode.</p>
+
     <h2>Logo<@layout.uid "admin:settings.logo"/></h2>
     <#if hasLogo><p><img src="/admin/settings/logo" alt="Current logo" width="96" height="96" style="border-radius: 12px; border: 1px solid var(--line)"></p></#if>
     <#if isAdmin>

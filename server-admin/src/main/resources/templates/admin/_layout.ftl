@@ -1,5 +1,7 @@
 <#-- uid: copyable AI reference ID icon button next to headings when debug mode is enabled in Settings. -->
 <#macro uid id><#if debugMode!false><button type="button" class="ui-id-btn" data-ui-id="${id}" title="Copy AI reference ID: ${id}" aria-label="Copy ID ${id}"><svg class="icon-link" viewBox="0 0 16 16" aria-hidden="true"><path d="M6.5 9.5l3-3M5 7.5L3.6 8.9a2.5 2.5 0 0 0 3.5 3.5L8.5 11M11 8.5l1.4-1.4a2.5 2.5 0 0 0-3.5-3.5L7.5 5"/></svg><svg class="icon-ok" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></button></#if></#macro>
+<#-- previewTheme: Light/Dark segmented switcher bound to a preview <img> element by CSS selector. -->
+<#macro previewTheme target><div class="preview-theme" role="group" aria-label="Preview theme" data-preview-target="${target}"><button type="button" class="chip" data-preview-mode="light" aria-pressed="false">☀ Light</button><button type="button" class="chip" data-preview-mode="dark" aria-pressed="false">🌙 Dark</button></div></#macro>
 <#-- page: the HTML page. With `user` (logged-in pages) a header with navigation and logout; with htmx=true HTMX 2.0.11 (ADR 0012: CDN + integrity hash). -->
 <#macro page title user="" role="" htmx=false>
 <!doctype html>
@@ -8,12 +10,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${title} · compose-cast admin</title>
+  <script>(function(){try{var t=localStorage.getItem("composecast.adminTheme");if(t!=="dark"&&t!=="light")t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.dataset.theme=t;}catch(e){}})();</script>
   <style>
-    :root { color-scheme: light dark; --fg: #1d1d1f; --bg: #f6f6f7; --card: #fff; --muted: #6b6b70;
+    :root { color-scheme: light; --fg: #1d1d1f; --bg: #f6f6f7; --card: #fff; --muted: #6b6b70;
             --accent: #3b5bdb; --error: #c92a2a; --line: #dcdce0; }
+    :root[data-theme="dark"] { color-scheme: dark; --fg: #ececf0; --bg: #161618; --card: #232326; --muted: #9a9aa2;
+                               --accent: #748ffc; --error: #ff8787; --line: #3a3a3f; }
     @media (prefers-color-scheme: dark) {
-      :root { --fg: #ececf0; --bg: #161618; --card: #232326; --muted: #9a9aa2; --accent: #748ffc;
-              --error: #ff8787; --line: #3a3a3f; }
+      :root:not([data-theme="light"]) { color-scheme: dark; --fg: #ececf0; --bg: #161618; --card: #232326; --muted: #9a9aa2;
+                                        --accent: #748ffc; --error: #ff8787; --line: #3a3a3f; }
     }
     * { box-sizing: border-box; }
     body { margin: 0; font: 16px/1.5 system-ui, sans-serif; color: var(--fg); background: var(--bg); }
@@ -180,6 +185,13 @@
     button.ui-id-btn.copied { opacity: 1; color: #2b8a3e; border-color: #2b8a3e; background: var(--bg); }
     button.ui-id-btn.copied .icon-link { display: none; }
     button.ui-id-btn.copied .icon-ok { display: block; }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    button.theme-toggle { margin: 0; padding: 5px 10px; background: var(--bg); color: var(--fg);
+                          border: 1px solid var(--line); border-radius: 6px; font-size: 14px; line-height: 1.2; }
+    button.theme-toggle:hover { border-color: var(--accent); }
+    .preview-theme { display: inline-flex; gap: 4px; margin-bottom: 8px; }
+    .preview-theme button.chip { font-size: 13px; padding: 3px 9px; }
+    .preview-theme button.chip[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
   </style>
   <#if htmx><script src="https://unpkg.com/htmx.org@2.0.11/dist/htmx.min.js" integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg" crossorigin="anonymous"></script></#if>
 </head>
@@ -187,10 +199,13 @@
 <#if user?has_content>
 <header>
   <strong>compose-cast admin<#if debugMode!false><span class="debug-badge">debug</span></#if></strong>
-  <form method="post" action="/admin/logout">
-    <span class="muted">${user.email} (${role})</span>
-    <button type="submit">Log out</button>
-  </form>
+  <div class="header-actions">
+    <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light mode" title="Switch admin theme">🌙</button>
+    <form method="post" action="/admin/logout" style="margin: 0">
+      <span class="muted">${user.email} (${role})</span>
+      <button type="submit">Log out</button>
+    </form>
+  </div>
 </header>
 <div class="shell">
   <#assign current = section!"">
@@ -227,6 +242,67 @@
 <#else>
 <#nested>
 </#if>
+<script>
+  (function () {
+    function currentAdminTheme() {
+      return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+    }
+    function setPreviewImage(img, theme, bust) {
+      if (!img) return;
+      const base = (img.dataset.baseSrc || img.getAttribute("src") || "").split("?")[0];
+      if (!base) return;
+      img.dataset.baseSrc = base;
+      img.dataset.previewTheme = theme;
+      img.src = base + "?theme=" + theme + (bust ? "&t=" + Date.now() : "");
+    }
+    window.composeCastPreviewTheme = function (img) {
+      return (img && img.dataset.previewTheme) || currentAdminTheme();
+    };
+    function syncSwitchers(adminTheme) {
+      document.querySelectorAll(".preview-theme[data-preview-target]").forEach(function (group) {
+        if (group.dataset.manual === "true") return;
+        applyGroupTheme(group, adminTheme, false);
+      });
+      document.querySelectorAll("img[data-theme-thumb]").forEach(function (img) {
+        setPreviewImage(img, adminTheme, false);
+      });
+    }
+    function applyGroupTheme(group, theme, bust) {
+      group.dataset.theme = theme;
+      group.querySelectorAll("button[data-preview-mode]").forEach(function (b) {
+        b.setAttribute("aria-pressed", String(b.dataset.previewMode === theme));
+      });
+      const img = document.querySelector(group.dataset.previewTarget);
+      if (img) setPreviewImage(img, theme, bust);
+    }
+    const toggle = document.getElementById("theme-toggle");
+    function updateToggleButton() {
+      if (!toggle) return;
+      const dark = currentAdminTheme() === "dark";
+      toggle.textContent = dark ? "☀" : "🌙";
+      toggle.title = dark ? "Switch admin to light mode" : "Switch admin to dark mode";
+      toggle.setAttribute("aria-label", toggle.title);
+    }
+    updateToggleButton();
+    syncSwitchers(currentAdminTheme());
+    if (toggle) {
+      toggle.addEventListener("click", function () {
+        const next = currentAdminTheme() === "dark" ? "light" : "dark";
+        document.documentElement.dataset.theme = next;
+        try { localStorage.setItem("composecast.adminTheme", next); } catch (e) {}
+        updateToggleButton();
+        syncSwitchers(next);
+      });
+    }
+    document.addEventListener("click", function (e) {
+      const btn = e.target.closest(".preview-theme button[data-preview-mode]");
+      if (!btn) return;
+      const group = btn.closest(".preview-theme");
+      group.dataset.manual = "true";
+      applyGroupTheme(group, btn.dataset.previewMode, true);
+    });
+  })();
+</script>
 <#if debugMode!false>
 <script>
   document.addEventListener("click", function (e) {

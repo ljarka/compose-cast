@@ -12,7 +12,7 @@
       <tbody>
       <#list components as c>
         <tr>
-          <#if phone><td class="thumb thumb-wide"><a href="/admin/components/${c.id?url}<#if c.designed>/design</#if>" tabindex="-1" aria-hidden="true"><img src="/admin/components/${c.id?url}/thumb.png" width="180" loading="lazy" alt=""></a></td></#if>
+          <#if phone><td class="thumb thumb-wide"><a href="/admin/components/${c.id?url}<#if c.designed>/design</#if>" tabindex="-1" aria-hidden="true"><img data-theme-thumb="true" src="/admin/components/${c.id?url}/thumb.png" width="180" loading="lazy" alt=""></a></td></#if>
           <td><a href="/admin/components/${c.id?url}<#if c.designed>/design</#if>"><code>${c.id}</code></a></td>
           <td>${c.title}<#if c.description?has_content><br><span class="muted">${c.description}</span></#if></td>
           <td><span class="status status-${c.status}">${c.status}</span></td>

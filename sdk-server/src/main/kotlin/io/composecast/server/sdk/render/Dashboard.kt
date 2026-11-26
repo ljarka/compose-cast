@@ -31,8 +31,8 @@ internal fun RcScope.renderGauge(env: RenderEnv, node: Component.Gauge, slot: Sl
     val liveValue = resolveValueRef(env, node.value)
     val staticValue = if (liveValue == null) NumberList.single(node.value) ?: node.min else node.min
     val staticFraction = ((staticValue - node.min) / (node.max - node.min)).coerceIn(0f, 1f)
-    val color = node.color?.let(::parseColor) ?: env.primary
-    val track = node.trackColor?.let(::parseColor) ?: env.outline
+    val explicitColor = node.color?.let(::parseColor)
+    val explicitTrack = node.trackColor?.let(::parseColor)
     val stroke = node.thickness.toFloat()
     val range = node.max - node.min
     Box(
@@ -49,18 +49,18 @@ internal fun RcScope.renderGauge(env: RenderEnv, node: Component.Gauge, slot: Sl
         Canvas(Modifier.fillMaxSize()) {
             val ring = ringBounds(stroke)
             paint {
-                color(track)
+                if (explicitTrack != null) color(explicitTrack) else color(env.theme.outline)
                 style(RcPaintStyle.Stroke)
                 strokeWidth(stroke)
                 strokeCap(RcStrokeCap.Round)
             }
             drawArc(ring.left, ring.top, ring.right, ring.bottom, remoteFloat(0f), remoteFloat(FULL_CIRCLE))
             if (liveValue != null) {
-                paint { color(color) }
+                paint { if (explicitColor != null) color(explicitColor) else color(env.theme.primary) }
                 val fraction = min(max((liveValue - node.min) / range, 0f), 1f)
                 drawArc(ring.left, ring.top, ring.right, ring.bottom, remoteFloat(START_ANGLE), fraction * FULL_CIRCLE)
             } else if (staticFraction > 0f) {
-                paint { color(color) }
+                paint { if (explicitColor != null) color(explicitColor) else color(env.theme.primary) }
                 val sweep = (remoteFloat(staticFraction) * FULL_CIRCLE).anim(VALUE_ANIMATION_S)
                 drawArc(ring.left, ring.top, ring.right, ring.bottom, remoteFloat(START_ANGLE), sweep)
             }
@@ -72,7 +72,7 @@ internal fun RcScope.renderGauge(env: RenderEnv, node: Component.Gauge, slot: Sl
                 Text(
                     dynamicLabel,
                     modifier = Modifier.fillMaxWidth(),
-                    color = env.text,
+                    color = env.theme.text,
                     fontSize = fontSize,
                     fontWeight = RcFontWeight.W700,
                     textAlign = RcTextAlign.Center,
@@ -82,7 +82,7 @@ internal fun RcScope.renderGauge(env: RenderEnv, node: Component.Gauge, slot: Sl
                 Text(
                     node.label,
                     modifier = Modifier.fillMaxWidth(),
-                    color = env.text,
+                    color = env.theme.text,
                     fontSize = fontSize,
                     fontWeight = RcFontWeight.W700,
                     textAlign = RcTextAlign.Center,
@@ -124,8 +124,9 @@ internal fun RcScope.renderSparkline(env: RenderEnv, node: Component.Sparkline, 
         val w = componentWidth() - stroke
         val h = componentHeight() - stroke
         val inset = stroke / 2f
+        val explicitColor = node.color?.let(::parseColor)
         paint {
-            color(node.color?.let(::parseColor) ?: env.primary)
+            if (explicitColor != null) color(explicitColor) else color(env.theme.primary)
             style(RcPaintStyle.Stroke)
             strokeWidth(stroke)
             strokeCap(RcStrokeCap.Round)
@@ -144,7 +145,7 @@ internal fun RcScope.renderSparkline(env: RenderEnv, node: Component.Sparkline, 
 
 /** Label (muted), the value (large, bold), caption (muted, small); texts full width for live updates. */
 internal fun RcScope.renderKpi(env: RenderEnv, node: Component.Kpi, slot: Slot) {
-    val muted = (env.text and RGB_MASK) or MUTED_ALPHA
+    val muted = env.theme.mutedText
     Column(boxModel(env, node.modifier, slot, defaultWidth = Dimension.Fill)) {
         if (node.label.isNotBlank()) {
             val dynamicLabel = resolveDynamicText(env, node.label)
@@ -154,13 +155,35 @@ internal fun RcScope.renderKpi(env: RenderEnv, node: Component.Kpi, slot: Slot) 
                 Text(node.label, Modifier.fillMaxWidth(), color = muted, fontSize = sp(KPI_LABEL_SP), maxLines = 1)
             }
         }
-        val valueColor = node.color?.let(::parseColor) ?: env.text
+        val explicitValueColor = node.color?.let(::parseColor)
         val dynamicValue = resolveDynamicText(env, node.value)
         if (dynamicValue != null) {
+            if (explicitValueColor != null) {
+                Text(
+                    dynamicValue,
+                    Modifier.fillMaxWidth(),
+                    color = explicitValueColor,
+                    fontSize = sp(KPI_VALUE_SP),
+                    fontWeight = RcFontWeight.W700,
+                    maxLines = 1,
+                    overflow = RcTextOverflow.Ellipsis,
+                )
+            } else {
+                Text(
+                    dynamicValue,
+                    Modifier.fillMaxWidth(),
+                    color = env.theme.text,
+                    fontSize = sp(KPI_VALUE_SP),
+                    fontWeight = RcFontWeight.W700,
+                    maxLines = 1,
+                    overflow = RcTextOverflow.Ellipsis,
+                )
+            }
+        } else if (explicitValueColor != null) {
             Text(
-                dynamicValue,
+                node.value,
                 Modifier.fillMaxWidth(),
-                color = valueColor,
+                color = explicitValueColor,
                 fontSize = sp(KPI_VALUE_SP),
                 fontWeight = RcFontWeight.W700,
                 maxLines = 1,
@@ -170,7 +193,7 @@ internal fun RcScope.renderKpi(env: RenderEnv, node: Component.Kpi, slot: Slot) 
             Text(
                 node.value,
                 Modifier.fillMaxWidth(),
-                color = valueColor,
+                color = env.theme.text,
                 fontSize = sp(KPI_VALUE_SP),
                 fontWeight = RcFontWeight.W700,
                 maxLines = 1,
@@ -204,5 +227,3 @@ private const val MIN_LABEL_SP = 12
 private const val KPI_LABEL_SP = 14
 private const val KPI_VALUE_SP = 32
 private const val KPI_CAPTION_SP = 12
-private const val RGB_MASK = 0x00FFFFFF
-private const val MUTED_ALPHA = 0xA6000000.toInt()

@@ -47,6 +47,23 @@ class RendererTest {
     }
 
     @Test
+    fun rendersSameDocumentInLightAndDarkTheme() {
+        val renderer = Renderer(compose)
+        val doc = document("Theme test")
+        val lightPng = renderer.render(doc, darkTheme = false)
+        val darkPng = renderer.render(doc, darkTheme = true)
+        assertFalse(lightPng.contentEquals(darkPng))
+
+        val lightBitmap = BitmapFactory.decodeByteArray(lightPng, 0, lightPng.size)
+        val darkBitmap = BitmapFactory.decodeByteArray(darkPng, 0, darkPng.size)
+        // Bottom-left background pixel: light (#FFFFFF) vs dark (#141218)
+        val lightBg = lightBitmap.getPixel(4, lightBitmap.height - 4)
+        val darkBg = darkBitmap.getPixel(4, darkBitmap.height - 4)
+        assertEquals(0xFFFFFFFF.toInt(), lightBg)
+        assertEquals(0xFF141218.toInt(), darkBg)
+    }
+
+    @Test
     fun rejectsBytesThatAreNotADocument() {
         val renderer = Renderer(compose)
         assertThrows(IllegalArgumentException::class.java) { renderer.render("hello".toByteArray()) }

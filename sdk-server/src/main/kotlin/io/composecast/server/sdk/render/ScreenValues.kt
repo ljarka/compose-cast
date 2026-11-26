@@ -165,8 +165,8 @@ internal fun RcScope.renderSlider(env: RenderEnv, node: Component.Slider, slot: 
     val bound = requireNotNull(env.values[node.controls]) {
         "Slider controls unknown screen value '${node.controls}'"
     }
-    val activeColor = node.color?.let(::parseColor) ?: env.primary
-    val trackColor = node.trackColor?.let(::parseColor) ?: env.outline
+    val explicitActive = node.color?.let(::parseColor)
+    val explicitTrack = node.trackColor?.let(::parseColor)
     val range = bound.max - bound.min
     Canvas(
         boxModel(
@@ -210,7 +210,7 @@ internal fun RcScope.renderSlider(env: RenderEnv, node: Component.Slider, slot: 
 
         // Background track
         paint {
-            color(trackColor)
+            if (explicitTrack != null) color(explicitTrack) else color(env.theme.outline)
             style(RcPaintStyle.Stroke)
             strokeWidth(d * SLIDER_TRACK_HEIGHT_DP)
             strokeCap(RcStrokeCap.Round)
@@ -219,7 +219,7 @@ internal fun RcScope.renderSlider(env: RenderEnv, node: Component.Slider, slot: 
 
         // Active track
         paint {
-            color(activeColor)
+            if (explicitActive != null) color(explicitActive) else color(env.theme.primary)
             style(RcPaintStyle.Stroke)
             strokeWidth(d * SLIDER_TRACK_HEIGHT_DP)
             strokeCap(RcStrokeCap.Round)
@@ -228,7 +228,7 @@ internal fun RcScope.renderSlider(env: RenderEnv, node: Component.Slider, slot: 
 
         // Thumb
         paint {
-            color(activeColor)
+            if (explicitActive != null) color(explicitActive) else color(env.theme.primary)
             style(RcPaintStyle.Fill)
         }
         drawCircle(thumbX, cy, pad)

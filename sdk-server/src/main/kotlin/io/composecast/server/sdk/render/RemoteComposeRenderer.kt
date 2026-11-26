@@ -18,6 +18,7 @@ import androidx.compose.remote.creation.JvmRcPlatformServices
 import androidx.compose.remote.creation.RemoteComposeWriter
 import androidx.compose.remote.creation.dsl.Modifier
 import androidx.compose.remote.creation.dsl.RcCanvas
+import androidx.compose.remote.creation.dsl.RcColor
 import androidx.compose.remote.creation.dsl.RcProfile
 import androidx.compose.remote.creation.dsl.background
 import androidx.compose.remote.creation.dsl.fillMaxSize
@@ -54,6 +55,13 @@ internal class RemoteComposeRenderer(
     private val components: Map<String, CustomEntry> = emptyMap(),
 ) {
     private val background = parseColor(brand?.backgroundColor ?: DEFAULT_BACKGROUND)
+    private val darkBackground = brand?.darkBackgroundColor?.let(::parseColor) ?: DARK_BACKGROUND_COLOR
+    private val darkPrimary = brand?.darkPrimaryColor?.let(::parseColor)
+        ?: brand?.primaryColor?.let(::parseColor)
+        ?: DARK_PRIMARY_COLOR
+    private val darkSurface = brand?.darkSurfaceColor?.let(::parseColor) ?: DARK_SURFACE_COLOR
+    private val darkText = brand?.darkTextColor?.let(::parseColor) ?: DARK_TEXT_COLOR
+    private val darkOutline = brand?.darkOutlineColor?.let(::parseColor) ?: DARK_DIVIDER_COLOR
 
     /** Images fetched so far, shared by all (concurrent) renders of one registry. */
     private val images = ImageCache<EncodedImage>()
@@ -64,6 +72,20 @@ internal class RemoteComposeRenderer(
         surface = brand?.surfaceColor?.let(::parseColor) ?: SURFACE_COLOR,
         text = brand?.textColor?.let(::parseColor) ?: TEXT_COLOR,
         outline = brand?.outlineColor?.let(::parseColor) ?: DIVIDER_COLOR,
+        palette = ThemePalette(
+            lightBackground = background,
+            darkBackground = darkBackground,
+            lightPrimary = parseColor(brand?.primaryColor ?: DEFAULT_PRIMARY),
+            darkPrimary = darkPrimary,
+            lightOnPrimary = ON_PRIMARY,
+            darkOnPrimary = if (isLightColor(darkPrimary)) DARK_ON_LIGHT_PRIMARY else ON_PRIMARY,
+            lightSurface = brand?.surfaceColor?.let(::parseColor) ?: SURFACE_COLOR,
+            darkSurface = darkSurface,
+            lightText = brand?.textColor?.let(::parseColor) ?: TEXT_COLOR,
+            darkText = darkText,
+            lightOutline = brand?.outlineColor?.let(::parseColor) ?: DIVIDER_COLOR,
+            darkOutline = darkOutline,
+        ),
     ) { url ->
         images.get(url, ::fetch)
     }
@@ -130,11 +152,14 @@ internal class RemoteComposeRenderer(
             val writer = RemoteComposeWriter(profile.profile, *tags)
             writer.root {
                 RcCanvas(writer) {
+                    val theme = ThemeColors.allocate(writer, env.palette)
                     val values = ScreenValues.allocate(this, writer, screen)
                     val visibility = VisibilityStates.allocate(this, screen)
                     val custom = CustomContext(components, brandColors, targetLevel, ::scratchWriter)
-                    val renderEnv = env.withRenderState(writer, values, visibility, custom)
-                    Column(Modifier.fillMaxSize().background(background).verticalScroll().padding(SCREEN_PADDING)) {
+                    val renderEnv = env.withRenderState(writer, theme, values, visibility, custom)
+                    Column(
+                        Modifier.fillMaxSize().background(theme.background).verticalScroll().padding(SCREEN_PADDING),
+                    ) {
                         renderChildren(renderEnv, screen.components, Slot(Axis.Vertical) { m, w -> m.weight(w) })
                     }
                 }
@@ -248,6 +273,65 @@ internal class RemoteComposeRenderer(
             }
             return argb.toLong(16).toInt()
         }
+
+        private fun isLightColor(argb: Int): Boolean {
+            val r = (argb ushr 16) and 0xFF
+            val g = (argb ushr 8) and 0xFF
+            val b = argb and 0xFF
+            return (0.299 * r + 0.587 * g + 0.114 * b) > 160.0
+        }
+    }
+}
+
+/** Resolved light + dark ARGB pairs for one brand, emitted once per document as [ThemeColors]. */
+internal class ThemePalette(
+    val lightBackground: Int,
+    val darkBackground: Int,
+    val lightPrimary: Int,
+    val darkPrimary: Int,
+    val lightOnPrimary: Int,
+    val darkOnPrimary: Int,
+    val lightSurface: Int,
+    val darkSurface: Int,
+    val lightText: Int,
+    val darkText: Int,
+    val lightOutline: Int,
+    val darkOutline: Int,
+)
+
+/** Per-document RC themed color IDs (`remoteThemedColor`), switching locally with `player.setTheme`. */
+internal class ThemeColors(
+    val background: RcColor,
+    val primary: RcColor,
+    val onPrimary: RcColor,
+    val surface: RcColor,
+    val text: RcColor,
+    val mutedText: RcColor,
+    val outline: RcColor,
+    val placeholder: RcColor,
+) {
+    companion object {
+        private const val RGB_MASK = 0x00FFFFFF
+        private const val MUTED_ALPHA = 0xA6000000.toInt()
+
+        fun allocate(writer: RemoteComposeWriter, p: ThemePalette): ThemeColors {
+            fun themed(name: String, light: Int, dark: Int): RcColor =
+                RcColor(writer.addThemedColor(name, 0.toShort(), 0.toShort(), light, dark).toInt())
+            return ThemeColors(
+                background = themed("brand.bg", p.lightBackground, p.darkBackground),
+                primary = themed("brand.primary", p.lightPrimary, p.darkPrimary),
+                onPrimary = themed("brand.onPrimary", p.lightOnPrimary, p.darkOnPrimary),
+                surface = themed("brand.surface", p.lightSurface, p.darkSurface),
+                text = themed("brand.text", p.lightText, p.darkText),
+                mutedText = themed(
+                    "brand.muted",
+                    (p.lightText and RGB_MASK) or MUTED_ALPHA,
+                    (p.darkText and RGB_MASK) or MUTED_ALPHA,
+                ),
+                outline = themed("brand.outline", p.lightOutline, p.darkOutline),
+                placeholder = themed("brand.placeholder", PLACEHOLDER_COLOR, DARK_PLACEHOLDER_COLOR),
+            )
+        }
     }
 }
 
@@ -260,6 +344,8 @@ internal class RenderEnv(
     val surface: Int,
     val text: Int,
     val outline: Int,
+    val palette: ThemePalette,
+    private val activeTheme: ThemeColors? = null,
     private val activeWriter: RemoteComposeWriter? = null,
     val values: ScreenValues = ScreenValues.EMPTY,
     val visibility: VisibilityStates = VisibilityStates.EMPTY,
@@ -271,17 +357,34 @@ internal class RenderEnv(
 
     fun jsonParser(): RemoteComposeJsonParser = parser
 
+    /** The active themed RC colors for the current render pass. */
+    val theme: ThemeColors
+        get() = checkNotNull(activeTheme) { "RenderEnv has no active ThemeColors" }
+
     /** The active RC writer for the current render pass (used by `ScreenValues` / `Slider`). */
     val writer: RemoteComposeWriter
         get() = checkNotNull(activeWriter) { "RenderEnv has no active RemoteComposeWriter" }
 
-    /** Returns a per-render view carrying the active [writer], [values], and [visibility]. */
+    /** Returns a per-render view carrying the active [writer], [theme], [values], and [visibility]. */
     fun withRenderState(
         writer: RemoteComposeWriter,
+        theme: ThemeColors,
         values: ScreenValues,
         visibility: VisibilityStates = VisibilityStates.EMPTY,
         custom: CustomContext = CustomContext.EMPTY,
-    ): RenderEnv = RenderEnv(primary, surface, text, outline, writer, values, visibility, custom, loadImage)
+    ): RenderEnv = RenderEnv(
+        primary,
+        surface,
+        text,
+        outline,
+        palette,
+        theme,
+        writer,
+        values,
+        visibility,
+        custom,
+        loadImage,
+    )
 
     /** The fetched image, or null (failed or rejected: callers render the alt text). */
     fun image(url: String): EncodedImage? = loadImage(url)

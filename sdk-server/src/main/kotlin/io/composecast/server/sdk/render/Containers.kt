@@ -17,7 +17,7 @@ internal fun RcScope.renderCard(env: RenderEnv, node: Component.Card, slot: Slot
         node.modifier,
         slot,
         defaultPadding = Padding(CARD_PADDING),
-        defaultBackground = env.surface,
+        defaultBackground = env.theme.surface,
         defaultCornerRadius = CARD_RADIUS,
     ),
 ) {

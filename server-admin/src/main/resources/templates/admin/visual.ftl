@@ -192,7 +192,8 @@
     </div>
     <#if phone>
     <aside class="phone" aria-label="Phone preview">
-      <img src="/admin/screens/${id?url}/phone.png" width="411" height="914"
+      <@layout.previewTheme "#screen-phone-img"/>
+      <img id="screen-phone-img" src="/admin/screens/${id?url}/phone.png" width="411" height="914"
         alt="The saved screen as the app draws it on a phone">
       <p class="muted help">Drawn by the app's own player from the saved draft. Updates on every save.</p>
     </aside>
@@ -432,8 +433,9 @@
             if (jsonTextarea) jsonTextarea.value = savedJson;
             setStatus("Saved", false);
             if (phoneImg) {
-              const base = phoneImg.src.split("?")[0];
-              phoneImg.src = base + "?t=" + Date.now();
+              const base = (phoneImg.dataset.baseSrc || phoneImg.src).split("?")[0];
+              const theme = window.composeCastPreviewTheme ? window.composeCastPreviewTheme(phoneImg) : "light";
+              phoneImg.src = base + "?theme=" + theme + "&t=" + Date.now();
             }
             return true;
           })();

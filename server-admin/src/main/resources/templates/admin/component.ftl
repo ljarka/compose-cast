@@ -25,8 +25,9 @@
       <#if phoneImage>
       <div class="card">
         <h2 style="margin-top: 0">Preview<@layout.uid "admin:component.preview"/></h2>
+        <@layout.previewTheme "#component-phone-img"/>
         <p class="muted">The saved draft alone, with its sample arguments.</p>
-        <img src="/admin/components/${id?url}/phone.png" alt="Phone preview of ${id}" style="width: 100%; border-radius: 12px">
+        <img id="component-phone-img" src="/admin/components/${id?url}/phone.png" alt="Phone preview of ${id}" style="width: 100%; border-radius: 12px">
       </div>
       </#if>
       <#if usage?has_content>

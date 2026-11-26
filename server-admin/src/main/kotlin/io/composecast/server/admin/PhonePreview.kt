@@ -32,17 +32,23 @@ import javax.imageio.ImageIO
  */
 fun interface PhoneRenderer {
     fun png(document: ByteArray): ByteArray
+
+    /** Renders [document] in dark or light theme; default ignores [dark] for simple test fakes. */
+    fun png(document: ByteArray, dark: Boolean): ByteArray = png(document)
 }
 
-/** Calls the `preview-renderer` service at [baseUrl] (`POST /render`, RC document → `image/png`). */
+/** Calls the `preview-renderer` service at [baseUrl] (`POST /render[?theme=dark]`, RC document → `image/png`). */
 class HttpPhoneRenderer(
     baseUrl: String,
     private val client: HttpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build(),
 ) : PhoneRenderer {
-    private val render = URI.create(baseUrl.trimEnd('/') + "/render")
+    private val renderLight = URI.create(baseUrl.trimEnd('/') + "/render")
+    private val renderDark = URI.create(baseUrl.trimEnd('/') + "/render?theme=dark")
 
-    override fun png(document: ByteArray): ByteArray {
-        val request = HttpRequest.newBuilder(render)
+    override fun png(document: ByteArray): ByteArray = png(document, dark = false)
+
+    override fun png(document: ByteArray, dark: Boolean): ByteArray {
+        val request = HttpRequest.newBuilder(if (dark) renderDark else renderLight)
             .timeout(Duration.ofSeconds(20))
             .header("Content-Type", "application/octet-stream")
             .POST(HttpRequest.BodyPublishers.ofByteArray(document))
@@ -60,8 +66,8 @@ class HttpPhoneRenderer(
 }
 
 /**
- * Remembers the last [size] PNGs by document hash: reloading the editor without a change (or a
- * change that renders the same) does not ask the renderer again.
+ * Remembers the last [size] PNGs by document hash + theme: reloading the editor without a change
+ * (or a change that renders the same) does not ask the renderer again.
  */
 class CachingPhoneRenderer(private val renderer: PhoneRenderer, private val size: Int = 32) : PhoneRenderer {
     private val cache = object : LinkedHashMap<String, ByteArray>(size, 0.75f, true) {
@@ -69,10 +75,13 @@ class CachingPhoneRenderer(private val renderer: PhoneRenderer, private val size
             this.size > this@CachingPhoneRenderer.size
     }
 
-    override fun png(document: ByteArray): ByteArray {
-        val key = MessageDigest.getInstance("SHA-256").digest(document).joinToString("") { "%02x".format(it) }
+    override fun png(document: ByteArray): ByteArray = png(document, dark = false)
+
+    override fun png(document: ByteArray, dark: Boolean): ByteArray {
+        val prefix = if (dark) "dark:" else "light:"
+        val key = prefix + MessageDigest.getInstance("SHA-256").digest(document).joinToString("") { "%02x".format(it) }
         synchronized(cache) { cache[key] }?.let { return it }
-        return renderer.png(document).also { synchronized(cache) { cache[key] = it } }
+        return renderer.png(document, dark).also { synchronized(cache) { cache[key] = it } }
     }
 }
 
@@ -114,14 +123,15 @@ private suspend fun ApplicationCall.screenPng(
         return null
     }
     val json = stored.draftJson ?: stored.liveJson.orEmpty()
+    val dark = request.queryParameters["theme"] == "dark"
     return try {
-        withContext(Dispatchers.IO) { renderer.png(publishing.document(json)) }
+        withContext(Dispatchers.IO) { renderer.png(publishing.document(json), dark) }
     } catch (e: PublishException) {
-        placeholder("Cannot build this screen", e.message.orEmpty())
+        placeholder("Cannot build this screen", e.message.orEmpty(), dark)
         null
     } catch (e: Exception) {
         log.warn("Phone preview of '${stored.id}' failed: ${e.message}")
-        placeholder("No phone preview", e.message.orEmpty())
+        placeholder("No phone preview", e.message.orEmpty(), dark)
         null
     }
 }
@@ -175,19 +185,22 @@ private suspend fun ApplicationCall.respond404() =
     respondBytes(ByteArray(0), ContentType.Text.Plain, HttpStatusCode.NotFound)
 
 /** A phone-sized SVG with [title] and [detail]; text is XML-escaped and scripts are blocked (CSP). */
-private suspend fun ApplicationCall.placeholder(title: String, detail: String) {
+private suspend fun ApplicationCall.placeholder(title: String, detail: String, dark: Boolean = false) {
     response.header("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'")
-    respondBytes(placeholderSvg(title, detail).toByteArray(), ContentType.Image.SVG)
+    respondBytes(placeholderSvg(title, detail, dark).toByteArray(), ContentType.Image.SVG)
 }
 
-internal fun placeholderSvg(title: String, detail: String): String {
+internal fun placeholderSvg(title: String, detail: String, dark: Boolean = false): String {
+    val bg = if (dark) "#141218" else "#f4f4f6"
+    val fg = if (dark) "#e6e0e9" else "#1d1d1f"
+    val muted = if (dark) "#9a9aa2" else "#6b6b76"
     val font = """text-anchor="middle" font-family="system-ui, sans-serif""""
     val lines = detail.chunkedWords(34).take(8).mapIndexed { i, line ->
-        """<text x="205" y="${470 + i * 26}" $font font-size="18" fill="#6b6b76">${line.xml()}</text>"""
+        """<text x="205" y="${470 + i * 26}" $font font-size="18" fill="$muted">${line.xml()}</text>"""
     }
     return """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 411 914" width="411" height="914">""" +
-        """<rect width="411" height="914" fill="#f4f4f6"/>""" +
-        """<text x="205" y="430" $font font-size="22" font-weight="600" fill="#1d1d1f">${title.xml()}</text>""" +
+        """<rect width="411" height="914" fill="$bg"/>""" +
+        """<text x="205" y="430" $font font-size="22" font-weight="600" fill="$fg">${title.xml()}</text>""" +
         lines.joinToString("") + "</svg>"
 }
 

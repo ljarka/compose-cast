@@ -1,8 +1,8 @@
 package io.composecast.server.sdk.render
 
-import androidx.compose.remote.core.operations.layout.modifiers.ShapeType
 import androidx.compose.remote.core.semantics.AccessibleComponent
 import androidx.compose.remote.creation.dsl.Modifier
+import androidx.compose.remote.creation.dsl.RcBorderShape
 import androidx.compose.remote.creation.dsl.RcFontWeight
 import androidx.compose.remote.creation.dsl.RcHorizontalPositioning
 import androidx.compose.remote.creation.dsl.RcRowHorizontalPositioning
@@ -27,9 +27,9 @@ import io.composecast.protocol.Padding
 
 /** A clickable Box with the brand `primary` color; variants filled / outlined / text. */
 internal fun RcScope.renderButton(env: RenderEnv, node: Component.Button, slot: Slot) {
-    val primary = env.primary
+    val primary = env.theme.primary
     val (bg, contentColor, hasBorder) = when (node.variant) {
-        ButtonVariant.Filled -> Triple(primary, ON_PRIMARY, false)
+        ButtonVariant.Filled -> Triple(primary, env.theme.onPrimary, false)
         ButtonVariant.Outlined -> Triple(null, primary, true)
         ButtonVariant.Text -> Triple(null, primary, false)
     }
@@ -47,7 +47,7 @@ internal fun RcScope.renderButton(env: RenderEnv, node: Component.Button, slot: 
         ) {
             var r = it
             if (hasBorder && node.modifier.border == null) {
-                r = r.border(1f, BUTTON_RADIUS, primary, ShapeType.ROUNDED_RECTANGLE)
+                r = r.border(1f, BUTTON_RADIUS, primary, RcBorderShape.RoundedRectangle)
             }
             if (node.modifier.action == null) {
                 r = r.applyAction(env, node.action)
@@ -88,7 +88,7 @@ internal fun RcScope.renderExpandable(env: RenderEnv, node: Component.Expandable
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedRectShape(BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS))
-                .background(env.surface)
+                .background(env.theme.surface)
                 .onClick { setValue(state, nextState) }
                 .padding(14f),
             vertical = RcVerticalPositioning.Center,
@@ -96,11 +96,11 @@ internal fun RcScope.renderExpandable(env: RenderEnv, node: Component.Expandable
             Text(
                 node.title,
                 modifier = Modifier.weight(1f),
-                color = env.text,
+                color = env.theme.text,
                 fontSize = sp(16),
                 fontWeight = RcFontWeight.W500,
             )
-            Text("+", color = env.primary, fontSize = sp(18), fontWeight = RcFontWeight.W700)
+            Text("+", color = env.theme.primary, fontSize = sp(18), fontWeight = RcFontWeight.W700)
         }
     }
 
@@ -109,7 +109,7 @@ internal fun RcScope.renderExpandable(env: RenderEnv, node: Component.Expandable
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedRectShape(BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS, BUTTON_RADIUS))
-                .background(env.surface),
+                .background(env.theme.surface),
         ) {
             Row(
                 modifier = Modifier
@@ -121,11 +121,11 @@ internal fun RcScope.renderExpandable(env: RenderEnv, node: Component.Expandable
                 Text(
                     node.title,
                     modifier = Modifier.weight(1f),
-                    color = env.text,
+                    color = env.theme.text,
                     fontSize = sp(16),
                     fontWeight = RcFontWeight.W500,
                 )
-                Text("−", color = env.primary, fontSize = sp(18), fontWeight = RcFontWeight.W700)
+                Text("−", color = env.theme.primary, fontSize = sp(18), fontWeight = RcFontWeight.W700)
             }
             Column(modifier = Modifier.fillMaxWidth().padding(start = 14f, end = 14f, bottom = 14f)) {
                 renderChildren(env, node.content, Slot(Axis.Vertical) { m, w -> m.weight(w) })

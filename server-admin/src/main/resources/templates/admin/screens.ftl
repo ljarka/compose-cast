@@ -26,7 +26,7 @@
     <article class="screen-card<#if !phone> no-thumb</#if>">
       <#if phone>
       <a class="screen-thumb" href="/admin/screens/${s.id?url}" tabindex="-1" aria-hidden="true">
-        <img src="/admin/screens/${s.id?url}/thumb.png" width="90" height="200" loading="lazy" alt="">
+        <img data-theme-thumb="true" src="/admin/screens/${s.id?url}/thumb.png" width="90" height="200" loading="lazy" alt="">
       </a>
       </#if>
       <div class="screen-info">

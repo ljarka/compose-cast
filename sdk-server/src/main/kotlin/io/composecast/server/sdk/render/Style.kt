@@ -11,6 +11,15 @@ internal const val SURFACE_COLOR = 0xFFF3EDF7.toInt()
 internal const val DIVIDER_COLOR = 0xFFD0C8DC.toInt()
 internal const val PLACEHOLDER_COLOR = 0xFF79747E.toInt()
 internal const val ON_PRIMARY = 0xFFFFFFFF.toInt()
+
+// Dark mode defaults (Material 3 dark equivalents) used when BrandConfig leaves dark* colors unset.
+internal const val DARK_PRIMARY_COLOR = 0xFFD0BCFF.toInt()
+internal const val DARK_BACKGROUND_COLOR = 0xFF141218.toInt()
+internal const val DARK_SURFACE_COLOR = 0xFF211F26.toInt()
+internal const val DARK_TEXT_COLOR = 0xFFE6E0E9.toInt()
+internal const val DARK_DIVIDER_COLOR = 0xFF49454F.toInt()
+internal const val DARK_PLACEHOLDER_COLOR = 0xFF938F99.toInt()
+internal const val DARK_ON_LIGHT_PRIMARY = 0xFF1C1B1F.toInt()
 internal const val BUTTON_RADIUS = 12f
 internal const val BUTTON_PADDING = 14
 internal const val BUTTON_ICON_SIZE = 18f
