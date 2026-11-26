@@ -445,3 +445,7 @@ README roadmap's "Etap" numbers.
     added per-IP `LoginRateLimiter` + `Dispatchers.Default` for BCrypt on `POST /admin/login`;
     sanitized HTTP 500 error responses in `server-app`; added `Content-Security-Policy` to admin
     pages.
+88. **T-052 — Android client cleanup** (2026-11-26): unified `ComposeCastClient` onto a single
+    Ktor `OkHttp` engine (removed `ktor-client-android`), added configurable `HttpTimeout`
+    defaults (with infinite timeout on WebSocket sessions), and restricted `app-shell` HTTP logging
+    to debuggable builds.

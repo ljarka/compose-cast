@@ -60,9 +60,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-020 Dynamic values (clock, light/dark, conditions)](tasks/T-020-dynamic-values.md) | Etap 7/10 | later (light/dark may be pulled forward by a real app) |
 | [T-022 Advanced RC features (templates, drag, sensors)](tasks/T-022-advanced-rc-features.md) | Etap 10 | later (pick by real use case) |
 | [T-050 Close CI verification gaps (`app-templates` and `sdk-android` tests)](tasks/T-050-ci-gaps-and-sdk-android-tests.md) | quality | done (`9ec5ede`) |
-| [T-051 Server security hardening (SSRF, login rate limit, 500, CSP)](tasks/T-051-server-security-hardening.md) | quality | done |
-| [T-052 Android client cleanup (single OkHttp engine, timeouts, release logging)](tasks/T-052-sdk-android-cleanup.md) | quality | in progress |
-| [T-053 SQLite schema migrations, foreign keys, and expired session cleanup](tasks/T-053-sqlite-migrations-and-sessions.md) | quality | queued (after T-052) |
+| [T-051 Server security hardening (SSRF, login rate limit, 500, CSP)](tasks/T-051-server-security-hardening.md) | quality | done (`3fa809d`) |
+| [T-052 Android client cleanup (single OkHttp engine, timeouts, release logging)](tasks/T-052-sdk-android-cleanup.md) | quality | done |
+| [T-053 SQLite schema migrations, foreign keys, and expired session cleanup](tasks/T-053-sqlite-migrations-and-sessions.md) | quality | in progress |
 | [T-054 Server I/O offloading, database-aware `/health`, and graceful shutdown](tasks/T-054-server-io-health-shutdown.md) | quality | queued (after T-053) |
 | [T-055 Static analysis (`detekt`) and `explicitApi()` for published libraries](tasks/T-055-explicit-api-and-detekt.md) | quality | queued (after T-054) |
 | [T-056 Live screen fan-out and refactoring of largest files](tasks/T-056-live-fanout-and-refactoring.md) | quality | queued (after T-055) |
@@ -91,9 +91,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- T-052 — Android client cleanup
 - T-051 — server security hardening
 - T-050 — close CI gaps & `sdk-android` unit tests
 - T-049 follow-up — argument form from params
 - T-049 — custom components in raw RC JSON
 - Spike: custom components as raw RC JSON
-- On-device screen values & `slider` → `gauge` / `text` interaction

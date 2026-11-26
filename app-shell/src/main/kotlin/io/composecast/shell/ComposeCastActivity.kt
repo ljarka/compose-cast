@@ -2,6 +2,7 @@ package io.composecast.shell
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -109,8 +110,9 @@ class ComposeCastActivity : ComponentActivity() {
                 } else {
                     // A new server starts over: new client, empty back stack.
                     key(url) {
+                        val isDebuggable = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
                         val client = remember {
-                            ComposeCastClient(ComposeCastConfig(serverUrl = url, logEnabled = true))
+                            ComposeCastClient(ComposeCastConfig(serverUrl = url, logEnabled = isDebuggable))
                         }
                         DisposableEffect(client) { onDispose { client.close() } }
                         ComposeCastApp(

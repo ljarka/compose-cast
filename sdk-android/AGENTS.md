@@ -48,8 +48,9 @@ installs an `android.util.Log` logger.
 ## Decisions
 
 - **Live screens (T-047, [ADR 0029](../docs/decisions/0029-live-screens-websocket-data-updates.md)):**
-  `liveScreen` uses a second, lazily created Ktor client on the **OkHttp** engine (the Android
-  engine has no WebSockets); same version headers as GET; reconnects with backoff 1 s … 30 s;
+  `ComposeCastClient` uses a single Ktor client on the **OkHttp** engine (T-052) for both REST
+  (with configurable connect/request/socket timeouts) and WebSockets (`liveScreen`); same version
+  headers as GET; reconnects with backoff 1 s … 30 s;
   stops when the server closes with `CANNOT_ACCEPT` (not live / unknown). `ComposeCastScreen`
   sends data-update frames to `updateDocument`, skips a full frame equal to the shown document
   (`contentHash`) and re-registers action callbacks for other full frames; `repeatOnLifecycle(STARTED)`

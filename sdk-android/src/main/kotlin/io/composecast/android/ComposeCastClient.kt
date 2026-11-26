@@ -12,13 +12,15 @@ import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
-import io.ktor.client.engine.android.Android
 import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.HttpTimeoutConfig
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.expectSuccess
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.timeout
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.client.request.get
@@ -54,12 +56,18 @@ class ComposeCastClient internal constructor(
     private val http = if (engine != null) {
         HttpClient(engine) { configureHttp() }
     } else {
-        HttpClient(Android) { configureHttp() }
+        HttpClient(OkHttp) { configureHttp() }
     }
 
     private fun HttpClientConfig<*>.configureHttp() {
         // Non-2xx responses throw (e.g. 404 for an unknown screen) instead of failing to decode.
         expectSuccess = true
+        install(HttpTimeout) {
+            connectTimeoutMillis = config.connectTimeoutMs
+            requestTimeoutMillis = config.requestTimeoutMs
+            socketTimeoutMillis = config.socketTimeoutMs
+        }
+        install(WebSockets)
         install(ContentNegotiation) {
             json(Json { ignoreUnknownKeys = true })
         }
@@ -83,10 +91,6 @@ class ComposeCastClient internal constructor(
     }
 
     private class CachedScreen(val etag: String, val title: String, val bytes: ByteArray, val liveEveryMs: Int?)
-
-    /** Only for live screens (T-047): Ktor's Android engine has no WebSockets, OkHttp has. */
-    private val socketsLazy = lazy { HttpClient(OkHttp) { install(WebSockets) } }
-    private val sockets by socketsLazy
 
     /**
      * Downloads a screen's Remote Compose document (`GET /screens/{id}?params`, URL-encoded) and
@@ -153,12 +157,16 @@ class ComposeCastClient internal constructor(
         while (true) {
             var refused = false
             try {
-                sockets.webSocket(
+                http.webSocket(
                     request = {
                         url(config.serverUrl.replaceFirst("http", "ws"))
                         url {
                             appendPathSegments("screens", id, "live")
                             params.forEach { (name, value) -> parameters.append(name, value) }
+                        }
+                        timeout {
+                            requestTimeoutMillis = HttpTimeoutConfig.INFINITE_TIMEOUT_MS
+                            socketTimeoutMillis = HttpTimeoutConfig.INFINITE_TIMEOUT_MS
                         }
                         header(Headers.PLAYER_VERSION, config.playerVersion)
                         header(Headers.RC_API_LEVEL, CoreDocument.DOCUMENT_API_LEVEL)
@@ -192,7 +200,6 @@ class ComposeCastClient internal constructor(
 
     fun close() {
         http.close()
-        if (socketsLazy.isInitialized()) sockets.close()
     }
 
     private companion object {
