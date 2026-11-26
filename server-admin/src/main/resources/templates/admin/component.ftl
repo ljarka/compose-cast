@@ -42,15 +42,30 @@
     <table>
       <thead><tr><th>Version</th><th>Published</th><th>By</th><th></th></tr></thead>
       <tbody>
+      <#if hasDraft!false>
+        <tr>
+          <td>Draft <span class="status status-draft">draft</span></td>
+          <td><time datetime="${draftUpdatedAtIso}" title="${draftUpdatedAtExact}">${draftUpdatedAt}</time></td>
+          <td class="muted">unpublished</td>
+          <td><#if canEdit>
+            <form method="post" action="/admin/components/${id?url}/draft/revert" style="display:inline;margin:0">
+              <button type="submit" class="danger" style="margin:0">Revert</button>
+            </form>
+          </#if></td>
+        </tr>
+      </#if>
       <#list history as h>
         <tr>
-          <td>#${h.revision?c}<#if h?is_first> <span class="status status-published">published</span></#if></td>
+          <td><a href="/admin/components/${id?url}/revisions/${h.revision?c}">#${h.revision?c}</a><#if h?is_first> <span class="status status-published">published</span></#if></td>
           <td><time datetime="${h.publishedAtIso}" title="${h.publishedAtExact}">${h.publishedAt}</time></td>
           <td>${h.publishedBy}</td>
           <td><#if canEdit && !h?is_first>
             <form method="post" action="/admin/components/${id?url}/rollback" style="display:inline;margin:0">
               <input type="hidden" name="revision" value="${h.revision?c}">
               <button type="submit" style="margin:0">Roll back to this</button>
+            </form>
+            <form method="post" action="/admin/components/${id?url}/revisions/${h.revision?c}/delete" style="display:inline;margin:0">
+              <button type="submit" class="danger" style="margin:0">Remove</button>
             </form>
           </#if></td>
         </tr>

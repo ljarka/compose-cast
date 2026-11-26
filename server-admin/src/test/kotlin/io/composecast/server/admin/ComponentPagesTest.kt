@@ -163,4 +163,75 @@ class ComponentPagesTest {
         val switched = ScreenJson.decode(host.screens.get("main")!!.draftJson!!, "t").components.single()
         assertEquals(Component.Custom("badge", mapOf("count" to "1")), switched)
     }
+
+    @Test
+    fun `component history shows pending draft with revert, rollback and revision removal`() =
+        host.run(withComponents = true) { client ->
+            val cookie = with(host) { client.loginAs(Role.EDITOR) }
+            val v1 = ComponentJson.encode(
+                ComponentDefinition(
+                    id = "promo",
+                    title = "V1",
+                    rcVersion = "1.0.0-alpha23",
+                    body = Json.parseToJsonElement("""{ "type": "text", "text": "v1" }""").jsonObject,
+                ),
+            )
+            val v2 = ComponentJson.encode(
+                ComponentDefinition(
+                    id = "promo",
+                    title = "V2",
+                    rcVersion = "1.0.0-alpha23",
+                    body = Json.parseToJsonElement("""{ "type": "text", "text": "v2" }""").jsonObject,
+                ),
+            )
+            host.components.publish("promo", v1, by = "a@x")
+            host.components.publish("promo", v2, by = "a@x")
+            host.components.saveDraft("promo", v2.replace("v2", "draft-edit"))
+
+            // Both the JSON editor and the designer show the pending Draft row with Revert and past revisions
+            val editorHtml = client.page(cookie, "/admin/components/promo").bodyAsText()
+            assertContains(editorHtml, "/admin/components/promo/draft/revert")
+            val designerHtml = client.page(cookie, "/admin/components/promo/design").bodyAsText()
+            assertContains(designerHtml, "/admin/components/promo/draft/revert")
+            assertContains(designerHtml, "Roll back to this")
+
+            // Revert draft from the designer returns to /design and clears the draft
+            val reverted = client.post(cookie, "/admin/components/promo/draft/revert", "from" to "design")
+            assertEquals(HttpStatusCode.SeeOther, reverted.status)
+            assertEquals("/admin/components/promo/design?draftReverted", reverted.headers[HttpHeaders.Location])
+            assertEquals(null, host.components.get("promo")!!.draftJson)
+
+            // View and roll back to v1 from the designer
+            val history = host.components.history("promo")
+            val oldest = history.last()
+            val latest = history.first()
+            val revPage = client.page(cookie, "/admin/components/promo/revisions/${oldest.id}")
+            assertEquals(HttpStatusCode.OK, revPage.status)
+            assertContains(revPage.bodyAsText(), "v1")
+
+            val rolledBack = client.post(
+                cookie,
+                "/admin/components/promo/rollback",
+                "revision" to oldest.id.toString(),
+                "from" to "design",
+            )
+            assertEquals(HttpStatusCode.SeeOther, rolledBack.status)
+            assertEquals("/admin/components/promo/design?rolledback", rolledBack.headers[HttpHeaders.Location])
+            assertEquals(v1, host.components.live()["promo"])
+
+            // Remove an older revision, refuse removing the currently live revision
+            val currentLive = host.components.history("promo").first()
+            assertEquals(
+                HttpStatusCode.UnprocessableEntity,
+                client.post(cookie, "/admin/components/promo/revisions/${currentLive.id}/delete").status,
+            )
+            val removed = client.post(
+                cookie,
+                "/admin/components/promo/revisions/${latest.id}/delete",
+                "from" to "design",
+            )
+            assertEquals(HttpStatusCode.SeeOther, removed.status)
+            assertEquals("/admin/components/promo/design?revisionRemoved", removed.headers[HttpHeaders.Location])
+            assertEquals(null, host.components.revision("promo", latest.id))
+        }
 }

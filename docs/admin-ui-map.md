@@ -65,6 +65,7 @@ headings in `server-admin`.
 | `admin:designer.layers` | `designer.ftl` | `designer.js` | Layers list and reorder/duplicate/delete buttons |
 | `admin:designer.component` | `designer.ftl` | `designer.js` | Component-level settings & parameters panel |
 | `admin:designer.code` | `designer.ftl` | `designer.js` | Designer Code panel (JSON & compiled Remote Compose tabs) |
+| `admin:designer.history` | `designer.ftl` | `ComponentPages.kt` | Component history table in the designer (pending Draft + Revert, published revisions, Roll back, Remove) |
 | `admin:designer.properties` | `designer.ftl` | `designer.js` | Selected layer properties panel |
 | `admin:designer.phone` | `designer.ftl` | `ComponentPages.kt`, `designer.js` | "On the phone" live player render card |
 

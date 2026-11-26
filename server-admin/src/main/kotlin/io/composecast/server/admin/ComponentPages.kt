@@ -98,6 +98,7 @@ internal fun Route.componentPages(
             }
             get("/design") {
                 val stored = components.get(call.screenId) ?: return@get call.notFound()
+                val notice = NOTICES.entries.firstOrNull { it.key in call.request.queryParameters }?.value.orEmpty()
                 val json = stored.draftJson ?: stored.liveJson.orEmpty()
                 val brand = settings[SettingsStore.BRAND]?.let { Json.decodeFromString(BrandConfig.serializer(), it) }
                 call.respondTemplate(
@@ -107,6 +108,10 @@ internal fun Route.componentPages(
                         "json" to json.scriptSafe(),
                         "brand" to brandColors(brand).scriptSafe(),
                         "status" to screenStatus(stored),
+                        "notice" to notice,
+                        "hasDraft" to (stored.draftJson != null && stored.liveJson != null),
+                        *timeFields("draftUpdatedAt", stored.updatedAt).toTypedArray(),
+                        "history" to historyRows(components, stored.id),
                         "phoneImage" to (phoneRenderer != null),
                     ),
                 )
@@ -167,7 +172,8 @@ internal fun Route.componentPages(
             }
             post("/rollback") {
                 val stored = components.get(call.screenId) ?: return@post call.notFound()
-                val revision = call.receiveParameters()["revision"]?.toIntOrNull()
+                val params = call.receiveParameters()
+                val revision = params["revision"]?.toIntOrNull()
                     ?.let { components.revision(stored.id, it) } ?: return@post call.notFound()
                 val failure = publishOrProblem {
                     publishing.rollbackComponent(stored.id, revision.id, call.adminUser.email)
@@ -184,7 +190,64 @@ internal fun Route.componentPages(
                         phoneRenderer != null,
                     )
                 }
-                call.seeOther("/admin/components/${stored.id.urlEncoded()}?rolledback")
+                val target = if (params["from"] == "design") "/design" else ""
+                call.seeOther("/admin/components/${stored.id.urlEncoded()}$target?rolledback")
+            }
+            post("/draft/revert") {
+                val stored = components.get(call.screenId) ?: return@post call.notFound()
+                val params = call.receiveParameters()
+                if (stored.liveJson == null || stored.draftJson == null) {
+                    call.response.status(HttpStatusCode.UnprocessableEntity)
+                    val json = stored.draftJson ?: stored.liveJson.orEmpty()
+                    return@post call.editor(
+                        components,
+                        stored,
+                        json,
+                        ComponentJson.Checked(null, listOf("There is no pending draft to revert.")),
+                        null,
+                        phoneRenderer != null,
+                    )
+                }
+                components.discardDraft(stored.id)
+                val target = if (params["from"] == "design") "/design" else ""
+                call.seeOther("/admin/components/${stored.id.urlEncoded()}$target?draftReverted")
+            }
+            get("/revisions/{revision}") {
+                val revision =
+                    call.parameters["revision"]?.toIntOrNull()?.let { components.revision(call.screenId, it) }
+                        ?: return@get call.notFound()
+                call.respondTemplate(
+                    "admin/revision.ftl",
+                    call.page("${revision.screenId} #${revision.id}") + mapOf(
+                        "id" to revision.screenId,
+                        "revision" to revision.id,
+                        "json" to revision.json,
+                        "backUrl" to "/admin/components/${revision.screenId.urlEncoded()}",
+                        *timeFields("publishedAt", revision.publishedAt).toTypedArray(),
+                        "publishedBy" to revision.publishedBy,
+                    ),
+                )
+            }
+            post("/revisions/{revision}/delete") {
+                val stored = components.get(call.screenId) ?: return@post call.notFound()
+                val params = call.receiveParameters()
+                val revId = call.parameters["revision"]?.toIntOrNull()
+                    ?.takeIf { components.revision(stored.id, it) != null } ?: return@post call.notFound()
+                if (components.history(stored.id).firstOrNull()?.id == revId) {
+                    call.response.status(HttpStatusCode.UnprocessableEntity)
+                    val json = stored.draftJson ?: stored.liveJson.orEmpty()
+                    return@post call.editor(
+                        components,
+                        stored,
+                        json,
+                        ComponentJson.Checked(null, listOf("Cannot remove the currently live revision #$revId.")),
+                        null,
+                        phoneRenderer != null,
+                    )
+                }
+                components.deleteRevision(stored.id, revId)
+                val target = if (params["from"] == "design") "/design" else ""
+                call.seeOther("/admin/components/${stored.id.urlEncoded()}$target?revisionRemoved")
             }
             post("/delete") {
                 val stored = components.get(call.screenId) ?: return@post call.notFound()
@@ -253,6 +316,8 @@ private val NOTICES = mapOf(
     "saved" to "Draft saved (as formatted JSON). Screens still use the published version.",
     "published" to "Published: screens use this version from their next render.",
     "rolledback" to "Rolled back: screens use the chosen version. A pending draft was kept.",
+    "draftReverted" to "Draft reverted: showing the last published version.",
+    "revisionRemoved" to "Removed the revision from history.",
 )
 
 /** A valid first draft: a rounded box with a text param, to be replaced (by hand or by an LLM). */
@@ -377,13 +442,9 @@ private suspend fun ApplicationCall.editor(
             *timeFields("publishedAt", stored.publishedAt).toTypedArray(),
             "publishedBy" to stored.publishedBy.orEmpty(),
             "notice" to notice.orEmpty(),
-            "history" to components.history(stored.id).map {
-                mapOf(
-                    "revision" to it.id,
-                    *timeFields("publishedAt", it.publishedAt).toTypedArray(),
-                    "publishedBy" to it.publishedBy,
-                )
-            },
+            "hasDraft" to (stored.draftJson != null && stored.liveJson != null),
+            *timeFields("draftUpdatedAt", stored.updatedAt).toTypedArray(),
+            "history" to historyRows(components, stored.id),
             "usage" to (definition?.let(::usage) ?: ""),
             "designed" to (definition?.design != null || "\"design\"" in json),
             "phoneImage" to phone,

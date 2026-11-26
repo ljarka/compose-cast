@@ -41,8 +41,9 @@
   .designer-code pre { margin: 0; max-height: 70vh; overflow: auto; font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; }
 </style>
 <div style="max-width: 1500px; margin: 16px auto 0; padding: 0 16px">
-  <p style="margin: 0"><a href="/admin/components">← Components</a> · <a href="#code">Code</a> · <a href="/admin/components/${id?url}">JSON editor</a></p>
+  <p style="margin: 0"><a href="/admin/components">← Components</a> · <a href="#code">Code</a> · <a href="#history">History</a> · <a href="/admin/components/${id?url}">JSON editor</a></p>
   <h1 style="margin: 8px 0"><code>${id}</code> <span class="status status-${status}">${status}</span> <span class="muted" style="font-size: 16px">Designer</span><@layout.uid "admin:designer.header"/></h1>
+  <#if notice?has_content><p class="ok" role="status">${notice}</p></#if>
 </div>
 <div class="designer" id="designer" data-id="${id}" data-can-edit="${canEdit?c}">
   <aside>
@@ -98,6 +99,49 @@
       <p class="muted">The Remote Compose JSON the server compiled from the last saved design (read only).</p>
       <pre><code id="code-rc"></code></pre>
     </div>
+  </div>
+</div>
+<div class="designer-code">
+  <h2 id="history">History<@layout.uid "admin:designer.history"/></h2>
+  <div class="card">
+    <table>
+      <thead><tr><th>Version</th><th>Published</th><th>By</th><th></th></tr></thead>
+      <tbody>
+      <#if hasDraft!false>
+        <tr>
+          <td>Draft <span class="status status-draft">draft</span></td>
+          <td><time datetime="${draftUpdatedAtIso}" title="${draftUpdatedAtExact}">${draftUpdatedAt}</time></td>
+          <td class="muted">unpublished</td>
+          <td><#if canEdit>
+            <form method="post" action="/admin/components/${id?url}/draft/revert" style="display:inline;margin:0">
+              <input type="hidden" name="from" value="design">
+              <button type="submit" class="danger" style="margin:0">Revert</button>
+            </form>
+          </#if></td>
+        </tr>
+      </#if>
+      <#list history as h>
+        <tr>
+          <td><a href="/admin/components/${id?url}/revisions/${h.revision?c}">#${h.revision?c}</a><#if h?is_first> <span class="status status-published">published</span></#if></td>
+          <td><time datetime="${h.publishedAtIso}" title="${h.publishedAtExact}">${h.publishedAt}</time></td>
+          <td>${h.publishedBy}</td>
+          <td><#if canEdit && !h?is_first>
+            <form method="post" action="/admin/components/${id?url}/rollback" style="display:inline;margin:0">
+              <input type="hidden" name="revision" value="${h.revision?c}">
+              <input type="hidden" name="from" value="design">
+              <button type="submit" style="margin:0">Roll back to this</button>
+            </form>
+            <form method="post" action="/admin/components/${id?url}/revisions/${h.revision?c}/delete" style="display:inline;margin:0">
+              <input type="hidden" name="from" value="design">
+              <button type="submit" class="danger" style="margin:0">Remove</button>
+            </form>
+          </#if></td>
+        </tr>
+      <#else>
+        <tr><td colspan="4" class="muted">Never published.</td></tr>
+      </#list>
+      </tbody>
+    </table>
   </div>
 </div>
   </section>
