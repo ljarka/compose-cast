@@ -8,6 +8,7 @@ import io.composecast.server.admin.PhoneRenderer
 import io.composecast.server.admin.ScreenPublishing
 import io.composecast.server.admin.adminPanel
 import io.composecast.server.sdk.DataSourceException
+import io.composecast.server.sdk.HttpDataLoader
 import io.composecast.server.sdk.HttpImageLoader
 import io.composecast.server.sdk.ScreenParameterException
 import io.composecast.server.sdk.UnsupportedClientVersionException
@@ -53,12 +54,19 @@ fun main() {
     // Built before the server starts: an invalid screen stops startup with a clear message.
     val allowPrivateImageHosts = System.getenv("COMPOSECAST_ALLOW_PRIVATE_IMAGE_HOSTS").toBoolean()
     val imageLoader = HttpImageLoader(allowPrivateHosts = allowPrivateImageHosts)
+    val dataLoader = HttpDataLoader(allowPrivateHosts = allowPrivateImageHosts)
     val dataDir = System.getenv("COMPOSECAST_DATA_DIR")?.let(Path::of)
     var admin: AdminPanelConfig? = null
     val screens = when (val mode = System.getenv("COMPOSECAST_MODE") ?: "files") {
-        "files" -> LiveScreens(loadScreens(dataDir, imageLoader = imageLoader)).also { screens ->
+        "files" -> LiveScreens(
+            loadScreens(dataDir, imageLoader = imageLoader, dataLoader = dataLoader),
+        ).also { screens ->
             if (dataDir != null && System.getenv("COMPOSECAST_RELOAD")?.toBoolean() != false) {
-                DataDirReloader(dataDir, screens, load = { loadScreens(it, imageLoader = imageLoader) }).start()
+                DataDirReloader(
+                    dataDir,
+                    screens,
+                    load = { loadScreens(it, imageLoader = imageLoader, dataLoader = dataLoader) },
+                ).start()
             }
         }
         "admin" -> {
@@ -72,6 +80,7 @@ fun main() {
                 ScreenStore(database),
                 SettingsStore(database),
                 imageLoader,
+                dataLoader = dataLoader,
                 components = ComponentStore(database),
             )
             adminScreens.importIfEmpty(dataDir)
@@ -134,7 +143,7 @@ fun Application.module(screens: LiveScreens, admin: AdminPanelConfig? = null) {
         }
         exception<Throwable> { call, cause ->
             call.application.environment.log.error("Unhandled error for ${call.request.local.uri}", cause)
-            call.respond(HttpStatusCode.InternalServerError, mapOf("error" to (cause.message ?: "internal error")))
+            call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "internal error"))
         }
     }
     configureRouting(screens)

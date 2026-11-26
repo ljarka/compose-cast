@@ -1,6 +1,6 @@
 # T-051 — Server security hardening (SSRF in data loader, login rate limit, 500 error sanitization, CSP)
 
-Status: in progress · Roadmap: quality · Depends on: T-050 · Module: sdk-server, server-admin, server-app
+Status: done · Roadmap: quality · Depends on: T-050 · Module: sdk-server, server-admin, server-app
 
 ## Goal
 

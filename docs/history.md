@@ -440,3 +440,8 @@ README roadmap's "Etap" numbers.
     and `:sdk-android:testDebugUnitTest` to `scripts/verify.sh`; added `ComposeCastClientTest` on
     `ktor-client-mock` covering 200/304 ETag cache, LRU eviction, 426 Upgrade Required, HTTP errors,
     `listScreens`, and `getBrand`.
+87. **T-051 — server security hardening** (2026-11-26): `HttpDataLoader` now blocks private/loopback/
+    link-local hosts and checks every redirect hop (closing the SSRF gap deferred from T-026);
+    added per-IP `LoginRateLimiter` + `Dispatchers.Default` for BCrypt on `POST /admin/login`;
+    sanitized HTTP 500 error responses in `server-app`; added `Content-Security-Policy` to admin
+    pages.

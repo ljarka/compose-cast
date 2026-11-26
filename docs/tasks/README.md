@@ -54,9 +54,9 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-019 Gestures and visual effects](T-019-gestures-effects.md) | Etap 5 | later (only when a real app needs it) |
 | [T-020 Dynamic values (clock, light/dark, conditions)](T-020-dynamic-values.md) | Etap 7/10 | later (light/dark may be pulled forward by a real app) |
 | [T-022 Advanced RC features (templates, drag, sensors)](T-022-advanced-rc-features.md) | Etap 10 | later (pick by real use case) |
-| [T-050 Close CI verification gaps (`app-templates` and `sdk-android` tests)](T-050-ci-gaps-and-sdk-android-tests.md) | quality | done |
-| [T-051 Server security hardening (SSRF, login rate limit, 500, CSP)](T-051-server-security-hardening.md) | quality | in progress |
-| [T-052 Android client cleanup (single OkHttp engine, timeouts, release logging)](T-052-sdk-android-cleanup.md) | quality | queued (after T-051) |
+| [T-050 Close CI verification gaps (`app-templates` and `sdk-android` tests)](T-050-ci-gaps-and-sdk-android-tests.md) | quality | done (`9ec5ede`) |
+| [T-051 Server security hardening (SSRF, login rate limit, 500, CSP)](T-051-server-security-hardening.md) | quality | done |
+| [T-052 Android client cleanup (single OkHttp engine, timeouts, release logging)](T-052-sdk-android-cleanup.md) | quality | in progress |
 | [T-053 SQLite schema migrations, foreign keys, and expired session cleanup](T-053-sqlite-migrations-and-sessions.md) | quality | queued (after T-052) |
 | [T-054 Server I/O offloading, database-aware `/health`, and graceful shutdown](T-054-server-io-health-shutdown.md) | quality | queued (after T-053) |
 | [T-055 Static analysis (`detekt`) and `explicitApi()` for published libraries](T-055-explicit-api-and-detekt.md) | quality | queued (after T-054) |

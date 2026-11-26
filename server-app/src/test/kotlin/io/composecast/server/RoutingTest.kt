@@ -11,6 +11,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.readRawBytes
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import kotlinx.coroutines.async
@@ -24,6 +25,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import io.ktor.server.routing.get as routeGet
 
 class RoutingTest {
     private val fakeImages = ImageLoader { _ ->
@@ -209,5 +211,20 @@ class RoutingTest {
         val response = client.get("/screens/detail?id=82")
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals("Show+82", response.headers[Headers.SCREEN_TITLE])
+    }
+
+    @Test
+    fun `unhandled exception returns sanitized 500 without leaking cause message (T-051)`() = testApplication {
+        application {
+            module(screens)
+            routing {
+                routeGet("/boom") { error("sensitive-db-path /var/secret.db") }
+            }
+        }
+        val response = client.get("/boom")
+        assertEquals(HttpStatusCode.InternalServerError, response.status)
+        val body = response.bodyAsText()
+        assertTrue("internal error" in body)
+        assertTrue("sensitive-db-path" !in body)
     }
 }

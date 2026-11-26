@@ -38,6 +38,8 @@ import io.ktor.server.sessions.get
 import io.ktor.server.sessions.sessions
 import io.ktor.server.sessions.set
 import io.ktor.util.AttributeKey
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 
 /**
@@ -96,6 +98,7 @@ internal fun Route.adminRoutes(
     probe: ApiProbe = ApiProbe(),
     phoneRenderer: PhoneRenderer? = null,
     components: ComponentStore? = null,
+    rateLimiter: LoginRateLimiter = LoginRateLimiter(),
     extra: Route.() -> Unit = {},
 ) {
     phoneRenderer?.let { application.attributes.put(PhoneRendererKey, it) } // T-048: editors show the phone frame
@@ -123,8 +126,21 @@ internal fun Route.adminRoutes(
             call.insecureTransportError(allowHttp)?.let {
                 return@post call.loginPage(it, email, HttpStatusCode.BadRequest)
             }
-            val login = auth.login(email, form["password"].orEmpty())
-                ?: return@post call.loginPage("Wrong email or password.", email, HttpStatusCode.Unauthorized)
+            val clientIp = call.clientIp()
+            if (rateLimiter.isLimited(clientIp)) {
+                return@post call.loginPage(
+                    "Too many failed login attempts. Try again later.",
+                    email,
+                    HttpStatusCode.TooManyRequests,
+                )
+            }
+            val password = form["password"].orEmpty()
+            val login = withContext(Dispatchers.Default) { auth.login(email, password) }
+            if (login == null) {
+                rateLimiter.recordFailure(clientIp)
+                return@post call.loginPage("Wrong email or password.", email, HttpStatusCode.Unauthorized)
+            }
+            rateLimiter.recordSuccess(clientIp)
             call.sessions.set(AdminSession(login.token))
             call.seeOther("/admin")
         }
@@ -215,7 +231,22 @@ private val SecurityHeaders = createRouteScopedPlugin("AdminSecurityHeaders") {
         call.response.header("X-Content-Type-Options", "nosniff")
         call.response.header("Referrer-Policy", "same-origin")
     }
+    onCallRespond { call, _ ->
+        // Keep stricter route-specific CSP (e.g. SVG placeholder's default-src 'none').
+        if (call.response.headers["Content-Security-Policy"] == null) {
+            call.response.header(
+                "Content-Security-Policy",
+                "default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; " +
+                    "style-src 'self' 'unsafe-inline'; img-src 'self' data:; " +
+                    "frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+            )
+        }
+    }
 }
+
+private fun ApplicationCall.clientIp(): String =
+    request.headers["X-Forwarded-For"]?.substringBefore(',')?.trim()?.takeIf { it.isNotEmpty() }
+        ?: request.origin.remoteAddress
 
 private fun ApplicationCall.currentUser(auth: AdminAuth): AdminUser? =
     sessions.get<AdminSession>()?.let { auth.user(it.token) }

@@ -1,6 +1,6 @@
 # T-052 — Android client cleanup (single OkHttp engine, timeouts, release logging)
 
-Status: queued (after T-051) · Roadmap: quality · Depends on: T-050 · Module: sdk-android, app-shell
+Status: in progress · Roadmap: quality · Depends on: T-050 · Module: sdk-android, app-shell
 
 ## Goal
 
