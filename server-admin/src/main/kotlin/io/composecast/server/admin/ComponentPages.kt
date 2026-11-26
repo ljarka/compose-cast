@@ -149,7 +149,8 @@ internal fun Route.componentPages(
             }
             post("/publish") {
                 val stored = components.get(call.screenId) ?: return@post call.notFound()
-                val json = call.receiveParameters()["json"] ?: stored.draftJson ?: stored.liveJson.orEmpty()
+                val params = call.receiveParameters()
+                val json = params["json"] ?: stored.draftJson ?: stored.liveJson.orEmpty()
                 val checked = check(stored.id, json, settings)
                 val failure = checked.definition?.let { definition ->
                     publishOrProblem {
@@ -168,7 +169,8 @@ internal fun Route.componentPages(
                         phoneRenderer != null,
                     )
                 }
-                call.seeOther("/admin/components/${stored.id.urlEncoded()}?published")
+                val target = if (params["from"] == "design") "/design" else ""
+                call.seeOther("/admin/components/${stored.id.urlEncoded()}$target?published")
             }
             post("/rollback") {
                 val stored = components.get(call.screenId) ?: return@post call.notFound()

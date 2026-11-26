@@ -195,6 +195,17 @@ class ComponentPagesTest {
             assertContains(designerHtml, "/admin/components/promo/draft/revert")
             assertContains(designerHtml, "Roll back to this")
 
+            // Publish from the designer stays on /design
+            val publishedFromDesign = client.post(
+                cookie,
+                "/admin/components/promo/publish",
+                "from" to "design",
+                "json" to v2,
+            )
+            assertEquals(HttpStatusCode.SeeOther, publishedFromDesign.status)
+            assertEquals("/admin/components/promo/design?published", publishedFromDesign.headers[HttpHeaders.Location])
+            host.components.saveDraft("promo", v2.replace("v2", "draft-edit-2"))
+
             // Revert draft from the designer returns to /design and clears the draft
             val reverted = client.post(cookie, "/admin/components/promo/draft/revert", "from" to "design")
             assertEquals(HttpStatusCode.SeeOther, reverted.status)

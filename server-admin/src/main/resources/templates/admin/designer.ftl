@@ -82,7 +82,7 @@
     <div id="status" aria-live="polite"></div>
     <ul id="problems" aria-live="polite"></ul>
     <p class="muted" style="font-size: 13px">Sizes are dp. The component fills the screen width; on wider or narrower phones each element keeps its <em>anchor</em>. Texts and colors can use <code>{{params.name}}</code> or <code>{{brand.primaryColor}}</code>. Every change is saved as the draft; screens use the component after <strong>Publish</strong>.</p>
-    <#if canEdit><form method="post" action="/admin/components/${id?url}/publish" id="publish-form"><input type="hidden" name="json" id="publish-json"><button type="submit">Publish</button></form></#if>
+    <#if canEdit><form method="post" action="/admin/components/${id?url}/publish" id="publish-form"><input type="hidden" name="from" value="design"><input type="hidden" name="json" id="publish-json"><button type="submit">Publish</button></form></#if>
 <div class="designer-code">
   <h2 id="code">Code<@layout.uid "admin:designer.code"/></h2>
   <div class="card">
