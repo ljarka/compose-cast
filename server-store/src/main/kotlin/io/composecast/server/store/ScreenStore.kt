@@ -90,6 +90,15 @@ open class ScreenStore internal constructor(
         }
     }
 
+    /** Clears the pending draft of a published screen, reverting the editor to its live version. */
+    fun discardDraft(id: String): Boolean = database.tx {
+        documents.update(
+            { (documents.id eq id) and documents.liveJson.isNotNull() and documents.draftJson.isNotNull() },
+        ) {
+            it[draftJson] = null
+        } > 0
+    }
+
     /**
      * Publishes all [screens] (id → JSON) in **one** transaction: an interrupted first-start import
      * leaves the database empty, so the next start imports again.

@@ -91,4 +91,20 @@ class ScreenStoreTest {
         components.rollback("tile", components.history("tile").last().id, by = "a@x")
         assertEquals("{\"v\":1}", components.live()["tile"])
     }
+
+    @Test
+    fun `discardDraft clears a pending draft on a published screen only`() {
+        val store = ScreenStore(StoreDatabase.open(file), clock)
+        store.saveDraft("only-draft", "{\"v\":1}")
+        assertEquals(false, store.discardDraft("only-draft"), "unpublished screen has no live version")
+        assertEquals("{\"v\":1}", store.get("only-draft")!!.draftJson)
+
+        store.publish("main", "{\"v\":1}", by = "a@x")
+        assertEquals(false, store.discardDraft("main"), "no draft to discard")
+        store.saveDraft("main", "{\"v\":2}")
+        assertTrue(store.discardDraft("main"))
+        val after = store.get("main")!!
+        assertNull(after.draftJson)
+        assertEquals("{\"v\":1}", after.liveJson)
+    }
 }

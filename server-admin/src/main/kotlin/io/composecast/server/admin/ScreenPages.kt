@@ -214,6 +214,23 @@ internal fun Route.screenPages(screens: ScreenStore, settings: SettingsStore, pu
                 screens.deleteRevision(stored.id, revId)
                 call.seeOther("/admin/screens/${stored.id.urlEncoded()}?revisionRemoved")
             }
+            post("/draft/revert") {
+                val stored = screens.get(call.screenId) ?: return@post call.notFound()
+                val liveJson = stored.liveJson
+                if (liveJson == null || stored.draftJson == null) {
+                    call.response.status(HttpStatusCode.UnprocessableEntity)
+                    val json = stored.draftJson ?: liveJson.orEmpty()
+                    return@post call.editor(
+                        screens,
+                        stored,
+                        json,
+                        ScreenJson.Checked(null, listOf("There is no pending draft to revert.")),
+                    )
+                }
+                screens.discardDraft(stored.id)
+                publishing.updatePreview(liveJson, call.adminUser.previewOwner) // T-032: open phone follows
+                call.seeOther("/admin/screens/${stored.id.urlEncoded()}?draftReverted")
+            }
         }
     }
 }
@@ -223,6 +240,7 @@ private val NOTICES = mapOf(
     "published" to "Published: apps get this version from their next request.",
     "rolledback" to "Rolled back: apps get the chosen version from their next request. A pending draft was kept.",
     "revisionRemoved" to "Removed the revision from history.",
+    "draftReverted" to "Draft reverted: showing the last published version.",
 )
 
 /** Runs a publish; its failure becomes a message for the editor (null = success). */
@@ -314,6 +332,8 @@ private suspend fun ApplicationCall.editor(
             "publishedBy" to stored.publishedBy.orEmpty(),
             "notice" to notice.orEmpty(),
             "preview" to (preview ?: emptyMap()),
+            "hasDraft" to (stored.draftJson != null && stored.liveJson != null),
+            *timeFields("draftUpdatedAt", stored.updatedAt).toTypedArray(),
             "history" to historyRows(screens, stored.id),
         ),
     )

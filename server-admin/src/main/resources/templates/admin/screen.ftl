@@ -39,6 +39,18 @@
     <table>
       <thead><tr><th>Version</th><th>Published</th><th>By</th><th></th></tr></thead>
       <tbody>
+      <#if hasDraft!false>
+        <tr>
+          <td>Draft <span class="status status-draft">draft</span></td>
+          <td><time datetime="${draftUpdatedAtIso}" title="${draftUpdatedAtExact}">${draftUpdatedAt}</time></td>
+          <td class="muted">unpublished</td>
+          <td><#if canEdit>
+            <form method="post" action="/admin/screens/${id?url}/draft/revert" style="display:inline;margin:0">
+              <button type="submit" class="danger" style="margin:0">Revert</button>
+            </form>
+          </#if></td>
+        </tr>
+      </#if>
       <#list history as h>
         <tr>
           <td><a href="/admin/screens/${id?url}/revisions/${h.revision?c}">#${h.revision?c}</a><#if h?is_first> <span class="status status-published">published</span></#if></td>

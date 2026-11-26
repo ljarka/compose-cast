@@ -456,6 +456,8 @@ internal fun visualModel(
         "visualProblems" to visualProblems,
         "notice" to notice,
         "isDraft" to (editing.stored.draftJson != null),
+        "hasDraft" to (editing.stored.draftJson != null && editing.stored.liveJson != null),
+        *timeFields("draftUpdatedAt", editing.stored.updatedAt).toTypedArray(),
         "newName" to value("__name").orEmpty(),
         "sources" to (editing.root["data"] as? JsonObject).orEmpty().map { (name, source) ->
             mapOf(

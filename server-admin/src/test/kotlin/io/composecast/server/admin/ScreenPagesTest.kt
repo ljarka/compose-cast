@@ -330,4 +330,35 @@ class ScreenPagesTest {
         assertNull(screens.revision("main", older.id))
         assertEquals(HttpStatusCode.NotFound, client.page(cookie, "/admin/screens/main/revisions/${older.id}").status)
     }
+
+    @Test
+    fun `a pending draft appears at the top of history and can be reverted to the live version`() = host.run { client ->
+        val cookie = with(host) { client.loginAs(Role.EDITOR) }
+        screens.publish("main", homeJson, by = "a@example.com")
+
+        // No draft yet: revert button is absent and POST /draft/revert returns 422
+        val publishedPage = client.page(cookie, "/admin/screens/main").bodyAsText()
+        assertFalse("/admin/screens/main/draft/revert" in publishedPage)
+        assertEquals(
+            HttpStatusCode.UnprocessableEntity,
+            client.form(cookie, "/admin/screens/main/draft/revert").status,
+        )
+
+        // Save a draft edit -> Draft row with Revert button appears at the top of History
+        screens.saveDraft("main", ScreenJson.encode(home.copy(title = "Edited draft")))
+        val draftPage = client.page(cookie, "/admin/screens/main").bodyAsText()
+        assertContains(draftPage, "/admin/screens/main/draft/revert")
+        assertContains(draftPage, "Edited draft")
+
+        // Revert discards the draft and removes the Draft row from History
+        val reverted = client.form(cookie, "/admin/screens/main/draft/revert")
+        assertEquals(HttpStatusCode.SeeOther, reverted.status)
+        assertEquals("/admin/screens/main?draftReverted", reverted.headers[HttpHeaders.Location])
+        assertNull(screens.get("main")!!.draftJson)
+        assertEquals(homeJson, screens.get("main")!!.liveJson)
+
+        val afterPage = client.page(cookie, "/admin/screens/main?draftReverted").bodyAsText()
+        assertContains(afterPage, "Draft reverted")
+        assertFalse("/admin/screens/main/draft/revert" in afterPage)
+    }
 }
