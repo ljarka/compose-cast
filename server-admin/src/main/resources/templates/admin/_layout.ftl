@@ -52,6 +52,12 @@
     .wide.with-phone { max-width: 1440px; }
     .split.with-phone { grid-template-columns: minmax(220px, 1fr) 2fr minmax(220px, 300px); }
     .phone { position: sticky; top: 16px; }
+    /* Screens list thumbnails (the phone preview scaled down by the server). */
+    td.thumb { width: 90px; padding: 8px 12px 8px 8px; }
+    td.thumb img { display: block; width: 90px; height: auto; aspect-ratio: 1078 / 2399; border: 4px solid #1d1d1f;
+      border-radius: 14px; background: #fff; object-fit: cover; }
+    td.thumb + td, td.thumb ~ td { vertical-align: middle; }
+    .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     .phone img { display: block; width: 100%; height: auto; box-sizing: border-box; border: 10px solid #1d1d1f; border-radius: 32px; background: #fff; }
     @media (max-width: 1100px) { .split.with-phone { grid-template-columns: minmax(240px, 1fr) 2fr; } .split.with-phone .phone { grid-column: 1 / -1; position: static; max-width: 320px; } }
     @media (max-width: 760px) { .split.with-phone { grid-template-columns: 1fr; } }

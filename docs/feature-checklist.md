@@ -45,6 +45,7 @@ Android only ([ADR 0022](decisions/0022-android-only.md), owner 2026-11-16).
 - [x] Adaptive layouts: FitBox, collapsible rows/columns, min/max sizes — T-015
 - [x] Accessibility: content descriptions, roles — T-016
 - [ ] Canvas: progress bar/ring, line/bar charts, rating, gradients — T-018
+- [x] Screens list with a small phone image per screen (the preview renderer, scaled by the server) — T-048 follow-up
 - [x] Component designer: draw custom components on an artboard (shapes, gradients, SVG icon import, texts, tap areas, anchors), compiled to RC JSON — T-057 ([ADR 0034](decisions/0034-component-designer.md))
 - [x] Custom components written in raw RC JSON (any shape, gradient, vector icon), reused by name, edited in the admin — T-049 ([ADR 0033](decisions/0033-custom-components-raw-rc-json.md))
 - [x] Dashboard components on canvas: `gauge`, `sparkline`, `kpi` — T-047 step 1

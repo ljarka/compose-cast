@@ -136,4 +136,43 @@ class PhonePreviewTest {
         val svg = placeholderSvg("Title", "word ".repeat(200))
         assertEquals(1 + 8, Regex("<text ").findAll(svg).count()) // title + at most 8 lines
     }
+
+    /** A phone-sized PNG (1078×2399, like the preview renderer's) for the thumbnail tests. */
+    private val phonePng: ByteArray = run {
+        val image = java.awt.image.BufferedImage(1078, 2399, java.awt.image.BufferedImage.TYPE_INT_ARGB)
+        java.io.ByteArrayOutputStream().also { javax.imageio.ImageIO.write(image, "png", it) }.toByteArray()
+    }
+
+    @Test
+    fun `the Screens list shows a small phone image per screen, only with a renderer`() =
+        host.run(phoneRenderer = { phonePng }) { client ->
+            host.screens.publish("main", live, by = "import")
+            val cookie = with(host) { client.loginAs(Role.VIEWER) }
+            assertContains(client.page(cookie, "/admin/screens").bodyAsText(), "src=\"/admin/screens/main/thumb.png\"")
+
+            val thumb = client.page(cookie, "/admin/screens/main/thumb.png")
+            assertEquals(ContentType.Image.PNG, thumb.contentType())
+            val image = javax.imageio.ImageIO.read(thumb.bodyAsBytes().inputStream())
+            assertEquals(THUMB_WIDTH, image.width)
+            assertEquals(2399 * THUMB_WIDTH / 1078, image.height) // aspect kept
+            assertEquals(HttpStatusCode.NotFound, client.page(cookie, "/admin/screens/nope/thumb.png").status)
+        }
+
+    @Test
+    fun `without a renderer the Screens list has no images`() = host.run { client ->
+        host.screens.publish("main", live, by = "import")
+        val cookie = with(host) { client.loginAs(Role.EDITOR) }
+        assertFalse("thumb.png" in client.page(cookie, "/admin/screens").bodyAsText())
+        assertEquals(HttpStatusCode.NotFound, client.page(cookie, "/admin/screens/main/thumb.png").status)
+    }
+
+    @Test
+    fun `a thumbnail that cannot be drawn is the SVG message, not a broken image`() =
+        host.run(phoneRenderer = { error("renderer down") }) { client ->
+            host.screens.publish("main", live, by = "import")
+            val cookie = with(host) { client.loginAs(Role.EDITOR) }
+            val thumb = client.page(cookie, "/admin/screens/main/thumb.png")
+            assertEquals(ContentType.Image.SVG, thumb.contentType())
+            assertContains(thumb.bodyAsText(), "renderer down")
+        }
 }

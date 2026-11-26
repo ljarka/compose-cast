@@ -463,3 +463,6 @@ README roadmap's "Etap" numbers.
     (golden, tap test); admin designer (`designer.js`: SVG artboard, tools, layers, properties,
     params, undo, SVG import, auto-save). Found: RC `offset` moves drawing but not touch, and a
     click covers padding (remote-compose.md → RC JSON 14–15).
+92. **Screens list thumbnails** (2026-11-26, owner): each row of the admin's Screens list shows the
+    screen as the phone draws it (`/admin/screens/{id}/thumb.png`: the T-048 preview PNG scaled to
+    180 px by the server, lazy-loaded); without a preview renderer the list is unchanged.

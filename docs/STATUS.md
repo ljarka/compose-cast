@@ -78,7 +78,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | Etap 2 — Foundations ✅ | 5/5 |
 | Etap 3 — iOS spike: dropped | 0/0 |
 | Etap 4 — Data sources (APIs) — ADR 0008 | 4/4 |
-| Etap 5 — Components for real apps | 13/17 |
+| Etap 5 — Components for real apps | 14/18 |
 | Etap 6 — Milestone 1: Example weather app (external project) | 5/7 |
 | Etap 7 — App shells & SDKs | 3/7 |
 | Etap 8 — Admin panel MVP | 8/12 |
@@ -92,9 +92,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- Screens list thumbnails
 - T-057 — component designer
 - T-054 — server I/O offloading, `/health` DB readiness & shutdown
 - T-053 — SQLite migrations, foreign keys & session cleanup
 - T-052 — Android client cleanup
 - T-051 — server security hardening
-- T-050 — close CI gaps & `sdk-android` unit tests

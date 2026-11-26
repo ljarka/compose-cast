@@ -13,12 +13,17 @@ import io.ktor.util.AttributeKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
+import java.awt.RenderingHints
+import java.awt.image.BufferedImage
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.security.MessageDigest
 import java.time.Duration
+import javax.imageio.ImageIO
 
 /**
  * T-048: turns a Remote Compose document into a PNG of the phone screen. The real implementation is
@@ -79,22 +84,74 @@ internal val ApplicationCall.hasPhonePreview: Boolean get() = application.attrib
 
 /**
  * `GET /admin/screens/{id}/phone.png`: the screen as the editor shows it (draft, else live) on a
- * phone. Errors come back as an SVG in the same frame (still an image), never as a broken image.
+ * phone. `GET /admin/screens/{id}/thumb.png`: the same, [THUMB_WIDTH] px wide, for the Screens
+ * list. Errors come back as an SVG in the same frame (still an image), never as a broken image.
  */
 internal fun Route.phonePreview(screens: ScreenStore, publishing: ScreenPublishing, renderer: PhoneRenderer) {
     get("/screens/{id}/phone.png") {
-        val stored = screens.get(call.screenId) ?: return@get call.respond404()
-        val json = stored.draftJson ?: stored.liveJson.orEmpty()
-        val png = try {
-            withContext(Dispatchers.IO) { renderer.png(publishing.document(json)) }
-        } catch (e: PublishException) {
-            return@get call.placeholder("Cannot build this screen", e.message.orEmpty())
-        } catch (e: Exception) {
-            log.warn("Phone preview of '${stored.id}' failed: ${e.message}")
-            return@get call.placeholder("No phone preview", e.message.orEmpty())
-        }
+        val png = call.screenPng(screens, publishing, renderer) ?: return@get
         call.respondBytes(png, ContentType.Image.PNG)
     }
+    get("/screens/{id}/thumb.png") {
+        val png = call.screenPng(screens, publishing, renderer) ?: return@get
+        val thumb = try {
+            withContext(Dispatchers.Default) { thumbnail(png, THUMB_WIDTH) }
+        } catch (e: Exception) {
+            return@get call.placeholder("No phone preview", e.message.orEmpty())
+        }
+        call.respondBytes(thumb, ContentType.Image.PNG)
+    }
+}
+
+/** The screen's phone PNG, or null after answering 404 / a placeholder SVG. */
+private suspend fun ApplicationCall.screenPng(
+    screens: ScreenStore,
+    publishing: ScreenPublishing,
+    renderer: PhoneRenderer,
+): ByteArray? {
+    val stored = screens.get(screenId) ?: run {
+        respond404()
+        return null
+    }
+    val json = stored.draftJson ?: stored.liveJson.orEmpty()
+    return try {
+        withContext(Dispatchers.IO) { renderer.png(publishing.document(json)) }
+    } catch (e: PublishException) {
+        placeholder("Cannot build this screen", e.message.orEmpty())
+        null
+    } catch (e: Exception) {
+        log.warn("Phone preview of '${stored.id}' failed: ${e.message}")
+        placeholder("No phone preview", e.message.orEmpty())
+        null
+    }
+}
+
+/** Width of the Screens list thumbnails in pixels (shown at 90 CSS px: sharp on 2x displays). */
+internal const val THUMB_WIDTH = 180
+
+/**
+ * [png] scaled to [width] px (aspect kept), halving first so the small image stays smooth
+ * (one bilinear step from 1078 px would skip pixels).
+ */
+internal fun thumbnail(png: ByteArray, width: Int): ByteArray {
+    var image: BufferedImage = requireNotNull(ImageIO.read(ByteArrayInputStream(png))) { "not an image" }
+    val height = (image.height.toLong() * width / image.width).toInt().coerceAtLeast(1)
+    while (image.width / 2 >= width) image = scaled(image, image.width / 2, image.height / 2)
+    image = scaled(image, width, height)
+    return ByteArrayOutputStream().also { ImageIO.write(image, "png", it) }.toByteArray()
+}
+
+private fun scaled(source: BufferedImage, width: Int, height: Int): BufferedImage {
+    val target = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+    val g = target.createGraphics()
+    try {
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY)
+        g.drawImage(source, 0, 0, width, height, null)
+    } finally {
+        g.dispose()
+    }
+    return target
 }
 
 private suspend fun ApplicationCall.respond404() =

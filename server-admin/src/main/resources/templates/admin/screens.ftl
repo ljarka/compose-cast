@@ -23,10 +23,11 @@
   <#if homeError??><p class="error" role="alert">${homeError}</p></#if>
   <div class="card">
     <table>
-      <thead><tr><th>Id</th><th>Title</th><th>Status</th><th>Last published</th><th></th></tr></thead>
+      <thead><tr><#if phone><th><span class="visually-hidden">Preview</span></th></#if><th>Id</th><th>Title</th><th>Status</th><th>Last published</th><th></th></tr></thead>
       <tbody>
       <#list screens as s>
         <tr>
+          <#if phone><td class="thumb"><a href="/admin/screens/${s.id?url}" tabindex="-1" aria-hidden="true"><img src="/admin/screens/${s.id?url}/thumb.png" width="90" height="200" loading="lazy" alt=""></a></td></#if>
           <td><a href="/admin/screens/${s.id?url}"><code>${s.id}</code></a><#if s.isHome> <span class="status status-live">home</span></#if></td>
           <td>${s.title}</td>
           <td><span class="status status-${s.status}">${s.status}</span><#if s.liveEveryMs gt 0> <span class="live-badge" title="Live updates every ${s.liveEveryMs?c} ms"><span class="live-dot" style="animation-duration: ${s.liveEveryMs?c}ms"></span>live</span></#if></td>
@@ -46,7 +47,7 @@
           </td>
         </tr>
       <#else>
-        <tr><td colspan="5" class="muted">No screens yet.</td></tr>
+        <tr><td colspan="<#if phone>6<#else>5</#if>" class="muted">No screens yet.</td></tr>
       </#list>
       </tbody>
     </table>
