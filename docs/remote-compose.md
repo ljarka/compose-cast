@@ -351,7 +351,8 @@ All creation and player classes are `@RestrictTo(LIBRARY_GROUP)` (alpha20–alph
 ## RC JSON (`RemoteComposeJsonParser`) — spike for custom components (verified alpha23, 2026-11-26)
 
 Spike code: branch `spike/rc-json-fragment` (`compat-tests/.../RcJsonFragmentSpikeTest.kt`), run on
-the real player under Robolectric, PNGs looked at; **not yet checked on the emulator**. Sources:
+the real player under Robolectric, PNGs looked at; the shipped feature (T-049) was then checked on
+the emulator (2026-11-26: tiles render as the golden, taps navigate). Sources:
 `remote-creation-core/.../creation/json/*`, `remote-core/.../layout/managers/CanvasLayout.java`.
 
 1. **The parser is in the JVM jar** (`remote-creation-core`), but it needs `org.json`, which is not
@@ -382,6 +383,25 @@ the real player under Robolectric, PNGs looked at; **not yet checked on the emul
 8. **Modifier order is Compose order**: `[padding, background, clip]` puts padding *outside* the
    background (like `Modifier.padding().background()`), unlike our model's unordered box model
    (ADR 0020).
+
+Verified while building T-049 (alpha23, 2026-11-26; Robolectric + emulator):
+
+9. **Canvas coordinates are pixels**, even with `DOC_DENSITY_BEHAVIOR = DP` (modifier sizes are dp):
+   a 48-unit path drew ≈ 48 px. Use the `density` expression: `translate(dx: "width - 64 * density")`
+   and `scale(sx: "density", sy: "density")` between `save`/`restore` (all three exist in the JSON
+   parser's second command switch, ≈ line 2427, next to `clipRect`).
+10. **Path data** (`PathParser.parsePathData`): only `M L H C S Q A a Z` — no `V`, no lowercase
+    relative commands except `a`, no `z`; `H` keeps the previous point's y. Anything else throws
+    `Unsupported command: X`.
+11. **A placeholder that is not a valid value fails the parse, not the layout**: a text sample
+    `"Text"` substituted into `drawPath.path` threw `Unsupported command: T` — so every body is
+    trial-parsed with sample args, and at render with the real args, on a scratch writer first
+    (a parse failing half-way would leave a broken document).
+12. **Under Robolectric the RC player has no hit areas before its first draw**: a tap right after
+    `setContent` + `waitForIdle` reaches nothing (even a built-in button). Draw a frame first
+    (`onRoot().captureToImage()`), as `CustomComponentTapTest` / `AnimatedVisibilityTest` do.
+13. `org.json` (needed by the parser) is not on a plain JVM classpath: `sdk-server` depends on
+    `org.json:json`.
 
 ## Live updates (verified alpha23, 2026-11-24, PoC on the emulator)
 

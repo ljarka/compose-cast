@@ -128,7 +128,7 @@ maestro test app-template/maestro/smoke.yaml      # click through the demo app (
 
 [Roadmap](specs/roadmap.md) → [task queue](docs/tasks/README.md): T-007 admin panel, T-045 Preview app (B3 waits
 for the owner), T-029 visual editor, T-031 data wizard, T-047 live dashboards (opt-in live screens over a WebSocket,
-[ADR 0029](docs/decisions/0029-live-screens-websocket-data-updates.md)), T-032 live preview, T-030 templates done → T-048 phone preview in the panel done → **T-010 export** (can reuse the bundle format, ADR 0031) +
+[ADR 0029](docs/decisions/0029-live-screens-websocket-data-updates.md)), T-032 live preview, T-030 templates done → T-048 phone preview in the panel done → T-049 custom components in RC JSON done ([ADR 0033](docs/decisions/0033-custom-components-raw-rc-json.md)) → **T-010 export** (can reuse the bundle format, ADR 0031) +
 GitHub Actions build → T-027 → T-021 → **T-046 TV shows app built only in the admin** (mission:
 a non-developer ships an app). T-025 (weather app, `v0.2.0`) only waits for the owner's domain.
 Android only ([ADR 0022](docs/decisions/0022-android-only.md)).

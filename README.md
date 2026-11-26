@@ -36,7 +36,7 @@ built: [specs/tech-stack.md](specs/tech-stack.md) · what comes next: [specs/roa
 | States | `StateLayout` + local value-change actions | `expandable` (T-008 PoC) ✅; general states & tabs ⏳ Etap 10 (T-017) |
 | Actions | Host actions (named) + local value changes | typed `Action` (navigate with params, open_url, reload, track, custom) ✅ |
 | Light/dark, theming | Themed colors in the document | ⏳ Etap 7 |
-| Custom elements / extensions | `Custom` component + player custom support | ⏳ later |
+| Custom elements / extensions | `Custom` component + player custom support; RC JSON (`RemoteComposeJsonParser`) | **custom components written in raw RC JSON**, reused by name, edited in the admin ✅ T-049 ([ADR 0033](docs/decisions/0033-custom-components-raw-rc-json.md)); native views ⏳ T-021 |
 | Loading new markup without release | Whole document per request; player `updateDocument` | ✅ per screen; **live screens**: data-update documents pushed over a WebSocket ✅ T-047 ([ADR 0029](docs/decisions/0029-live-screens-websocket-data-updates.md)) |
 | Data from APIs | — (server-side) | data sources ✅ (Etap 4) |
 | Visibility actions (analytics) | no equivalent found | ⏳ SDK-side, Etap 7 |
@@ -61,6 +61,9 @@ rendered to Remote Compose documents by the server SDK and played by the Android
     <td align="center"><img src="compat-tests/src/test/screenshots/data-error.png" width="270" alt="Error components of a failed data source"><br><code>data</code>, source down</td>
     <td align="center"><img src="compat-tests/src/test/screenshots/layouts.png" width="270" alt="Rows, columns, boxes and modifiers"><br><code>layouts</code></td>
     <td align="center"><img src="compat-tests/src/test/screenshots/dashboard.png" width="270" alt="Dashboard with gauges, key figures and a sparkline"><br><code>dashboard</code></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="compat-tests/src/test/screenshots/custom.png" width="270" alt="Tiles drawn by a custom component written in raw Remote Compose JSON"><br><code>custom</code> (RC JSON component)</td>
   </tr>
 </table>
 
@@ -148,6 +151,12 @@ background, rounded/circle clip, border, tap action — follow a fixed box model
 ([ADR 0020](docs/decisions/0020-component-tree-and-modifiers.md); JSON form in `protocol/AGENTS.md`).
 Invalid definitions (unknown style or action, duplicate id, bad color, `weight` outside a row or
 column, nesting deeper than 32) fail at server start with the JSON path.
+
+Anything the built-in components cannot draw — any shape, gradient or vector icon — is a **custom
+component**: written once in raw Remote Compose JSON with typed params, saved as
+`components/<id>.json` (or in the admin's **Components** page) and used by name, `custom("parcel-tile",
+mapOf("title" to "Paczka w drodze", "action" to "navigate:parcels"))` / `{"type": "custom", …}`
+([format](docs/screen-json-format.md#custom-components-t-049-adr-0033), [ADR 0033](docs/decisions/0033-custom-components-raw-rc-json.md)).
 
 Screens can depend on the request: `dynamicScreen` is rendered per request from the query
 parameters that `Action.Navigate` params become (`GET /screens/echo?word=hi`):

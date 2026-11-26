@@ -14,6 +14,14 @@ How the screen-building parts of the admin panel (`server-admin`) work and why. 
   optional group nobody filled in, so a required field inside it cannot create it). Component lists
   are never form fields — they are the tree, kept from the stored JSON on save. Saving = the whole
   screen through `ScreenJson.check`, so the visual and JSON editors share one draft and one rule set.
+- **Custom components (T-049, ADR 0033):** their own page (**Components**), a JSON editor because the
+  body is raw RC JSON (an LLM writes it best; AI chat = T-033). The editor runs the same check as
+  publishing (definition, whitelist, trial parse with the live brand) while typing, and shows the
+  draft alone with sample args in the phone image plus the JSON to use it. In the visual editor a
+  use is a black box: **My components** in the palette adds `{"type": "custom", "component": id,
+  "args": {required params: samples}}`, and `args` is a JSON-value field (params differ per
+  component; a form generated from `params` is a later step). Publishing a component builds every
+  live screen with it first: a change that breaks a use is refused.
 - **Palette (C3):** structural edits are pure functions on the JSON (`Palette`), then the same
   check + save; a refused edit (`IllegalArgumentException`, or an invalid screen such as an
   expandable without content) shows the message and changes nothing. A new component type needs a

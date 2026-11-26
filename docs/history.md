@@ -424,3 +424,11 @@ README roadmap's "Etap" numbers.
     [remote-compose.md → RC JSON](remote-compose.md#rc-json-remotecomposejsonparser--spike-for-custom-components-verified-alpha23-2026-11-26).
     Then [ADR 0033](decisions/0033-custom-components-raw-rc-json.md) (raw RC JSON only in component
     bodies, screens stay semantic, versioned by RC release) and task T-049 (emulator check in K2).
+84. **T-049 — custom components in raw RC JSON** ([ADR 0033](decisions/0033-custom-components-raw-rc-json.md),
+    owner 2026-11-26: before T-010): `{"type": "custom", "component": id, "args": {…}}` on screens;
+    definitions (`components/<id>.json` or the admin's **Components** page) with typed params and a
+    raw `RemoteComposeJsonParser` body, whitelisted and trial-parsed, spliced into the screen's own
+    writer through `RcJsonBridge` (the parser's package). Versioning by `rcVersion`: a definition from
+    an older RC release that fails is `broken` and skipped, not fatal. Demo `custom` (four tiles with
+    SVG-path icons, like a parcel app's home) checked on the emulator; new RC facts 9–13 (canvas units
+    are pixels, path commands, Robolectric taps need a drawn frame).

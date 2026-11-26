@@ -139,6 +139,56 @@ source fails; without them the server answers 502). String fields (`title`, `tex
 Everything is checked at load (unknown root/filter/lookup, misplaced secret) with the JSON path.
 Full example: `examples/demo/screens/data.json`; cases: `BindingTest`, `DataBindingTest`.
 
+## Custom components (T-049, [ADR 0033](decisions/0033-custom-components-raw-rc-json.md))
+
+A screen uses a custom component by id; `args` are strings (bindable like any text):
+
+```json
+{ "type": "custom", "component": "parcel-tile",
+  "args": { "title": "{{parcels.count}} w drodze", "icon": "M4 12 L30 12 L30 34 L4 34 Z", "action": "navigate:parcels" },
+  "modifier": { "padding": 8 } }
+```
+
+The definition lives in `<data dir>/components/<id>.json` (files mode) or in the admin panel
+(**Components**). Its `body` is **raw Remote Compose JSON** (`RemoteComposeJsonParser` format), not
+our model:
+
+```json
+{ "id": "parcel-tile", "title": "Parcel tile", "rcVersion": "1.0.0-alpha23",
+  "params": { "title": {}, "icon": { "default": "M8 8 L40 8 L40 40 L8 40 Z" },
+              "action": { "type": "action" }, "accent": { "type": "color", "default": "#FFCD00" },
+              "height": { "type": "number", "default": "150" } },
+  "body": { "type": "box", "modifiers": [ { "fillMaxWidth": 1 }, { "height": "{{params.height}}" }, { "clip": 16 },
+                                          { "onClick": { "type": "hostAction", "name": "{{params.action}}" } } ],
+            "children": [ { "type": "canvas", "modifiers": [ { "fillMaxSize": 1 } ], "commands": [ … ] },
+                          { "type": "text", "text": "{{params.title}}", "color": "#FFFFFF" } ] } }
+```
+- Definition fields: `id`, `title`, `description`, `version` (≥ 1), `rcVersion` (the RC release the
+  body was validated with), `minApiLevel` (default 8: older clients get nothing in its place),
+  `params` (name → `{type: text|color|number|action, default, description}`; no default =
+  required), `body`. Full example: `examples/demo/components/parcel-tile.json`.
+- In the body: `{{params.<name>}}` (a string that is exactly a `number` placeholder becomes a JSON
+  number) and `{{brand.<field>}}` (`primaryColor`, `secondaryColor`, `backgroundColor`,
+  `surfaceColor`, `textColor`, `outlineColor`, with the renderer's defaults). An `action` arg is the
+  wire form (`navigate:detail?id=1`, `open_url:…`) and goes into `hostAction.name`.
+- **Allowed** (whitelist, checked with the path): components `box row column text canvas spacer flow
+  fitBox collapsibleRow collapsibleColumn`; canvas commands `paint setColor setStyle setStrokeWidth
+  draw{Rect,Line,Path,Circle,Oval,RoundRect,Arc,Sector,TextAnchored,TextOnPath,TextOnCircle,TweenPath}
+  save restore scale rotate translate skew clipRect clipPath`; paint ops without runtime shaders
+  (`shader: 0` resets a gradient); every modifier except `include*`; actions only `hostAction` with
+  a `name` our app decodes. Body ≤ 64 KB, ≤ 1000 components + commands, depth ≤ 32.
+- RC JSON rules that differ from our model ([remote-compose.md → RC JSON](remote-compose.md#rc-json-remotecomposejsonparser--spike-for-custom-components-verified-alpha23-2026-11-26)):
+  **modifier order is Compose order** (`padding` before `background` = outside it); a `canvas`
+  takes only `commands` (`children` are an error: put the canvas and the components in a `box`);
+  **canvas units are pixels** (`width`, `height`, `density` are expressions: `"width - 64 * density"`,
+  `{ "type": "scale", "sx": "density", "sy": "density" }` inside `save`/`restore` draws in dp);
+  path data knows only **absolute `M L H C S Q A Z`** (plus `a`), no `V` and no relative commands.
+- Checked when loaded/saved: the definition, the whitelist before and after substituting sample
+  args (defaults, else `Text`, `#FF808080`, `1`, `reload:`), and a trial parse; every `custom` in a
+  screen must name a known component and pass fitting args. At render a bound arg that breaks the
+  body (e.g. data text used as path data) leaves the component out with a warning, never the screen.
+  Cases: `CustomComponentsTest`.
+
 ## brand.json
 
 `<data dir>/brand.json` (optional) = `BrandConfig`, served by `GET /brand` and used by the renderer:

@@ -69,6 +69,7 @@ data-update documents, PoC: 10 updates/s on the emulator).
 | G2 | Live screens: `live.everyMs`, WebSocket `/screens/{id}/live`, data updates in `sdk-android` (T-047) | The demo dashboard moves every second on the emulator with no refresh button; static screens byte-identical |
 | G3 | Live edit preview on the same channel (T-032) | An edit in the panel shows on the phone in under 2 s |
 | G4 | Phone preview inside the panel: server-rendered PNG from the real RC player under Robolectric, optional amd64 service (T-048; owner 2026-11-24: before E) | Saving an edit updates a phone frame in the editor in under 2 s, no device needed |
+| G5 | Custom components written in raw RC JSON, reused by name (T-049, [ADR 0033](../docs/decisions/0033-custom-components-raw-rc-json.md); owner 2026-11-26: before E) | A demo screen uses a custom RC JSON component on the emulator; definitions edited in the panel; an RC upgrade re-validates them |
 
 ### E. Ship the owner's app
 
@@ -91,7 +92,7 @@ data-update documents, PoC: 10 updates/s on the emulator).
 Not ordered yet; each becomes a step when a real app needs it: feature flags and A/B tests (T-038), analytics in the panel (T-037), AI assistant
 (T-033), offline cache (T-028), canvas charts (T-018), forms (T-034), app user accounts (T-035),
 push (T-036), stateful components (T-017), gestures/effects (T-019), dynamic values incl.
-light/dark (T-020), advanced RC features (T-022), custom components written in RC JSON (T-049, ADR 0033, owner 2026-11-26).
+light/dark (T-020), advanced RC features (T-022).
 
 ## Changing this roadmap
 

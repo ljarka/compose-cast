@@ -1,6 +1,6 @@
 # T-049 — Custom components written in RC JSON
 
-Status: queued (not ordered yet — owner places it in the roadmap) · Roadmap: after the success criteria (owner 2026-11-26) · Depends on: T-007, T-048, ADR 0033 · Module: protocol, sdk-server, server-store, server-admin, compat-tests
+Status: done (`12697bc`) · Roadmap: G5 (owner 2026-11-26: now, before T-010) · Depends on: T-007, T-048, ADR 0033 · Module: protocol, sdk-server, server-store, server-admin, compat-tests
 
 ## Goal
 A custom component, for example a gradient card with a vector icon in the brand color, is written
@@ -20,6 +20,23 @@ Branch `spike/rc-json-fragment` (`compat-tests/.../RcJsonFragmentSpikeTest.kt` +
 - There is no `image` component, and `canvas` drops `children`.
 Facts: [remote-compose.md → RC JSON](../remote-compose.md#rc-json-remotecomposejsonparser--spike-for-custom-components-verified-alpha23-2026-11-26).
 **Not yet checked on the emulator**: do this in K2.
+
+## Result (2026-11-26)
+- **K1** `protocol/CustomComponent.kt` + `Component.Custom`; **K2** `sdk-server` `render/RcJsonBridge.kt`
+  (parser package), `render/RcJsonComponents.kt` (whitelist, substitution, trial parse, render),
+  `CustomComponents.kt`, registry `component`/`componentsFrom`; demo `parcel-tile` + screen `custom`,
+  golden `custom.png`, `CustomComponentTapTest`; **emulator**: tiles as the golden, taps navigate
+  (`dashboard`, `data` in the server log). **K3** `ComponentStore` (own tables), `AdminScreens`
+  component publishing (every live screen built first), admin **Components** pages + phone image +
+  palette **My components**. **K4** start-time re-validation (`brokenComponents`), `JsonScreensTest`
+  guard, upgrade playbook step.
+- Found on the way (docs/remote-compose.md → RC JSON 9–13): canvas units are pixels (scale by
+  `density`), path data only absolute `M L H C S Q A Z`, `save`/`restore`/`scale`/`clipRect` exist,
+  a placeholder can break the parse (hence trial parses with sample and real args), Robolectric
+  needs a drawn frame before taps.
+- **Not done (follow-ups):** K5 `definePattern` (measure first); a form generated from `params`
+  for `args` in the visual editor (today a JSON-value field); `image` params; components in the
+  app bundle format (ADR 0031) and templates; the AI chat (T-033).
 
 ## Design
 - **protocol:**

@@ -42,13 +42,13 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-032 Live preview on a phone](tasks/T-032-live-preview.md) | Roadmap G3 | done (`1087b4b`) — one live preview per editor and screen, every saved edit on the phone in ~1 s (ADR 0030) |
 | [T-030 App templates](tasks/T-030-app-templates.md) | Etap 8 | done (`4ab4a14`) — News, Shop, Events, Weather (live), Blank; Templates page applies drafts + Publish all (ADR 0031) |
 | [T-048 Phone preview inside the admin panel](tasks/T-048-in-panel-phone-preview.md) | Roadmap G4 | done (`c06d5ea`) — optional `preview-renderer` service (real player under Robolectric, linux/amd64), phone frame in the visual editor, edit → image 0.14 s (ADR 0032) |
+| [T-049 Custom components written in RC JSON](tasks/T-049-custom-components-rc-json.md) | Roadmap G5 | done (`12697bc`) — custom components in raw RC JSON, admin Components page, palette, ADR 0033 |
 | [T-010 Settings export (properties + icon)](tasks/T-010-app-export.md) | Etap 9 | in progress — Design rewritten; next: AppExportService + route |
 | [T-027 Images loaded by the SDK (lists)](tasks/T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-010); roadmap F1 |
 | [T-021 Native components via RC `Custom` (text input)](tasks/T-021-native-components.md) | Etap 10 | queued (after T-027); roadmap F2; spike first |
 | [T-046 Milestone 2: TV shows app built only in the admin](tasks/T-046-tv-shows-milestone.md) | Roadmap F | queued (after T-021); roadmap F3 — success criterion 1 |
 | [T-038 Feature flags and A/B tests](tasks/T-038-feature-flags-ab.md) | Etap 12 | queued (after T-046) |
 | [T-037 Analytics in the panel](tasks/T-037-analytics.md) | Etap 12 | queued (after T-038) |
-| [T-049 Custom components written in RC JSON](tasks/T-049-custom-components-rc-json.md) | after success criteria | queued (not ordered; owner places it) — spike done, ADR 0033 |
 | [T-033 AI assistant in the panel](tasks/T-033-ai-assistant.md) | Etap 8 | queued (after T-037) |
 | [T-028 Offline: disk cache of the last screen](tasks/T-028-offline-disk-cache.md) | Etap 7 | queued (after T-033) |
 | [T-018 Canvas: progress, charts, gradients](tasks/T-018-canvas-charts.md) | Etap 5 | queued (after T-028) |
@@ -70,7 +70,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | Etap 2 — Foundations ✅ | 5/5 |
 | Etap 3 — iOS spike: dropped | 0/0 |
 | Etap 4 — Data sources (APIs) — ADR 0008 | 4/4 |
-| Etap 5 — Components for real apps | 11/16 |
+| Etap 5 — Components for real apps | 12/16 |
 | Etap 6 — Milestone 1: Example weather app (external project) | 5/7 |
 | Etap 7 — App shells & SDKs | 3/7 |
 | Etap 8 — Admin panel MVP | 8/12 |
@@ -84,9 +84,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- T-049 — custom components in raw RC JSON
 - Spike: custom components as raw RC JSON
 - On-device screen values & `slider` → `gauge` / `text` interaction
 - T-048 — phone preview in the panel
 - T-030 — app templates
 - T-032 — live draft preview
-- T-047 step 3 — live screens in the app (T-047 done)

@@ -22,10 +22,19 @@ Upgrade RC **alone**, never together with other dependencies.
    grep -c RestrictTo remote-creation-core/androidx/compose/remote/creation/dsl/RcDocCreator.kt
    ```
    For every file in the density list, read how DP mode treats constants vs expressions.
+   Custom components (T-049, ADR 0033) lean on the RC JSON parser's internals:
+   ```bash
+   grep -n 'void parseComponent(' remote-creation-core/androidx/compose/remote/creation/json/RemoteComposeJsonParser.java  # RcJsonBridge
+   grep -n "case '" remote-creation-core/androidx/compose/remote/creation/json/PathParser.java    # path commands (docs)
+   ```
+   Then `./gradlew :sdk-server:test :server-app:test`: `JsonScreensTest` fails on any demo component
+   that broke (`brokenComponents()`). Fix the body, set its `rcVersion` (resources + `examples/`) to
+   the new release. Stored components of users are re-validated at server start: broken ones are
+   logged and skipped, never fatal.
 4. **Screenshots** — `./gradlew :compat-tests:verifyRoborazziDebug`. On a diff, open
    `compat-tests/build/outputs/roborazzi/*_compare.png` and decide: did RC content change, or only the
    Material3 frame? Fix the renderer; re-record only for intended changes.
 5. **Device** — [verify-on-emulator.md](verify-on-emulator.md).
-6. **Docs** — ADR 0004 table (new column), `docs/remote-compose.md` (current version, re-verified
+6. **Docs** — ADR 0004 table (new column), `docs/screen-json-format.md` → Custom components (whitelist, RC JSON rules), `docs/remote-compose.md` (current version, re-verified
    facts), `docs/history.md`, version in root `AGENTS.md` and README status line.
 7. `./scripts/verify.sh`.
