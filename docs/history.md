@@ -471,3 +471,7 @@ README roadmap's "Etap" numbers.
     each component cut from its phone preview; the designer shows the component JSON (kept in sync
     both ways) and the compiled Remote Compose JSON under the artboard; new components always start
     as a drawing (the "Start with" choice was removed).
+94. **Designer: Bézier pen and point editing** (2026-11-26, owner, T-057): the pen draws curves
+    like Figma (click = corner, drag = smooth point); existing paths (drawn or imported SVG icons)
+    can have their points and handles edited, points added on a segment, toggled corner/smooth and
+    removed.

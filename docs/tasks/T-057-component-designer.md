@@ -43,11 +43,18 @@ same as arranging components in a tree".
   there shapes the closing curve), Enter/Esc finish, Backspace removes the last point. Segments are
   `L` or cubic `C` (RC path subset); the element box holds anchors and handles.
 
+- Point editing (owner, 2026-11-26): double-click a path, Enter, or "Edit points"; drag anchors
+  (handles follow) and handles (a smooth point's other handle turns opposite, Alt: alone);
+  double-click an anchor = corner ↔ smooth; click a segment = a new point (de Casteljau split, shape
+  unchanged); Delete removes a point; Enter/Esc/click elsewhere ends. `Q` and arcs (`A`) become
+  cubics when editing starts (SVG arc → ≤ 90° cubic pieces). On finish an unrotated path gets a
+  new box around anchors and handles, scale 1 (stroke width multiplied by the old scale).
+
 ## Next steps
 4. **Not yet tried by the owner in a real browser session**: do that first, then fix what they hit.
 5. Multi-select + align/distribute; groups; snapping to other elements' edges; copy/paste.
-6. Editing the points of an existing path (the pen draws Bézier curves since 2026-11-26); radial
-   gradient; dashed strokes (`pathEffect`).
+6. Radial gradient; dashed strokes (`pathEffect`); path bounds from the curve instead of the
+   control points after point editing.
 7. Images on the artboard (needs the image pipeline in components, ADR 0033 out of scope); built-in
    components (gauge, button) as elements.
 8. Bind numbers to params (e.g. a progress bar's width from `{{params.value}}`).

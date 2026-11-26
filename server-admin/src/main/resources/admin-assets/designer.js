@@ -84,6 +84,8 @@
   }
 
   function restore(json) {
+    edit = null;
+    editDrag = null;
     def = JSON.parse(json);
     normalize();
     if (selected && !el(selected)) selected = null;
@@ -173,7 +175,7 @@
     d.elements.forEach((e) => {
       if (!e.hidden) drawElement(e, content, defs);
     });
-    drawSelection();
+    if (edit) drawEditOverlay(); else drawSelection();
     if (pen) drawPen();
     svg.addEventListener('pointerdown', onPointerDown);
     if (tool === 'pen') svg.addEventListener('pointermove', penHover);
@@ -327,6 +329,400 @@
     return straight ? `L${b.x} ${b.y}` : `C${a.hout[0]} ${a.hout[1]} ${b.hin[0]} ${b.hin[1]} ${b.x} ${b.y}`;
   }
 
+  // ---------- editing the points of a path (like Figma) ----------
+  // Double-click a path (or Enter, or "Edit points"): its anchors and Bézier handles become
+  // draggable. Drag an anchor (its handles follow) or a handle (a smooth point's other handle turns
+  // with it; Alt moves one alone). Double-click an anchor: corner ↔ smooth. Click a segment: a new
+  // point there, the shape unchanged. Delete removes the selected point, arrows nudge it. Enter, Esc
+  // or a click elsewhere ends editing. Points are kept in artboard dp while editing and written back
+  // to the element's own path box on every change.
+  let edit = null; // { id, subs: [{ pts: [{x, y, hin, hout}], closed }], sel: [s, i] | null }
+  let editDrag = null;
+  let lastDown = { t: 0, x: 0, y: 0 };
+
+  /** Element path box → artboard: scale (pathWidth/Height), rotate around the box center, move. */
+  function pathFrame(e) {
+    const sx = e.pathWidth ? e.w / e.pathWidth : 1;
+    const sy = e.pathHeight ? e.h / e.pathHeight : 1;
+    const r = ((e.rotation || 0) * Math.PI) / 180;
+    const cos = Math.cos(r);
+    const sin = Math.sin(r);
+    const cx = e.w / 2;
+    const cy = e.h / 2;
+    return {
+      sx, sy,
+      out: ([px, py]) => {
+        const qx = px * sx - cx;
+        const qy = py * sy - cy;
+        return [e.x + cx + qx * cos - qy * sin, e.y + cy + qx * sin + qy * cos];
+      },
+      in: ([ax, ay]) => {
+        const qx = ax - e.x - cx;
+        const qy = ay - e.y - cy;
+        return [(cx + qx * cos + qy * sin) / sx, (cy - qx * sin + qy * cos) / sy];
+      },
+    };
+  }
+
+  /** Normalized path data (M L C Q A Z) → subpaths of anchors with handles; Q and A become cubics. */
+  function parsePoints(d) {
+    const tokens = (normalizePath(d, 0, 0).match(/[MLCQAZ]|-?\d*\.?\d+(?:e[-+]?\d+)?/gi) || []);
+    let i = 0;
+    const n = () => parseFloat(tokens[i++]);
+    const subs = [];
+    let sub = null;
+    let cur = [0, 0];
+    const anchor = (x, y) => ({ x, y, hin: [x, y], hout: [x, y] });
+    const cubic = (c1, c2, end) => {
+      const last = sub.pts[sub.pts.length - 1];
+      last.hout = c1;
+      const p = anchor(end[0], end[1]);
+      p.hin = c2;
+      sub.pts.push(p);
+      cur = end;
+    };
+    while (i < tokens.length) {
+      const c = tokens[i++];
+      if (c === 'M') {
+        cur = [n(), n()];
+        sub = { pts: [anchor(cur[0], cur[1])], closed: false };
+        subs.push(sub);
+      } else if (c === 'L') {
+        cur = [n(), n()];
+        sub.pts.push(anchor(cur[0], cur[1]));
+      } else if (c === 'C') {
+        cubic([n(), n()], [n(), n()], [n(), n()]);
+      } else if (c === 'Q') {
+        const q = [n(), n()];
+        const end = [n(), n()];
+        cubic([cur[0] + (2 / 3) * (q[0] - cur[0]), cur[1] + (2 / 3) * (q[1] - cur[1])],
+          [end[0] + (2 / 3) * (q[0] - end[0]), end[1] + (2 / 3) * (q[1] - end[1])], end);
+      } else if (c === 'A') {
+        const [rx, ry, rot, large, sweep, x, y] = [n(), n(), n(), n(), n(), n(), n()];
+        arcToCubics(cur, rx, ry, rot, large, sweep, [x, y]).forEach(([c1, c2, end]) => cubic(c1, c2, end));
+      } else if (c === 'Z') {
+        sub.closed = true;
+        const first = sub.pts[0];
+        const last = sub.pts[sub.pts.length - 1];
+        // A path that returns to its start before Z: one point there, not two.
+        if (sub.pts.length > 1 && Math.abs(last.x - first.x) < 1e-6 && Math.abs(last.y - first.y) < 1e-6) {
+          first.hin = last.hin;
+          sub.pts.pop();
+        }
+        cur = [first.x, first.y];
+      }
+    }
+    return subs;
+  }
+
+  /** An SVG arc as cubic Béziers (≤ 90° each), from the endpoint form (SVG spec, appendix F.6). */
+  function arcToCubics(p0, rx, ry, rotDeg, large, sweep, p1) {
+    if (rx === 0 || ry === 0) return [[p0, p1, p1]];
+    const phi = (rotDeg * Math.PI) / 180;
+    const cos = Math.cos(phi);
+    const sin = Math.sin(phi);
+    const dx = (p0[0] - p1[0]) / 2;
+    const dy = (p0[1] - p1[1]) / 2;
+    const x1 = cos * dx + sin * dy;
+    const y1 = -sin * dx + cos * dy;
+    rx = Math.abs(rx);
+    ry = Math.abs(ry);
+    const lambda = (x1 * x1) / (rx * rx) + (y1 * y1) / (ry * ry);
+    if (lambda > 1) { rx *= Math.sqrt(lambda); ry *= Math.sqrt(lambda); }
+    const num = rx * rx * ry * ry - rx * rx * y1 * y1 - ry * ry * x1 * x1;
+    const den = rx * rx * y1 * y1 + ry * ry * x1 * x1;
+    const coef = (large === sweep ? -1 : 1) * Math.sqrt(Math.max(0, num / den));
+    const cxp = (coef * rx * y1) / ry;
+    const cyp = (-coef * ry * x1) / rx;
+    const cx = cos * cxp - sin * cyp + (p0[0] + p1[0]) / 2;
+    const cy = sin * cxp + cos * cyp + (p0[1] + p1[1]) / 2;
+    const angle = (ux, uy, vx, vy) => {
+      const a = Math.atan2(ux * vy - uy * vx, ux * vx + uy * vy);
+      return a;
+    };
+    const t1 = angle(1, 0, (x1 - cxp) / rx, (y1 - cyp) / ry);
+    let dt = angle((x1 - cxp) / rx, (y1 - cyp) / ry, (-x1 - cxp) / rx, (-y1 - cyp) / ry);
+    if (!sweep && dt > 0) dt -= 2 * Math.PI;
+    if (sweep && dt < 0) dt += 2 * Math.PI;
+    const parts = Math.max(1, Math.ceil(Math.abs(dt) / (Math.PI / 2)));
+    const step = dt / parts;
+    const k = (4 / 3) * Math.tan(step / 4);
+    const at = (t) => [cx + rx * Math.cos(t) * cos - ry * Math.sin(t) * sin, cy + rx * Math.cos(t) * sin + ry * Math.sin(t) * cos];
+    const deriv = (t) => [-rx * Math.sin(t) * cos - ry * Math.cos(t) * sin, -rx * Math.sin(t) * sin + ry * Math.cos(t) * cos];
+    const out = [];
+    for (let j = 0; j < parts; j++) {
+      const a = t1 + j * step;
+      const b = a + step;
+      const pa = at(a);
+      const pb = at(b);
+      const da = deriv(a);
+      const db = deriv(b);
+      out.push([[pa[0] + k * da[0], pa[1] + k * da[1]], [pb[0] - k * db[0], pb[1] - k * db[1]], j === parts - 1 ? p1 : pb]);
+    }
+    return out;
+  }
+
+  const isCorner = (h, p) => Math.abs(h[0] - p.x) < 1e-6 && Math.abs(h[1] - p.y) < 1e-6;
+  const fmt2 = (v) => String(Math.round(v * 100) / 100);
+
+  /** Subpaths (in the element's path box) → path data: `L` where both handles are retracted, else `C`. */
+  function pointsToPath(subs) {
+    return subs.map((sub) => {
+      const pts = sub.pts;
+      const seg = (a, b) => (isCorner(a.hout, a) && isCorner(b.hin, b)
+        ? `L${fmt2(b.x)} ${fmt2(b.y)}`
+        : `C${fmt2(a.hout[0])} ${fmt2(a.hout[1])} ${fmt2(b.hin[0])} ${fmt2(b.hin[1])} ${fmt2(b.x)} ${fmt2(b.y)}`);
+      let d = `M${fmt2(pts[0].x)} ${fmt2(pts[0].y)}`;
+      for (let i = 1; i < pts.length; i++) d += ' ' + seg(pts[i - 1], pts[i]);
+      if (sub.closed) {
+        const back = seg(pts[pts.length - 1], pts[0]);
+        if (!back.startsWith('L')) d += ' ' + back; // a straight closing edge is Z alone
+        d += ' Z';
+      }
+      return d;
+    }).join(' ');
+  }
+
+  function mapPoint(p, f) {
+    const a = f([p.x, p.y]);
+    return { x: a[0], y: a[1], hin: f(p.hin), hout: f(p.hout) };
+  }
+
+  function startEditing(e) {
+    if (!canEdit || !e || e.type !== 'path' || !e.path) return;
+    let subs;
+    try {
+      subs = parsePoints(e.path);
+    } catch (err) {
+      showProblems([`path: ${err.message}`]);
+      return;
+    }
+    if (!subs.length) return;
+    const frame = pathFrame(e);
+    edit = { id: e.id, subs: subs.map((sub) => ({ closed: sub.closed, pts: sub.pts.map((p) => mapPoint(p, frame.out)) })), sel: null };
+    pen = null;
+    setTool('select');
+    selected = e.id;
+    statusEl.textContent = 'Editing points: drag points or handles, double-click a point (corner ↔ smooth), click a segment to add a point. Enter or Esc ends.';
+    statusEl.className = 'muted';
+    renderAll();
+  }
+
+  /** The edited points → the element's path, in its current box (live, while dragging). */
+  function writeBack() {
+    const e = el(edit.id);
+    if (!e) return;
+    const frame = pathFrame(e);
+    e.path = pointsToPath(edit.subs.map((sub) => ({ closed: sub.closed, pts: sub.pts.map((p) => mapPoint(p, frame.in)) })));
+  }
+
+  /** Ends editing: an unrotated path gets a new box around its points (scale 1, stroke kept). */
+  function stopEditing() {
+    if (!edit) return;
+    const e = el(edit.id);
+    if (e && !e.rotation) {
+      const all = edit.subs.flatMap((sub) => sub.pts.flatMap((p) => [[p.x, p.y], p.hin, p.hout]));
+      const minX = Math.min(...all.map((a) => a[0]));
+      const minY = Math.min(...all.map((a) => a[1]));
+      const w = Math.max(Math.max(...all.map((a) => a[0])) - minX, 1);
+      const h = Math.max(Math.max(...all.map((a) => a[1])) - minY, 1);
+      const frame = pathFrame(e);
+      const scale = (frame.sx + frame.sy) / 2;
+      const shift = ([ax, ay]) => [ax - minX, ay - minY];
+      e.path = pointsToPath(edit.subs.map((sub) => ({ closed: sub.closed, pts: sub.pts.map((p) => mapPoint(p, shift)) })));
+      Object.assign(e, { x: round(minX), y: round(minY), w: round(w), h: round(h), pathWidth: round(w), pathHeight: round(h) });
+      if (scale !== 1) e.strokeWidth = round(e.strokeWidth * scale);
+    }
+    edit = null;
+    editDrag = null;
+    statusEl.textContent = '';
+    renderAll();
+    scheduleSave();
+  }
+
+  function drawEditOverlay() {
+    const blue = '#3b5bdb';
+    edit.subs.forEach((sub, s) => {
+      const pts = sub.pts;
+      const count = sub.closed ? pts.length : pts.length - 1;
+      for (let i = 0; i < count; i++) {
+        const a = pts[i];
+        const b = pts[(i + 1) % pts.length];
+        // A wide invisible stroke per segment: click it to add a point.
+        node('path', {
+          d: `M${a.x} ${a.y} C${a.hout[0]} ${a.hout[1]} ${b.hin[0]} ${b.hin[1]} ${b.x} ${b.y}`,
+          fill: 'none', stroke: 'transparent', 'stroke-width': 10 / zoom, 'data-seg': `${s}:${i}`, style: 'cursor: copy',
+        }, svg);
+      }
+      pts.forEach((p, i) => {
+        const chosen = edit.sel && edit.sel[0] === s && edit.sel[1] === i;
+        ['hin', 'hout'].forEach((side) => {
+          const h = p[side];
+          if (isCorner(h, p)) return;
+          node('line', { x1: p.x, y1: p.y, x2: h[0], y2: h[1], stroke: blue, 'stroke-width': 1 / zoom, 'pointer-events': 'none' }, svg);
+          node('circle', {
+            cx: h[0], cy: h[1], r: 3.5 / zoom, fill: '#fff', stroke: blue, 'stroke-width': 1.2 / zoom,
+            'data-handle-pt': `${s}:${i}:${side}`, style: 'cursor: move',
+          }, svg);
+        });
+        const size = 7 / zoom;
+        node('rect', {
+          x: p.x - size / 2, y: p.y - size / 2, width: size, height: size, fill: chosen ? blue : '#fff', stroke: blue,
+          'stroke-width': 1.2 / zoom, 'data-anchor': `${s}:${i}`, style: 'cursor: move',
+        }, svg);
+      });
+    });
+  }
+
+  /** Splits segment s:i at the point nearest to (x, y); the shape stays the same (de Casteljau). */
+  function insertPoint(s, i, x, y) {
+    const sub = edit.subs[s];
+    const a = sub.pts[i];
+    const b = sub.pts[(i + 1) % sub.pts.length];
+    const straight = isCorner(a.hout, a) && isCorner(b.hin, b);
+    const P = [[a.x, a.y], a.hout, b.hin, [b.x, b.y]];
+    const lerp = (u, v, t) => [u[0] + (v[0] - u[0]) * t, u[1] + (v[1] - u[1]) * t];
+    const at = (t) => {
+      const p01 = lerp(P[0], P[1], t), p12 = lerp(P[1], P[2], t), p23 = lerp(P[2], P[3], t);
+      const p012 = lerp(p01, p12, t), p123 = lerp(p12, p23, t);
+      return { p01, p23, p012, p123, p: lerp(p012, p123, t) };
+    };
+    let best = 0.5;
+    let bestD = Infinity;
+    for (let k = 1; k < 100; k++) {
+      const q = at(k / 100).p;
+      const dd = (q[0] - x) ** 2 + (q[1] - y) ** 2;
+      if (dd < bestD) { bestD = dd; best = k / 100; }
+    }
+    const r = at(best);
+    const point = { x: r.p[0], y: r.p[1], hin: r.p, hout: r.p };
+    if (!straight) {
+      a.hout = r.p01;
+      b.hin = r.p23;
+      point.hin = r.p012;
+      point.hout = r.p123;
+    }
+    sub.pts.splice(i + 1, 0, point);
+    edit.sel = [s, i + 1];
+  }
+
+  /** Corner (no handles) ↔ smooth (handles along the neighbours' direction, a third of the way). */
+  function toggleSmooth(s, i) {
+    const sub = edit.subs[s];
+    const p = sub.pts[i];
+    if (!isCorner(p.hin, p) || !isCorner(p.hout, p)) {
+      p.hin = [p.x, p.y];
+      p.hout = [p.x, p.y];
+      return;
+    }
+    const n = sub.pts.length;
+    const prev = sub.pts[(i - 1 + n) % n];
+    const next = sub.pts[(i + 1) % n];
+    const hasPrev = sub.closed || i > 0;
+    const hasNext = sub.closed || i < n - 1;
+    const from = hasPrev ? prev : p;
+    const to = hasNext ? next : p;
+    let dx = to.x - from.x;
+    let dy = to.y - from.y;
+    const len = Math.hypot(dx, dy) || 1;
+    dx /= len;
+    dy /= len;
+    const lin = hasPrev ? Math.hypot(p.x - prev.x, p.y - prev.y) / 3 : 0;
+    const lout = hasNext ? Math.hypot(next.x - p.x, next.y - p.y) / 3 : 0;
+    p.hin = [p.x - dx * lin, p.y - dy * lin];
+    p.hout = [p.x + dx * lout, p.y + dy * lout];
+  }
+
+  /** Pointer down while editing points; false = not on the edited path (editing ends). */
+  function editDown(ev, x, y) {
+    const t = ev.target;
+    const now = Date.now();
+    const double = now - lastDown.t < 400 && Math.abs(x - lastDown.x) < 4 && Math.abs(y - lastDown.y) < 4;
+    lastDown = { t: now, x, y };
+    const anchor = t.getAttribute('data-anchor');
+    const handle = t.getAttribute('data-handle-pt');
+    const seg = t.getAttribute('data-seg');
+    if (!anchor && !handle && !seg) return false;
+    pushUndo();
+    if (anchor) {
+      const [s, i] = anchor.split(':').map(Number);
+      edit.sel = [s, i];
+      if (double) {
+        toggleSmooth(s, i);
+        writeBack();
+        renderStage();
+        scheduleSave();
+        return true;
+      }
+      const p = edit.subs[s].pts[i];
+      editDrag = { kind: 'anchor', s, i, x0: x, y0: y, start: JSON.parse(JSON.stringify(p)), moved: false };
+    } else if (handle) {
+      const [s, i, side] = handle.split(':');
+      editDrag = { kind: 'handle', s: +s, i: +i, side, moved: false };
+    } else {
+      const [s, i] = seg.split(':').map(Number);
+      insertPoint(s, i, x, y);
+      writeBack();
+      editDrag = { kind: 'anchor', s, i: i + 1, x0: x, y0: y, start: JSON.parse(JSON.stringify(edit.subs[s].pts[i + 1])), moved: true };
+    }
+    window.addEventListener('pointermove', editMove);
+    window.addEventListener('pointerup', editUp);
+    window.addEventListener('pointercancel', editUp);
+    renderStage();
+    return true;
+  }
+
+  function editMove(ev) {
+    if (!edit || !editDrag) return;
+    const [x, y] = point(ev);
+    const p = edit.subs[editDrag.s].pts[editDrag.i];
+    if (editDrag.kind === 'anchor') {
+      const dx = x - editDrag.x0;
+      const dy = y - editDrag.y0;
+      const st = editDrag.start;
+      Object.assign(p, { x: st.x + dx, y: st.y + dy, hin: [st.hin[0] + dx, st.hin[1] + dy], hout: [st.hout[0] + dx, st.hout[1] + dy] });
+    } else {
+      const other = editDrag.side === 'hin' ? 'hout' : 'hin';
+      p[editDrag.side] = [x, y];
+      // A smooth point stays smooth: the other handle turns opposite, keeping its length.
+      if (!ev.altKey && !isCorner(p[other], p)) {
+        const len = Math.hypot(p[other][0] - p.x, p[other][1] - p.y);
+        const ux = x - p.x;
+        const uy = y - p.y;
+        const ul = Math.hypot(ux, uy) || 1;
+        p[other] = [p.x - (ux / ul) * len, p.y - (uy / ul) * len];
+      }
+    }
+    editDrag.moved = true;
+    writeBack();
+    renderStage();
+  }
+
+  function editUp() {
+    window.removeEventListener('pointermove', editMove);
+    window.removeEventListener('pointerup', editUp);
+    window.removeEventListener('pointercancel', editUp);
+    if (editDrag && !editDrag.moved) undoStack.pop();
+    const changed = editDrag && editDrag.moved;
+    editDrag = null;
+    renderAll();
+    if (changed) scheduleSave();
+  }
+
+  /** Delete/Backspace while editing: the selected point goes (a subpath keeps at least 2). */
+  function deleteEditedPoint() {
+    if (!edit.sel) return;
+    const [s, i] = edit.sel;
+    const sub = edit.subs[s];
+    if (sub.pts.length <= 2) return;
+    pushUndo();
+    sub.pts.splice(i, 1);
+    edit.sel = null;
+    writeBack();
+    renderAll();
+    scheduleSave();
+  }
+
   // ---------- the pen (like Figma) ----------
   // Click: a corner point. Press and drag: a smooth point whose handles follow the pointer
   // (mirrored; Alt moves only the outgoing one). Click the first point to close, Enter or Esc to
@@ -403,6 +799,23 @@
     const [x, y] = point(ev);
     const target = ev.target;
     if (tool === 'pen') return penDown(ev, x, y);
+    if (edit) {
+      if (editDown(ev, x, y)) return;
+      stopEditing();
+    }
+    if (tool === 'select') {
+      // A double click on a path edits its points.
+      const now = Date.now();
+      const twice = now - lastDown.t < 400 && Math.abs(x - lastDown.x) < 4 && Math.abs(y - lastDown.y) < 4;
+      lastDown = { t: now, x, y };
+      const holder = target.closest && target.closest('[data-id]');
+      const hit = holder && el(holder.getAttribute('data-id'));
+      if (twice && hit && hit.type === 'path') {
+        if (drag) undoStack.pop();
+        drag = null;
+        return startEditing(hit);
+      }
+    }
     if (tool !== 'select') {
       pushUndo();
       const type = tool;
@@ -578,6 +991,7 @@
   function setTool(t) {
     tool = t;
     if (t !== 'pen') pen = null;
+    if (t !== 'select' && edit) stopEditing();
     document.querySelectorAll('[data-tool]').forEach((b) => b.classList.toggle('active', b.dataset.tool === t));
     if (svg) renderStage(); // the pen's rubber band listens on the artboard
     if (svg) svg.style.cursor = t === 'select' ? 'default' : 'crosshair';
@@ -599,6 +1013,24 @@
     if (mod && ev.key.toLowerCase() === 'y') { ev.preventDefault(); return redo(); }
     if (mod && ev.key.toLowerCase() === 'd') { ev.preventDefault(); return command('duplicate'); }
     if (!canEdit) return;
+    if (edit) {
+      if (ev.key === 'Enter' || ev.key === 'Escape') { ev.preventDefault(); return stopEditing(); }
+      if (ev.key === 'Delete' || ev.key === 'Backspace') { ev.preventDefault(); return deleteEditedPoint(); }
+      const nudge = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[ev.key];
+      if (nudge && edit.sel) {
+        ev.preventDefault();
+        pushUndo();
+        const step = ev.shiftKey ? 10 : 1;
+        const p = edit.subs[edit.sel[0]].pts[edit.sel[1]];
+        const mv = (a) => [a[0] + nudge[0] * step, a[1] + nudge[1] * step];
+        Object.assign(p, { x: p.x + nudge[0] * step, y: p.y + nudge[1] * step, hin: mv(p.hin), hout: mv(p.hout) });
+        writeBack();
+        renderStage();
+        return scheduleSave();
+      }
+      return;
+    }
+    if (ev.key === 'Enter' && sel() && sel().type === 'path' && !pen) { ev.preventDefault(); return startEditing(sel()); }
     if ((ev.key === 'Enter' || ev.key === 'Escape') && pen && pen.points.length) {
       ev.preventDefault();
       return finishPen(false);
@@ -795,6 +1227,15 @@
       field(p, 'Stroke width', input('number', e.strokeWidth, set('strokeWidth'), { min: 0, step: 0.5 }));
       if (e.type === 'rect') field(p, 'Corner radius', input('number', e.radius, set('radius'), { min: 0 }));
       if (e.type !== 'line') field(p, 'Rotation (°)', input('number', e.rotation, set('rotation')));
+      if (e.type === 'path' && canEdit) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'small';
+        b.style.marginTop = '8px';
+        b.textContent = edit && edit.id === e.id ? 'Done editing points' : 'Edit points';
+        b.addEventListener('click', () => (edit && edit.id === e.id ? stopEditing() : startEditing(e)));
+        p.appendChild(b);
+      }
       if (e.type === 'path') {
         field(p, 'Path data', input('textarea', e.path, (v) => {
           try {
