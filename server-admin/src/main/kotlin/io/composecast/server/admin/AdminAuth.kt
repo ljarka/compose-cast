@@ -41,8 +41,26 @@ class AdminAuth(
     fun createUser(email: String, password: String, role: Role): AdminUser {
         checkPassword(password)
         val user = users.create(normalize(email).also(::checkEmail), hash(password), role.id)
-        return AdminUser(user.id, user.email, role)
+        return AdminUser(user.id, user.email, role, user.lastLoginAt)
     }
+
+    fun listUsers(): List<AdminUser> = users.list().mapNotNull(::adminUser)
+
+    fun findUser(id: Int): AdminUser? = users.findById(id)?.let(::adminUser)
+
+    fun findByEmail(email: String): AdminUser? = users.findByEmail(normalize(email))?.let(::adminUser)
+
+    /** Changes [userId]'s role; throws [UserStore.LastAdminException] if demoting the last admin. */
+    fun updateRole(userId: Int, role: Role): Boolean = users.updateRole(userId, role.id, Role.ADMIN.id)
+
+    /** Resets [userId]'s password and revokes their other sessions (keeping [keepSessionToken] if given). */
+    fun resetPassword(userId: Int, newPassword: String, keepSessionToken: String? = null): Boolean {
+        checkPassword(newPassword)
+        return users.updatePassword(userId, hash(newPassword), keepSessionToken?.let(::sessionId))
+    }
+
+    /** Deletes [userId] and their sessions; throws [UserStore.LastAdminException] if deleting the last admin. */
+    fun deleteUser(userId: Int): Boolean = users.delete(userId, Role.ADMIN.id)
 
     /** Null for an unknown email, a wrong password or an account with an unknown role. */
     fun login(email: String, password: String): Login? {
@@ -61,7 +79,8 @@ class AdminAuth(
 
     fun logout(token: String) = users.deleteSession(sessionId(token))
 
-    private fun adminUser(user: UserStore.User) = Role.of(user.role)?.let { AdminUser(user.id, user.email, it) }
+    private fun adminUser(user: UserStore.User) =
+        Role.of(user.role)?.let { AdminUser(user.id, user.email, it, user.lastLoginAt) }
 
     private fun hash(password: String) = BCrypt.withDefaults().hashToString(bcryptCost, password.toCharArray())
 

@@ -54,6 +54,7 @@ internal object Users : Table("users") {
 
     /** `admin` | `editor` | `viewer`; interpreted by `server-admin`. */
     val role = varchar("role", 16)
+    val lastLoginAt = varchar("last_login_at", 40).nullable()
     override val primaryKey = PrimaryKey(id)
 }
 

@@ -161,6 +161,7 @@ internal fun Route.adminRoutes(
             screenPages(screens, settings, publishing)
             visualPages(screens, probe, publishing)
             settingsPages(settings, publishing)
+            usersPages(auth)
             wizardPages(screens, settings, probe)
             templatesPages(screens, settings, publishing)
             phoneRenderer?.let { phonePreview(screens, publishing, it) }
@@ -177,6 +178,7 @@ internal fun ApplicationCall.page(title: String): Map<String, Any> = adminUser.l
         "user" to it,
         "role" to it.role.id,
         "canEdit" to it.role.canEdit,
+        "isAdmin" to (it.role == Role.ADMIN),
         "phone" to hasPhonePreview,
         "hasComponents" to application.attributes.contains(ComponentStoreKey),
         "debugMode" to isDebugMode,
@@ -194,6 +196,7 @@ private val SettingsStoreKey = AttributeKey<SettingsStore>("composecast.settings
 internal fun section(path: String): String = when {
     path.startsWith("/admin/components") -> "components"
     path.startsWith("/admin/templates") -> "templates"
+    path.startsWith("/admin/users") -> "users"
     path.startsWith("/admin/settings") -> "settings"
     else -> "screens" // screens, the visual editor, the wizard, revisions
 }

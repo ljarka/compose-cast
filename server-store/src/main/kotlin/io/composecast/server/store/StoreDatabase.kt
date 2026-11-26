@@ -44,10 +44,26 @@ class StoreDatabase private constructor(private val database: Database) {
             SchemaUtils.create(Screens, ScreenHistory, Components, ComponentHistory, AppSettings, Users, Sessions)
             exec("PRAGMA user_version = 1", explicitStatementType = StatementType.UPDATE)
         }
+        if (current < 2) {
+            val hasLastLogin = exec("PRAGMA table_info(users)", explicitStatementType = StatementType.SELECT) { rs ->
+                var found = false
+                while (rs.next()) {
+                    if (rs.getString("name") == "last_login_at") found = true
+                }
+                found
+            } ?: false
+            if (!hasLastLogin) {
+                exec(
+                    "ALTER TABLE users ADD COLUMN last_login_at VARCHAR(40)",
+                    explicitStatementType = StatementType.UPDATE,
+                )
+            }
+            exec("PRAGMA user_version = 2", explicitStatementType = StatementType.UPDATE)
+        }
     }
 
     companion object {
-        const val SCHEMA_VERSION: Int = 1
+        const val SCHEMA_VERSION: Int = 2
 
         fun open(file: Path): StoreDatabase {
             file.toAbsolutePath().parent?.createDirectories()

@@ -85,6 +85,14 @@ headings in `server-admin`.
 | `admin:wizard.mapping` | `wizard.ftl` | `WizardPages.kt` | "What goes where" role mapping dropdowns (title, subtitle, image, id) |
 | `admin:wizard.screens` | `wizard.ftl` | `WizardPages.kt` | "Screens" output ids, data source name & detail mode |
 
+## Users (`/admin/users`, admin only)
+
+| ID | Template | Handler | Description |
+|---|---|---|---|
+| `admin:users.header` | `users.ftl` | `UsersPages.kt` | Users page title and role overview |
+| `admin:users.list` | `users.ftl` | `UsersPages.kt` | Accounts table: email, role change, last login, reset password, remove |
+| `admin:users.new` | `users.ftl` | `UsersPages.kt` | "Add user" form (email, role, temporary password with generator) |
+
 ## Settings (`/admin/settings`)
 
 | ID | Template | Handler | Description |

@@ -1,5 +1,7 @@
 package io.composecast.server.admin
 
+import java.time.Instant
+
 /** Admin roles (ADR 0016), weakest first: `viewer` reads, `editor` changes screens, `admin` everything. */
 enum class Role(val id: String) {
     VIEWER("viewer"),
@@ -15,5 +17,5 @@ enum class Role(val id: String) {
     }
 }
 
-/** The logged-in account. */
-data class AdminUser(val id: Int, val email: String, val role: Role)
+/** An admin panel account. */
+data class AdminUser(val id: Int, val email: String, val role: Role, val lastLoginAt: Instant? = null)

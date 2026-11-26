@@ -209,6 +209,12 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M3 9h18M9 9v12"/></svg>
       <span>Templates</span>
     </a>
+    <#if isAdmin!false>
+    <a href="/admin/users"<#if current == "users"> aria-current="page"</#if>>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 19.5c.8-3.2 3.3-5 6.5-5s5.7 1.8 6.5 5"/><circle cx="17" cy="9.5" r="2.5"/><path d="M17.5 14.5c2 .3 3.5 1.7 4 4"/></svg>
+      <span>Users</span>
+    </a>
+    </#if>
     <a href="/admin/settings"<#if current == "settings"> aria-current="page"</#if>>
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
       <span>Settings</span>

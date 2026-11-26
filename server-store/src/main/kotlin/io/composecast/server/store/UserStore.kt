@@ -1,12 +1,16 @@
 package io.composecast.server.store
 
 import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.SortOrder
+import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.lessEq
+import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.jdbc.JdbcTransaction
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.update
 import java.time.Clock
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -16,9 +20,24 @@ import java.time.temporal.ChronoUnit
  * (bcrypt, made by `server-admin`), roles as text, session ids (hashes of cookie tokens).
  */
 class UserStore(private val database: StoreDatabase, private val clock: Clock = Clock.systemUTC()) {
-    data class User(val id: Int, val email: String, val hash: String, val role: String)
+    data class User(
+        val id: Int,
+        val email: String,
+        val hash: String,
+        val role: String,
+        val lastLoginAt: Instant? = null,
+    )
+
+    /** Thrown when an update or delete would leave the server with no account in the protected role. */
+    class LastAdminException(message: String) : IllegalStateException(message)
 
     fun isEmpty(): Boolean = database.tx { Users.selectAll().empty() }
+
+    fun list(): List<User> = database.tx { Users.selectAll().orderBy(Users.id to SortOrder.ASC).map(::user) }
+
+    fun findById(id: Int): User? = database.tx {
+        Users.selectAll().where { Users.id eq id }.singleOrNull()?.let(::user)
+    }
 
     /** Emails are compared exactly; callers normalize them (trim, lowercase) before storing and looking up. */
     fun findByEmail(email: String): User? =
@@ -31,13 +50,47 @@ class UserStore(private val database: StoreDatabase, private val clock: Clock = 
     fun createIfNone(email: String, hash: String, role: String): User? =
         database.tx { if (Users.selectAll().empty()) insertUser(email, hash, role) else null }
 
+    /** Changes [userId]'s role; refuses to demote the last account with [protectedRole]. Returns false if missing. */
+    fun updateRole(userId: Int, role: String, protectedRole: String = "admin"): Boolean = database.tx {
+        val current = Users.selectAll().where { Users.id eq userId }.singleOrNull() ?: return@tx false
+        if (current[Users.role] == protectedRole && role != protectedRole && countRole(protectedRole) <= 1) {
+            throw LastAdminException("Cannot change the role of the last admin.")
+        }
+        Users.update({ Users.id eq userId }) { it[Users.role] = role } > 0
+    }
+
+    /** Updates [userId]'s password hash and revokes their other sessions. Returns false if missing. */
+    fun updatePassword(userId: Int, hash: String, keepSessionId: String? = null): Boolean = database.tx {
+        val updated = Users.update({ Users.id eq userId }) { it[Users.hash] = hash } > 0
+        if (updated) {
+            if (keepSessionId != null) {
+                Sessions.deleteWhere { (Sessions.userId eq userId) and (Sessions.id neq keepSessionId) }
+            } else {
+                Sessions.deleteWhere { Sessions.userId eq userId }
+            }
+        }
+        updated
+    }
+
+    /** Deletes [userId] and their sessions; refuses to delete the last account with [protectedRole]. */
+    fun delete(userId: Int, protectedRole: String = "admin"): Boolean = database.tx {
+        val current = Users.selectAll().where { Users.id eq userId }.singleOrNull() ?: return@tx false
+        if (current[Users.role] == protectedRole && countRole(protectedRole) <= 1) {
+            throw LastAdminException("Cannot remove the last admin.")
+        }
+        Sessions.deleteWhere { Sessions.userId eq userId }
+        Users.deleteWhere { Users.id eq userId } > 0
+    }
+
     fun createSession(id: String, userId: Int, expiresAt: Instant) {
+        val now = clock.instant().truncatedTo(ChronoUnit.SECONDS).toString()
         database.tx {
             Sessions.insert {
                 it[Sessions.id] = id
                 it[Sessions.userId] = userId
                 it[Sessions.expiresAt] = expiresAt.truncatedTo(ChronoUnit.SECONDS).toString()
             }
+            Users.update({ Users.id eq userId }) { it[Users.lastLoginAt] = now }
         }
     }
 
@@ -61,6 +114,8 @@ class UserStore(private val database: StoreDatabase, private val clock: Clock = 
         return database.tx { Sessions.deleteWhere { Sessions.expiresAt lessEq now } }
     }
 
+    private fun JdbcTransaction.countRole(role: String): Long = Users.selectAll().where { Users.role eq role }.count()
+
     private fun JdbcTransaction.insertUser(email: String, hash: String, role: String): User {
         val id = Users.insert {
             it[Users.email] = email
@@ -70,5 +125,11 @@ class UserStore(private val database: StoreDatabase, private val clock: Clock = 
         return User(id, email, hash, role)
     }
 
-    private fun user(row: ResultRow) = User(row[Users.id], row[Users.email], row[Users.hash], row[Users.role])
+    private fun user(row: ResultRow) = User(
+        id = row[Users.id],
+        email = row[Users.email],
+        hash = row[Users.hash],
+        role = row[Users.role],
+        lastLoginAt = row[Users.lastLoginAt]?.let(Instant::parse),
+    )
 }
