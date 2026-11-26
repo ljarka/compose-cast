@@ -236,6 +236,9 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
             ),
         )
         is Component.Slider -> listOf(c.copy(modifier = bindModifier(c.modifier, roots)))
+        is Component.Custom -> listOf(
+            c.copy(args = c.args.mapValues { render(it.value, roots) }, modifier = bindModifier(c.modifier, roots)),
+        )
         is Component.Expandable -> listOf(
             c.copy(
                 title = render(c.title, roots),

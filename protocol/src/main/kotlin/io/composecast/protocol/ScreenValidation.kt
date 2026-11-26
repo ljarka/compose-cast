@@ -161,6 +161,14 @@ private fun componentProblems(
             }
             is Component.Spacer ->
                 if (component.height < 0) add("$at.height: must be >= 0, was ${component.height}")
+            is Component.Custom -> {
+                // The definition (params, types) is checked by the registry, which knows it (ADR 0033).
+                if (!CUSTOM_ID.matches(component.component)) {
+                    add(
+                        "$at.component: expected a component id (letters, digits, '-', '_'), was '${component.component}'",
+                    )
+                }
+            }
             is Component.Gauge -> {
                 if (!Template.hasBindings(component.value) && NumberList.single(component.value) == null) {
                     add("$at.value: expected a number or a {{binding}}, was '${component.value}'")
@@ -569,4 +577,5 @@ private fun urlProblem(url: String): String? {
 /** Deepest allowed nesting of component lists (containers, expandables) — keeps documents sane. */
 private const val MAX_DEPTH = 32
 
+private val CUSTOM_ID = Regex("[A-Za-z0-9_-]+")
 private val COLOR = Regex("#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})")

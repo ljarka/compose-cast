@@ -46,6 +46,23 @@ interface ScreenPublishing {
      * params, live brand, real data); nothing saved. Throws [PublishException] when it cannot.
      */
     fun document(json: String): ByteArray
+
+    /**
+     * T-049: makes [json] (a checked `ComponentDefinition`) the live version of custom component
+     * [id], only if every live screen still builds with it.
+     */
+    fun publishComponent(id: String, json: String, by: String): Unit =
+        throw PublishException("custom components are not supported")
+
+    /** T-049: publishes revision [revisionId] of component [id] again; a pending draft is kept. */
+    fun rollbackComponent(id: String, revisionId: Int, by: String): Unit =
+        throw PublishException("custom components are not supported")
+
+    /** T-049: removes component [id]; refused while a live screen uses it. */
+    fun deleteComponent(id: String): Unit = throw PublishException("custom components are not supported")
+
+    /** T-049: [json] (a checked draft component) alone on a screen with sample args, as an RC document. */
+    fun componentDocument(json: String): ByteArray = throw PublishException("custom components are not supported")
 }
 
 /** The screens would not build as a whole (e.g. a `{{secret.X}}` that is not set); nothing changed. */

@@ -68,6 +68,7 @@ internal fun RcScope.renderNode(env: RenderEnv, node: Component, slot: Slot) {
         is Component.Sparkline -> renderSparkline(env, node, slot)
         is Component.Kpi -> renderKpi(env, node, slot)
         is Component.Slider -> renderSlider(env, node, slot)
+        is Component.Custom -> RcJsonComponents.render(this, env, node, slot)
         // BoundScreen expands repeats before rendering (T-006).
         is Component.Repeat -> error("repeat must be expanded before rendering")
     }

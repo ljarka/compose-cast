@@ -333,4 +333,36 @@ class AdminScreensTest {
         assertEquals(HttpStatusCode.NotFound, client.get("/screens/shows").status)
         assertFalse("shows" in client.get("/screens").bodyAsText())
     }
+
+    @Test
+    fun `custom components are imported, re-render screens when published and cannot break live screens (T-049)`() {
+        val admin = admin()
+        admin.importIfEmpty(dataDir)
+        val store = io.composecast.server.store.ComponentStore(AdminScreens.openDatabase(dataDir))
+        assertEquals(setOf("parcel-tile"), store.live().keys)
+        var served = admin.load()
+        val before = served.render("custom")!!.document
+
+        val tile = io.composecast.protocol.ComponentJson.decode(store.live().getValue("parcel-tile"), "t")
+        val darker = tile.copy(
+            version = 2,
+            params = tile.params + ("background" to tile.params.getValue("background").copy(default = "#000000")),
+        )
+        admin.publishComponent("parcel-tile", io.composecast.protocol.ComponentJson.encode(darker), "a@x") {
+            served = it
+        }
+        assertTrue(!before.contentEquals(served.render("custom")!!.document), "the screen uses the new version")
+        assertEquals(2, store.history("parcel-tile").size)
+
+        // A new required param the live screen does not pass would break it: refused, nothing changes.
+        val broken = darker.copy(params = darker.params + ("badge" to io.composecast.protocol.ComponentParam()))
+        assertFailsWith<IllegalArgumentException> {
+            admin.publishComponent("parcel-tile", io.composecast.protocol.ComponentJson.encode(broken), "a@x") {}
+        }
+        assertFailsWith<IllegalArgumentException> { admin.deleteComponent("parcel-tile") {} }
+        assertEquals(2, store.history("parcel-tile").size)
+
+        // The editor's phone image: the component alone with its sample arguments.
+        assertTrue(admin.componentDocument(io.composecast.protocol.ComponentJson.encode(darker)).isNotEmpty())
+    }
 }

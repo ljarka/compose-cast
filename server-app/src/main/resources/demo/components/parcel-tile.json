@@ -1,0 +1,149 @@
+{
+  "id": "parcel-tile",
+  "title": "Parcel tile",
+  "description": "Dark tile with a stroked vector icon (SVG path data in a 48x48 dp box) at the top end and a title at the bottom end; tap runs the action. Canvas units are pixels: the icon is scaled by density.",
+  "rcVersion": "1.0.0-alpha23",
+  "params": {
+    "title": {
+      "description": "text at the bottom end"
+    },
+    "icon": {
+      "default": "M8 8 L40 8 L40 40 L8 40 Z",
+      "description": "SVG path data in a 48x48 dp box (absolute M L H C S Q A Z)"
+    },
+    "action": {
+      "type": "action",
+      "description": "what a tap does, e.g. navigate:parcels"
+    },
+    "accent": {
+      "type": "color",
+      "default": "#FFCD00",
+      "description": "icon color"
+    },
+    "background": {
+      "type": "color",
+      "default": "#2A2A2A",
+      "description": "tile color"
+    },
+    "height": {
+      "type": "number",
+      "default": "150",
+      "description": "tile height in dp"
+    }
+  },
+  "body": {
+    "type": "box",
+    "modifiers": [
+      {
+        "fillMaxWidth": 1
+      },
+      {
+        "height": "{{params.height}}"
+      },
+      {
+        "clip": 16
+      },
+      {
+        "onClick": {
+          "type": "hostAction",
+          "name": "{{params.action}}"
+        }
+      }
+    ],
+    "children": [
+      {
+        "type": "canvas",
+        "modifiers": [
+          {
+            "fillMaxSize": 1
+          }
+        ],
+        "commands": [
+          {
+            "type": "paint",
+            "ops": [
+              {
+                "color": "{{params.background}}"
+              },
+              {
+                "style": "fill"
+              }
+            ]
+          },
+          {
+            "type": "drawRoundRect",
+            "left": 0,
+            "top": 0,
+            "right": "width",
+            "bottom": "height",
+            "rx": 16,
+            "ry": 16
+          },
+          {
+            "type": "save"
+          },
+          {
+            "type": "translate",
+            "dx": "width - 64 * density",
+            "dy": "16 * density"
+          },
+          {
+            "type": "scale",
+            "sx": "density",
+            "sy": "density"
+          },
+          {
+            "type": "paint",
+            "ops": [
+              {
+                "color": "{{params.accent}}"
+              },
+              {
+                "style": "stroke"
+              },
+              {
+                "strokeWidth": 3.5
+              },
+              {
+                "strokeCap": "round"
+              },
+              {
+                "strokeJoin": "round"
+              }
+            ]
+          },
+          {
+            "type": "drawPath",
+            "path": "{{params.icon}}"
+          },
+          {
+            "type": "restore"
+          }
+        ]
+      },
+      {
+        "type": "column",
+        "horizontalAlignment": "end",
+        "verticalArrangement": "bottom",
+        "modifiers": [
+          {
+            "fillMaxSize": 1
+          },
+          {
+            "padding": 16
+          }
+        ],
+        "children": [
+          {
+            "type": "text",
+            "text": "{{params.title}}",
+            "color": "#FFFFFF",
+            "fontSize": 18,
+            "fontWeight": 700,
+            "textAlign": "end"
+          }
+        ]
+      }
+    ]
+  }
+}

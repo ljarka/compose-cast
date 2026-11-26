@@ -35,7 +35,8 @@ class PaletteTest {
             "a new component needs a starter in Palette",
         )
         assertEquals(
-            FormSchema.componentTypes.keys,
+            // `custom` appears per component under "My components" (T-049), not as a bare type.
+            FormSchema.componentTypes.keys - "custom",
             Palette.groups.flatMap {
                 it.second
             }.toSet(),

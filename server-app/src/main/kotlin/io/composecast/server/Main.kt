@@ -11,6 +11,7 @@ import io.composecast.server.sdk.DataSourceException
 import io.composecast.server.sdk.HttpImageLoader
 import io.composecast.server.sdk.ScreenParameterException
 import io.composecast.server.sdk.UnsupportedClientVersionException
+import io.composecast.server.store.ComponentStore
 import io.composecast.server.store.ScreenStore
 import io.composecast.server.store.SettingsStore
 import io.composecast.server.store.UserStore
@@ -67,7 +68,12 @@ fun main() {
                     "which is not writable: in Docker drop ':ro' from the volume and run 'sudo chown -R 1000:1000 <data dir>'"
             }
             val database = AdminScreens.openDatabase(dataDir)
-            val adminScreens = AdminScreens(ScreenStore(database), SettingsStore(database), imageLoader)
+            val adminScreens = AdminScreens(
+                ScreenStore(database),
+                SettingsStore(database),
+                imageLoader,
+                components = ComponentStore(database),
+            )
             adminScreens.importIfEmpty(dataDir)
             val auth = AdminAuth(UserStore(database))
             auth.bootstrapFromEnv(System.getenv("COMPOSECAST_ADMIN_EMAIL"), System.getenv("COMPOSECAST_ADMIN_PASSWORD"))
@@ -77,6 +83,7 @@ fun main() {
                     ScreenStore(database),
                     SettingsStore(database),
                     AdminPublishing(adminScreens, live),
+                    components = ComponentStore(database),
                     allowHttp = System.getenv("COMPOSECAST_ADMIN_ALLOW_HTTP").toBoolean(),
                     // The wizard's API probe follows the image rule (T-026): private hosts only for local development.
                     allowPrivateApiHosts = allowPrivateImageHosts,
@@ -99,6 +106,8 @@ class AdminPanelConfig(
     val allowHttp: Boolean = false,
     val allowPrivateApiHosts: Boolean = false,
     val phoneRenderer: PhoneRenderer? = null,
+    /** Custom components page (T-049); null = not shown. */
+    val components: ComponentStore? = null,
 )
 
 fun Application.module(screens: LiveScreens, admin: AdminPanelConfig? = null) {
@@ -138,6 +147,7 @@ fun Application.module(screens: LiveScreens, admin: AdminPanelConfig? = null) {
             it.allowHttp,
             it.allowPrivateApiHosts,
             it.phoneRenderer,
+            it.components,
         )
     }
 }

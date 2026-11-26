@@ -1,11 +1,16 @@
 package io.composecast.server
 
 import io.composecast.protocol.BrandConfig
+import io.composecast.protocol.Component
+import io.composecast.protocol.ComponentDefinition
+import io.composecast.protocol.ComponentJson
 import io.composecast.protocol.Live
+import io.composecast.protocol.ScreenDefinition
 import io.composecast.protocol.ScreenJson
 import io.composecast.server.admin.AdminAuth
 import io.composecast.server.admin.PublishException
 import io.composecast.server.admin.ScreenPublishing
+import io.composecast.server.sdk.CustomComponents
 import io.composecast.server.sdk.DataLoader
 import io.composecast.server.sdk.HttpDataLoader
 import io.composecast.server.sdk.HttpImageLoader
@@ -14,6 +19,7 @@ import io.composecast.server.sdk.RemoteScreen
 import io.composecast.server.sdk.RenderContext
 import io.composecast.server.sdk.ScreenRegistry
 import io.composecast.server.sdk.composeCast
+import io.composecast.server.store.ComponentStore
 import io.composecast.server.store.ScreenStore
 import io.composecast.server.store.SettingsStore
 import io.composecast.server.store.StoreDatabase
@@ -33,12 +39,15 @@ class AdminScreens(
     private val imageLoader: ImageLoader = HttpImageLoader(),
     private val dataLoader: DataLoader = HttpDataLoader,
     private val env: (String) -> String? = System::getenv,
+    /** Custom components (T-049, ADR 0033); null = none (tests of screens only). */
+    private val components: ComponentStore? = null,
 ) {
     /** Imports [dataDir] when the database has no screens yet; returns the number of imported screens. */
     fun importIfEmpty(dataDir: Path): Int {
         if (!screens.isEmpty() || !dataDir.resolve("screens").isDirectory()) return 0
         val files = loadScreens(dataDir, imageLoader, dataLoader) // validates everything first
         files.brand?.let { settings[SettingsStore.BRAND] = Json.encodeToString(BrandConfig.serializer(), it) }
+        components?.publishAll(files.components().mapValues { ComponentJson.encode(it.value) }, by = IMPORT)
         screens.publishAll(files.definitions().mapValues { ScreenJson.encode(it.value) }, by = IMPORT)
         log.info("Imported {} screens from {} into the admin database", files.ids().size, dataDir)
         return files.ids().size
@@ -111,6 +120,7 @@ class AdminScreens(
      */
     fun preview(json: String, previewId: String): ScreenRegistry = composeCast(imageLoader, dataLoader, env) {
         settings[SettingsStore.BRAND]?.let { brand(Json.decodeFromString(BrandConfig.serializer(), it)) }
+        liveComponents().forEach(::component)
         val draft = ScreenJson.decode(json, source = "preview")
         val everyMs = minOf(draft.live?.everyMs ?: PREVIEW_EVERY_MS, PREVIEW_EVERY_MS)
         screen(draft.copy(id = previewId, live = Live(everyMs)))
@@ -129,6 +139,7 @@ class AdminScreens(
         val definition = ScreenJson.decode(json, source = "describe")
         val registry = composeCast(imageLoader, dataLoader, env) {
             settings[SettingsStore.BRAND]?.let { brand(Json.decodeFromString(BrandConfig.serializer(), it)) }
+            liveComponents().forEach(::component)
             screen(definition)
         }
         val defaults = definition.params.mapValues { it.value.default.orEmpty() }
@@ -136,11 +147,70 @@ class AdminScreens(
     }
 
     /** Screens in id order, as [load] after a restart would serve them. */
-    private fun build(live: Map<String, String>, brandJson: String? = settings[SettingsStore.BRAND]): ScreenRegistry =
-        composeCast(imageLoader, dataLoader, env) {
-            brandJson?.let { brand(Json.decodeFromString(BrandConfig.serializer(), it)) }
-            live.toSortedMap().forEach { (id, json) -> screen(ScreenJson.decode(json, source = "screen '$id'")) }
+    private fun build(
+        live: Map<String, String>,
+        brandJson: String? = settings[SettingsStore.BRAND],
+        liveComponents: Map<String, String> = components?.live().orEmpty(),
+    ): ScreenRegistry = composeCast(imageLoader, dataLoader, env) {
+        brandJson?.let { brand(Json.decodeFromString(BrandConfig.serializer(), it)) }
+        liveComponents.toSortedMap().forEach { (id, json) -> component(ComponentJson.decode(json, "component '$id'")) }
+        live.toSortedMap().forEach { (id, json) -> screen(ScreenJson.decode(json, source = "screen '$id'")) }
+    }
+
+    private fun liveComponents(): List<ComponentDefinition> =
+        components?.live().orEmpty().map { (id, json) -> ComponentJson.decode(json, "component '$id'") }
+
+    private fun componentStore() = checkNotNull(components) { "custom components are not enabled" }
+
+    /**
+     * T-049: makes [json] (a checked `ComponentDefinition`) the live version of component [id] only if
+     * every live screen still builds with it; then [serve]s the new registry. On failure nothing changed.
+     */
+    fun publishComponent(id: String, json: String, by: String, serve: (ScreenRegistry) -> Unit) =
+        synchronized(publishLock) {
+            val store = componentStore()
+            val registry = build(screens.live(), liveComponents = store.live() + (id to json))
+            store.publish(id, json, by)
+            serve(registry)
         }
+
+    /** Like [publishComponent] for revision [revisionId] of component [id]. */
+    fun rollbackComponent(id: String, revisionId: Int, by: String, serve: (ScreenRegistry) -> Unit) =
+        synchronized(publishLock) {
+            val store = componentStore()
+            val revision =
+                requireNotNull(store.revision(id, revisionId)) { "Component '$id' has no revision $revisionId" }
+            val registry = build(screens.live(), liveComponents = store.live() + (id to revision.json))
+            store.rollback(id, revisionId, by)
+            serve(registry)
+        }
+
+    /** Removes component [id]; refused (nothing changes) while a live screen uses it. */
+    fun deleteComponent(id: String, serve: (ScreenRegistry) -> Unit) = synchronized(publishLock) {
+        val store = componentStore()
+        val registry = build(screens.live(), liveComponents = store.live() - id)
+        store.delete(id)
+        serve(registry)
+    }
+
+    /**
+     * T-049: [json] (a checked draft `ComponentDefinition`) rendered alone on a screen with its sample
+     * arguments, with the live brand: the document for the phone frame. Nothing saved.
+     */
+    fun componentDocument(json: String): ByteArray {
+        val definition = ComponentJson.decode(json, source = "component")
+        val screen = ScreenDefinition(
+            id = "__component-${definition.id}",
+            title = definition.title,
+            components = listOf(Component.Custom(definition.id, CustomComponents.sampleArgs(definition))),
+        )
+        val registry = composeCast(imageLoader, dataLoader, env) {
+            settings[SettingsStore.BRAND]?.let { brand(Json.decodeFromString(BrandConfig.serializer(), it)) }
+            component(definition)
+            screen(screen)
+        }
+        return requireNotNull(registry.render(screen.id)).document
+    }
 
     companion object {
         /** `published_by` of rows created by the first-start import. */
@@ -159,7 +229,13 @@ class AdminScreens(
             dataLoader: DataLoader = HttpDataLoader,
         ): AdminScreens {
             val database = openDatabase(dataDir)
-            return AdminScreens(ScreenStore(database), SettingsStore(database), imageLoader, dataLoader)
+            return AdminScreens(
+                ScreenStore(database),
+                SettingsStore(database),
+                imageLoader,
+                dataLoader,
+                components = ComponentStore(database),
+            )
         }
     }
 }
@@ -222,6 +298,24 @@ class AdminPublishing(private val admin: AdminScreens, private val live: LiveScr
     override fun stopPreviews(owner: String) = live.previews.revoke(owner)
 
     private fun screenId(json: String) = ScreenJson.decode(json, source = "preview").id
+
+    override fun publishComponent(id: String, json: String, by: String) = failsAsPublishException {
+        admin.publishComponent(id, json, by, live::replace)
+    }
+
+    override fun rollbackComponent(id: String, revisionId: Int, by: String) = failsAsPublishException {
+        admin.rollbackComponent(id, revisionId, by, live::replace)
+    }
+
+    override fun deleteComponent(id: String) = failsAsPublishException {
+        admin.deleteComponent(id, live::replace)
+    }
+
+    override fun componentDocument(json: String): ByteArray {
+        var result = ByteArray(0)
+        failsAsPublishException { result = admin.componentDocument(json) }
+        return result
+    }
 
     override fun setHome(id: String) = failsAsPublishException {
         admin.setHome(id, live::replaceHome)

@@ -34,7 +34,7 @@ class StoreDatabase private constructor(private val database: Database) {
                 },
             )
             return StoreDatabase(database).also {
-                it.createTables(Screens, ScreenHistory, AppSettings, Users, Sessions)
+                it.createTables(Screens, ScreenHistory, Components, ComponentHistory, AppSettings, Users, Sessions)
             }
         }
     }

@@ -4,6 +4,7 @@ import freemarker.cache.ClassTemplateLoader
 import freemarker.core.HTMLOutputFormat
 import freemarker.template.Configuration
 import freemarker.template.TemplateExceptionHandler
+import io.composecast.server.store.ComponentStore
 import io.composecast.server.store.ScreenStore
 import io.composecast.server.store.SettingsStore
 import io.ktor.http.HttpHeaders
@@ -54,6 +55,7 @@ fun Application.adminPanel(
     allowHttp: Boolean = false,
     allowPrivateApiHosts: Boolean = false,
     phoneRenderer: PhoneRenderer? = null,
+    components: ComponentStore? = null,
 ) {
     install(FreeMarker) { adminFreeMarker() }
     routing {
@@ -65,6 +67,7 @@ fun Application.adminPanel(
             allowHttp,
             ApiProbe(allowPrivateHosts = allowPrivateApiHosts),
             phoneRenderer = phoneRenderer,
+            components = components,
         )
     }
 }
@@ -92,9 +95,11 @@ internal fun Route.adminRoutes(
     allowHttp: Boolean,
     probe: ApiProbe = ApiProbe(),
     phoneRenderer: PhoneRenderer? = null,
+    components: ComponentStore? = null,
     extra: Route.() -> Unit = {},
 ) {
     phoneRenderer?.let { application.attributes.put(PhoneRendererKey, it) } // T-048: editors show the phone frame
+    components?.let { application.attributes.put(ComponentStoreKey, it) } // T-049: palette "My components"
     route("/admin") {
         install(SecurityHeaders)
         install(Sessions) {
@@ -141,6 +146,7 @@ internal fun Route.adminRoutes(
             wizardPages(screens, settings, probe)
             templatesPages(screens, settings, publishing)
             phoneRenderer?.let { phonePreview(screens, publishing, it) }
+            components?.let { componentPages(it, settings, publishing, phoneRenderer) }
             extra()
         }
     }
@@ -154,6 +160,7 @@ internal fun ApplicationCall.page(title: String): Map<String, Any> = adminUser.l
         "role" to it.role.id,
         "canEdit" to it.role.canEdit,
         "phone" to hasPhonePreview,
+        "hasComponents" to application.attributes.contains(ComponentStoreKey),
     )
 }
 

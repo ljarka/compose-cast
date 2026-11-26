@@ -77,4 +77,18 @@ class ScreenStoreTest {
         assertEquals("changed", settings[SettingsStore.BRAND])
         assertNull(settings["missing"])
     }
+
+    @Test
+    fun `components live in their own tables with the same draft, publish and history (T-049)`() {
+        val database = StoreDatabase.open(file)
+        val components = ComponentStore(database, clock)
+        components.saveDraft("tile", "{\"v\":1}")
+        components.publish("tile", "{\"v\":1}", by = "a@x")
+        components.publish("tile", "{\"v\":2}", by = "a@x")
+        assertEquals(mapOf("tile" to "{\"v\":2}"), components.live())
+        assertEquals(2, components.history("tile").size)
+        assertTrue(ScreenStore(database, clock).get("tile") == null, "a component is not a screen")
+        components.rollback("tile", components.history("tile").last().id, by = "a@x")
+        assertEquals("{\"v\":1}", components.live()["tile"])
+    }
 }

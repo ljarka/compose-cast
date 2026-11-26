@@ -5,8 +5,10 @@ import io.composecast.server.demo.actionsScreen
 import io.composecast.server.demo.adaptiveScreen
 import io.composecast.server.demo.collectionsScreen
 import io.composecast.server.demo.componentsScreen
+import io.composecast.server.demo.customScreen
 import io.composecast.server.demo.dashboardScreen
 import io.composecast.server.demo.dataScreen
+import io.composecast.server.demo.demoComponents
 import io.composecast.server.demo.echoScreen
 import io.composecast.server.demo.interactiveScreen
 import io.composecast.server.demo.layoutsScreen
@@ -26,7 +28,7 @@ import kotlin.io.path.readText
 
 /**
  * The screens this server serves: from [dataDir] (`screens/<id>.json`, optional `brand.json` with a
- * `BrandConfig`; ADR 0011 layout) or, when it is null, the built-in [demoScreens].
+ * `BrandConfig`, optional `components/<id>.json` custom components (ADR 0033); ADR 0011 layout) or, when it is null, the built-in [demoScreens].
  * Renders everything (fetching images), so call it once at startup.
  */
 fun loadScreens(
@@ -46,6 +48,7 @@ fun loadScreens(
                 },
             )
         }
+        componentsFrom(dataDir.resolve("components"))
         screensFrom(dataDir.resolve("screens"))
     }
 }
@@ -65,6 +68,7 @@ val demoBrand = BrandConfig(
 fun demoScreens(imageLoader: ImageLoader = HttpImageLoader(), dataLoader: DataLoader = HttpDataLoader): ScreenRegistry =
     composeCast(imageLoader, dataLoader) {
         brand(demoBrand)
+        demoComponents()
 
         mainScreen()
         layoutsScreen()
@@ -78,4 +82,5 @@ fun demoScreens(imageLoader: ImageLoader = HttpImageLoader(), dataLoader: DataLo
         dashboardScreen()
         liveScreen()
         interactiveScreen()
+        customScreen()
     }

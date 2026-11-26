@@ -23,8 +23,11 @@ import androidx.compose.remote.creation.dsl.background
 import androidx.compose.remote.creation.dsl.fillMaxSize
 import androidx.compose.remote.creation.dsl.padding
 import androidx.compose.remote.creation.dsl.verticalScroll
+import androidx.compose.remote.creation.json.RcJsonBridge
+import androidx.compose.remote.creation.json.RemoteComposeJsonParser
 import androidx.compose.remote.creation.profile.Profile
 import io.composecast.protocol.BrandConfig
+import io.composecast.protocol.ComponentDefinition
 import io.composecast.protocol.ScreenDefinition
 import io.composecast.server.sdk.ImageCache
 import io.composecast.server.sdk.ImageLoader
@@ -44,7 +47,12 @@ import javax.imageio.ImageIO
  * this file (document, profiles, images), `Modifiers.kt` (box model), `Nodes.kt` (dispatch, text),
  * `Containers.kt`, `Images.kt`, `Interactive.kt` (button, expandable), `Mappings.kt`, `Style.kt`.
  */
-internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoader: ImageLoader) {
+internal class RemoteComposeRenderer(
+    brand: BrandConfig?,
+    private val imageLoader: ImageLoader,
+    /** Custom components by id (ADR 0033), checked by the registry ([CustomEntry.broken]). */
+    private val components: Map<String, CustomEntry> = emptyMap(),
+) {
     private val background = parseColor(brand?.backgroundColor ?: DEFAULT_BACKGROUND)
 
     /** Images fetched so far, shared by all (concurrent) renders of one registry. */
@@ -58,6 +66,43 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
         outline = brand?.outlineColor?.let(::parseColor) ?: DIVIDER_COLOR,
     ) { url ->
         images.get(url, ::fetch)
+    }
+
+    /** `{{brand.<field>}}` in custom component bodies: the brand's colors with the renderer's defaults. */
+    private val brandColors: Map<String, String> = mapOf(
+        "primaryColor" to hex(env.primary),
+        "secondaryColor" to (brand?.secondaryColor ?: hex(env.primary)),
+        "backgroundColor" to hex(background),
+        "surfaceColor" to hex(env.surface),
+        "textColor" to hex(env.text),
+        "outlineColor" to hex(env.outline),
+    )
+
+    private fun profile(level: Int, mask: Int): RcProfile = this.profiles.computeIfAbsent(level to mask) { (l, m) ->
+        RcProfile(
+            Profile(l, m, PlatformServices) { info, p, tag -> RemoteComposeWriter(info, null, p, tag) },
+            false,
+        )
+    }
+
+    /** A throw-away writer for checking a custom component body before it touches a real document. */
+    private fun scratchWriter(): RemoteComposeWriter =
+        RemoteComposeWriter(profile(MAX_API_LEVEL, DEFAULT_PROFILES).profile, *HEADER_TAGS)
+
+    /**
+     * Every problem of [definition] (ADR 0033): its own [ComponentDefinition.problems], the whitelist
+     * (before and after substituting sample arguments) and a trial parse. Empty = usable.
+     */
+    fun componentProblems(definition: ComponentDefinition): List<String> {
+        val own = definition.problems()
+        if (own.isNotEmpty()) return own
+        val sample = RcJsonComponents.substitute(definition, RcJsonComponents.sampleArgs(definition), brandColors)
+        val whitelist = (
+            RcJsonComponents.bodyProblems(definition.body, substituted = false) +
+                RcJsonComponents.bodyProblems(sample, substituted = true)
+            ).distinct()
+        if (whitelist.isNotEmpty()) return whitelist
+        return listOfNotNull(RcJsonComponents.parseProblem(sample, ::scratchWriter)?.let { "body: $it" })
     }
 
     /**
@@ -79,12 +124,7 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
         }
         val targetLevel = minOf(apiLevel, MAX_API_LEVEL)
         val targetProfiles = (profiles and DEFAULT_PROFILES).let { if (it == 0) DEFAULT_PROFILES else it }
-        val profile = this.profiles.computeIfAbsent(targetLevel to targetProfiles) { (level, mask) ->
-            RcProfile(
-                Profile(level, mask, PlatformServices) { info, p, tag -> RemoteComposeWriter(info, null, p, tag) },
-                false,
-            )
-        }
+        val profile = profile(targetLevel, targetProfiles)
         return try {
             val tags = if (dataUpdate) UPDATE_TAGS else HEADER_TAGS
             val writer = RemoteComposeWriter(profile.profile, *tags)
@@ -92,7 +132,8 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
                 RcCanvas(writer) {
                     val values = ScreenValues.allocate(this, writer, screen)
                     val visibility = VisibilityStates.allocate(this, screen)
-                    val renderEnv = env.withRenderState(writer, values, visibility)
+                    val custom = CustomContext(components, brandColors, targetLevel, ::scratchWriter)
+                    val renderEnv = env.withRenderState(writer, values, visibility, custom)
                     Column(Modifier.fillMaxSize().background(background).verticalScroll().padding(SCREEN_PADDING)) {
                         renderChildren(renderEnv, screen.components, Slot(Axis.Vertical) { m, w -> m.weight(w) })
                     }
@@ -195,6 +236,8 @@ internal class RemoteComposeRenderer(brand: BrandConfig?, private val imageLoade
             return document.toNestedString()
         }
 
+        private fun hex(argb: Int) = "#%08X".format(argb)
+
         /** Parses `#RRGGBB` or `#AARRGGBB` into an ARGB int. */
         internal fun parseColor(hex: String): Int {
             val digits = hex.removePrefix("#")
@@ -220,8 +263,14 @@ internal class RenderEnv(
     private val activeWriter: RemoteComposeWriter? = null,
     val values: ScreenValues = ScreenValues.EMPTY,
     val visibility: VisibilityStates = VisibilityStates.EMPTY,
+    val custom: CustomContext = CustomContext.EMPTY,
     private val loadImage: (String) -> EncodedImage?,
 ) {
+    /** One RC JSON parser per document (custom components, ADR 0033), on the active [writer]. */
+    private val parser by lazy { RcJsonBridge.parser(writer) }
+
+    fun jsonParser(): RemoteComposeJsonParser = parser
+
     /** The active RC writer for the current render pass (used by `ScreenValues` / `Slider`). */
     val writer: RemoteComposeWriter
         get() = checkNotNull(activeWriter) { "RenderEnv has no active RemoteComposeWriter" }
@@ -231,7 +280,8 @@ internal class RenderEnv(
         writer: RemoteComposeWriter,
         values: ScreenValues,
         visibility: VisibilityStates = VisibilityStates.EMPTY,
-    ): RenderEnv = RenderEnv(primary, surface, text, outline, writer, values, visibility, loadImage)
+        custom: CustomContext = CustomContext.EMPTY,
+    ): RenderEnv = RenderEnv(primary, surface, text, outline, writer, values, visibility, custom, loadImage)
 
     /** The fetched image, or null (failed or rejected: callers render the alt text). */
     fun image(url: String): EncodedImage? = loadImage(url)

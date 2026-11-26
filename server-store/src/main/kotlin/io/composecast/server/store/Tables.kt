@@ -4,13 +4,14 @@ import org.jetbrains.exposed.v1.core.Table
 
 // Schema of the screens and settings (ADR 0016, T-007). Timestamps are ISO-8601 UTC strings.
 
-internal object Screens : Table("screens") {
+/** Drafts and live versions of JSON documents: screens, and custom components (T-049, ADR 0033). */
+internal class Documents(name: String) : Table(name) {
     val id = varchar("id", 128)
 
-    /** Canonical screen JSON (`ScreenJson.encode`) of the unpublished edit; null = no pending draft. */
+    /** Canonical JSON (`ScreenJson.encode` / `ComponentJson.encode`) of the unpublished edit; null = none. */
     val draftJson = text("draft_json").nullable()
 
-    /** Canonical screen JSON served to apps; null = never published. */
+    /** Canonical JSON served to apps; null = never published. */
     val liveJson = text("live_json").nullable()
     val updatedAt = varchar("updated_at", 40)
     val publishedAt = varchar("published_at", 40).nullable()
@@ -19,14 +20,25 @@ internal object Screens : Table("screens") {
 }
 
 /** Append-only: every publish (including imports and rollbacks) adds a row; rows are never changed. */
-internal object ScreenHistory : Table("screen_history") {
+internal class DocumentHistory(name: String, idColumn: String) : Table(name) {
     val id = integer("id").autoIncrement()
-    val screenId = varchar("screen_id", 128).index()
+    val screenId = varchar(idColumn, 128).index()
     val json = text("json_text")
     val publishedAt = varchar("published_at", 40)
     val publishedBy = varchar("published_by", 255)
     override val primaryKey = PrimaryKey(id)
 }
+
+/** A document table with its history. */
+internal class DocumentTables(val documents: Documents, val history: DocumentHistory)
+
+internal val Screens = Documents("screens")
+internal val ScreenHistory = DocumentHistory("screen_history", "screen_id")
+internal val ScreenTables = DocumentTables(Screens, ScreenHistory)
+
+internal val Components = Documents("components")
+internal val ComponentHistory = DocumentHistory("component_history", "component_id")
+internal val ComponentTables = DocumentTables(Components, ComponentHistory)
 
 internal object AppSettings : Table("app_settings") {
     val key = varchar("key", 128)

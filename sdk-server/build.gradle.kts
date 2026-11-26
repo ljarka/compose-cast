@@ -9,5 +9,14 @@ dependencies {
     implementation(libs.remote.creation.core)
     implementation(libs.remote.creation.jvm)
     implementation(libs.remote.core)
+    // RemoteComposeJsonParser (custom components, ADR 0033) needs org.json, absent on a plain JVM.
+    implementation(libs.org.json)
     testImplementation(libs.kotlin.test)
+}
+
+// The Remote Compose release custom component bodies are validated against (ADR 0033).
+val rcVersion = libs.versions.remote.compose.get()
+tasks.processResources {
+    inputs.property("rcVersion", rcVersion)
+    filesMatching("io/composecast/server/sdk/rc-version.properties") { expand("rcVersion" to rcVersion) }
 }

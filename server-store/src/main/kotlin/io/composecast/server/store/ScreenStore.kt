@@ -14,11 +14,20 @@ import java.time.Clock
 import java.time.Instant
 
 /**
- * Screens of the admin mode (T-007). Stores screen JSON as text and never parses it: callers
+ * documents of the admin mode (T-007). Stores screen JSON as text and never parses it: callers
  * validate (`ScreenDefinition.problems()`) before [saveDraft] / [publish], so the store stays
  * independent of the screen model and nothing invalid is ever stored as live.
  */
-class ScreenStore(private val database: StoreDatabase, private val clock: Clock = Clock.systemUTC()) {
+open class ScreenStore internal constructor(
+    private val database: StoreDatabase,
+    private val clock: Clock,
+    tables: DocumentTables,
+) {
+    constructor(database: StoreDatabase, clock: Clock = Clock.systemUTC()) : this(database, clock, ScreenTables)
+
+    private val documents = tables.documents
+    private val history = tables.history
+
     data class StoredScreen(
         val id: String,
         val draftJson: String?,
@@ -36,44 +45,44 @@ class ScreenStore(private val database: StoreDatabase, private val clock: Clock 
         val publishedBy: String,
     )
 
-    fun isEmpty(): Boolean = database.tx { Screens.selectAll().empty() }
+    fun isEmpty(): Boolean = database.tx { documents.selectAll().empty() }
 
     /** All screens, ordered by id. */
-    fun list(): List<StoredScreen> = database.tx { Screens.selectAll().orderBy(Screens.id).map(::screen) }
+    fun list(): List<StoredScreen> = database.tx { documents.selectAll().orderBy(documents.id).map(::screen) }
 
     fun get(id: String): StoredScreen? =
-        database.tx { Screens.selectAll().where { Screens.id eq id }.singleOrNull()?.let(::screen) }
+        database.tx { documents.selectAll().where { documents.id eq id }.singleOrNull()?.let(::screen) }
 
     /** Removes [id] and its history; returns true when a row was deleted. */
     fun delete(id: String): Boolean = database.tx {
-        ScreenHistory.deleteWhere { ScreenHistory.screenId eq id }
-        Screens.deleteWhere { Screens.id eq id } > 0
+        history.deleteWhere { history.screenId eq id }
+        documents.deleteWhere { documents.id eq id } > 0
     }
 
     /** Removes a single past revision [revisionId] of [screenId]; returns true when a row was deleted. */
     fun deleteRevision(screenId: String, revisionId: Int): Boolean = database.tx {
-        ScreenHistory.deleteWhere {
-            (ScreenHistory.screenId eq screenId) and (ScreenHistory.id eq revisionId)
+        history.deleteWhere {
+            (history.screenId eq screenId) and (history.id eq revisionId)
         } > 0
     }
 
     /** Live JSON of every published screen, ordered by id: what apps are served. */
     fun live(): Map<String, String> = database.tx {
-        Screens.selectAll().where { Screens.liveJson.isNotNull() }.orderBy(Screens.id)
-            .associate { it[Screens.id] to it[Screens.liveJson]!! }
+        documents.selectAll().where { documents.liveJson.isNotNull() }.orderBy(documents.id)
+            .associate { it[documents.id] to it[documents.liveJson]!! }
     }
 
     /** Stores [json] as the pending edit of [id] (creating the screen if new); apps are unaffected. */
     fun saveDraft(id: String, json: String) {
         val now = now()
         database.tx {
-            val updated = Screens.update({ Screens.id eq id }) {
+            val updated = documents.update({ documents.id eq id }) {
                 it[draftJson] = json
                 it[updatedAt] = now
             }
             if (updated == 0) {
-                Screens.insert {
-                    it[Screens.id] = id
+                documents.insert {
+                    it[documents.id] = id
                     it[draftJson] = json
                     it[updatedAt] = now
                 }
@@ -102,7 +111,7 @@ class ScreenStore(private val database: StoreDatabase, private val clock: Clock 
         now: String,
         keepDraft: Boolean = false,
     ) {
-        val updated = Screens.update({ Screens.id eq id }) {
+        val updated = documents.update({ documents.id eq id }) {
             it[liveJson] = json
             if (!keepDraft) it[draftJson] = null
             it[updatedAt] = now
@@ -110,17 +119,17 @@ class ScreenStore(private val database: StoreDatabase, private val clock: Clock 
             it[publishedBy] = by
         }
         if (updated == 0) {
-            Screens.insert {
-                it[Screens.id] = id
+            documents.insert {
+                it[documents.id] = id
                 it[liveJson] = json
                 it[updatedAt] = now
                 it[publishedAt] = now
                 it[publishedBy] = by
             }
         }
-        ScreenHistory.insert {
+        history.insert {
             it[screenId] = id
-            it[ScreenHistory.json] = json
+            it[history.json] = json
             it[publishedAt] = now
             it[publishedBy] = by
         }
@@ -128,15 +137,15 @@ class ScreenStore(private val database: StoreDatabase, private val clock: Clock 
 
     /** Published versions of [id], newest first. */
     fun history(id: String): List<Revision> = database.tx {
-        ScreenHistory.selectAll().where { ScreenHistory.screenId eq id }
-            .orderBy(ScreenHistory.id, SortOrder.DESC)
+        history.selectAll().where { history.screenId eq id }
+            .orderBy(history.id, SortOrder.DESC)
             .map(::revision)
     }
 
     /** Revision [revisionId] of [id], or null. */
     fun revision(id: String, revisionId: Int): Revision? = database.tx {
-        ScreenHistory.selectAll()
-            .where { (ScreenHistory.screenId eq id) and (ScreenHistory.id eq revisionId) }
+        history.selectAll()
+            .where { (history.screenId eq id) and (history.id eq revisionId) }
             .singleOrNull()?.let(::revision)
     }
 
@@ -146,26 +155,34 @@ class ScreenStore(private val database: StoreDatabase, private val clock: Clock 
      */
     fun rollback(id: String, revisionId: Int, by: String) {
         val revision =
-            revision(id, revisionId) ?: throw IllegalArgumentException("Screen '$id' has no revision $revisionId")
+            revision(id, revisionId) ?: throw IllegalArgumentException("'$id' has no revision $revisionId")
         database.tx { publishIn(id, revision.json, by, now(), keepDraft = true) }
     }
 
     private fun now() = Instant.now(clock).toString()
 
     private fun screen(row: ResultRow) = StoredScreen(
-        id = row[Screens.id],
-        draftJson = row[Screens.draftJson],
-        liveJson = row[Screens.liveJson],
-        updatedAt = Instant.parse(row[Screens.updatedAt]),
-        publishedAt = row[Screens.publishedAt]?.let(Instant::parse),
-        publishedBy = row[Screens.publishedBy],
+        id = row[documents.id],
+        draftJson = row[documents.draftJson],
+        liveJson = row[documents.liveJson],
+        updatedAt = Instant.parse(row[documents.updatedAt]),
+        publishedAt = row[documents.publishedAt]?.let(Instant::parse),
+        publishedBy = row[documents.publishedBy],
     )
 
     private fun revision(row: ResultRow) = Revision(
-        id = row[ScreenHistory.id],
-        screenId = row[ScreenHistory.screenId],
-        json = row[ScreenHistory.json],
-        publishedAt = Instant.parse(row[ScreenHistory.publishedAt]),
-        publishedBy = row[ScreenHistory.publishedBy],
+        id = row[history.id],
+        screenId = row[history.screenId],
+        json = row[history.json],
+        publishedAt = Instant.parse(row[history.publishedAt]),
+        publishedBy = row[history.publishedBy],
     )
 }
+
+/**
+ * Custom components of the admin mode (T-049, ADR 0033): drafts, publish, history and rollback like
+ * screens, in their own tables (`components`, `component_history`). Callers validate
+ * (`CustomComponents.check`) before storing.
+ */
+class ComponentStore(database: StoreDatabase, clock: Clock = Clock.systemUTC()) :
+    ScreenStore(database, clock, ComponentTables)

@@ -36,6 +36,7 @@ internal object Palette {
         "sparkline" to """{"values": "3, 5, 4, 7, 6, 9"}""",
         "kpi" to """{"value": "1,284", "label": "Key figure"}""",
         "slider" to """{"controls": "value"}""",
+        "custom" to """{"component": "my-component"}""",
     ).mapValues { (type, json) ->
         JsonObject(mapOf("type" to JsonPrimitive(type)) + Json.parseToJsonElement(json) as JsonObject)
     }
@@ -46,6 +47,18 @@ internal object Palette {
         "Layout" to listOf("column", "row", "box", "card", "grid", "flow", "fitBox", "expandable"),
         "Data" to listOf("repeat"),
         "Dashboard" to listOf("gauge", "sparkline", "kpi", "slider"),
+    )
+
+    /** Palette type of custom component [id] (T-049): `custom:<id>`. */
+    const val CUSTOM_PREFIX = "custom:"
+
+    /** A `custom` use of component [id] with [args] (T-049, ADR 0033). */
+    fun customStarter(id: String, args: Map<String, String>): JsonObject = JsonObject(
+        buildMap {
+            put("type", JsonPrimitive("custom"))
+            put("component", JsonPrimitive(id))
+            if (args.isNotEmpty()) put("args", JsonObject(args.mapValues { JsonPrimitive(it.value) }))
+        },
     )
 
     /** Types that hold components; [wrap] puts the node into the first list. */
@@ -76,7 +89,11 @@ internal object Palette {
         ScreenTree.set(screen, list, JsonArray(items))
 
     /** The starter of [type] for [screen] (repeat → first data source; slider → first screen value). */
-    fun starter(screen: JsonObject, type: String): JsonObject {
+    fun starter(screen: JsonObject, type: String, custom: Map<String, Map<String, String>> = emptyMap()): JsonObject {
+        if (type.startsWith(CUSTOM_PREFIX)) {
+            val id = type.removePrefix(CUSTOM_PREFIX)
+            return customStarter(id, requireNotNull(custom[id]) { "unknown component '$id': publish it first" })
+        }
         val starter = requireNotNull(starters[type]) { "unknown component type '$type'" }
         if (type == "repeat") {
             val source = requireNotNull((screen["data"] as? JsonObject)?.keys?.firstOrNull()) {
@@ -116,8 +133,14 @@ internal object Palette {
     }
 
     /** Inserts a new [type] into [list] at [index] (clamped; null = at the end). */
-    fun add(screen: JsonObject, list: String, index: Int?, type: String): Result {
-        val starter = starter(screen, type)
+    fun add(
+        screen: JsonObject,
+        list: String,
+        index: Int?,
+        type: String,
+        custom: Map<String, Map<String, String>> = emptyMap(),
+    ): Result {
+        val starter = starter(screen, type, custom)
         val current = items(screen, list)
         val at = (index ?: current.size).coerceIn(0, current.size)
         return Result(withItems(screen, list, current.take(at) + starter + current.drop(at)), "$list.$at")

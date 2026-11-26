@@ -130,6 +130,11 @@ open class ComponentsBuilder internal constructor(private val context: String) {
         components += Component.Slider(controls, step, color, trackColor, modifier)
     }
 
+    /** A custom component (raw RC JSON, ADR 0033) by [component] id; [args] fill its params (bindable). */
+    fun custom(component: String, args: Map<String, String> = emptyMap(), modifier: Modifier = Modifier.NONE) {
+        components += Component.Custom(component, args, modifier)
+    }
+
     /** Vertical container with card defaults (16 dp padding, 12 dp corner radius, surface background). */
     fun card(modifier: Modifier = Modifier.NONE, spacing: Int = 0, children: ComponentsBuilder.() -> Unit) {
         components += Component.Card(nested(children), spacing, modifier)

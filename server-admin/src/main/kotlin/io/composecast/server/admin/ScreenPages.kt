@@ -296,6 +296,7 @@ private suspend fun ApplicationCall.editor(
                 notice = notice.orEmpty(),
                 checked = checked,
                 preview = preview,
+                custom = customComponents(),
             ),
         )
     }

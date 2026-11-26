@@ -1,12 +1,16 @@
 package io.composecast.server.sdk
 
 import io.composecast.protocol.BrandConfig
+import io.composecast.protocol.ComponentDefinition
+import io.composecast.protocol.ComponentJson
 import io.composecast.protocol.ScreenDefinition
 import io.composecast.protocol.ScreenJson
+import io.composecast.server.sdk.render.CustomEntry
 import io.composecast.server.sdk.render.RemoteComposeRenderer
 import java.nio.file.Path
 import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
+import java.util.logging.Logger
 import kotlin.io.path.isDirectory
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.nameWithoutExtension
@@ -85,7 +89,15 @@ class ScreenRegistry internal constructor(
     private val dynamic: Map<String, (RenderContext) -> ScreenDefinition>,
     private val renderer: RemoteComposeRenderer,
     private val fetcher: DataFetcher,
+    private val components: Map<String, ComponentDefinition> = emptyMap(),
+    private val brokenComponents: Map<String, String> = emptyMap(),
 ) {
+    /** Custom component definitions (ADR 0033), by id. */
+    fun components(): Map<String, ComponentDefinition> = components
+
+    /** Components that failed re-validation after an RC upgrade (id → why); screens skip them. */
+    fun brokenComponents(): Map<String, String> = brokenComponents
+
     /** The pre-rendered document of a static screen; `null` for unknown or dynamic screens. */
     fun get(id: String): RemoteScreen? = static[id]
 
@@ -167,6 +179,7 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader,
     private val boundScreens = linkedMapOf<String, BoundScreen>()
     private val dynamicScreens = linkedMapOf<String, (RenderContext) -> ScreenDefinition>()
     private val ids = mutableListOf<String>()
+    private val components = linkedMapOf<String, ComponentDefinition>()
     private var brand: BrandConfig? = null
 
     private fun claim(id: String) {
@@ -219,6 +232,30 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader,
             }
     }
 
+    /** A custom component (raw RC JSON body, ADR 0033); checked at build, with the brand. */
+    fun component(definition: ComponentDefinition) {
+        require(definition.id !in components) { "Duplicate component id '${definition.id}'" }
+        components[definition.id] = definition
+    }
+
+    /**
+     * Adds every `*.json` file in [directory] as a component ([ComponentJson]); each must be named
+     * `<id>.json`. A missing directory adds nothing (components are optional).
+     */
+    fun componentsFrom(directory: Path) {
+        if (!directory.isDirectory()) return
+        directory.listDirectoryEntries("*.json")
+            .filterNot { it.fileName.toString().startsWith(".") }
+            .sortedBy { it.fileName.toString() }
+            .forEach { file ->
+                val definition = ComponentJson.decode(file.readText(), source = file.toString())
+                require(definition.id == file.nameWithoutExtension) {
+                    "$file: declares id '${definition.id}', but the file must be named '${definition.id}.json'"
+                }
+                component(definition)
+            }
+    }
+
     fun brand(
         name: String,
         primaryColor: String,
@@ -249,7 +286,9 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader,
 
     /** Renders every static screen once; screens are rendered after the brand is known. */
     internal fun build(): ScreenRegistry {
-        val renderer = RemoteComposeRenderer(brand, imageLoader)
+        val entries = checkComponents()
+        checkUses(entries)
+        val renderer = RemoteComposeRenderer(brand, imageLoader, entries)
         val rendered = screens.mapValues { (_, definition) -> RemoteScreen(definition, renderer.render(definition)) }
         return ScreenRegistry(
             brand,
@@ -259,7 +298,55 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader,
             dynamicScreens.toMap(),
             renderer,
             fetcher,
+            components.toMap(),
+            entries.filterValues { it.broken != null }.mapValues { it.value.broken!! },
         )
+    }
+
+    /**
+     * ADR 0033 versioning: a definition validated against this RC release must pass (else the build
+     * fails, like a screen); one from another release that fails now is `broken` — screens skip it.
+     */
+    private fun checkComponents(): Map<String, CustomEntry> {
+        val checker = RemoteComposeRenderer(brand, imageLoader)
+        return components.mapValues { (id, definition) ->
+            val problems = checker.componentProblems(definition)
+            when {
+                problems.isEmpty() -> {
+                    if (definition.rcVersion != CustomComponents.RC_VERSION) {
+                        log.info(
+                            "Component '$id' (validated with RC ${definition.rcVersion}) still works with " +
+                                "RC ${CustomComponents.RC_VERSION}",
+                        )
+                    }
+                    CustomEntry(definition, null)
+                }
+                definition.rcVersion == CustomComponents.RC_VERSION ->
+                    throw IllegalArgumentException("Component '$id': ${problems.joinToString("; ")}")
+                else -> {
+                    val why = "validated with RC ${definition.rcVersion}, fails with RC " +
+                        "${CustomComponents.RC_VERSION}: ${problems.joinToString("; ")}"
+                    log.warning("Component '$id' is broken and not rendered: $why")
+                    CustomEntry(definition, why)
+                }
+            }
+        }
+    }
+
+    /** Every `custom` in a static or bound screen names a known component with fitting arguments. */
+    private fun checkUses(entries: Map<String, CustomEntry>) {
+        (screens.values + boundScreens.values.map { it.definition }).forEach { screen ->
+            val problems = CustomComponents.uses(screen).flatMap { (at, use) ->
+                val definition = entries[use.component]?.definition
+                    ?: return@flatMap listOf("$at.component: unknown custom component '${use.component}'")
+                definition.argProblems(use.args, at)
+            }
+            require(problems.isEmpty()) { "Screen '${screen.id}': ${problems.joinToString("; ")}" }
+        }
+    }
+
+    private companion object {
+        val log: Logger = Logger.getLogger(RegistryBuilder::class.java.name)
     }
 }
 

@@ -1,5 +1,6 @@
 package io.composecast.server
 
+import io.composecast.protocol.ComponentJson
 import io.composecast.protocol.ScreenJson
 import io.composecast.server.sdk.ImageLoader
 import java.awt.image.BufferedImage
@@ -57,6 +58,28 @@ class JsonScreensTest {
             val file = dir.resolve("$id.json")
             if (write) file.writeText(ScreenJson.encode(definition) + "\n")
             assertEquals(ScreenJson.encode(definition), file.readText().trimEnd())
+        }
+    }
+
+    @Test
+    fun `JSON components equal the demo resources and are in canonical form`() {
+        // examples/demo/components/<id>.json and server-app resources demo/components/<id>.json are
+        // the same file; -Dcomposecast.writeExamples=true rewrites both canonically.
+        val write = System.getProperty("composecast.writeExamples") == "true"
+        assertEquals(fromDsl.components(), fromJson.components())
+        // ADR 0033 / T-049 K4: after an RC upgrade a component validated with the old release that no
+        // longer works is only "broken" at runtime; here it fails, naming the component and why.
+        assertEquals(emptyMap(), fromJson.brokenComponents(), "fix the body, then set rcVersion to the new release")
+        fromDsl.components().forEach { (id, definition) ->
+            val canonical = ComponentJson.encode(definition)
+            val files = listOf(
+                dataDir.resolve("components/$id.json"),
+                Path.of(System.getProperty("user.dir"), "src/main/resources/demo/components/$id.json"),
+            )
+            files.forEach { file ->
+                if (write) file.writeText(canonical + "\n")
+                assertEquals(canonical, file.readText().trimEnd(), "$file")
+            }
         }
     }
 }

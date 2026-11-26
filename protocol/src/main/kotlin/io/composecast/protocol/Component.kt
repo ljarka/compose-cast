@@ -239,6 +239,18 @@ sealed interface Component {
         override val modifier: Modifier = Modifier.NONE,
     ) : Component
 
+    /**
+     * A [ComponentDefinition] (raw RC JSON body, ADR 0033) used by id; [args] (bindable strings)
+     * fill its params. [modifier] applies to a box around the body.
+     */
+    @Serializable
+    @SerialName("custom")
+    data class Custom(
+        val component: String,
+        val args: Map<String, String> = emptyMap(),
+        override val modifier: Modifier = Modifier.NONE,
+    ) : Component
+
     /** The bindable string fields of this component (not of nested ones), by field path. */
     fun strings(): List<Pair<String, String>> = when (this) {
         is Text -> listOf("text" to text)
@@ -251,6 +263,7 @@ sealed interface Component {
         is Gauge -> listOf("value" to value, "label" to label)
         is Sparkline -> listOf("values" to values)
         is Kpi -> listOf("value" to value, "label" to label, "caption" to caption)
+        is Custom -> args.map { (k, v) -> "args.$k" to v }
         is Divider, is Card, is Spacer, is Repeat, is Column, is Row, is Box, is FitBox, is Flow, is Grid,
         is Slider,
         -> emptyList()
@@ -273,7 +286,7 @@ sealed interface Component {
         is Expandable -> listOf("content" to content)
         is Repeat -> listOf("template" to template, "empty" to empty)
         is Text, is Image, is Icon, is Divider, is Button, is Spacer, is Gauge, is Sparkline, is Kpi,
-        is Slider,
+        is Slider, is Custom,
         -> emptyList()
     }
 

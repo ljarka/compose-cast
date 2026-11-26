@@ -93,6 +93,10 @@ class DemoScreensScreenshotTest {
     @Test
     fun interactive() = capture("interactive")
 
+    /** Custom components in raw RC JSON (T-049, ADR 0033): four `parcel-tile`s with vector icons. */
+    @Test
+    fun custom() = capture("custom")
+
     /** A dynamic screen, rendered from query parameters (T-003). */
     @Test
     fun echo() = capture("echo", mapOf("word" to "zażółć gęślą jaźń"))

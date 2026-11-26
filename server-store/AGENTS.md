@@ -9,8 +9,8 @@ mode** (`COMPOSECAST_MODE=admin`, wired in `server-app`); files mode never opens
 | File | Purpose |
 |---|---|
 | `StoreDatabase.kt` | `StoreDatabase.open(file)`: connects (WAL, `busy_timeout` 5 s), creates the tables; `tx {}` runs one transaction; `createTables()` for feature modules' own tables |
-| `Tables.kt` | `screens` (id, draft_json, live_json, timestamps, published_by), `screen_history` (append-only), `app_settings` (key/value), `users` (unique email, bcrypt hash, role text), `sessions` (id = token hash, user, expiry) |
-| `ScreenStore.kt` | `list`, `get`, `live()` (what apps are served), `saveDraft`, `publish`, `publishAll` (one transaction: first-start import), `history`, `revision`, `rollback` (= publish an old revision again; keeps a pending draft) |
+| `Tables.kt` | `Documents`/`DocumentHistory` table classes, instantiated as `screens` (id, draft_json, live_json, timestamps, published_by) + `screen_history` (append-only, `screen_id`) and `components` + `component_history` (`component_id`, T-049), `app_settings` (key/value), `users` (unique email, bcrypt hash, role text), `sessions` (id = token hash, user, expiry) |
+| `ScreenStore.kt` | `list`, `get`, `live()` (what apps are served), `saveDraft`, `publish`, `publishAll` (one transaction: first-start import), `history`, `revision`, `rollback` (= publish an old revision again; keeps a pending draft); `ComponentStore` = the same over the component tables (T-049, never parses JSON either) |
 | `UserStore.kt` | Admin accounts + sessions (A2): `findByEmail`, `create`, `createIfNone` (atomic first-admin bootstrap), `createSession`, `sessionUser` (deletes an expired one), `deleteSession`, `deleteExpiredSessions`; stores bcrypt hashes and session-id hashes made by `server-admin` |
 | `SettingsStore.kt` | `settings[key]` get/set; `BRAND` = the brand as `brand.json` text, `HOME_SCREEN` = screen id served for `main` |
 

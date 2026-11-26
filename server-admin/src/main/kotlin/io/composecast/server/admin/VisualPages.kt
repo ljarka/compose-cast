@@ -1,7 +1,9 @@
 package io.composecast.server.admin
 
 import io.composecast.protocol.Component
+import io.composecast.protocol.ComponentDefinition
 import io.composecast.protocol.ScreenJson
+import io.composecast.server.sdk.CustomComponents
 import io.composecast.server.store.ScreenStore
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
@@ -74,10 +76,11 @@ internal fun Route.visualPages(screens: ScreenStore, probe: ApiProbe, publishing
             val params = call.receiveParameters()
             val type = params["type"].orEmpty()
             val root = editing.root
+            val custom = call.customComponents().mapValues { (_, d) -> CustomComponents.requiredSampleArgs(d) }
             val result = try {
                 when (params["op"]) {
                     "add-after" -> requireNotNull(Palette.location(node)) { "select a component first" }
-                        .let { (list, index) -> Palette.add(root, list, index + 1, type) }
+                        .let { (list, index) -> Palette.add(root, list, index + 1, type, custom) }
                     "add-inside" -> Palette.add(
                         root,
                         "$node.${requireNotNull(Palette.firstList(root, node)) {
@@ -85,8 +88,9 @@ internal fun Route.visualPages(screens: ScreenStore, probe: ApiProbe, publishing
                         }}",
                         null,
                         type,
+                        custom,
                     )
-                    "add-end" -> Palette.add(root, node.ifEmpty { "components" }, null, type)
+                    "add-end" -> Palette.add(root, node.ifEmpty { "components" }, null, type, custom)
                     "up" -> Palette.move(root, node, -1)
                     "down" -> Palette.move(root, node, 1)
                     "into-previous" -> Palette.intoPrevious(root, node)
@@ -355,6 +359,7 @@ private suspend fun ApplicationCall.visualPage(
         value = value,
         visualProblems = visualProblems,
         notice = notice,
+        custom = customComponents(),
     ),
 )
 
@@ -367,6 +372,7 @@ internal fun visualModel(
     notice: String = "",
     checked: ScreenJson.Checked = ScreenJson.check(editing.json),
     preview: Map<String, String>? = null,
+    custom: Map<String, ComponentDefinition> = emptyMap(),
 ): Map<String, Any> {
     val location = Palette.location(node)
     return mapOf(
@@ -413,7 +419,13 @@ internal fun visualModel(
                 )
             } ?: emptyList()
             ),
-        "palette" to Palette.groups.map { (group, types) -> mapOf("name" to group, "types" to types) },
+        "palette" to (
+            Palette.groups +
+                listOfNotNull(
+                    custom.keys.takeIf { it.isNotEmpty() }
+                        ?.let { ids -> "My components" to ids.sorted().map { Palette.CUSTOM_PREFIX + it } },
+                )
+            ).map { (group, types) -> mapOf("name" to group, "types" to types) },
         "containers" to Palette.containers,
         "panelUrl" to "/admin/screens/${editing.stored.id.urlEncoded()}/visual/panel?node=${node.urlEncoded()}",
         "visualProblems" to visualProblems,

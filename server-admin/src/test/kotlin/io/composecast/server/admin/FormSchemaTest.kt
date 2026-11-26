@@ -18,7 +18,8 @@ class FormSchemaTest {
     private val demo = Path.of(System.getProperty("composecast.examples"), "demo", "screens")
 
     /** Fields a form shows as a JSON value on purpose (maps and the repeat source). */
-    private val jsonFields = setOf("action.params", "modifier.action.params", "items")
+    // `args` of a custom component: the params differ per component (T-049), edited as a JSON object.
+    private val jsonFields = setOf("action.params", "modifier.action.params", "items", "args")
 
     private fun FormSchema.Field.all(): List<FormSchema.Field> = listOf(this) + when (val kind = kind) {
         is FormSchema.Kind.Group -> kind.fields.flatMap { it.all() }
@@ -31,7 +32,7 @@ class FormSchemaTest {
         val types = FormSchema.componentTypes.keys
         val known = setOf("text", "image", "icon", "divider", "card", "button", "spacer", "column", "row") +
             setOf("box", "fitBox", "flow", "grid", "repeat", "expandable") +
-            setOf("gauge", "sparkline", "kpi", "slider")
+            setOf("gauge", "sparkline", "kpi", "slider") + setOf("custom")
         assertEquals(
             known,
             types,

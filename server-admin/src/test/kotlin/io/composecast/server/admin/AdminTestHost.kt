@@ -1,5 +1,6 @@
 package io.composecast.server.admin
 
+import io.composecast.server.store.ComponentStore
 import io.composecast.server.store.ScreenStore
 import io.composecast.server.store.SettingsStore
 import io.composecast.server.store.StoreDatabase
@@ -27,6 +28,7 @@ internal class AdminTestHost {
     val auth = AdminAuth(UserStore(database), bcryptCost = 4) // the minimum: fast tests
     val screens = ScreenStore(database)
     val settings = SettingsStore(database)
+    val components = ComponentStore(database)
     val password = "correct horse battery"
 
     /** Publishes straight into [screens]; set [failWith] to make the next publishes fail. */
@@ -94,6 +96,26 @@ internal class AdminTestHost {
             failWith?.let { throw PublishException(it) }
             return "rc:$json".toByteArray()
         }
+
+        override fun publishComponent(id: String, json: String, by: String) {
+            failWith?.let { throw PublishException(it) }
+            components.publish(id, json, by)
+        }
+
+        override fun rollbackComponent(id: String, revisionId: Int, by: String) {
+            failWith?.let { throw PublishException(it) }
+            components.rollback(id, revisionId, by)
+        }
+
+        override fun deleteComponent(id: String) {
+            failWith?.let { throw PublishException(it) }
+            components.delete(id)
+        }
+
+        override fun componentDocument(json: String): ByteArray {
+            failWith?.let { throw PublishException(it) }
+            return "rc-component:$json".toByteArray()
+        }
     }
 
     /** API answers for the wizard's probe by URL (no network); every host resolves to a public address. */
@@ -118,6 +140,7 @@ internal class AdminTestHost {
     fun run(
         allowHttp: Boolean = false,
         phoneRenderer: PhoneRenderer? = null,
+        withComponents: Boolean = false,
         extra: Route.() -> Unit = {},
         test: suspend ApplicationTestBuilder.(HttpClient) -> Unit,
     ) = testApplication {
@@ -132,6 +155,7 @@ internal class AdminTestHost {
                     allowHttp,
                     probe = probe,
                     phoneRenderer = phoneRenderer,
+                    components = components.takeIf { withComponents },
                     extra = extra,
                 )
             }
