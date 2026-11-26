@@ -4,7 +4,7 @@
   <p><a href="/admin/screens">← Screens</a> · <a href="/admin/screens/${id?url}/visual">Visual editor</a></p>
   <h1><code>${id}</code> <span class="status status-${status}">${status}</span></h1>
   <p class="muted">
-    <#if publishedAt?has_content>Live since ${publishedAt} (${publishedBy}).<#else>Never published: apps do not see this screen.</#if>
+    <#if publishedAt?has_content>Published <time datetime="${publishedAtIso}" title="${publishedAtExact}">${publishedAt}</time> by ${publishedBy}.<#else>Never published: apps do not see this screen.</#if>
     <#if status == "draft"> The editor shows the draft; apps still get the live version.</#if>
   </p>
   <#if notice?has_content><p class="ok" role="status">${notice}</p></#if>
@@ -42,7 +42,7 @@
       <#list history as h>
         <tr>
           <td><a href="/admin/screens/${id?url}/revisions/${h.revision?c}">#${h.revision?c}</a><#if h?is_first> <span class="status status-published">published</span></#if></td>
-          <td>${h.publishedAt}</td>
+          <td><time datetime="${h.publishedAtIso}" title="${h.publishedAtExact}">${h.publishedAt}</time></td>
           <td>${h.publishedBy}</td>
           <td><#if canEdit && !h?is_first>
             <form method="post" action="/admin/screens/${id?url}/rollback" style="display:inline;margin:0">

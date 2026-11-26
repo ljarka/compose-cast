@@ -72,6 +72,21 @@
     td.thumb img { display: block; width: 90px; height: auto; aspect-ratio: 1078 / 2399; border: 4px solid #1d1d1f;
       border-radius: 14px; background: #fff; object-fit: cover; }
     td.thumb + td, td.thumb ~ td { vertical-align: middle; }
+    /* Screens grid (owner 2026-11-26): rectangular cards, thumbnail left, texts stacked right. */
+    .screen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 16px; }
+    .screen-card { position: relative; display: flex; gap: 16px; align-items: stretch; padding: 14px; background: var(--card);
+      border: 1px solid var(--line); border-radius: 14px; transition: box-shadow .15s ease, border-color .15s ease; }
+    .screen-card:hover { border-color: var(--accent); box-shadow: 0 4px 16px rgba(0, 0, 0, .08); }
+    .screen-card.no-thumb { min-height: 0; }
+    .screen-thumb img { display: block; width: 90px; height: auto; aspect-ratio: 1078 / 2399; border: 4px solid #1d1d1f;
+      border-radius: 14px; background: #fff; object-fit: cover; }
+    .screen-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; padding-right: 28px; }
+    .screen-title { font-size: 17px; font-weight: 700; color: var(--fg); text-decoration: none; overflow-wrap: anywhere; }
+    .screen-title::after { content: ""; position: absolute; inset: 0; border-radius: 14px; } /* the whole card is the link */
+    .screen-id { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+    .screen-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+    .screen-meta { margin: auto 0 0; color: var(--muted); font-size: 13px; line-height: 1.4; }
+    details.menu.screen-menu { position: absolute; top: 10px; right: 10px; z-index: 1; }
     /* Components: the component alone, landscape, no phone frame. */
     td.thumb-wide { width: 180px; }
     td.thumb-wide img { width: 180px; aspect-ratio: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }

@@ -92,9 +92,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- Screens as a card grid, readable dates
 - Designer: Bézier pen and point editing
 - Admin side menu, component images, designer Code panel
 - Screens list thumbnails
 - T-057 — component designer
 - T-054 — server I/O offloading, `/health` DB readiness & shutdown
-- T-053 — SQLite migrations, foreign keys & session cleanup

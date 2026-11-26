@@ -475,3 +475,7 @@ README roadmap's "Etap" numbers.
     like Figma (click = corner, drag = smooth point); existing paths (drawn or imported SVG icons)
     can have their points and handles edited, points added on a segment, toggled corner/smooth and
     removed.
+95. **Screens as a card grid, readable dates** (2026-11-26, owner): the Screens list became a grid of
+    rectangular cards (thumbnail, title, id, status, "Published 2 hours ago by …"); every publish
+    time in the panel is relative ("yesterday at 21:15", "2 Nov") with the exact UTC time as a
+    tooltip (`Dates.kt`).

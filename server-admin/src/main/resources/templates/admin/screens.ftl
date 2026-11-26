@@ -21,36 +21,39 @@
   </div>
   </#if>
   <#if homeError??><p class="error" role="alert">${homeError}</p></#if>
-  <div class="card">
-    <table>
-      <thead><tr><#if phone><th><span class="visually-hidden">Preview</span></th></#if><th>Id</th><th>Title</th><th>Status</th><th>Last published</th><th></th></tr></thead>
-      <tbody>
-      <#list screens as s>
-        <tr>
-          <#if phone><td class="thumb"><a href="/admin/screens/${s.id?url}" tabindex="-1" aria-hidden="true"><img src="/admin/screens/${s.id?url}/thumb.png" width="90" height="200" loading="lazy" alt=""></a></td></#if>
-          <td><a href="/admin/screens/${s.id?url}"><code>${s.id}</code></a><#if s.isHome> <span class="status status-live">home</span></#if></td>
-          <td>${s.title}</td>
-          <td><span class="status status-${s.status}">${s.status}</span><#if s.liveEveryMs gt 0> <span class="live-badge" title="Live updates every ${s.liveEveryMs?c} ms"><span class="live-dot" style="animation-duration: ${s.liveEveryMs?c}ms"></span>live</span></#if></td>
-          <td class="muted"><#if s.publishedAt?has_content>${s.publishedAt} · ${s.publishedBy}<#else>never</#if></td>
-          <td style="text-align: right">
-            <#if canEdit && !s.isHome>
-              <details class="menu">
-                <summary aria-label="Actions for ${s.id}">⋯</summary>
-                <div class="menu-list">
-                  <#if s.isLive>
-                    <form method="post" action="/admin/screens/${s.id?url}/home" style="margin:0"><button type="submit">Set as home</button></form>
-                  </#if>
-                  <form method="post" action="/admin/screens/${s.id?url}/delete" style="margin:0"><button type="submit" class="danger">Remove</button></form>
-                </div>
-              </details>
+  <div class="screen-grid">
+    <#list screens as s>
+    <article class="screen-card<#if !phone> no-thumb</#if>">
+      <#if phone>
+      <a class="screen-thumb" href="/admin/screens/${s.id?url}" tabindex="-1" aria-hidden="true">
+        <img src="/admin/screens/${s.id?url}/thumb.png" width="90" height="200" loading="lazy" alt="">
+      </a>
+      </#if>
+      <div class="screen-info">
+        <a class="screen-title" href="/admin/screens/${s.id?url}">${s.title}</a>
+        <code class="screen-id">${s.id}</code>
+        <div class="screen-badges">
+          <span class="status status-${s.status}">${s.status}</span>
+          <#if s.isHome><span class="status status-live">home</span></#if>
+          <#if s.liveEveryMs gt 0><span class="live-badge" title="Live updates every ${s.liveEveryMs?c} ms"><span class="live-dot" style="animation-duration: ${s.liveEveryMs?c}ms"></span>live</span></#if>
+        </div>
+        <p class="screen-meta"><#if s.publishedAt?has_content>Published <time datetime="${s.publishedAtIso}" title="${s.publishedAtExact}">${s.publishedAt}</time><br>by ${s.publishedBy}<#else>Never published</#if></p>
+      </div>
+      <#if canEdit && !s.isHome>
+        <details class="menu screen-menu">
+          <summary aria-label="Actions for ${s.id}">⋯</summary>
+          <div class="menu-list">
+            <#if s.isLive>
+              <form method="post" action="/admin/screens/${s.id?url}/home" style="margin:0"><button type="submit">Set as home</button></form>
             </#if>
-          </td>
-        </tr>
-      <#else>
-        <tr><td colspan="<#if phone>6<#else>5</#if>" class="muted">No screens yet.</td></tr>
-      </#list>
-      </tbody>
-    </table>
+            <form method="post" action="/admin/screens/${s.id?url}/delete" style="margin:0"><button type="submit" class="danger">Remove</button></form>
+          </div>
+        </details>
+      </#if>
+    </article>
+    <#else>
+    <p class="muted">No screens yet.</p>
+    </#list>
   </div>
   <#if canEdit>
   <h2>New screen</h2>

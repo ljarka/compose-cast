@@ -52,8 +52,8 @@ class ScreenPagesTest {
             "status-published",
             "status-draft",
             "status-unpublished",
-            "import",
-            "never",
+            "by import",
+            "Never published",
         ).forEach {
             assertContains(body, it)
         }
@@ -278,10 +278,9 @@ class ScreenPagesTest {
         assertEquals("/admin/screens", setHome.headers[HttpHeaders.Location])
 
         val list = client.get("/admin/screens") { header(HttpHeaders.Cookie, cookie) }.bodyAsText()
-        assertContains(
-            list,
-            "<a href=\"/admin/screens/shows\"><code>shows</code></a> <span class=\"status status-live\">home</span>",
-        )
+        // The home badge is on the card of `shows` (the cards list screens in id order).
+        val card = list.substringAfter("<code class=\"screen-id\">shows</code>").substringBefore("</article>")
+        assertContains(card, "<span class=\"status status-live\">home</span>")
     }
 
     @Test

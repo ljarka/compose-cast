@@ -17,7 +17,7 @@
           <td>${c.title}<#if c.description?has_content><br><span class="muted">${c.description}</span></#if></td>
           <td><span class="status status-${c.status}">${c.status}</span></td>
           <td class="muted">v${c.version?c}<#if c.rcVersion?has_content> · RC ${c.rcVersion}</#if></td>
-          <td class="muted"><#if c.publishedAt?has_content>${c.publishedAt} · ${c.publishedBy}<#else>never</#if></td>
+          <td class="muted"><#if c.publishedAt?has_content><time datetime="${c.publishedAtIso}" title="${c.publishedAtExact}">${c.publishedAt}</time> · ${c.publishedBy}<#else>never</#if></td>
           <td style="text-align: right">
             <#if canEdit>
               <details class="menu">

@@ -192,7 +192,7 @@ internal fun Route.screenPages(screens: ScreenStore, settings: SettingsStore, pu
                         "id" to revision.screenId,
                         "revision" to revision.id,
                         "json" to revision.json,
-                        "publishedAt" to revision.publishedAt.toString(),
+                        *timeFields("publishedAt", revision.publishedAt).toTypedArray(),
                         "publishedBy" to revision.publishedBy,
                     ),
                 )
@@ -245,7 +245,7 @@ private fun rows(screens: ScreenStore, settings: SettingsStore): List<Map<String
             "liveEveryMs" to (parsed?.live?.everyMs ?: 0),
             "isHome" to (stored.id == home),
             "isLive" to (stored.liveJson != null),
-            "publishedAt" to stored.publishedAt?.toString().orEmpty(),
+            *timeFields("publishedAt", stored.publishedAt).toTypedArray(),
             "publishedBy" to stored.publishedBy.orEmpty(),
         )
     }
@@ -262,7 +262,11 @@ internal fun screenStatus(screen: ScreenStore.StoredScreen) = when {
 }
 
 internal fun historyRows(screens: ScreenStore, id: String) = screens.history(id).map {
-    mapOf("revision" to it.id, "publishedAt" to it.publishedAt.toString(), "publishedBy" to it.publishedBy)
+    mapOf(
+        "revision" to it.id,
+        *timeFields("publishedAt", it.publishedAt).toTypedArray(),
+        "publishedBy" to it.publishedBy,
+    )
 }
 
 /** [ScreenJson.check] plus the rule that a screen keeps its id (the URL and the stored row). */
@@ -306,7 +310,7 @@ private suspend fun ApplicationCall.editor(
             "id" to stored.id,
             "json" to json,
             "status" to screenStatus(stored),
-            "publishedAt" to stored.publishedAt?.toString().orEmpty(),
+            *timeFields("publishedAt", stored.publishedAt).toTypedArray(),
             "publishedBy" to stored.publishedBy.orEmpty(),
             "notice" to notice.orEmpty(),
             "preview" to (preview ?: emptyMap()),

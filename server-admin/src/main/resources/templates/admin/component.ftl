@@ -4,7 +4,7 @@
   <p><a href="/admin/components">← Components</a></p>
   <h1><code>${id}</code> <span class="status status-${status}">${status}</span></h1>
   <p class="muted">
-    <#if publishedAt?has_content>Live since ${publishedAt} (${publishedBy}).<#else>Never published: screens cannot use it yet.</#if>
+    <#if publishedAt?has_content>Published <time datetime="${publishedAtIso}" title="${publishedAtExact}">${publishedAt}</time> by ${publishedBy}.<#else>Never published: screens cannot use it yet.</#if>
     <#if status == "draft"> The editor shows the draft; screens still use the published version.</#if>
   </p>
   <p><#if designed><a href="/admin/components/${id?url}/design"><strong>Open in the designer →</strong></a> <span class="muted">This component is drawn in the designer: its body is compiled from <code>design</code>, edit that or use the designer.</span><#else><span class="muted">Hand-written Remote Compose JSON. The <a href="/admin/components/${id?url}/design">designer</a> can replace it with a drawing.</span></#if></p>
@@ -45,7 +45,7 @@
       <#list history as h>
         <tr>
           <td>#${h.revision?c}<#if h?is_first> <span class="status status-published">published</span></#if></td>
-          <td>${h.publishedAt}</td>
+          <td><time datetime="${h.publishedAtIso}" title="${h.publishedAtExact}">${h.publishedAt}</time></td>
           <td>${h.publishedBy}</td>
           <td><#if canEdit && !h?is_first>
             <form method="post" action="/admin/components/${id?url}/rollback" style="display:inline;margin:0">

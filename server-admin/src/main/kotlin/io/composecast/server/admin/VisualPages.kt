@@ -398,7 +398,7 @@ internal fun visualModel(
         "id" to editing.stored.id,
         "status" to screenStatus(editing.stored),
         "liveEveryMs" to (checked.screen?.live?.everyMs ?: 0),
-        "publishedAt" to editing.stored.publishedAt?.toString().orEmpty(),
+        *timeFields("publishedAt", editing.stored.publishedAt).toTypedArray(),
         "publishedBy" to editing.stored.publishedBy.orEmpty(),
         "json" to editing.json,
         "problems" to checked.problems,

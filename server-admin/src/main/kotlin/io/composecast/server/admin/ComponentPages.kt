@@ -341,7 +341,7 @@ private suspend fun ApplicationCall.list(components: ComponentStore, error: Stri
             "version" to (definition?.version ?: 0),
             "rcVersion" to definition?.rcVersion.orEmpty(),
             "status" to screenStatus(stored),
-            "publishedAt" to stored.publishedAt?.toString().orEmpty(),
+            *timeFields("publishedAt", stored.publishedAt).toTypedArray(),
             "publishedBy" to stored.publishedBy.orEmpty(),
             "designed" to (definition?.design != null),
         )
@@ -374,11 +374,15 @@ private suspend fun ApplicationCall.editor(
             "problems" to checked.problems,
             "warnings" to emptyList<String>(),
             "status" to screenStatus(stored),
-            "publishedAt" to stored.publishedAt?.toString().orEmpty(),
+            *timeFields("publishedAt", stored.publishedAt).toTypedArray(),
             "publishedBy" to stored.publishedBy.orEmpty(),
             "notice" to notice.orEmpty(),
             "history" to components.history(stored.id).map {
-                mapOf("revision" to it.id, "publishedAt" to it.publishedAt.toString(), "publishedBy" to it.publishedBy)
+                mapOf(
+                    "revision" to it.id,
+                    *timeFields("publishedAt", it.publishedAt).toTypedArray(),
+                    "publishedBy" to it.publishedBy,
+                )
             },
             "usage" to (definition?.let(::usage) ?: ""),
             "designed" to (definition?.design != null || "\"design\"" in json),
