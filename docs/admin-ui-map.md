@@ -79,15 +79,6 @@ headings in `server-admin`.
 | `admin:templates.applied` | `templates.ftl` | `TemplatesPages.kt` | Post-apply summary card with "Publish all" button |
 | `admin:templates.card.<id>` | `templates.ftl` | `TemplatesPages.kt` | Individual bundled template card (e.g. `admin:templates.card.news`) |
 
-## API wizard (`/admin/wizard`)
-
-| ID | Template | Handler | Description |
-|---|---|---|---|
-| `admin:wizard.header` | `wizard.ftl` | `WizardPages.kt` | "Create screens from an API" page header & URL probe form |
-| `admin:wizard.fields` | `wizard.ftl` | `WizardPages.kt` | "Fields of one item" probed schema table |
-| `admin:wizard.mapping` | `wizard.ftl` | `WizardPages.kt` | "What goes where" role mapping dropdowns (title, subtitle, image, id) |
-| `admin:wizard.screens` | `wizard.ftl` | `WizardPages.kt` | "Screens" output ids, data source name & detail mode |
-
 ## Users (`/admin/users`, admin only)
 
 | ID | Template | Handler | Description |

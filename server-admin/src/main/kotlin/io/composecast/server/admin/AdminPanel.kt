@@ -163,7 +163,6 @@ internal fun Route.adminRoutes(
             visualPages(screens, probe, publishing)
             settingsPages(settings, publishing)
             usersPages(auth)
-            wizardPages(screens, settings, probe)
             templatesPages(screens, settings, publishing)
             phoneRenderer?.let { phonePreview(screens, publishing, it) }
             components?.let { componentPages(it, settings, publishing, phoneRenderer, aiClient) }
@@ -199,7 +198,7 @@ internal fun section(path: String): String = when {
     path.startsWith("/admin/templates") -> "templates"
     path.startsWith("/admin/users") -> "users"
     path.startsWith("/admin/settings") -> "settings"
-    else -> "screens" // screens, the visual editor, the wizard, revisions
+    else -> "screens" // screens, the visual editor, revisions
 }
 
 /** Whose draft previews these are (T-032, ADR 0030): one preview per user and screen. */

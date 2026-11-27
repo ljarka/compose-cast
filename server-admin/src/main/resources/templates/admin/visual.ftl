@@ -60,7 +60,7 @@
             <label class="inline">Address <input name="url" placeholder="https://api.tvmaze.com/shows" style="width: 320px"></label>
             <button name="op" value="add-source">Add data source</button>
           </div>
-          <p class="muted help">Bind to it as <code>{{name.field}}</code>; a key goes into the server's .env and here as <code>{{secret.NAME}}</code>. Or <a href="/admin/wizard">create screens from an API</a>.</p>
+          <p class="muted help">Bind to it as <code>{{name.field}}</code>; a key goes into the server's .env and here as <code>{{secret.NAME}}</code>.</p>
         <#elseif mode == "values">
           <div class="toolbar">
             <label class="inline">Name <input name="name" placeholder="volume" style="width: 130px"></label>
@@ -154,7 +154,7 @@
           <h2>Data sources<@layout.uid "admin:visual.sources"/></h2>
           <#if canEdit><a class="btn-link" href="/admin/screens/${id?url}/visual?node=data.__new__">+ Add data source</a></#if>
         </div>
-        <p class="muted help" style="margin: 0">APIs this screen reads as <code>{{name.field}}</code>. Or <a href="/admin/wizard">create screens from an API</a>.</p>
+        <p class="muted help" style="margin: 0">APIs this screen reads as <code>{{name.field}}</code>.</p>
         <#if sources?has_content>
         <div class="item-list">
           <#list sources as s>

@@ -11,13 +11,15 @@
         <span class="action-desc">A whole app (news, shop, events, weather) in one click.</span>
       </span>
     </a>
-    <a class="action-card" href="/admin/wizard">
-      <span class="action-icon" aria-hidden="true">⚡</span>
+    <#if hasComponents!false>
+    <a class="action-card" href="/admin/components">
+      <span class="action-icon" aria-hidden="true">🎨</span>
       <span class="action-body">
-        <span class="action-title">Create screens from an API <span class="action-arrow" aria-hidden="true">→</span></span>
-        <span class="action-desc">Paste a JSON API's address to generate a list and detail screen.</span>
+        <span class="action-title">Create custom components <span class="action-arrow" aria-hidden="true">→</span></span>
+        <span class="action-desc">Design reusable cards, tiles and widgets visually or with AI.</span>
       </span>
     </a>
+    </#if>
   </div>
   </#if>
   <#if homeError??><p class="error" role="alert">${homeError}</p></#if>
