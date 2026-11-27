@@ -6,11 +6,13 @@
     max-width: 1500px; margin: 16px auto; padding: 0 16px; }
   .designer .card { padding: 12px; }
   .designer h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 8px; }
-  .tools { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; align-items: center; }
-  .tools button { display: inline-flex; align-items: center; justify-content: center; gap: 4px; margin: 0; padding: 6px 10px; background: var(--card); color: var(--fg); border: 1px solid var(--line); }
-  .tools button svg { width: 16px; height: 16px; display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .tools { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; align-items: center; }
+  .tools-end { margin-left: auto; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+  .tools button { display: inline-flex; align-items: center; justify-content: center; gap: 4px; margin: 0; padding: 5px 9px; font-size: 13px; background: var(--card); color: var(--fg); border: 1px solid var(--line); }
+  .tools select { padding: 4px 8px; font-size: 13px; }
+  .tools button svg { width: 15px; height: 15px; display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .tools button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .tools .sep { width: 1px; height: 24px; background: var(--line); margin: 0 4px; }
+  .tools .sep { width: 1px; height: 22px; background: var(--line); margin: 0 3px; }
   .stage { background: repeating-conic-gradient(var(--line) 0 25%, transparent 0 50%) 0 0 / 16px 16px;
     border: 1px solid var(--line); border-radius: 8px; padding: 32px; overflow: auto; }
   .stage svg { display: block; margin: 0 auto; overflow: visible; user-select: none; touch-action: none; }
@@ -65,18 +67,24 @@
     </div>
   </aside>
   <section>
-    <#if canEdit>
-    <div class="tools" id="size-presets" role="group" aria-label="Component size presets" style="margin-bottom: 8px">
-      <span class="muted" style="font-size: 13px; margin-right: 4px">Size:</span>
-      <button type="button" data-preset-w="360" data-preset-h="120" data-preset-fill="1" title="Full width banner (360×120 dp)">▬ Full width</button>
-      <button type="button" data-preset-w="360" data-preset-h="220" data-preset-fill="1" title="Full width large widget (360×220 dp)">▭ Full tall</button>
-      <button type="button" data-preset-w="172" data-preset-h="120" data-preset-fill="0.5" title="Half width widget (172×120 dp)">◧ Half width</button>
-      <button type="button" data-preset-w="172" data-preset-h="172" data-preset-fill="0.5" title="Square half-width widget (172×172 dp)">▢ Square</button>
-      <button type="button" data-preset-w="172" data-preset-h="260" data-preset-fill="0.5" title="Vertical tall widget (172×260 dp)">▮ Vertical</button>
-      <span id="size-readout" class="muted" style="font-size: 12px; margin-left: 4px"></span>
+    <div class="tools" aria-label="Artboard controls">
+      <#if canEdit>
+      <div class="tools" id="size-presets" role="group" aria-label="Component size presets" style="margin: 0">
+        <span class="muted" style="font-size: 12px; margin-right: 2px">Size</span>
+        <button type="button" data-preset-w="360" data-preset-h="120" data-preset-fill="1" title="Full width banner (360×120 dp)">▬ Full</button>
+        <button type="button" data-preset-w="360" data-preset-h="220" data-preset-fill="1" title="Full width large widget (360×220 dp)">▭ Tall</button>
+        <button type="button" data-preset-w="172" data-preset-h="120" data-preset-fill="0.5" title="Half width widget (172×120 dp)">◧ Half</button>
+        <button type="button" data-preset-w="172" data-preset-h="172" data-preset-fill="0.5" title="Square half-width widget (172×172 dp)">▢ Square</button>
+        <button type="button" data-preset-w="172" data-preset-h="260" data-preset-fill="0.5" title="Vertical tall widget (172×260 dp)">▮ Vertical</button>
+        <span id="size-readout" class="muted" style="font-size: 12px; margin-left: 4px"></span>
+      </div>
+      </#if>
+      <div class="tools-end">
+        <label class="muted" style="margin: 0; font-weight: 400; font-size: 12px">Zoom <select id="zoom"><option value="1">100%</option><option value="1.5">150%</option><option value="2" selected>200%</option><option value="3">300%</option></select></label>
+        <button type="button" id="artboard-theme" title="Preview Light / Dark colors on the artboard">☀ Light</button>
+      </div>
     </div>
-    </#if>
-    <div class="tools" id="tools">
+    <div class="tools" id="tools" style="margin-bottom: 12px">
       <button type="button" data-tool="select" title="Select and move (V)">↖ Select</button>
       <button type="button" data-tool="rect" title="Rectangle (R)">▭ Rect</button>
       <button type="button" data-tool="ellipse" title="Ellipse (O)">◯ Ellipse</button>
@@ -84,14 +92,12 @@
       <button type="button" data-tool="pen" title="Pen (P): click for a corner, press and drag for a curve (Alt: break the handles); click the first point to close, Enter or Esc to finish, Backspace removes the last point">✎ Pen</button>
       <button type="button" data-tool="text" title="Text (T)">T Text</button>
       <button type="button" data-tool="tap" title="Tap area: an invisible area that runs an action (A)">☝ Tap area</button>
-      <span class="sep"></span>
-      <button type="button" data-cmd="import-svg" title="Paste an SVG icon (path elements)">⇪ SVG</button>
-      <button type="button" data-cmd="undo" title="Undo (Ctrl+Z)" aria-label="Undo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></svg></button>
-      <button type="button" data-cmd="redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13"/></svg></button>
-      <span class="sep"></span>
-      <label class="muted" style="margin: 0; font-weight: 400">Zoom <select id="zoom"><option value="1">100%</option><option value="1.5">150%</option><option value="2" selected>200%</option><option value="3">300%</option></select></label>
-      <span class="sep"></span>
-      <button type="button" id="artboard-theme" title="Preview Light / Dark colors on the artboard">☀ Light</button>
+      <div class="tools-end">
+        <button type="button" data-cmd="import-svg" title="Paste an SVG icon (path elements)">⇪ SVG</button>
+        <span class="sep"></span>
+        <button type="button" data-cmd="undo" title="Undo (Ctrl+Z)" aria-label="Undo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></svg></button>
+        <button type="button" data-cmd="redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13"/></svg></button>
+      </div>
     </div>
     <div class="stage" id="stage"></div>
     <div id="status" aria-live="polite"></div>
