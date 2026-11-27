@@ -1274,13 +1274,13 @@
     const g = document.createElement('div');
     g.className = 'grid2';
     c.appendChild(g);
-    field(g, 'Height', input('number', D().height, (v) => { D().height = v; }, { min: 8 }));
+    field(g, 'Height', input('number', D().height, (v) => { D().height = v; syncSizePresets(); }, { min: 8 }));
     field(g, 'Corners', input('number', D().cornerRadius, (v) => { D().cornerRadius = v; }, { min: 0 }));
     field(c, 'Artboard width', input('number', D().width, (v) => { D().width = v; syncSizePresets(); }, { min: 40 }), 'The width you design on; phones vary (anchors).');
-    field(c, 'Width on screen', select(String(D().fillWidth ?? 1), [
+    field(c, 'Width on screen', select([
       ['1', 'Full width (100%)'],
       ['0.5', 'Half width (50%)'],
-    ], (v) => { D().fillWidth = parseFloat(v); syncSizePresets(); }));
+    ], String(D().fillWidth ?? 1), (v) => { D().fillWidth = parseFloat(v); syncSizePresets(); }));
     syncSizePresets();
     const h = document.createElement('h2');
     h.textContent = 'Params';
