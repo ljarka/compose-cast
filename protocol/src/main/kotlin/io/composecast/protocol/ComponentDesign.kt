@@ -48,7 +48,14 @@ data class ComponentDesign(
             if (e.strokeWidth < 0f) add("$at.strokeWidth: must be >= 0")
             if (e.type == DesignElementType.Path && e.path.isNullOrBlank()) add("$at.path: a path needs path data")
             if (e.type == DesignElementType.Text && e.text == null) add("$at.text: a text needs a text")
-            listOf("fill" to e.fill, "fill2" to e.fill2, "stroke" to e.stroke).forEach { (name, c) ->
+            listOf(
+                "fill" to e.fill,
+                "darkFill" to e.darkFill,
+                "fill2" to e.fill2,
+                "darkFill2" to e.darkFill2,
+                "stroke" to e.stroke,
+                "darkStroke" to e.darkStroke,
+            ).forEach { (name, c) ->
                 if (c != null && !isPlaceholder(c)) colorProblem(c)?.let { add("$at.$name: $it") }
             }
             if (e.action != null && !isPlaceholder(e.action) && ActionCodec.decode(e.action) == null) {
@@ -124,17 +131,24 @@ data class ComponentDesign(
             }
             val right = localRight(e)
             e.fill?.let { fill ->
-                add(paint(e, fill, style = "fill"))
+                add(
+                    paint(
+                        e,
+                        color = themed(fill, e.darkFill),
+                        style = "fill",
+                        fill2 = e.fill2?.let { themed(it, e.darkFill2) },
+                    ),
+                )
                 add(draw(e, right))
             }
             if (e.stroke != null && e.strokeWidth > 0f) {
-                add(paint(e, e.stroke, style = "stroke"))
+                add(paint(e, color = themed(e.stroke, e.darkStroke), style = "stroke"))
                 add(draw(e, right))
             }
         }
     }
 
-    private fun paint(e: DesignElement, color: String, style: String) = buildJsonObject {
+    private fun paint(e: DesignElement, color: String, style: String, fill2: String? = null) = buildJsonObject {
         put("type", "paint")
         putJsonArray("ops") {
             add(obj("shader", JsonPrimitive(0)))
@@ -144,7 +158,7 @@ data class ComponentDesign(
                 add(obj("strokeCap", JsonPrimitive("round")))
             }
             add(obj("color", JsonPrimitive(color)))
-            if (style == "fill" && e.fill2 != null) add(obj("linearGradient", gradient(e, color, e.fill2)))
+            if (style == "fill" && fill2 != null) add(obj("linearGradient", gradient(e, color, fill2)))
             if (e.opacity < 1f) add(obj("alpha", JsonPrimitive(e.opacity)))
         }
     }
@@ -241,7 +255,7 @@ data class ComponentDesign(
                 buildJsonObject {
                     put("type", "text")
                     put("text", e.text.orEmpty())
-                    put("color", e.fill ?: "#FF000000")
+                    put("color", themed(e.fill ?: "#FF000000", e.darkFill))
                     put("fontSize", e.fontSize)
                     if (e.bold) put("fontWeight", 700)
                     put("textAlign", e.textAlign.json)
@@ -333,6 +347,10 @@ data class ComponentDesign(
 
         private fun isPlaceholder(value: String) = ComponentDefinition.wholePlaceholder(value) != null
 
+        /** Encodes a light/dark color pair for the server's RC themed color allocator. */
+        private fun themed(light: String, dark: String?): String =
+            if (dark != null) "{{themed:$light|$dark}}" else light
+
         private fun obj(key: String, value: JsonElement) = JsonObject(mapOf(key to value))
 
         private fun str(value: String) = JsonPrimitive(value)
@@ -361,11 +379,17 @@ data class DesignElement(
     val anchor: DesignAnchor = DesignAnchor.Left,
     /** Fill color (`#RRGGBB`, `#AARRGGBB`, `{{params.x}}`, `{{brand.x}}`); for a text: its color. */
     val fill: String? = null,
+    /** Optional dark-mode override for [fill] (null = same as [fill], or dark brand color for `{{brand.x}}`). */
+    val darkFill: String? = null,
     /** With [fill]: a linear gradient from [fill] to this color. */
     val fill2: String? = null,
+    /** Optional dark-mode override for [fill2]. */
+    val darkFill2: String? = null,
     /** Gradient direction in degrees: 0 = left to right, 90 = top to bottom. */
     val gradientAngle: Float = 90f,
     val stroke: String? = null,
+    /** Optional dark-mode override for [stroke]. */
+    val darkStroke: String? = null,
     val strokeWidth: Float = 0f,
     /** Rounded corners of a rectangle (dp). */
     val radius: Float = 0f,

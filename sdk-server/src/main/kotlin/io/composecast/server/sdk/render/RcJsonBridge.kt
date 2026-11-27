@@ -15,6 +15,11 @@ import org.json.JSONObject
 internal object RcJsonBridge {
     fun parser(writer: RemoteComposeWriter): RemoteComposeJsonParser = RemoteComposeJsonParser(writer)
 
+    /** Registers a writer color ID (e.g. from `addThemedColor`) so RC JSON can reference it via `$colors.<name>`. */
+    fun registerColor(parser: RemoteComposeJsonParser, name: String, colorId: Int) {
+        parser.mColors[name] = colorId
+    }
+
     /** Writes [component] into the parser's writer; throws `org.json.JSONException` with a context path. */
     fun parseComponent(parser: RemoteComposeJsonParser, component: String) {
         parser.parseComponent(JSONObject(component))

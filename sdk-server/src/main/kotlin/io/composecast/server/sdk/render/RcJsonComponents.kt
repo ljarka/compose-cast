@@ -186,14 +186,23 @@ internal object RcJsonComponents {
 
     private fun JsonObject.string(key: String) = (this[key] as? JsonPrimitive)?.contentOrNull
 
+    private val THEMED_COLOR = Regex("""^\{\{\s*themed:(.+?)\|(.+?)\s*}}$""")
+
     /**
-     * [body] with `{{params.x}}` ([args], typed by [definition]) and `{{brand.x}}` ([brand]) replaced.
-     * A string that is exactly one number placeholder becomes a JSON number.
+     * [body] with `{{params.x}}` ([args], typed by [definition]), `{{brand.x}}` ([brand]/[darkBrand])
+     * and `{{themed:light|dark}}` replaced. When [registerThemed] is provided, `{{brand.x}}` and
+     * `{{themed:light|dark}}` allocate RC `addThemedColor` IDs and emit `$colors.<name>` references.
      */
-    fun substitute(definition: ComponentDefinition, args: Map<String, String>, brand: Map<String, String>): JsonObject {
-        fun value(root: String, name: String): String? = when (root) {
+    fun substitute(
+        definition: ComponentDefinition,
+        args: Map<String, String>,
+        brand: Map<String, String>,
+        darkBrand: Map<String, String> = brand,
+        registerThemed: ((key: String, lightHex: String, darkHex: String) -> String)? = null,
+    ): JsonObject {
+        fun value(root: String, name: String, dark: Boolean = false): String? = when (root) {
             "params" -> args[name]
-            "brand" -> brand[name]
+            "brand" -> (if (dark) darkBrand[name] else brand[name]) ?: brand[name]
             else -> null
         }
         fun walk(e: JsonElement): JsonElement = when (e) {
@@ -202,13 +211,32 @@ internal object RcJsonComponents {
             is JsonPrimitive -> if (!e.isString) {
                 e
             } else {
-                val whole = ComponentDefinition.wholePlaceholder(e.content)
-                val number = whole?.takeIf { it.first == "params" }
-                    ?.let { definition.params[it.second]?.type == ComponentParamType.Number }
-                if (number == true) {
-                    JsonPrimitive(value(whole.first, whole.second)?.trim()?.toFloatOrNull() ?: 0f)
+                val themed = THEMED_COLOR.matchEntire(e.content.trim())
+                if (themed != null) {
+                    val lightHex = ComponentDefinition.substitute(themed.groupValues[1].trim()) { r, n ->
+                        value(r, n, dark = false)
+                    }
+                    val darkHex = ComponentDefinition.substitute(themed.groupValues[2].trim()) { r, n ->
+                        value(r, n, dark = true)
+                    }
+                    val key = "cc.${lightHex.removePrefix("#")}_${darkHex.removePrefix("#")}"
+                    JsonPrimitive(registerThemed?.invoke(key, lightHex, darkHex) ?: lightHex)
                 } else {
-                    JsonPrimitive(ComponentDefinition.substitute(e.content, ::value))
+                    val whole = ComponentDefinition.wholePlaceholder(e.content)
+                    val brandField = whole?.takeIf { it.first == "brand" }?.second
+                    val number = whole?.takeIf { it.first == "params" }
+                        ?.let { definition.params[it.second]?.type == ComponentParamType.Number }
+                    when {
+                        brandField != null && registerThemed != null && brand[brandField] != null -> {
+                            val lightHex = brand.getValue(brandField)
+                            val darkHex = darkBrand[brandField] ?: lightHex
+                            JsonPrimitive(registerThemed("brand.$brandField", lightHex, darkHex))
+                        }
+                        number == true ->
+                            JsonPrimitive(value(whole.first, whole.second)?.trim()?.toFloatOrNull() ?: 0f)
+                        else ->
+                            JsonPrimitive(ComponentDefinition.substitute(e.content) { r, n -> value(r, n) })
+                    }
                 }
             }
         }
@@ -226,13 +254,24 @@ internal object RcJsonComponents {
     }
 
     /**
-     * Parses [body] into a throw-away writer from [scratch]: the parser's error (with its context
-     * path) or null. Run before writing into a real document, which a failed parse would corrupt.
+     * Parses [definition] (with [args] and themed brand/override colors) into a throw-away writer
+     * from [scratch]: the parser's error (with its context path) or null. Run before writing into
+     * a real document, which a failed parse would corrupt.
      */
-    fun parseProblem(body: JsonObject, scratch: () -> RemoteComposeWriter): String? = try {
+    fun parseProblem(
+        definition: ComponentDefinition,
+        args: Map<String, String>,
+        brand: Map<String, String>,
+        darkBrand: Map<String, String>,
+        scratch: () -> RemoteComposeWriter,
+    ): String? = try {
         val writer = scratch()
         val parser = RcJsonBridge.parser(writer)
-        writer.root { RcJsonBridge.parseComponent(parser, body.toString()) }
+        val colors = ThemedColorRegistry(writer, parser)
+        writer.root {
+            val body = substitute(definition, args, brand, darkBrand, colors::register)
+            RcJsonBridge.parseComponent(parser, body.toString())
+        }
         writer.encodeToByteArray()
         null
     } catch (e: Exception) {
@@ -255,17 +294,45 @@ internal object RcJsonComponents {
         val definition = entry!!.definition
         val argProblems = definition.argProblems(node.args, "custom", bound = true)
         if (argProblems.isNotEmpty()) return warn(node.component, argProblems.joinToString("; "))
-        val body = substitute(definition, definition.resolveArgs(node.args), custom.brand)
-        val problems = bodyProblems(body, substituted = true) + listOfNotNull(parseProblem(body, custom.scratchWriter))
+        val resolvedArgs = definition.resolveArgs(node.args)
+        val plainBody = substitute(definition, resolvedArgs, custom.brand, custom.darkBrand)
+        val problems = bodyProblems(plainBody, substituted = true) +
+            listOfNotNull(parseProblem(definition, resolvedArgs, custom.brand, custom.darkBrand, custom.scratchWriter))
         if (problems.isNotEmpty()) return warn(node.component, problems.joinToString("; "))
+        val themedBody = substitute(
+            definition,
+            resolvedArgs,
+            custom.brand,
+            custom.darkBrand,
+            env.themedColors()::register,
+        )
         with(scope) {
             Box(modifier = boxModel(env, node.modifier, slot)) {
-                RcJsonBridge.parseComponent(env.jsonParser(), body.toString())
+                RcJsonBridge.parseComponent(env.jsonParser(), themedBody.toString())
             }
         }
     }
 
     private fun warn(id: String, why: String) = log.warning("Custom component '$id' not rendered: $why")
+}
+
+/** Allocates and deduplicates `addThemedColor` IDs per RC document and registers them in [parser]. */
+internal class ThemedColorRegistry(
+    private val writer: RemoteComposeWriter,
+    private val parser: androidx.compose.remote.creation.json.RemoteComposeJsonParser,
+) {
+    private val names = mutableMapOf<Pair<Int, Int>, String>()
+
+    fun register(key: String, lightHex: String, darkHex: String): String {
+        val light = RemoteComposeRenderer.parseColor(lightHex)
+        val dark = RemoteComposeRenderer.parseColor(darkHex)
+        val existing = names[light to dark]
+        if (existing != null) return "\$colors.$existing"
+        val colorId = writer.addThemedColor(key, 0.toShort(), 0.toShort(), light, dark).toInt()
+        RcJsonBridge.registerColor(parser, key, colorId)
+        names[light to dark] = key
+        return "\$colors.$key"
+    }
 }
 
 /** A definition as the renderer sees it: [broken] says why it cannot be used (ADR 0033 versioning). */
@@ -274,12 +341,14 @@ internal class CustomEntry(val definition: ComponentDefinition, val broken: Stri
 /** Per-render custom component context. */
 internal class CustomContext(
     val components: Map<String, CustomEntry>,
-    /** `{{brand.<field>}}` values (hex colors, defaults applied). */
+    /** `{{brand.<field>}}` light-mode hex colors (defaults applied). */
     val brand: Map<String, String>,
+    /** `{{brand.<field>}}` dark-mode hex colors (defaults applied). */
+    val darkBrand: Map<String, String> = brand,
     val apiLevel: Int,
     val scratchWriter: () -> RemoteComposeWriter,
 ) {
     companion object {
-        val EMPTY = CustomContext(emptyMap(), emptyMap(), Int.MAX_VALUE) { error("no scratch writer") }
+        val EMPTY = CustomContext(emptyMap(), emptyMap(), emptyMap(), Int.MAX_VALUE) { error("no scratch writer") }
     }
 }

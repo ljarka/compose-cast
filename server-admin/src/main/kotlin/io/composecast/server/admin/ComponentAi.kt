@@ -284,10 +284,13 @@ Each element in `design.elements`:
 - `type` (required): `"rect"` | `"ellipse"` | `"line"` | `"path"` | `"text"` | `"tap"`
 - `x`, `y`, `w`, `h`: numbers in dp (for `rect`/`ellipse`/`path`/`text`/`tap`, `w >= 0`, `h >= 0`; for `line`, `(x, y)` to `(x+w, y+h)` may be negative)
 - `anchor`: `"left"` (default) | `"right"` | `"center"` | `"stretch"` (use `"stretch"` for full-width backgrounds/headers/texts so they adapt to any phone width!)
-- `fill`: color string (`#RRGGBB`, `#AARRGGBB`, `{{params.x}}`, `{{brand.x}}`); for `text`, this is the text color
+- `fill`: color string (`#RRGGBB`, `#AARRGGBB`, `{{params.x}}`, `{{brand.x}}`); for `text`, this is the text color (`{{brand.x}}` switches automatically between Light and Dark mode)
+- `darkFill`: optional dark-mode override for `fill` (omit if `{{brand.x}}` or same color in both modes)
 - `fill2`: optional second color for a linear gradient from `fill` to `fill2`
+- `darkFill2`: optional dark-mode override for `fill2`
 - `gradientAngle`: degrees (0 = left-to-right, 90 = top-to-bottom, default 90)
 - `stroke`: optional border/outline color
+- `darkStroke`: optional dark-mode override for `stroke`
 - `strokeWidth`: number >= 0 dp
 - `radius`: corner radius in dp (for `rect`)
 - `opacity`: 0..1 (default 1)

@@ -165,4 +165,55 @@ class ComponentDesignTest {
         assertTrue(ComponentJson.check(undeclared).problems.any { "params.tint" in it })
         assertEquals(JsonArray::class, read.body["children"]!!::class)
     }
+
+    @Test
+    fun `dark color overrides compile to themed placeholders and are validated`() {
+        val design = ComponentDesign(
+            elements = listOf(
+                DesignElement(
+                    id = "card",
+                    type = DesignElementType.Rect,
+                    w = 360f,
+                    h = 120f,
+                    fill = "#FFFFFFFF",
+                    darkFill = "#FF1E1E24",
+                    fill2 = "#FFF0F0F5",
+                    darkFill2 = "#FF2A2A32",
+                    stroke = "#FFDCDCE0",
+                    darkStroke = "#FF49454F",
+                    strokeWidth = 1f,
+                ),
+                DesignElement(
+                    id = "title",
+                    type = DesignElementType.Text,
+                    x = 16f,
+                    y = 16f,
+                    w = 200f,
+                    text = "Hello",
+                    fill = "#FF1D1D1F",
+                    darkFill = "#FFE6E0E9",
+                ),
+            ),
+        )
+        assertEquals(emptyList(), design.problems())
+        val bodyText = design.toBody().toString()
+        assertTrue("{{themed:#FFFFFFFF|#FF1E1E24}}" in bodyText, bodyText)
+        assertTrue("{{themed:#FFF0F0F5|#FF2A2A32}}" in bodyText, bodyText)
+        assertTrue("{{themed:#FFDCDCE0|#FF49454F}}" in bodyText, bodyText)
+        assertTrue("{{themed:#FF1D1D1F|#FFE6E0E9}}" in bodyText, bodyText)
+
+        val bad = ComponentDesign(
+            elements = listOf(
+                DesignElement(
+                    id = "bad",
+                    type = DesignElementType.Rect,
+                    w = 100f,
+                    h = 40f,
+                    fill = "#FFFFFFFF",
+                    darkFill = "not-a-color",
+                ),
+            ),
+        )
+        assertTrue(bad.problems().any { it.startsWith("design.elements[0].darkFill:") }, "${bad.problems()}")
+    }
 }
