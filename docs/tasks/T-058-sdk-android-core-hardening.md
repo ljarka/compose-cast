@@ -11,7 +11,7 @@ self-contained for external Android developers before adding high-level Composab
 
 [ADR 0035](../decisions/0035-android-sdk-public-api.md) turns `sdk-android` into a first-class
 published SDK consumed by both `app-shell` and external Android apps. Today:
-- Neither `sdk-android` nor `protocol` enforces `explicitApi()`, so internal helpers can leak.
+- `explicitApi()` is on (T-055), but the existing visibility was kept as it was, so helpers may still be public.
 - `ComposeCastConfig` has no way for host apps to pass auth or context HTTP headers.
 - `ComposeCastClient` does not implement `Closeable` and has no Compose lifecycle helper.
 - Errors are exposed only as raw exceptions (`ComposeCastHttpException`, `IOException`, etc.).
@@ -19,9 +19,9 @@ published SDK consumed by both `app-shell` and external Android apps. Today:
 
 ## Design
 
-1. **`explicitApi()`** on `sdk-android` and `protocol` (aligns with T-055; T-055 will still add
-   `sdk-server` `explicitApi()` and `detekt`). Audit every public declaration and mark internal
-   helpers `internal`.
+1. **`explicitApi()`** is already on in `sdk-android`, `protocol` and `sdk-server` (T-055, `97b83d6`),
+   which kept the existing visibility as it was. Left to do: audit every `public` declaration and mark
+   helpers that external apps do not need `internal`.
 2. **`ComposeCastConfig`:**
    - Add `val headers: suspend () -> Map<String, String> = { emptyMap() }` — applied to `getScreen`,
      `liveScreen`, `listScreens`, and `getBrand` (do not overwrite reserved `Headers.PLAYER_VERSION`,
@@ -48,9 +48,9 @@ published SDK consumed by both `app-shell` and external Android apps. Today:
 
 ## Steps (files to touch)
 
-1. `protocol/build.gradle.kts` + `protocol/src/main/kotlin/...`: enable `explicitApi()` and add
+1. `protocol/src/main/kotlin/...` + `sdk-android/src/main/kotlin/...`: narrow helpers to `internal` (`explicitApi()` is already on) and add
    explicit visibility modifiers.
-2. `sdk-android/build.gradle.kts`: enable `explicitApi()`, wire `consumerProguardFiles("consumer-rules.pro")`.
+2. `sdk-android/build.gradle.kts`: wire `consumerProguardFiles("consumer-rules.pro")`.
 3. `sdk-android/consumer-rules.pro`: add R8 keep rules.
 4. `sdk-android/src/main/kotlin/io/composecast/android/`:
    - Update `ComposeCastConfig.kt` (`headers`, `cacheSize`, KDoc).

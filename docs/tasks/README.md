@@ -65,7 +65,7 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-053 SQLite schema migrations, foreign keys, and expired session cleanup](T-053-sqlite-migrations-and-sessions.md) | quality | done (`1a73521`) |
 | [T-054 Server I/O offloading, database-aware `/health`, and graceful shutdown](T-054-server-io-health-shutdown.md) | quality | done |
 | [T-055 Static analysis (`detekt`) and `explicitApi()` for published libraries](T-055-explicit-api-and-detekt.md) | quality | done(`97b83d6`) |
-| [T-056 Live screen fan-out and refactoring of largest files](T-056-live-fanout-and-refactoring.md) | quality | ready |
+| [T-056 Live screen fan-out and refactoring of largest files](T-056-live-fanout-and-refactoring.md) | quality | queued (after T-058) |
 | [T-005 iOS spike](T-005-ios-spike.md) | Etap 3 | dropped (Android only, ADR 0022) |
 
 Rows are in priority order, mirroring [specs/roadmap.md](../../specs/roadmap.md) (constitution,
