@@ -443,7 +443,7 @@ private fun starterDesign(id: String) = ComponentDefinition(
     ),
 )
 
-/** `{{brand.<field>}}` values for the designer's preview: the set brand, else the renderer's look. */
+/** `{{brand.<field>}}` values for the designer's preview (light + dark): the set brand, else the renderer's look. */
 private fun brandColors(brand: BrandConfig?): String = buildJsonObject {
     put("primaryColor", brand?.primaryColor ?: "#FF3B5BDB")
     put("secondaryColor", brand?.secondaryColor ?: brand?.primaryColor ?: "#FF3B5BDB")
@@ -451,6 +451,18 @@ private fun brandColors(brand: BrandConfig?): String = buildJsonObject {
     put("surfaceColor", brand?.surfaceColor ?: "#FFF4F4F6")
     put("textColor", brand?.textColor ?: "#FF1D1D1F")
     put("outlineColor", brand?.outlineColor ?: "#FFDCDCE0")
+    put(
+        "dark",
+        buildJsonObject {
+            val darkPrimary = brand?.darkPrimaryColor ?: brand?.primaryColor ?: "#FFD0BCFF"
+            put("primaryColor", darkPrimary)
+            put("secondaryColor", brand?.darkSecondaryColor ?: brand?.secondaryColor ?: darkPrimary)
+            put("backgroundColor", brand?.darkBackgroundColor ?: "#FF141218")
+            put("surfaceColor", brand?.darkSurfaceColor ?: "#FF211F26")
+            put("textColor", brand?.darkTextColor ?: "#FFE6E0E9")
+            put("outlineColor", brand?.darkOutlineColor ?: "#FF49454F")
+        },
+    )
 }.toString()
 
 /** JSON for a `<script type="application/json">`: `</` cannot end the script element early. */

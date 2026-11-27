@@ -64,7 +64,10 @@ class CustomComponentsTest {
         assertTrue("Paczka " in dump, dump)
         assertTrue("HostNamedActionOperation" in dump && "navigat" in dump, dump)
         assertTrue("0xff6a1b9a" in dump, "default accent in the gradient:\n$dump")
-        assertTrue("0xff123456" in dump, "brand primary color:\n$dump")
+        assertTrue(
+            "lightFallback=${0xFF123456.toInt()}" in dump,
+            "brand primary color as themed ColorTheme op:\n$dump",
+        )
         assertTrue("Height(EXACT, 160.0)" in dump, "number param substituted as a number:\n$dump")
         val canvas = dump.indexOf("CANVAS")
         assertTrue(dump.indexOf("Before") < canvas && canvas < dump.lastIndexOf("CORE_TEXT"))
@@ -179,5 +182,61 @@ class CustomComponentsTest {
                 .problems().single().contains("{{brand.nope}} is unknown"),
         )
         assertTrue(CustomComponents.RC_VERSION.startsWith("1.0.0-"), CustomComponents.RC_VERSION)
+    }
+
+    @Test
+    fun `designed dark color overrides and brand tokens emit ColorTheme ops and validate cleanly`() {
+        val definition = ComponentJson.decode(
+            ComponentJson.encode(
+                ComponentDefinition(
+                    id = "themed-card",
+                    rcVersion = CustomComponents.RC_VERSION,
+                    design = io.composecast.protocol.ComponentDesign(
+                        width = 360f,
+                        height = 120f,
+                        elements = listOf(
+                            io.composecast.protocol.DesignElement(
+                                id = "bg",
+                                type = io.composecast.protocol.DesignElementType.Rect,
+                                w = 360f,
+                                h = 120f,
+                                anchor = io.composecast.protocol.DesignAnchor.Stretch,
+                                fill = "#FFFFFFFF",
+                                darkFill = "#FF1E1E24",
+                                fill2 = "{{brand.surfaceColor}}",
+                                stroke = "#FFDCDCE0",
+                                darkStroke = "#FF49454F",
+                                strokeWidth = 1f,
+                            ),
+                            io.composecast.protocol.DesignElement(
+                                id = "label",
+                                type = io.composecast.protocol.DesignElementType.Text,
+                                x = 16f,
+                                y = 16f,
+                                w = 200f,
+                                text = "Themed",
+                                fill = "{{brand.textColor}}",
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+            "test",
+        )
+        assertEquals(emptyList(), CustomComponents.check(definition))
+        val registry = composeCast {
+            component(definition)
+            screen("s") { custom("themed-card") }
+        }
+        val dump = registry.get("s")!!.describe()
+        assertTrue(
+            "lightFallback=${0xFFFFFFFF.toInt()};darkFallback=${0xFF1E1E24.toInt()}" in dump,
+            "explicit fill/darkFill ColorTheme:\n$dump",
+        )
+        assertTrue(
+            "lightFallback=${0xFFDCDCE0.toInt()};darkFallback=${0xFF49454F.toInt()}" in dump,
+            "explicit stroke/darkStroke ColorTheme:\n$dump",
+        )
+        assertTrue("ColorId([" in dump, "paint uses themed ColorId:\n$dump")
     }
 }

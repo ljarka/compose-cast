@@ -413,6 +413,11 @@ Verified while building T-057 (alpha23, 2026-11-26; Robolectric, a grid of taps 
     (`[padding, width, height, onClick]` still answered taps in the padding). For an exact tap area,
     put the padding on an outer box and the `onClick` on an inner box of the wanted size
     (`ComponentDesign.tapArea`).
+16. **Themed color IDs via `$colors.<name>`** (verified in `remote-creation-core` alpha23 bytecode,
+    2026-11-27): `RemoteComposeJsonParser.parseColor` resolves `"$colors.<name>"` / `"@colors.<name>"`
+    from its package-private `mColors` map; `paint.ops.color`, `setColor`, `text.color`, and
+    `linearGradient.colors` (via `colorIdMask`) all pass the registered `addThemedColor` ID instead
+    of a literal ARGB int, so custom components switch cleanly on `player.setTheme(LIGHT / DARK)`.
 
 ## Live updates (verified alpha23, 2026-11-24, PoC on the emulator)
 

@@ -12,7 +12,8 @@
   let def = JSON.parse(document.getElementById('definition').textContent);
 
   const DEFAULTS = {
-    x: 0, y: 0, w: 0, h: 0, anchor: 'left', fill: null, fill2: null, gradientAngle: 90, stroke: null,
+    x: 0, y: 0, w: 0, h: 0, anchor: 'left', fill: null, darkFill: null, fill2: null, darkFill2: null,
+    gradientAngle: 90, stroke: null, darkStroke: null,
     strokeWidth: 0, radius: 0, opacity: 1, rotation: 0, path: null, pathWidth: null, pathHeight: null,
     text: null, fontSize: 16, bold: false, textAlign: 'start', maxLines: 1, action: null, hidden: false, name: '',
   };
@@ -30,6 +31,7 @@
   let tool = 'select';
   let selected = null;
   let zoom = 2;
+  let artboardDark = false;
   const undoStack = [];
   const redoStack = [];
   let drag = null;
@@ -124,12 +126,16 @@
     });
   }
 
-  /** `#RRGGBB`, `#AARRGGBB` or a placeholder → a CSS color (null = none). */
-  function cssColor(value) {
-    if (!value) return null;
-    let v = value;
-    const ph = placeholder(value);
-    if (ph) v = ph.root === 'params' ? (def.params[ph.name] || {}).default : brand[ph.name];
+  /** `#RRGGBB`, `#AARRGGBB` or a placeholder → a CSS color (null = none). Respects `artboardDark`. */
+  function cssColor(value, darkValue) {
+    const active = artboardDark && darkValue ? darkValue : value;
+    if (!active) return null;
+    let v = active;
+    const ph = placeholder(active);
+    if (ph) {
+      const palette = artboardDark && brand.dark ? brand.dark : brand;
+      v = ph.root === 'params' ? (def.params[ph.name] || {}).default : (palette[ph.name] || brand[ph.name]);
+    }
     if (!v) return '#888888';
     const m8 = /^#([0-9a-fA-F]{2})([0-9a-fA-F]{6})$/.exec(v);
     if (m8) {
@@ -169,8 +175,9 @@
     node('clipPath', { id: 'artboard-clip' }, defs).appendChild(
       node('rect', { width: d.width, height: d.height, rx: d.cornerRadius, ry: d.cornerRadius }),
     );
+    const bg = artboardDark ? ((brand.dark && brand.dark.backgroundColor) || '#141218') : '#ffffff';
     node('rect', {
-      width: d.width, height: d.height, rx: d.cornerRadius, ry: d.cornerRadius, fill: '#ffffff',
+      width: d.width, height: d.height, rx: d.cornerRadius, ry: d.cornerRadius, fill: cssColor(bg) || bg,
       stroke: '#b0b0b8', 'stroke-width': 1 / zoom, 'stroke-dasharray': `${4 / zoom} ${4 / zoom}`, 'data-bg': '1',
     }, svg);
     const content = node('g', { 'clip-path': 'url(#artboard-clip)' }, svg);
@@ -184,7 +191,7 @@
   }
 
   function paintAttrs(e, defs) {
-    let fill = cssColor(e.fill) || 'none';
+    let fill = cssColor(e.fill, e.darkFill) || 'none';
     if (e.fill && e.fill2 && e.type !== 'line') {
       // Like the compiler: a path paints in its own box (pathWidth × pathHeight), shapes in theirs.
       const isPath = e.type === 'path';
@@ -199,13 +206,13 @@
         id: `grad-${e.id}`, gradientUnits: 'userSpaceOnUse',
         x1: ox + w / 2 - dx, y1: oy + h / 2 - dy, x2: ox + w / 2 + dx, y2: oy + h / 2 + dy,
       }, defs);
-      node('stop', { offset: 0, 'stop-color': cssColor(e.fill) }, g);
-      node('stop', { offset: 1, 'stop-color': cssColor(e.fill2) }, g);
+      node('stop', { offset: 0, 'stop-color': cssColor(e.fill, e.darkFill) }, g);
+      node('stop', { offset: 1, 'stop-color': cssColor(e.fill2, e.darkFill2) }, g);
       fill = `url(#grad-${e.id})`;
     }
     const attrs = { fill, opacity: e.opacity < 1 ? e.opacity : null, 'data-id': e.id };
     if (e.stroke && e.strokeWidth > 0) {
-      Object.assign(attrs, { stroke: cssColor(e.stroke), 'stroke-width': e.strokeWidth, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+      Object.assign(attrs, { stroke: cssColor(e.stroke, e.darkStroke), 'stroke-width': e.strokeWidth, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
     }
     return attrs;
   }
@@ -244,7 +251,7 @@
         div.textContent = resolveText(e.text);
         Object.assign(div.style, {
           font: `${e.bold ? 700 : 400} ${e.fontSize}px/1.25 Roboto, system-ui, sans-serif`,
-          color: cssColor(e.fill) || '#000', textAlign: e.textAlign === 'end' ? 'right' : e.textAlign === 'center' ? 'center' : 'left',
+          color: cssColor(e.fill, e.darkFill) || '#000', textAlign: e.textAlign === 'end' ? 'right' : e.textAlign === 'center' ? 'center' : 'left',
           opacity: e.opacity, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: String(e.maxLines),
           overflow: 'hidden', overflowWrap: 'anywhere', cursor: 'default',
         });
@@ -1149,13 +1156,13 @@
     return s;
   }
 
-  function colorField(parent, label, e, key, allowNone) {
+  function colorField(parent, label, e, key, allowNone, placeholderText) {
     const wrap = document.createElement('div');
     wrap.className = 'color';
     const text = document.createElement('input');
     text.type = 'text';
     text.value = e[key] || '';
-    text.placeholder = allowNone ? 'none' : '#FF000000';
+    text.placeholder = placeholderText || (allowNone ? 'none' : '#FF000000');
     text.disabled = !canEdit;
     const applyHex = (hex) => {
       const old = e[key] || '';
@@ -1173,8 +1180,10 @@
           applyHex(hex);
         },
         onChange: (hex) => {
+          const hadValue = Boolean(e[key]);
           applyHex(hex);
           undoStack.push(JSON.stringify(def));
+          if (!hadValue) renderProps();
           scheduleSave();
         },
       });
@@ -1194,10 +1203,12 @@
       wrap.append(picker, text);
     }
     text.addEventListener('change', () => {
+      const hadValue = Boolean(e[key]);
       pushUndo();
       e[key] = text.value.trim() || null;
       syncPicker(e[key]);
       renderStage();
+      if (hadValue !== Boolean(e[key])) renderProps();
       scheduleSave();
     });
     field(parent, label, wrap);
@@ -1227,6 +1238,7 @@
     if (e.type === 'text') {
       field(p, 'Text', input('textarea', e.text, set('text')), 'Use {{params.name}} for a value set on each screen.');
       colorField(p, 'Color', e, 'fill');
+      colorField(p, 'Color (Dark mode)', e, 'darkFill', true, 'same as light');
       const t = document.createElement('div');
       t.className = 'grid2';
       p.appendChild(t);
@@ -1241,11 +1253,16 @@
       if (e.type !== 'line') {
         colorField(p, 'Fill', e, 'fill', true);
         if (e.fill) {
+          colorField(p, 'Fill (Dark mode)', e, 'darkFill', true, 'same as light');
           colorField(p, 'Gradient to', e, 'fill2', true);
-          if (e.fill2) field(p, 'Gradient angle (°, 0 = left to right)', input('number', e.gradientAngle, set('gradientAngle')));
+          if (e.fill2) {
+            colorField(p, 'Gradient to (Dark mode)', e, 'darkFill2', true, 'same as light');
+            field(p, 'Gradient angle (°, 0 = left to right)', input('number', e.gradientAngle, set('gradientAngle')));
+          }
         }
       }
       colorField(p, 'Stroke', e, 'stroke', true);
+      if (e.stroke) colorField(p, 'Stroke (Dark mode)', e, 'darkStroke', true, 'same as light');
       field(p, 'Stroke width', input('number', e.strokeWidth, set('strokeWidth'), { min: 0, step: 0.5 }));
       if (e.type === 'rect') field(p, 'Corner radius', input('number', e.radius, set('radius'), { min: 0 }));
       if (e.type !== 'line') field(p, 'Rotation (°)', input('number', e.rotation, set('rotation')));
@@ -1724,6 +1741,16 @@
       renderComponent();
       renderAll();
       scheduleSave();
+    });
+  }
+
+  const artboardThemeBtn = $('#artboard-theme');
+  if (artboardThemeBtn) {
+    artboardThemeBtn.addEventListener('click', () => {
+      artboardDark = !artboardDark;
+      artboardThemeBtn.textContent = artboardDark ? '🌙 Dark' : '☀ Light';
+      artboardThemeBtn.classList.toggle('active', artboardDark);
+      renderStage();
     });
   }
 

@@ -14,9 +14,9 @@
   .stage { background: repeating-conic-gradient(var(--line) 0 25%, transparent 0 50%) 0 0 / 16px 16px;
     border: 1px solid var(--line); border-radius: 8px; padding: 32px; overflow: auto; }
   .stage svg { display: block; margin: 0 auto; overflow: visible; user-select: none; touch-action: none; }
-  .layers { list-style: none; margin: 0; padding: 0; max-height: 50vh; overflow: auto; }
+  .layers { list-style: none; margin: 0; padding: 2px; max-height: 50vh; overflow: auto; }
   .layers li { display: flex; gap: 6px; align-items: center; padding: 4px 6px; border-radius: 6px; cursor: pointer; font-size: 14px; }
-  .layers li.selected { outline: 2px solid var(--accent); background: var(--bg); }
+  .layers li.selected { box-shadow: inset 0 0 0 2px var(--accent); background: var(--bg); }
   .layers li .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .layers li.hidden .name { opacity: .45; text-decoration: line-through; }
   .layer-actions button { margin: 0; padding: 4px 10px; background: var(--card); color: var(--fg); border: 1px solid var(--line); }
@@ -90,6 +90,8 @@
       <button type="button" data-cmd="redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13"/></svg></button>
       <span class="sep"></span>
       <label class="muted" style="margin: 0; font-weight: 400">Zoom <select id="zoom"><option value="1">100%</option><option value="1.5">150%</option><option value="2" selected>200%</option><option value="3">300%</option></select></label>
+      <span class="sep"></span>
+      <button type="button" id="artboard-theme" title="Preview Light / Dark colors on the artboard">☀ Light</button>
     </div>
     <div class="stage" id="stage"></div>
     <div id="status" aria-live="polite"></div>

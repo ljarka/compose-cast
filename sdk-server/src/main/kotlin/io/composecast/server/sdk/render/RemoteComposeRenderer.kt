@@ -59,6 +59,9 @@ internal class RemoteComposeRenderer(
     private val darkPrimary = brand?.darkPrimaryColor?.let(::parseColor)
         ?: brand?.primaryColor?.let(::parseColor)
         ?: DARK_PRIMARY_COLOR
+    private val darkSecondary = brand?.darkSecondaryColor?.let(::parseColor)
+        ?: brand?.secondaryColor?.let(::parseColor)
+        ?: darkPrimary
     private val darkSurface = brand?.darkSurfaceColor?.let(::parseColor) ?: DARK_SURFACE_COLOR
     private val darkText = brand?.darkTextColor?.let(::parseColor) ?: DARK_TEXT_COLOR
     private val darkOutline = brand?.darkOutlineColor?.let(::parseColor) ?: DARK_DIVIDER_COLOR
@@ -100,6 +103,16 @@ internal class RemoteComposeRenderer(
         "outlineColor" to hex(env.outline),
     )
 
+    /** Dark-mode counterparts of [brandColors] for `addThemedColor` in custom components. */
+    private val darkBrandColors: Map<String, String> = mapOf(
+        "primaryColor" to hex(darkPrimary),
+        "secondaryColor" to hex(darkSecondary),
+        "backgroundColor" to hex(darkBackground),
+        "surfaceColor" to hex(darkSurface),
+        "textColor" to hex(darkText),
+        "outlineColor" to hex(darkOutline),
+    )
+
     private fun profile(level: Int, mask: Int): RcProfile = this.profiles.computeIfAbsent(level to mask) { (l, m) ->
         RcProfile(
             Profile(l, m, PlatformServices) { info, p, tag -> RemoteComposeWriter(info, null, p, tag) },
@@ -118,13 +131,17 @@ internal class RemoteComposeRenderer(
     fun componentProblems(definition: ComponentDefinition): List<String> {
         val own = definition.problems()
         if (own.isNotEmpty()) return own
-        val sample = RcJsonComponents.substitute(definition, RcJsonComponents.sampleArgs(definition), brandColors)
+        val sampleArgs = RcJsonComponents.sampleArgs(definition)
+        val sample = RcJsonComponents.substitute(definition, sampleArgs, brandColors, darkBrandColors)
         val whitelist = (
             RcJsonComponents.bodyProblems(definition.body, substituted = false) +
                 RcJsonComponents.bodyProblems(sample, substituted = true)
             ).distinct()
         if (whitelist.isNotEmpty()) return whitelist
-        return listOfNotNull(RcJsonComponents.parseProblem(sample, ::scratchWriter)?.let { "body: $it" })
+        return listOfNotNull(
+            RcJsonComponents.parseProblem(definition, sampleArgs, brandColors, darkBrandColors, ::scratchWriter)
+                ?.let { "body: $it" },
+        )
     }
 
     /**
@@ -155,7 +172,7 @@ internal class RemoteComposeRenderer(
                     val theme = ThemeColors.allocate(writer, env.palette)
                     val values = ScreenValues.allocate(this, writer, screen)
                     val visibility = VisibilityStates.allocate(this, screen)
-                    val custom = CustomContext(components, brandColors, targetLevel, ::scratchWriter)
+                    val custom = CustomContext(components, brandColors, darkBrandColors, targetLevel, ::scratchWriter)
                     val renderEnv = env.withRenderState(writer, theme, values, visibility, custom)
                     Column(
                         Modifier.fillMaxSize().background(theme.background).verticalScroll().padding(SCREEN_PADDING),
@@ -354,8 +371,11 @@ internal class RenderEnv(
 ) {
     /** One RC JSON parser per document (custom components, ADR 0033), on the active [writer]. */
     private val parser by lazy { RcJsonBridge.parser(writer) }
+    private val customColors by lazy { ThemedColorRegistry(writer, parser) }
 
     fun jsonParser(): RemoteComposeJsonParser = parser
+
+    fun themedColors(): ThemedColorRegistry = customColors
 
     /** The active themed RC colors for the current render pass. */
     val theme: ThemeColors

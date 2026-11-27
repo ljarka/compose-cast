@@ -171,17 +171,49 @@ internal fun templateDocument(template: AppTemplate, screen: ScreenDefinition): 
 }
 
 private fun templateImagePlaceholder(surfaceHex: String?, accentHex: String?): ByteArray {
-    val img = BufferedImage(160, 100, BufferedImage.TYPE_INT_RGB)
+    val w = 640
+    val h = 400
+    val img = BufferedImage(w, h, BufferedImage.TYPE_INT_RGB)
     val g = img.createGraphics()
     try {
-        g.color = parseColorOr(surfaceHex, Color(0xE8, 0xEC, 0xF2))
-        g.fillRect(0, 0, 160, 100)
-        g.color = parseColorOr(accentHex, Color(0x94, 0xA3, 0xB8))
-        g.fillOval(56, 26, 48, 48)
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY)
+        val base = parseColorOr(surfaceHex, Color(0xEE, 0xF1, 0xF6))
+        val accent = parseColorOr(accentHex, Color(0x64, 0x74, 0x8B))
+        val topLeft = blend(base, accent, 0.14f)
+        val bottomRight = blend(base, accent, 0.30f)
+        g.paint = java.awt.GradientPaint(0f, 0f, topLeft, w.toFloat(), h.toFloat(), bottomRight)
+        g.fillRect(0, 0, w, h)
+        // Subtle soft ambient blobs in the background.
+        g.color = Color(accent.red, accent.green, accent.blue, 26)
+        g.fillOval(w - 260, -90, 340, 340)
+        g.color = Color(accent.red, accent.green, accent.blue, 18)
+        g.fillOval(-110, h - 220, 300, 300)
+        // Crisp minimalist landscape/image glyph in the center.
+        val cx = w / 2
+        val cy = h / 2
+        g.color = Color(accent.red, accent.green, accent.blue, 96)
+        g.stroke = java.awt.BasicStroke(5f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND)
+        g.drawRoundRect(cx - 56, cy - 42, 112, 84, 18, 18)
+        g.fillOval(cx - 34, cy - 22, 16, 16)
+        g.drawPolyline(
+            intArrayOf(cx - 42, cx - 10, cx + 10, cx + 26, cx + 44),
+            intArrayOf(cy + 26, cy - 2, cy + 14, cy + 2, cy + 26),
+            5,
+        )
     } finally {
         g.dispose()
     }
     return ByteArrayOutputStream().also { ImageIO.write(img, "png", it) }.toByteArray()
+}
+
+private fun blend(a: Color, b: Color, ratio: Float): Color {
+    val inv = 1f - ratio
+    return Color(
+        (a.red * inv + b.red * ratio).toInt().coerceIn(0, 255),
+        (a.green * inv + b.green * ratio).toInt().coerceIn(0, 255),
+        (a.blue * inv + b.blue * ratio).toInt().coerceIn(0, 255),
+    )
 }
 
 private fun parseColorOr(hex: String?, fallback: Color): Color {
