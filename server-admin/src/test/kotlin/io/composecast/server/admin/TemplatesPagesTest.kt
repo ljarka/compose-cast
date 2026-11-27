@@ -3,15 +3,22 @@ package io.composecast.server.admin
 import io.composecast.protocol.BrandConfig
 import io.composecast.protocol.ScreenJson
 import io.composecast.server.store.SettingsStore
+import io.composecast.templates.AppTemplates
 import io.ktor.client.HttpClient
 import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.statement.bodyAsBytes
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
 import io.ktor.http.parameters
 import kotlinx.serialization.json.Json
+import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
+import javax.imageio.ImageIO
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -102,6 +109,54 @@ class TemplatesPagesTest {
         val editor = with(host) { client.loginAs(Role.EDITOR) }
         assertEquals(HttpStatusCode.NotFound, client.form(editor, "/admin/templates/nope").status)
         assertTrue(screens.list().isEmpty())
+    }
+
+    @Test
+    fun `template previews render every bundled screen offline with fixtures and brand colors`() {
+        val samplePng = ByteArrayOutputStream().also {
+            ImageIO.write(BufferedImage(411, 914, BufferedImage.TYPE_INT_RGB), "png", it)
+        }.toByteArray()
+        val renderer = PhoneRenderer { doc ->
+            assertTrue(doc.isNotEmpty(), "rendered RC document should not be empty")
+            samplePng
+        }
+        host.run(phoneRenderer = renderer) { client ->
+            val cookie = with(host) { client.loginAs(Role.VIEWER) }
+            val page = client.get("/admin/templates") { header(HttpHeaders.Cookie, cookie) }.bodyAsText()
+            assertContains(page, "/admin/templates/news/screens/news/thumb.png")
+            assertContains(page, "/admin/templates/shop/screens/product/thumb.png")
+            assertContains(page, "#E8590C", message = "brand palette swatch is shown on the template card")
+
+            for (template in AppTemplates.all) {
+                for (screen in template.screens) {
+                    val thumb = client.get("/admin/templates/${template.id}/screens/${screen.id}/thumb.png") {
+                        header(HttpHeaders.Cookie, cookie)
+                    }
+                    assertEquals(HttpStatusCode.OK, thumb.status, "${template.id}/${screen.id} thumb")
+                    assertEquals(ContentType.Image.PNG, thumb.contentType())
+                    assertTrue(thumb.bodyAsBytes().isNotEmpty())
+                }
+            }
+
+            val full = client.get("/admin/templates/news/screens/news/phone.png?theme=dark") {
+                header(HttpHeaders.Cookie, cookie)
+            }
+            assertEquals(HttpStatusCode.OK, full.status)
+            assertEquals(ContentType.Image.PNG, full.contentType())
+
+            assertEquals(
+                HttpStatusCode.NotFound,
+                client.get("/admin/templates/nope/screens/news/thumb.png") {
+                    header(HttpHeaders.Cookie, cookie)
+                }.status,
+            )
+            assertEquals(
+                HttpStatusCode.NotFound,
+                client.get("/admin/templates/news/screens/nope/thumb.png") {
+                    header(HttpHeaders.Cookie, cookie)
+                }.status,
+            )
+        }
     }
 
     private fun settings(brand: BrandConfig) {

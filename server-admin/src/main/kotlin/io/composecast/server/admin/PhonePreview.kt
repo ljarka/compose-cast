@@ -1,6 +1,13 @@
 package io.composecast.server.admin
 
+import io.composecast.protocol.ScreenDefinition
+import io.composecast.server.sdk.DataLoader
+import io.composecast.server.sdk.ImageLoader
+import io.composecast.server.sdk.RenderContext
+import io.composecast.server.sdk.composeCast
 import io.composecast.server.store.ScreenStore
+import io.composecast.templates.AppTemplate
+import io.composecast.templates.AppTemplates
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -13,6 +20,7 @@ import io.ktor.util.AttributeKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
+import java.awt.Color
 import java.awt.RenderingHints
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
@@ -69,7 +77,7 @@ class HttpPhoneRenderer(
  * Remembers the last [size] PNGs by document hash + theme: reloading the editor without a change
  * (or a change that renders the same) does not ask the renderer again.
  */
-class CachingPhoneRenderer(private val renderer: PhoneRenderer, private val size: Int = 32) : PhoneRenderer {
+class CachingPhoneRenderer(private val renderer: PhoneRenderer, private val size: Int = 64) : PhoneRenderer {
     private val cache = object : LinkedHashMap<String, ByteArray>(size, 0.75f, true) {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, ByteArray>) =
             this.size > this@CachingPhoneRenderer.size
@@ -110,6 +118,80 @@ internal fun Route.phonePreview(screens: ScreenStore, publishing: ScreenPublishi
         }
         call.respondBytes(thumb, ContentType.Image.PNG)
     }
+    get("/templates/{template}/screens/{screen}/phone.png") {
+        val png = call.templateScreenPng(renderer) ?: return@get
+        call.respondBytes(png, ContentType.Image.PNG)
+    }
+    get("/templates/{template}/screens/{screen}/thumb.png") {
+        val png = call.templateScreenPng(renderer) ?: return@get
+        val thumb = try {
+            withContext(Dispatchers.Default) { thumbnail(png, TEMPLATE_THUMB_WIDTH) }
+        } catch (e: Exception) {
+            return@get call.placeholder("No phone preview", e.message.orEmpty())
+        }
+        call.respondBytes(thumb, ContentType.Image.PNG)
+    }
+}
+
+/** Width of the Templates page phone thumbnails in pixels (shown at 110 CSS px: sharp on 2x displays). */
+internal const val TEMPLATE_THUMB_WIDTH = 220
+
+/** Renders a bundled template screen offline with its fixtures and brand into a phone PNG. */
+private suspend fun ApplicationCall.templateScreenPng(renderer: PhoneRenderer): ByteArray? {
+    val template = AppTemplates[parameters["template"].orEmpty()] ?: run {
+        respond404()
+        return null
+    }
+    val screen = template.screens.firstOrNull { it.id == parameters["screen"].orEmpty() } ?: run {
+        respond404()
+        return null
+    }
+    val dark = request.queryParameters["theme"] == "dark"
+    return try {
+        withContext(Dispatchers.IO) { renderer.png(templateDocument(template, screen), dark) }
+    } catch (e: Exception) {
+        log.warn("Template preview of '${template.id}/${screen.id}' failed: ${e.message}")
+        placeholder("No phone preview", e.message.orEmpty(), dark)
+        null
+    }
+}
+
+/** Compiles [screen] of [template] with its bundled fixtures and brand colors (no network calls). */
+internal fun templateDocument(template: AppTemplate, screen: ScreenDefinition): ByteArray {
+    val data = DataLoader { request ->
+        template.fixture(request.url) ?: throw PublishException("no fixture for ${request.url}")
+    }
+    val placeholderPng = templateImagePlaceholder(template.brand?.surfaceColor, template.brand?.primaryColor)
+    val images = ImageLoader { _ -> placeholderPng }
+    val registry = composeCast(images, data, env = { null }) {
+        template.brand?.let { brand(it) }
+        screen(screen)
+    }
+    return requireNotNull(registry.render(screen.id, RenderContext())).document
+}
+
+private fun templateImagePlaceholder(surfaceHex: String?, accentHex: String?): ByteArray {
+    val img = BufferedImage(160, 100, BufferedImage.TYPE_INT_RGB)
+    val g = img.createGraphics()
+    try {
+        g.color = parseColorOr(surfaceHex, Color(0xE8, 0xEC, 0xF2))
+        g.fillRect(0, 0, 160, 100)
+        g.color = parseColorOr(accentHex, Color(0x94, 0xA3, 0xB8))
+        g.fillOval(56, 26, 48, 48)
+    } finally {
+        g.dispose()
+    }
+    return ByteArrayOutputStream().also { ImageIO.write(img, "png", it) }.toByteArray()
+}
+
+private fun parseColorOr(hex: String?, fallback: Color): Color {
+    val clean = hex?.trim()?.removePrefix("#") ?: return fallback
+    val rgb = when (clean.length) {
+        6 -> clean
+        8 -> clean.substring(2)
+        else -> return fallback
+    }
+    return rgb.toIntOrNull(16)?.let { Color(it) } ?: fallback
 }
 
 /** The screen's phone PNG, or null after answering 404 / a placeholder SVG. */

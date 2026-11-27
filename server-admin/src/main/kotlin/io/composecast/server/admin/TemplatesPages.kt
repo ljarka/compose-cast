@@ -1,6 +1,7 @@
 package io.composecast.server.admin
 
 import io.composecast.protocol.BrandConfig
+import io.composecast.protocol.Component
 import io.composecast.protocol.ScreenJson
 import io.composecast.server.store.ScreenStore
 import io.composecast.server.store.SettingsStore
@@ -127,7 +128,17 @@ private suspend fun ApplicationCall.templatesPage(
                     "id" to t.id,
                     "name" to t.manifest.name,
                     "description" to t.manifest.description,
+                    "home" to t.manifest.home,
                     "screens" to t.manifest.screens,
+                    "screenDetails" to t.screens.map { s ->
+                        mapOf(
+                            "id" to s.id,
+                            "title" to (s.title.takeIf { it.isNotBlank() } ?: s.id),
+                            "isHome" to (s.id == t.manifest.home),
+                            "components" to componentSummary(s.components),
+                        )
+                    },
+                    "colors" to brandSwatches(t.brand),
                     "secrets" to t.manifest.secrets.map { mapOf("name" to it.name, "why" to it.why) },
                     "live" to t.screens.any { it.live != null },
                     "error" to (error?.takeIf { it.first == t.id }?.second ?: ""),
@@ -149,4 +160,36 @@ private suspend fun ApplicationCall.templatesPage(
                 ),
         ),
     )
+}
+
+private fun brandSwatches(brand: BrandConfig?): List<Map<String, String>> {
+    if (brand == null) return emptyList()
+    return listOfNotNull(
+        brand.primaryColor.takeIf { it.isNotBlank() }?.let { mapOf("label" to "Primary", "hex" to it) },
+        brand.secondaryColor.takeIf { it.isNotBlank() }?.let { mapOf("label" to "Secondary", "hex" to it) },
+        brand.backgroundColor.takeIf { it.isNotBlank() }?.let { mapOf("label" to "Background", "hex" to it) },
+        brand.surfaceColor?.takeIf { it.isNotBlank() }?.let { mapOf("label" to "Surface", "hex" to it) },
+    )
+}
+
+private fun componentSummary(components: List<Component>): List<String> {
+    val labels = linkedSetOf<String>()
+    fun walk(list: List<Component>) {
+        for (c in list) {
+            when (c) {
+                is Component.Repeat -> labels += "List"
+                is Component.Card -> labels += "Card"
+                is Component.Image -> labels += "Image"
+                is Component.Button -> labels += "Button"
+                is Component.Kpi -> labels += "KPI"
+                is Component.Gauge -> labels += "Gauge"
+                is Component.Sparkline -> labels += "Sparkline"
+                is Component.Text -> labels += "Text"
+                else -> {}
+            }
+            c.childLists().forEach { (_, children) -> walk(children) }
+        }
+    }
+    walk(components)
+    return labels.take(5)
 }
