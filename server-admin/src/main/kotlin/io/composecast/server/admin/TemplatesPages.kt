@@ -94,6 +94,12 @@ private fun applyBrand(app: AppTemplate, settings: SettingsStore, publishing: Sc
         surfaceColor = colors.surfaceColor,
         textColor = colors.textColor,
         outlineColor = colors.outlineColor,
+        darkPrimaryColor = colors.darkPrimaryColor,
+        darkSecondaryColor = colors.darkSecondaryColor,
+        darkBackgroundColor = colors.darkBackgroundColor,
+        darkSurfaceColor = colors.darkSurfaceColor,
+        darkTextColor = colors.darkTextColor,
+        darkOutlineColor = colors.darkOutlineColor,
     ) ?: colors
     return publishOrProblem { publishing.publishBrand(Json.encodeToString(BrandConfig.serializer(), brand)) }
 }

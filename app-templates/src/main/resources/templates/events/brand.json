@@ -1,5 +1,15 @@
 {
   "name": "Events",
-  "primaryColor": "#7048E8",
-  "secondaryColor": "#E64980"
+  "primaryColor": "#6741D9",
+  "secondaryColor": "#E64980",
+  "backgroundColor": "#F7F5FC",
+  "surfaceColor": "#FFFFFF",
+  "textColor": "#1B1626",
+  "outlineColor": "#E4DDF5",
+  "darkPrimaryColor": "#B197FC",
+  "darkSecondaryColor": "#F783AC",
+  "darkBackgroundColor": "#13101B",
+  "darkSurfaceColor": "#201B2D",
+  "darkTextColor": "#F1ECF9",
+  "darkOutlineColor": "#352D4A"
 }

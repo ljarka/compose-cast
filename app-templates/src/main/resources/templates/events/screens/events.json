@@ -9,7 +9,7 @@
       "contentScale": "crop",
       "aspectRatio": 2.0,
       "modifier": {
-        "cornerRadius": 12
+        "cornerRadius": 18
       }
     },
     {
@@ -17,8 +17,78 @@
       "height": 12
     },
     {
+      "type": "row",
+      "spacing": 8,
+      "children": [
+        {
+          "type": "card",
+          "modifier": {
+            "weight": 1.0,
+            "cornerRadius": 14,
+            "padding": {
+              "start": 12,
+              "top": 10,
+              "end": 12,
+              "bottom": 10
+            }
+          },
+          "children": [
+            {
+              "type": "kpi",
+              "value": "2",
+              "label": "Days"
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "modifier": {
+            "weight": 1.0,
+            "cornerRadius": 14,
+            "padding": {
+              "start": 12,
+              "top": 10,
+              "end": 12,
+              "bottom": 10
+            }
+          },
+          "children": [
+            {
+              "type": "kpi",
+              "value": "4",
+              "label": "Sessions"
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "modifier": {
+            "weight": 1.0,
+            "cornerRadius": 14,
+            "padding": {
+              "start": 12,
+              "top": 10,
+              "end": 12,
+              "bottom": 10
+            }
+          },
+          "children": [
+            {
+              "type": "kpi",
+              "value": "3",
+              "label": "Rooms"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "spacer",
+      "height": 14
+    },
+    {
       "type": "text",
-      "text": "Two days, four sessions",
+      "text": "Schedule",
       "style": "h2"
     },
     {
@@ -27,8 +97,9 @@
     },
     {
       "type": "card",
-      "spacing": 4,
+      "spacing": 8,
       "modifier": {
+        "cornerRadius": 16,
         "action": {
           "type": "navigate",
           "screen": "event",
@@ -39,25 +110,86 @@
       },
       "children": [
         {
-          "type": "text",
-          "text": "Opening keynote",
-          "style": "h3"
+          "type": "row",
+          "spacing": 8,
+          "verticalAlignment": "center",
+          "children": [
+            {
+              "type": "box",
+              "modifier": {
+                "width": "wrap",
+                "background": "#6741D9",
+                "cornerRadius": 999,
+                "padding": {
+                  "start": 10,
+                  "top": 4,
+                  "end": 10,
+                  "bottom": 4
+                }
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": "09:30",
+                  "style": "caption",
+                  "fontWeight": "bold",
+                  "color": "#FFFFFF",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "modifier": {
+                "width": "wrap",
+                "background": "#F3EEFF",
+                "cornerRadius": 999,
+                "padding": {
+                  "start": 10,
+                  "top": 4,
+                  "end": 10,
+                  "bottom": 4
+                }
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Main hall",
+                  "style": "caption",
+                  "fontWeight": "medium",
+                  "color": "#6741D9",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ]
+            }
+          ]
         },
         {
           "type": "text",
-          "text": "Fri 12 June · 09:30 · Main hall",
+          "text": "Opening keynote",
+          "style": "h3",
+          "fontWeight": "bold"
+        },
+        {
+          "type": "text",
+          "text": "Fri 12 June · Kickoff & vision talk",
           "style": "caption"
         }
       ]
     },
     {
       "type": "spacer",
-      "height": 8
+      "height": 10
     },
     {
       "type": "card",
-      "spacing": 4,
+      "spacing": 8,
       "modifier": {
+        "cornerRadius": 16,
         "action": {
           "type": "navigate",
           "screen": "event",
@@ -68,25 +200,86 @@
       },
       "children": [
         {
-          "type": "text",
-          "text": "Design systems workshop",
-          "style": "h3"
+          "type": "row",
+          "spacing": 8,
+          "verticalAlignment": "center",
+          "children": [
+            {
+              "type": "box",
+              "modifier": {
+                "width": "wrap",
+                "background": "#6741D9",
+                "cornerRadius": 999,
+                "padding": {
+                  "start": 10,
+                  "top": 4,
+                  "end": 10,
+                  "bottom": 4
+                }
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": "13:00",
+                  "style": "caption",
+                  "fontWeight": "bold",
+                  "color": "#FFFFFF",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "modifier": {
+                "width": "wrap",
+                "background": "#F3EEFF",
+                "cornerRadius": 999,
+                "padding": {
+                  "start": 10,
+                  "top": 4,
+                  "end": 10,
+                  "bottom": 4
+                }
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Room B",
+                  "style": "caption",
+                  "fontWeight": "medium",
+                  "color": "#6741D9",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ]
+            }
+          ]
         },
         {
           "type": "text",
-          "text": "Fri 12 June · 13:00 · Room B",
+          "text": "Design systems workshop",
+          "style": "h3",
+          "fontWeight": "bold"
+        },
+        {
+          "type": "text",
+          "text": "Fri 12 June · Hands-on tokens & components",
           "style": "caption"
         }
       ]
     },
     {
       "type": "spacer",
-      "height": 8
+      "height": 10
     },
     {
       "type": "card",
-      "spacing": 4,
+      "spacing": 8,
       "modifier": {
+        "cornerRadius": 16,
         "action": {
           "type": "navigate",
           "screen": "event",
@@ -97,25 +290,86 @@
       },
       "children": [
         {
-          "type": "text",
-          "text": "Live demo night",
-          "style": "h3"
+          "type": "row",
+          "spacing": 8,
+          "verticalAlignment": "center",
+          "children": [
+            {
+              "type": "box",
+              "modifier": {
+                "width": "wrap",
+                "background": "#E64980",
+                "cornerRadius": 999,
+                "padding": {
+                  "start": 10,
+                  "top": 4,
+                  "end": 10,
+                  "bottom": 4
+                }
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": "19:00",
+                  "style": "caption",
+                  "fontWeight": "bold",
+                  "color": "#FFFFFF",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "modifier": {
+                "width": "wrap",
+                "background": "#FFF0F6",
+                "cornerRadius": 999,
+                "padding": {
+                  "start": 10,
+                  "top": 4,
+                  "end": 10,
+                  "bottom": 4
+                }
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Rooftop",
+                  "style": "caption",
+                  "fontWeight": "medium",
+                  "color": "#C2255C",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ]
+            }
+          ]
         },
         {
           "type": "text",
-          "text": "Fri 12 June · 19:00 · Rooftop",
+          "text": "Live demo night",
+          "style": "h3",
+          "fontWeight": "bold"
+        },
+        {
+          "type": "text",
+          "text": "Fri 12 June · Lightning demos & drinks",
           "style": "caption"
         }
       ]
     },
     {
       "type": "spacer",
-      "height": 8
+      "height": 10
     },
     {
       "type": "card",
-      "spacing": 4,
+      "spacing": 8,
       "modifier": {
+        "cornerRadius": 16,
         "action": {
           "type": "navigate",
           "screen": "event",
@@ -126,20 +380,76 @@
       },
       "children": [
         {
-          "type": "text",
-          "text": "Closing panel",
-          "style": "h3"
+          "type": "row",
+          "spacing": 8,
+          "verticalAlignment": "center",
+          "children": [
+            {
+              "type": "box",
+              "modifier": {
+                "width": "wrap",
+                "background": "#6741D9",
+                "cornerRadius": 999,
+                "padding": {
+                  "start": 10,
+                  "top": 4,
+                  "end": 10,
+                  "bottom": 4
+                }
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": "16:00",
+                  "style": "caption",
+                  "fontWeight": "bold",
+                  "color": "#FFFFFF",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "modifier": {
+                "width": "wrap",
+                "background": "#F3EEFF",
+                "cornerRadius": 999,
+                "padding": {
+                  "start": 10,
+                  "top": 4,
+                  "end": 10,
+                  "bottom": 4
+                }
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Main hall",
+                  "style": "caption",
+                  "fontWeight": "medium",
+                  "color": "#6741D9",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ]
+            }
+          ]
         },
         {
           "type": "text",
-          "text": "Sat 13 June · 16:00 · Main hall",
+          "text": "Closing panel",
+          "style": "h3",
+          "fontWeight": "bold"
+        },
+        {
+          "type": "text",
+          "text": "Sat 13 June · Q&A with all speakers",
           "style": "caption"
         }
       ]
-    },
-    {
-      "type": "spacer",
-      "height": 8
     }
   ]
 }

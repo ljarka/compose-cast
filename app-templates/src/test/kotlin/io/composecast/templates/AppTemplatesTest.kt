@@ -55,7 +55,7 @@ class AppTemplatesTest {
         assertEquals(listOf("blog-news", "blog-story"), news.screens.map { it.id })
         assertEquals("blog-news", news.manifest.home)
         assertEquals(emptyList(), news.problems())
-        val card = (news.screens[0].components[0] as Component.Repeat).template[0]
+        val card = news.screens[0].components.filterIsInstance<Component.Repeat>().first().template[0]
         assertEquals("blog-story", (card.modifier.action as Action.Navigate).screen)
         val discussion = news.screens[1].components.last() as Component.Button
         assertTrue((discussion.action as Action.OpenUrl).url.startsWith("https://news.ycombinator.com"))

@@ -36,42 +36,129 @@
   },
   "components": [
     {
+      "type": "card",
+      "spacing": 12,
+      "modifier": {
+        "background": "#1565C0",
+        "cornerRadius": 20,
+        "padding": {
+          "start": 20,
+          "top": 18,
+          "end": 20,
+          "bottom": 18
+        }
+      },
+      "children": [
+        {
+          "type": "row",
+          "horizontalArrangement": "spaceBetween",
+          "verticalAlignment": "center",
+          "modifier": {
+            "width": "fill"
+          },
+          "children": [
+            {
+              "type": "text",
+              "text": "{{params.city}}",
+              "style": "h3",
+              "fontWeight": "bold",
+              "color": "#FFFFFF",
+              "modifier": {
+                "width": "wrap"
+              }
+            },
+            {
+              "type": "box",
+              "modifier": {
+                "width": "wrap",
+                "background": "#1E88E5",
+                "cornerRadius": 999,
+                "padding": {
+                  "start": 10,
+                  "top": 4,
+                  "end": 10,
+                  "bottom": 4
+                }
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": "LIVE",
+                  "style": "caption",
+                  "fontWeight": "bold",
+                  "color": "#FFFFFF",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "row",
+          "verticalAlignment": "center",
+          "spacing": 16,
+          "modifier": {
+            "width": "fill"
+          },
+          "children": [
+            {
+              "type": "text",
+              "text": "{{meteo.current.temperature_2m | round}}°",
+              "fontSize": 52,
+              "fontWeight": "bold",
+              "color": "#FFFFFF",
+              "modifier": {
+                "width": "wrap"
+              }
+            },
+            {
+              "type": "column",
+              "spacing": 4,
+              "modifier": {
+                "weight": 1.0
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": "{{meteo.current.weather_code | lookup:wmo}}",
+                  "fontSize": 18,
+                  "fontWeight": "bold",
+                  "color": "#FFFFFF",
+                  "maxLines": 2
+                },
+                {
+                  "type": "text",
+                  "text": "Feels like {{meteo.current.apparent_temperature | round}}°",
+                  "style": "caption",
+                  "color": "#D6E8FF"
+                },
+                {
+                  "type": "text",
+                  "text": "Wind {{meteo.current.wind_speed_10m | round}} km/h",
+                  "style": "caption",
+                  "color": "#D6E8FF"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
       "type": "row",
       "spacing": 12,
       "children": [
         {
           "type": "card",
           "modifier": {
-            "weight": 1.0
-          },
-          "children": [
-            {
-              "type": "kpi",
-              "value": "{{meteo.current.temperature_2m | round}}°",
-              "label": "Now",
-              "caption": "Feels like {{meteo.current.apparent_temperature | round}}°"
-            },
-            {
-              "type": "spacer",
-              "height": 4
-            },
-            {
-              "type": "text",
-              "text": "{{meteo.current.weather_code | lookup:wmo}}",
-              "style": "caption",
-              "maxLines": 2
-            },
-            {
-              "type": "text",
-              "text": "Wind {{meteo.current.wind_speed_10m | round}} km/h",
-              "style": "caption"
-            }
-          ]
-        },
-        {
-          "type": "card",
-          "modifier": {
-            "weight": 1.0
+            "weight": 1.0,
+            "cornerRadius": 16
           },
           "children": [
             {
@@ -85,12 +172,13 @@
                   "type": "gauge",
                   "value": "{{meteo.current.relative_humidity_2m}}",
                   "label": "{{meteo.current.relative_humidity_2m}}%",
-                  "size": 96,
-                  "thickness": 10
+                  "size": 86,
+                  "thickness": 9,
+                  "color": "#00ACC1"
                 },
                 {
                   "type": "spacer",
-                  "height": 4
+                  "height": 6
                 },
                 {
                   "type": "text",
@@ -99,6 +187,21 @@
                   "textAlign": "center"
                 }
               ]
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "modifier": {
+            "weight": 1.0,
+            "cornerRadius": 16
+          },
+          "children": [
+            {
+              "type": "kpi",
+              "value": "{{meteo.current.wind_speed_10m | round}}",
+              "label": "Wind (km/h)",
+              "caption": "Feels {{meteo.current.apparent_temperature | round}}°"
             }
           ]
         }
@@ -110,17 +213,42 @@
     },
     {
       "type": "card",
-      "spacing": 8,
+      "spacing": 10,
+      "modifier": {
+        "cornerRadius": 16
+      },
       "children": [
         {
-          "type": "text",
-          "text": "Next 24 hours",
-          "style": "h3"
+          "type": "row",
+          "horizontalArrangement": "spaceBetween",
+          "verticalAlignment": "center",
+          "modifier": {
+            "width": "fill"
+          },
+          "children": [
+            {
+              "type": "text",
+              "text": "Next 24 hours",
+              "style": "h3",
+              "fontWeight": "bold",
+              "modifier": {
+                "width": "wrap"
+              }
+            },
+            {
+              "type": "text",
+              "text": "Hourly °C",
+              "style": "caption",
+              "modifier": {
+                "width": "wrap"
+              }
+            }
+          ]
         },
         {
           "type": "sparkline",
           "values": "{{meteo.hourly.temperature_2m}}",
-          "height": 80,
+          "height": 84,
           "thickness": 3
         }
       ]
@@ -130,68 +258,82 @@
       "height": 12
     },
     {
-      "type": "text",
-      "text": "Next 7 days",
-      "style": "h3"
-    },
-    {
-      "type": "spacer",
-      "height": 4
-    },
-    {
-      "type": "repeat",
-      "items": {
-        "day": "meteo.daily.time",
-        "max": "meteo.daily.temperature_2m_max",
-        "min": "meteo.daily.temperature_2m_min",
-        "code": "meteo.daily.weather_code"
+      "type": "card",
+      "spacing": 6,
+      "modifier": {
+        "cornerRadius": 16
       },
-      "as": "d",
-      "template": [
-        {
-          "type": "row",
-          "verticalAlignment": "center",
-          "modifier": {
-            "width": "fill",
-            "padding": {
-              "top": 6,
-              "bottom": 6
-            }
-          },
-          "children": [
-            {
-              "type": "text",
-              "text": "{{d.day | date:'EEEE'}}",
-              "modifier": {
-                "weight": 1.0
-              }
-            },
-            {
-              "type": "text",
-              "text": "{{d.code | lookup:wmo}}",
-              "style": "caption",
-              "maxLines": 1,
-              "overflow": "ellipsis",
-              "modifier": {
-                "weight": 1.0
-              }
-            },
-            {
-              "type": "text",
-              "text": "{{d.max | round}}° / {{d.min | round}}°",
-              "fontWeight": "bold",
-              "textAlign": "end",
-              "modifier": {
-                "width": 104
-              }
-            }
-          ]
-        }
-      ],
-      "empty": [
+      "children": [
         {
           "type": "text",
-          "text": "No forecast"
+          "text": "7-day forecast",
+          "style": "h3",
+          "fontWeight": "bold"
+        },
+        {
+          "type": "spacer",
+          "height": 4
+        },
+        {
+          "type": "repeat",
+          "items": {
+            "day": "meteo.daily.time",
+            "max": "meteo.daily.temperature_2m_max",
+            "min": "meteo.daily.temperature_2m_min",
+            "code": "meteo.daily.weather_code"
+          },
+          "as": "d",
+          "template": [
+            {
+              "type": "row",
+              "verticalAlignment": "center",
+              "modifier": {
+                "width": "fill",
+                "padding": {
+                  "top": 8,
+                  "bottom": 8
+                }
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": "{{d.day | date:'EEEE'}}",
+                  "fontWeight": "medium",
+                  "modifier": {
+                    "weight": 1.0
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": "{{d.code | lookup:wmo}}",
+                  "style": "caption",
+                  "maxLines": 1,
+                  "overflow": "ellipsis",
+                  "modifier": {
+                    "weight": 1.0
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": "{{d.max | round}}° / {{d.min | round}}°",
+                  "fontWeight": "bold",
+                  "textAlign": "end",
+                  "modifier": {
+                    "width": 96
+                  }
+                }
+              ]
+            },
+            {
+              "type": "divider"
+            }
+          ],
+          "empty": [
+            {
+              "type": "text",
+              "text": "No forecast"
+            }
+          ]
         }
       ]
     },
@@ -201,8 +343,8 @@
     },
     {
       "type": "button",
-      "label": "Other cities",
-      "variant": "outlined",
+      "label": "Switch city",
+      "variant": "filled",
       "action": {
         "type": "navigate",
         "screen": "cities"

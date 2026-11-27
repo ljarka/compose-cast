@@ -1,5 +1,15 @@
 {
   "name": "Weather",
-  "primaryColor": "#1971C2",
-  "secondaryColor": "#15AABF"
+  "primaryColor": "#1565C0",
+  "secondaryColor": "#00ACC1",
+  "backgroundColor": "#F4F7FB",
+  "surfaceColor": "#FFFFFF",
+  "textColor": "#102030",
+  "outlineColor": "#DCE5F0",
+  "darkPrimaryColor": "#64B5F6",
+  "darkSecondaryColor": "#4DD0E1",
+  "darkBackgroundColor": "#0E1621",
+  "darkSurfaceColor": "#182433",
+  "darkTextColor": "#E8F1FA",
+  "darkOutlineColor": "#293B50"
 }

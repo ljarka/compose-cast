@@ -9,14 +9,54 @@
   },
   "components": [
     {
+      "type": "card",
+      "spacing": 4,
+      "modifier": {
+        "background": "#E8590C",
+        "cornerRadius": 18,
+        "padding": {
+          "start": 20,
+          "top": 18,
+          "end": 20,
+          "bottom": 18
+        }
+      },
+      "children": [
+        {
+          "type": "text",
+          "text": "HACKER NEWS",
+          "style": "caption",
+          "fontWeight": "bold",
+          "color": "#FFE0CC"
+        },
+        {
+          "type": "text",
+          "text": "Top stories",
+          "style": "h2",
+          "color": "#FFFFFF"
+        },
+        {
+          "type": "text",
+          "text": "Front page highlights · tap a story to read",
+          "style": "caption",
+          "color": "#FFE0CC"
+        }
+      ]
+    },
+    {
+      "type": "spacer",
+      "height": 12
+    },
+    {
       "type": "repeat",
       "items": "hn.hits",
       "as": "s",
       "template": [
         {
           "type": "card",
-          "spacing": 4,
+          "spacing": 10,
           "modifier": {
+            "cornerRadius": 16,
             "action": {
               "type": "navigate",
               "screen": "story",
@@ -30,19 +70,95 @@
               "type": "text",
               "text": "{{s.title}}",
               "style": "h3",
+              "fontWeight": "bold",
               "maxLines": 3,
               "overflow": "ellipsis"
             },
             {
-              "type": "text",
-              "text": "{{s.points | default:'0'}} points · {{s.num_comments | default:'0'}} comments · {{s.author}}",
-              "style": "caption"
+              "type": "row",
+              "horizontalArrangement": "spaceBetween",
+              "verticalAlignment": "center",
+              "modifier": {
+                "width": "fill"
+              },
+              "children": [
+                {
+                  "type": "row",
+                  "spacing": 6,
+                  "verticalAlignment": "center",
+                  "modifier": {
+                    "width": "wrap"
+                  },
+                  "children": [
+                    {
+                      "type": "box",
+                      "modifier": {
+                        "width": "wrap",
+                        "background": "#FFF0E6",
+                        "cornerRadius": 999,
+                        "padding": {
+                          "start": 10,
+                          "top": 4,
+                          "end": 10,
+                          "bottom": 4
+                        }
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "▲ {{s.points | default:'0'}}",
+                          "style": "caption",
+                          "fontWeight": "bold",
+                          "color": "#C2410C",
+                          "modifier": {
+                            "width": "wrap"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "box",
+                      "modifier": {
+                        "width": "wrap",
+                        "background": "#EEF4FF",
+                        "cornerRadius": 999,
+                        "padding": {
+                          "start": 10,
+                          "top": 4,
+                          "end": 10,
+                          "bottom": 4
+                        }
+                      },
+                      "children": [
+                        {
+                          "type": "text",
+                          "text": "{{s.num_comments | default:'0'}} comments",
+                          "style": "caption",
+                          "fontWeight": "medium",
+                          "color": "#1D4ED8",
+                          "modifier": {
+                            "width": "wrap"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "by {{s.author}}",
+                  "style": "caption",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ]
             }
           ]
         },
         {
           "type": "spacer",
-          "height": 8
+          "height": 10
         }
       ],
       "empty": [

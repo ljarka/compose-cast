@@ -53,7 +53,22 @@ class TemplatesPagesTest {
             assertEquals(setOf("news", "story"), screens.list().map { it.id }.toSet())
             assertTrue(screens.live().isEmpty(), "nothing is live before publishing")
             val brand = Json.decodeFromString(BrandConfig.serializer(), host.settings[SettingsStore.BRAND]!!)
-            val expected = BrandConfig("My app", "#E8590C", "#1C7ED6", fontFamily = "serif")
+            val expected = BrandConfig(
+                name = "My app",
+                primaryColor = "#E8590C",
+                secondaryColor = "#1C7ED6",
+                backgroundColor = "#FAF8F5",
+                surfaceColor = "#FFFFFF",
+                textColor = "#1C1917",
+                outlineColor = "#E7E2DA",
+                darkPrimaryColor = "#FF7A33",
+                darkSecondaryColor = "#58A6FF",
+                darkBackgroundColor = "#141210",
+                darkSurfaceColor = "#211E1B",
+                darkTextColor = "#F2EFE9",
+                darkOutlineColor = "#38322C",
+                fontFamily = "serif",
+            )
             assertEquals(expected, brand, "colors only; name and font stay")
 
             val published = client.form(cookie, "/admin/templates/news/publish", "prefix" to "")

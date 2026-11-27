@@ -1,5 +1,15 @@
 {
   "name": "Shop",
-  "primaryColor": "#2B8A3E",
-  "secondaryColor": "#F59F00"
+  "primaryColor": "#1B7A43",
+  "secondaryColor": "#F59F00",
+  "backgroundColor": "#F5F7F6",
+  "surfaceColor": "#FFFFFF",
+  "textColor": "#14201A",
+  "outlineColor": "#DCE4DF",
+  "darkPrimaryColor": "#4ADE80",
+  "darkSecondaryColor": "#FBBF24",
+  "darkBackgroundColor": "#0F1713",
+  "darkSurfaceColor": "#1A2620",
+  "darkTextColor": "#EBF5EE",
+  "darkOutlineColor": "#2C3E35"
 }

@@ -9,13 +9,62 @@
   },
   "components": [
     {
-      "type": "text",
-      "text": "Products",
-      "style": "h2"
+      "type": "card",
+      "spacing": 6,
+      "modifier": {
+        "background": "#1B7A43",
+        "cornerRadius": 18,
+        "padding": {
+          "start": 20,
+          "top": 18,
+          "end": 20,
+          "bottom": 18
+        }
+      },
+      "children": [
+        {
+          "type": "box",
+          "modifier": {
+            "width": "wrap",
+            "background": "#2F9E5B",
+            "cornerRadius": 999,
+            "padding": {
+              "start": 10,
+              "top": 3,
+              "end": 10,
+              "bottom": 3
+            }
+          },
+          "children": [
+            {
+              "type": "text",
+              "text": "NEW SEASON",
+              "style": "caption",
+              "fontWeight": "bold",
+              "color": "#FFFFFF",
+              "modifier": {
+                "width": "wrap"
+              }
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "Curated Store",
+          "style": "h2",
+          "color": "#FFFFFF"
+        },
+        {
+          "type": "text",
+          "text": "Tap any item for full details, photos & ratings",
+          "style": "caption",
+          "color": "#D3F2DF"
+        }
+      ]
     },
     {
       "type": "spacer",
-      "height": 8
+      "height": 12
     },
     {
       "type": "repeat",
@@ -24,8 +73,9 @@
       "template": [
         {
           "type": "card",
-          "spacing": 4,
+          "spacing": 8,
           "modifier": {
+            "cornerRadius": 16,
             "action": {
               "type": "navigate",
               "screen": "product",
@@ -36,43 +86,90 @@
           },
           "children": [
             {
+              "type": "box",
+              "modifier": {
+                "width": "wrap",
+                "background": "#E9F5EE",
+                "cornerRadius": 999,
+                "padding": {
+                  "start": 10,
+                  "top": 3,
+                  "end": 10,
+                  "bottom": 3
+                }
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "text": "{{p.category}}",
+                  "style": "caption",
+                  "fontWeight": "medium",
+                  "color": "#1B7A43",
+                  "modifier": {
+                    "width": "wrap"
+                  }
+                }
+              ]
+            },
+            {
               "type": "text",
               "text": "{{p.title}}",
               "style": "h3",
+              "fontWeight": "bold",
               "maxLines": 2,
               "overflow": "ellipsis"
             },
             {
               "type": "row",
               "horizontalArrangement": "spaceBetween",
+              "verticalAlignment": "center",
               "modifier": {
                 "width": "fill"
               },
               "children": [
                 {
                   "type": "text",
-                  "text": "{{p.price}} USD",
+                  "text": "${{p.price}}",
+                  "fontSize": 20,
                   "fontWeight": "bold",
+                  "color": "#1B7A43",
                   "modifier": {
                     "width": "wrap"
                   }
                 },
                 {
-                  "type": "text",
-                  "text": "★ {{p.rating.rate}} · {{p.category}}",
-                  "style": "caption",
+                  "type": "box",
                   "modifier": {
-                    "width": "wrap"
-                  }
+                    "width": "wrap",
+                    "background": "#FFF8E1",
+                    "cornerRadius": 999,
+                    "padding": {
+                      "start": 10,
+                      "top": 4,
+                      "end": 10,
+                      "bottom": 4
+                    }
+                  },
+                  "children": [
+                    {
+                      "type": "text",
+                      "text": "★ {{p.rating.rate}}",
+                      "style": "caption",
+                      "fontWeight": "bold",
+                      "color": "#B45309",
+                      "modifier": {
+                        "width": "wrap"
+                      }
+                    }
+                  ]
                 }
-              ],
-              "verticalAlignment": "center"
+              ]
             }
           ]
         },
         {
           "type": "spacer",
-          "height": 8
+          "height": 10
         }
       ],
       "empty": [

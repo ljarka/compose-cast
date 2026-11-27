@@ -1,5 +1,15 @@
 {
   "name": "News",
   "primaryColor": "#E8590C",
-  "secondaryColor": "#1C7ED6"
+  "secondaryColor": "#1C7ED6",
+  "backgroundColor": "#FAF8F5",
+  "surfaceColor": "#FFFFFF",
+  "textColor": "#1C1917",
+  "outlineColor": "#E7E2DA",
+  "darkPrimaryColor": "#FF7A33",
+  "darkSecondaryColor": "#58A6FF",
+  "darkBackgroundColor": "#141210",
+  "darkSurfaceColor": "#211E1B",
+  "darkTextColor": "#F2EFE9",
+  "darkOutlineColor": "#38322C"
 }
