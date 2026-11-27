@@ -2,9 +2,7 @@
 <@layout.page title=title user=user role=role>
 <main class="wide">
   <h1>Components<@layout.uid "admin:components.header"/></h1>
-  <p class="muted">Your own components: draw them in the <strong>designer</strong> (shapes, gradients,
-    imported SVG icons, texts, tap areas), or write raw Remote Compose JSON. Use them on screens by id (<code>{"type": "custom", "component": "…"}</code>) or from
-    <strong>My components</strong> in the visual editor's palette. This server renders with RC ${rcVersion}.</p>
+  <p class="muted">Design reusable components visually or with AI, then drop them onto any screen from the editor.</p>
   <#if error?has_content><p class="error" role="alert">${error}</p></#if>
   <div class="card">
     <table>
