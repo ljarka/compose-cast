@@ -479,3 +479,8 @@ README roadmap's "Etap" numbers.
     rectangular cards (thumbnail, title, id, status, "Published 2 hours ago by …"); every publish
     time in the panel is relative ("yesterday at 21:15", "2 Nov") with the exact UTC time as a
     tooltip (`Dates.kt`).
+96. **Three-tier Android architecture & public SDK plan** (2026-11-27, owner,
+    [ADR 0035](decisions/0035-android-sdk-public-api.md)): keep `app-preview` and zero-code
+    `app-template`, and make `io.composecast:sdk-android` a first-class Material 3-free SDK
+    dogfooded by `app-shell` and usable directly by external Android apps (Reposilite publishing
+    kept per ADR 0019). Added Roadmap H and tasks T-058…T-061.

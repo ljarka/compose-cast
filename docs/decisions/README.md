@@ -40,6 +40,7 @@ one (never silently contradict an accepted ADR).
 | [0032](0032-phone-preview-rendered-by-robolectric.md) | Phone preview in the panel: the real player under Robolectric, optional amd64 service | Accepted |
 | [0033](0033-custom-components-raw-rc-json.md) | Custom components: raw RC JSON bodies, versioned by RC release (amends 0015) | Accepted (amended by 0034) |
 | [0034](0034-component-designer.md) | Component designer: draw components on an artboard, compiled to RC JSON (amends 0033, 0012/0028) | Accepted |
+| [0035](0035-android-sdk-public-api.md) | Three-tier Android mobile architecture: public SDK, shell, zero-code apps (amends 0017, 0018) | Accepted |
 
 ## Template
 

@@ -15,7 +15,7 @@ thin Android app renders them natively. Changing a screen never needs an app upd
 | Who | Role | What they need from us |
 |---|---|---|
 | **Non-developer app owner** (primary) | Small business, creator, organization that wants its own app | Build screens in a browser, see them on a phone, publish a branded app to Google Play — no Kotlin, no Android Studio |
-| Developer / integrator (secondary) | Sets up the server for an owner, writes JSON/DSL screens, extends the catalog | Clear docs, a stable screen model, one-command install |
+| Developer / integrator (secondary) | Sets up the server for an owner, writes JSON/DSL screens, extends the catalog, or embeds compose-cast screens/flows in an existing Android app via `sdk-android` | Clear docs, a stable screen model, one-command install, and a standalone Android SDK (`io.composecast:sdk-android`) |
 | Contributors and AI agents | Maintain the project long-term | Every decision written down, executable rules, screenshot tests |
 
 Success is measured by the primary user. Developer features are welcome when they also serve the

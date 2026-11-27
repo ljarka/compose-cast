@@ -72,6 +72,18 @@ data-update documents, PoC: 10 updates/s on the emulator).
 | G5 | Custom components written in raw RC JSON, reused by name (T-049, [ADR 0033](../docs/decisions/0033-custom-components-raw-rc-json.md); owner 2026-11-26: before E) | A demo screen uses a custom RC JSON component on the emulator; definitions edited in the panel; an RC upgrade re-validates them |
 | G6 | Component designer: draw custom components (shapes, gradients, imported SVG icons, texts, tap areas) on an artboard, compiled to RC JSON (T-057, [ADR 0034](../docs/decisions/0034-component-designer.md); owner 2026-11-26) | The demo `promo-card` drawn in the designer renders like the designer shows it, and only its button navigates |
 
+### H. Public Android SDK (owner, 2026-11-27; [ADR 0035](../docs/decisions/0035-android-sdk-public-api.md))
+
+Keep `app-preview` and `app-template` (zero-code apps), and make `io.composecast:sdk-android` a
+first-class Material3-free SDK that both `app-shell` and external Android apps use directly.
+
+| # | Step | Done when… |
+|---|---|---|
+| H1 | SDK core hardening: `explicitApi()`, `ComposeCastError`, custom `headers` provider, `Closeable`, R8 `consumer-rules.pro`, KDoc (T-058) | `sdk-android` and `protocol` compile with `explicitApi()`; headers sent on REST + WS; unit tests green |
+| H2 | High-level Composables: `ComposeCastView`, `ComposeCastNavigator`, `ComposeCastFlow` (T-059) | Single-screen and multi-screen flows work with live screens, back stack, and `onAction` interception, without Material 3 |
+| H3 | Dogfood `sdk-android` in `app-shell` (T-060) | `ComposeCastActivity` uses `ComposeCastFlow` / `ComposeCastNavigator`; `app-template` and `app-preview` Maestro flows pass unchanged |
+| H4 | External SDK consumer sample, CI verification & developer guide (T-061) | Standalone sample app (no plugin, no `app-shell`) builds `assembleRelease` (R8) against `maven-dry-run`; `docs/guides/android-sdk.md` and README updated |
+
 ### E. Ship the owner's app
 
 | # | Step | Done when… |
