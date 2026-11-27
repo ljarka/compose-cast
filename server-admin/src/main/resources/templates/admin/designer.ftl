@@ -7,7 +7,8 @@
   .designer .card { padding: 12px; }
   .designer h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 8px; }
   .tools { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; align-items: center; }
-  .tools button { margin: 0; padding: 6px 10px; background: var(--card); color: var(--fg); border: 1px solid var(--line); }
+  .tools button { display: inline-flex; align-items: center; justify-content: center; gap: 4px; margin: 0; padding: 6px 10px; background: var(--card); color: var(--fg); border: 1px solid var(--line); }
+  .tools button svg { width: 16px; height: 16px; display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .tools button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
   .tools .sep { width: 1px; height: 24px; background: var(--line); margin: 0 4px; }
   .stage { background: repeating-conic-gradient(var(--line) 0 25%, transparent 0 50%) 0 0 / 16px 16px;
@@ -85,8 +86,8 @@
       <button type="button" data-tool="tap" title="Tap area: an invisible area that runs an action (A)">☝ Tap area</button>
       <span class="sep"></span>
       <button type="button" data-cmd="import-svg" title="Paste an SVG icon (path elements)">⇪ SVG</button>
-      <button type="button" data-cmd="undo" title="Undo (Ctrl+Z)">↶</button>
-      <button type="button" data-cmd="redo" title="Redo (Ctrl+Shift+Z)">↷</button>
+      <button type="button" data-cmd="undo" title="Undo (Ctrl+Z)" aria-label="Undo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></svg></button>
+      <button type="button" data-cmd="redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13"/></svg></button>
       <span class="sep"></span>
       <label class="muted" style="margin: 0; font-weight: 400">Zoom <select id="zoom"><option value="1">100%</option><option value="1.5">150%</option><option value="2" selected>200%</option><option value="3">300%</option></select></label>
     </div>
