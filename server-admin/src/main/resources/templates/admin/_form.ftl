@@ -32,7 +32,7 @@
       <#elseif r.input == "json">
         <textarea id="f-${r.path}" name="${r.path}" rows="${r.lines}" class="json" spellcheck="false">${r.value}</textarea>
       <#else>
-        <input id="f-${r.path}" name="${r.path}" value="${r.value}"<#if r.input == "color"> placeholder="#RRGGBB"<#elseif r.input == "dimension"> placeholder="16, fill or wrap"</#if>>
+        <input id="f-${r.path}" name="${r.path}" value="${r.value}"<#if r.input == "color"> data-color-picker="true" placeholder="#RRGGBB"<#elseif r.input == "dimension"> placeholder="16, fill or wrap"</#if>>
       </#if>
     </#if>
     <#if r.help?has_content><span class="muted help">${r.help}</span></#if>

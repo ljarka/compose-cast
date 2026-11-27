@@ -202,6 +202,24 @@
                         border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
     .ai-image-preview img { max-height: 56px; max-width: 96px; border-radius: 4px; }
     .ai-prompt { min-height: 76px; font-family: inherit; }
+    .cc-color { display: flex; gap: 4px; align-items: center; }
+    .cc-color input[type=color] { width: 36px; height: 34px; flex: 0 0 36px; padding: 2px; border-radius: 6px; cursor: pointer; }
+    .cc-color input[type=text], .cc-color input:not([type]) { flex: 1; min-width: 0; }
+    details.cc-swatches { position: relative; flex: 0 0 auto; }
+    details.cc-swatches > summary { list-style: none; cursor: pointer; width: 32px; height: 34px; display: flex;
+      align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 6px;
+      background: var(--bg); font-size: 15px; user-select: none; }
+    details.cc-swatches > summary::-webkit-details-marker { display: none; }
+    details.cc-swatches > summary:hover { border-color: var(--accent); }
+    details.cc-swatches[open] > .cc-swatch-pop { position: absolute; right: 0; top: calc(100% + 4px); z-index: 40;
+      width: 212px; padding: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.22); }
+    .cc-swatch-title { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase;
+      letter-spacing: .04em; margin: 0 0 6px; }
+    .cc-swatch-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+    button.cc-swatch { margin: 0; padding: 0; width: 26px; height: 26px; border-radius: 6px;
+      border: 1px solid rgba(128,128,128,.35); cursor: pointer; }
+    button.cc-swatch:hover { transform: scale(1.12); border-color: var(--fg); }
   </style>
   <#if htmx><script src="https://unpkg.com/htmx.org@2.0.11/dist/htmx.min.js" integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg" crossorigin="anonymous"></script></#if>
 </head>
@@ -310,6 +328,96 @@
       const group = btn.closest(".preview-theme");
       group.dataset.manual = "true";
       applyGroupTheme(group, btn.dataset.previewMode, true);
+    });
+
+    // Unified color picker + Material Design palette swatches across Settings, Visual editor & Designer.
+    const MATERIAL_COLORS = [
+      ["Red", "#F44336"], ["Pink", "#E91E63"], ["Purple", "#9C27B0"], ["Deep Purple", "#673AB7"], ["Indigo", "#3F51B5"], ["Blue", "#2196F3"],
+      ["Light Blue", "#03A9F4"], ["Cyan", "#00BCD4"], ["Teal", "#009688"], ["Green", "#4CAF50"], ["Light Green", "#8BC34A"], ["Lime", "#CDDC39"],
+      ["Yellow", "#FFEB3B"], ["Amber", "#FFC107"], ["Orange", "#FF9800"], ["Deep Orange", "#FF5722"], ["M3 Primary", "#6200EE"], ["M3 Dark Primary", "#D0BCFF"],
+      ["White", "#FFFFFF"], ["M3 Surface", "#F3EDF7"], ["Grey 300", "#E0E0E0"], ["Grey 600", "#757575"], ["M3 Dark Surface", "#211F26"], ["M3 Dark Bg", "#141218"],
+    ];
+    function toHex6(val) {
+      const s = (val || "").trim();
+      if (/^#[0-9a-fA-F]{6}$/.test(s)) return s.toLowerCase();
+      if (/^#[0-9a-fA-F]{8}$/.test(s)) return "#" + s.slice(3).toLowerCase();
+      return "#000000";
+    }
+    window.composeCastColorSwatches = function (onPick, disabled) {
+      const details = document.createElement("details");
+      details.className = "cc-swatches";
+      const summary = document.createElement("summary");
+      summary.textContent = "🎨";
+      summary.title = "Material Design colors";
+      summary.setAttribute("aria-label", "Material Design colors");
+      if (disabled) {
+        summary.style.pointerEvents = "none";
+        summary.style.opacity = ".45";
+      }
+      const pop = document.createElement("div");
+      pop.className = "cc-swatch-pop";
+      const heading = document.createElement("p");
+      heading.className = "cc-swatch-title";
+      heading.textContent = "Material Design";
+      const grid = document.createElement("div");
+      grid.className = "cc-swatch-grid";
+      MATERIAL_COLORS.forEach(function (entry) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "cc-swatch";
+        b.style.background = entry[1];
+        b.title = entry[0] + " (" + entry[1] + ")";
+        b.setAttribute("aria-label", entry[0] + " " + entry[1]);
+        b.addEventListener("click", function () {
+          onPick(entry[1]);
+          details.open = false;
+        });
+        grid.appendChild(b);
+      });
+      pop.append(heading, grid);
+      details.append(summary, pop);
+      return details;
+    };
+    function enhanceColorInputs(root) {
+      (root || document).querySelectorAll("input[data-color-picker='true']:not([data-color-ready])").forEach(function (input) {
+        input.dataset.colorReady = "true";
+        const disabled = input.disabled || input.readOnly;
+        const wrap = document.createElement("div");
+        wrap.className = "cc-color";
+        input.parentNode.insertBefore(wrap, input);
+        const native = document.createElement("input");
+        native.type = "color";
+        native.value = toHex6(input.value);
+        native.disabled = disabled;
+        native.setAttribute("aria-label", "Color picker");
+        native.addEventListener("input", function () {
+          const old = input.value.trim();
+          const alpha = /^#[0-9a-fA-F]{8}$/.test(old) ? old.slice(1, 3) : "";
+          input.value = "#" + alpha + native.value.slice(1).toUpperCase();
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        native.addEventListener("change", function () {
+          input.dispatchEvent(new Event("change", { bubbles: true }));
+        });
+        input.addEventListener("input", function () {
+          const v = input.value.trim();
+          if (/^#[0-9a-fA-F]{6}$/.test(v) || /^#[0-9a-fA-F]{8}$/.test(v)) native.value = toHex6(v);
+        });
+        const swatches = window.composeCastColorSwatches(function (hex) {
+          native.value = hex.toLowerCase();
+          input.value = hex;
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+          input.dispatchEvent(new Event("change", { bubbles: true }));
+        }, disabled);
+        wrap.append(native, input, swatches);
+      });
+    }
+    enhanceColorInputs(document);
+    <#if htmx>document.addEventListener("htmx:afterSwap", function (e) { enhanceColorInputs(e.target); });</#if>
+    document.addEventListener("click", function (e) {
+      document.querySelectorAll("details.cc-swatches[open]").forEach(function (d) {
+        if (!d.contains(e.target)) d.open = false;
+      });
     });
   })();
 </script>

@@ -1180,6 +1180,18 @@
       scheduleSave();
     });
     wrap.append(picker, text);
+    if (window.composeCastColorSwatches) {
+      wrap.append(window.composeCastColorSwatches((hex) => {
+        pushUndo();
+        const old = e[key] || '';
+        const alpha = /^#[0-9a-fA-F]{8}$/.test(old) ? old.slice(1, 3) : 'FF';
+        e[key] = `#${alpha}${hex.slice(1)}`.toUpperCase();
+        picker.value = hex.toLowerCase();
+        text.value = e[key];
+        renderStage();
+        scheduleSave();
+      }, !canEdit));
+    }
     field(parent, label, wrap);
   }
 

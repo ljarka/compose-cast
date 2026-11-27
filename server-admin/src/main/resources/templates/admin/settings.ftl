@@ -2,7 +2,7 @@
 <#macro color field label value="" optional=false>
   <div>
     <label for="${field}">${label}<#if optional> <span class="muted">(optional)</span></#if></label>
-    <input id="${field}" name="${field}" value="${value}" placeholder="<#if optional>built-in default<#else>#RRGGBB</#if>"<#if !isAdmin> readonly</#if>>
+    <input id="${field}" name="${field}" value="${value}" data-color-picker="true" placeholder="<#if optional>built-in default<#else>#RRGGBB</#if>"<#if !isAdmin> readonly</#if>>
   </div>
 </#macro>
 <@layout.page title=title user=user role=role>
