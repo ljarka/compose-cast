@@ -38,7 +38,7 @@
   .phone-preview img { width: 100%; border-radius: 12px; border: 1px solid var(--line); }
   @media (max-width: 1100px) { .designer { grid-template-columns: 1fr; } }
   .designer-code { margin-top: 24px; }
-  .designer-code textarea { min-height: 420px; }
+  .designer-code textarea:not(.ai-prompt) { min-height: 420px; }
   .designer-code pre { margin: 0; max-height: 70vh; overflow: auto; font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; }
 </style>
 <div style="max-width: 1500px; margin: 16px auto 0; padding: 0 16px">

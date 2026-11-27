@@ -200,6 +200,7 @@
     .ai-msg-img { display: block; max-width: 180px; max-height: 140px; border-radius: 6px; margin-bottom: 6px; border: 1px solid var(--line); }
     .ai-image-preview { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 6px 8px;
                         border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+    .ai-image-preview[hidden] { display: none; }
     .ai-image-preview img { max-height: 56px; max-width: 96px; border-radius: 4px; }
     .ai-prompt { min-height: 76px; font-family: inherit; }
     .cc-color { display: flex; gap: 6px; align-items: center; }
