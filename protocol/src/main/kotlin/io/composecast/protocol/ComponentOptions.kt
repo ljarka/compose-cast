@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 
 /** Text styles of [Component.Text]; [key] is the JSON / DSL name. */
 @Serializable
-enum class TextStyle(val key: String) {
+public enum class TextStyle(public val key: String) {
     @SerialName("h1")
     H1("h1"),
 
@@ -24,8 +24,8 @@ enum class TextStyle(val key: String) {
     Caption("caption"),
     ;
 
-    companion object {
-        fun fromKey(key: String): TextStyle {
+    public companion object {
+        public fun fromKey(key: String): TextStyle {
             val allowed = entries.joinToString { it.key }
             return entries.firstOrNull { it.key == key }
                 ?: throw IllegalArgumentException("Unknown text style '$key'. Allowed: $allowed")
@@ -34,7 +34,7 @@ enum class TextStyle(val key: String) {
 }
 
 @Serializable
-enum class FontWeight {
+public enum class FontWeight {
     @SerialName("thin")
     Thin,
 
@@ -64,7 +64,7 @@ enum class FontWeight {
 }
 
 @Serializable
-enum class TextAlign {
+public enum class TextAlign {
     @SerialName("start")
     Start,
 
@@ -85,7 +85,7 @@ enum class TextAlign {
 }
 
 @Serializable
-enum class TextOverflow {
+public enum class TextOverflow {
     @SerialName("clip")
     Clip,
 
@@ -103,7 +103,7 @@ enum class TextOverflow {
 }
 
 @Serializable
-enum class ContentScale {
+public enum class ContentScale {
     @SerialName("fit")
     Fit,
 
@@ -127,7 +127,7 @@ enum class ContentScale {
 }
 
 @Serializable
-enum class ButtonVariant {
+public enum class ButtonVariant {
     @SerialName("filled")
     Filled,
 

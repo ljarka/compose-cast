@@ -26,7 +26,7 @@ import kotlinx.serialization.json.jsonPrimitive
  * whole size tappable. There is no margin: use the parent's `spacing` or padding.
  */
 @Serializable
-data class Modifier(
+public data class Modifier(
     /** dp; JSON: a number (all sides) or `{start, top, end, bottom}`. */
     val padding: Padding? = null,
     /** dp, `"fill"` or `"wrap"`; default: fill in a column, wrap in a row. */
@@ -61,39 +61,39 @@ data class Modifier(
 ) {
     val isEmpty: Boolean get() = this == NONE
 
-    companion object {
-        val NONE = Modifier()
+    public companion object {
+        public val NONE: Modifier = Modifier()
     }
 }
 
 /** Padding in dp per side; JSON `8` means all four sides. */
 @Serializable(with = PaddingSerializer::class)
-data class Padding(val start: Int = 0, val top: Int = 0, val end: Int = 0, val bottom: Int = 0) {
-    constructor(all: Int) : this(all, all, all, all)
+public data class Padding(val start: Int = 0, val top: Int = 0, val end: Int = 0, val bottom: Int = 0) {
+    public constructor(all: Int) : this(all, all, all, all)
 }
 
 /** A width or height: exact dp, fill the available space, or wrap the content. */
 @Serializable(with = DimensionSerializer::class)
-sealed interface Dimension {
-    data class Dp(val value: Int) : Dimension
+public sealed interface Dimension {
+    public data class Dp(val value: Int) : Dimension
 
-    data object Fill : Dimension
+    public data object Fill : Dimension
 
-    data object Wrap : Dimension
+    public data object Wrap : Dimension
 }
 
 @Serializable
-data class Border(val width: Int = 1, val color: String)
+public data class Border(val width: Int = 1, val color: String)
 
 @Serializable
-enum class Shape {
+public enum class Shape {
     @SerialName("circle")
     Circle,
 }
 
 /** Placement along an axis; for vertical axes `start` = top, `end` = bottom. */
 @Serializable
-enum class Alignment {
+public enum class Alignment {
     @SerialName("start")
     Start,
 
@@ -106,7 +106,7 @@ enum class Alignment {
 
 /** Distribution of children along a row's/column's main axis; `start` = top in a column. */
 @Serializable
-enum class Arrangement {
+public enum class Arrangement {
     @SerialName("start")
     Start,
 
@@ -127,7 +127,7 @@ enum class Arrangement {
 }
 
 @Serializable
-enum class ScrollDirection {
+public enum class ScrollDirection {
     @SerialName("vertical")
     Vertical,
 
@@ -137,7 +137,7 @@ enum class ScrollDirection {
 
 /** Accessibility semantics override for any component (T-016). */
 @Serializable
-data class Semantics(
+public data class Semantics(
     val description: String? = null,
     val role: SemanticsRole? = null,
     val stateDescription: String? = null,
@@ -146,7 +146,7 @@ data class Semantics(
 )
 
 @Serializable
-enum class SemanticsRole {
+public enum class SemanticsRole {
     @SerialName("button")
     Button,
 
@@ -180,7 +180,7 @@ enum class SemanticsRole {
  * `Action.Hide` targeting [id]. Multiple components can share the same [id].
  */
 @Serializable
-data class Visibility(
+public data class Visibility(
     val id: String,
     /** Starts hidden (`GONE`) when true; starts visible (`VISIBLE`) by default. */
     val hidden: Boolean = false,
@@ -189,15 +189,15 @@ data class Visibility(
     /** Transition and sibling-reflow duration in ms. */
     val durationMs: Int = DEFAULT_DURATION_MS,
 ) {
-    companion object {
-        const val DEFAULT_DURATION_MS = 300
-        const val MIN_DURATION_MS = 50
-        const val MAX_DURATION_MS = 5_000
+    public companion object {
+        public const val DEFAULT_DURATION_MS: Int = 300
+        public const val MIN_DURATION_MS: Int = 50
+        public const val MAX_DURATION_MS: Int = 5_000
     }
 }
 
 @Serializable
-enum class VisibilityTransition {
+public enum class VisibilityTransition {
     @SerialName("fade")
     Fade,
 

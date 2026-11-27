@@ -44,14 +44,14 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.net.URLDecoder
 
-class ComposeCastClient internal constructor(
+public class ComposeCastClient internal constructor(
     private val config: ComposeCastConfig,
     engine: HttpClientEngine?,
     private val decode: (id: String, title: String, bytes: ByteArray, liveEveryMs: Int?) -> ScreenDocument =
         ScreenDocument::fromBytes,
     private val cacheSize: Int = CACHE_SIZE,
 ) {
-    constructor(config: ComposeCastConfig) : this(config, engine = null)
+    public constructor(config: ComposeCastConfig) : this(config, engine = null)
 
     private val http = if (engine != null) {
         HttpClient(engine) { configureHttp() }
@@ -99,7 +99,7 @@ class ComposeCastClient internal constructor(
      * @throws ComposeCastHttpException when the server answers with a non-2xx status (e.g. 404,
      *   400 for a missing parameter); other exceptions (IOException, …) mean it was not reached.
      */
-    suspend fun getScreen(id: String, params: Map<String, String> = emptyMap()): ScreenDocument {
+    public suspend fun getScreen(id: String, params: Map<String, String> = emptyMap()): ScreenDocument {
         val key = ActionCodec.encode(Action.Navigate(id, params))
         val cached = synchronized(cache) { cache[key] }
         val response = http.get(config.serverUrl) {
@@ -152,7 +152,7 @@ class ComposeCastClient internal constructor(
      * collected; completes when the server refuses the screen (not live, unknown). Collect it
      * only while the screen is visible: [ComposeCastScreen] does that.
      */
-    fun liveScreen(id: String, params: Map<String, String> = emptyMap()): Flow<ScreenDocument> = channelFlow {
+    public fun liveScreen(id: String, params: Map<String, String> = emptyMap()): Flow<ScreenDocument> = channelFlow {
         var attempt = 0
         while (true) {
             var refused = false
@@ -194,11 +194,11 @@ class ComposeCastClient internal constructor(
         }
     }
 
-    suspend fun listScreens(): List<String> = http.get("${config.serverUrl}/screens").body()
+    public suspend fun listScreens(): List<String> = http.get("${config.serverUrl}/screens").body()
 
-    suspend fun getBrand(): BrandConfig = http.get("${config.serverUrl}/brand").body()
+    public suspend fun getBrand(): BrandConfig = http.get("${config.serverUrl}/brand").body()
 
-    fun close() {
+    public fun close() {
         http.close()
     }
 
@@ -211,9 +211,9 @@ class ComposeCastClient internal constructor(
 }
 
 /** The server answered with a non-2xx [status] (e.g. 404 = unknown screen). */
-open class ComposeCastHttpException(val status: Int, message: String, cause: Throwable? = null) :
+public open class ComposeCastHttpException(public val status: Int, message: String, cause: Throwable? = null) :
     Exception(message, cause)
 
 /** The server answered 426 Upgrade Required: this app's Remote Compose player is too old (T-004). */
-class ComposeCastUpgradeRequiredException(val minApiLevel: Int, message: String) :
+public class ComposeCastUpgradeRequiredException(public val minApiLevel: Int, message: String) :
     ComposeCastHttpException(426, message)

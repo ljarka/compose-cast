@@ -9,4 +9,4 @@ import kotlinx.serialization.Serializable
  * @param protocolVersion SemVer string of the protocol this server speaks, e.g. `"1.0.0"`.
  */
 @Serializable
-data class VersionInfo(val serverVersion: String, val protocolVersion: String)
+public data class VersionInfo(val serverVersion: String, val protocolVersion: String)

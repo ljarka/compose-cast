@@ -113,6 +113,7 @@ Do not load the whole project: root `AGENTS.md` → task → the modules in its 
 ./scripts/verify.sh --docker                      # server image + distribution/ install smoke test (CI job `docker`)
 ./scripts/verify.sh --renderer                    # preview renderer image renders the demo main (CI job `preview-renderer`)
 ./gradlew spotlessApply                           # fix formatting (ktlint, rules in .editorconfig)
+./gradlew detekt                                  # static analysis (rules: config/detekt/detekt.yml)
 ./gradlew :compat-tests:recordRoborazziDebug      # accept intended visual changes (look at PNGs!)
 ./scripts/verify-app-repository.sh [--install]    # publish dry run + build distribution/android-app (no Kotlin)
 

@@ -32,7 +32,7 @@ import kotlinx.coroutines.flow.Flow
  * (state, scroll and animations stay), full documents replace the screen.
  */
 @Composable
-fun ComposeCastScreen(
+public fun ComposeCastScreen(
     screen: ScreenDocument,
     modifier: Modifier = Modifier,
     live: Flow<ScreenDocument>? = null,

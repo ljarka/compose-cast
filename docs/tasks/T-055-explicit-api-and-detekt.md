@@ -1,6 +1,6 @@
 # T-055 — Static analysis (`detekt`) and `explicitApi()` for published libraries
 
-Status: queued (after T-054) · Roadmap: quality · Depends on: — · Module: protocol, sdk-server, sdk-android
+Status: done · Roadmap: quality · Depends on: — · Module: protocol, sdk-server, sdk-android
 
 ## Goal
 

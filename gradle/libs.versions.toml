@@ -10,6 +10,7 @@ robolectric = "4.17"
 roborazzi = "1.77.0"
 spotless = "7.2.1"
 ktlint = "1.7.1"
+detekt = "1.23.8"
 exposed = "1.6.1"
 sqlite-jdbc = "3.54.1.0"
 bcrypt = "0.10.2"
@@ -74,3 +75,4 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }

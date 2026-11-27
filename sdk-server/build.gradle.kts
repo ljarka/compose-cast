@@ -2,6 +2,9 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
 }
 
+// Published libraries (T-055): explicit public API.
+kotlin { explicitApi() }
+
 dependencies {
     // BrandConfig and action constants are part of this module's public API.
     api(project(":protocol"))

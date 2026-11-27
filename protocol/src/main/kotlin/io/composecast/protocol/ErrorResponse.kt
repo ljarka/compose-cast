@@ -9,8 +9,8 @@ import kotlinx.serialization.Serializable
  * @param message Human-readable description of what went wrong.
  */
 @Serializable
-data class ErrorResponse(val code: String, val message: String)
+public data class ErrorResponse(val code: String, val message: String)
 
 /** Returned with HTTP 426 Upgrade Required when the client's RC API level is too old (T-004). */
 @Serializable
-data class UpgradeRequiredResponse(val error: String, val minApiLevel: Int)
+public data class UpgradeRequiredResponse(val error: String, val minApiLevel: Int)

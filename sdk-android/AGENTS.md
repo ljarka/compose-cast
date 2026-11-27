@@ -47,6 +47,8 @@ installs an `android.util.Log` logger.
 
 ## Decisions
 
+- **Explicit API (T-055):** `kotlin { explicitApi() }` — every non-private declaration states
+  `public` or `internal`. New helpers default to `internal`; `public` is a published-API decision.
 - **Live screens (T-047, [ADR 0029](../docs/decisions/0029-live-screens-websocket-data-updates.md)):**
   `ComposeCastClient` uses a single Ktor client on the **OkHttp** engine (T-052) for both REST
   (with configurable connect/request/socket timeouts) and WebSockets (`liveScreen`); same version

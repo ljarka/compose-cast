@@ -3,11 +3,11 @@ package io.composecast.server.sdk
 import io.composecast.server.sdk.render.RemoteComposeRenderer
 
 /** One message of a live screen's stream (T-047, ADR 0029): a Remote Compose document. */
-class LiveFrame(
+public class LiveFrame(
     /** Full document (`setDocument`) or a data-update document; the player tells them apart by header. */
-    val document: ByteArray,
+    public val document: ByteArray,
     /** True when the structure changed (or first frame): the app replaces the whole screen. */
-    val full: Boolean,
+    public val full: Boolean,
 )
 
 /**
@@ -18,7 +18,7 @@ class LiveFrame(
  * document: an edited text in a data update would keep its old measured width (remote-compose.md
  * behavior 20), and edits are rare compared to data ticks.
  */
-class LiveFrames(
+public class LiveFrames(
     private val id: String,
     private val context: RenderContext,
     private val registry: () -> ScreenRegistry?,
@@ -27,14 +27,14 @@ class LiveFrames(
     private var lastRegistry: ScreenRegistry? = null
 
     /** The screen's `live.everyMs` as of the last [next]; null before the first call or for a non-live screen. */
-    val everyMs: Int? get() = last?.definition?.live?.everyMs
+    public val everyMs: Int? get() = last?.definition?.live?.everyMs
 
     /**
      * The next frame, or null when nothing changed. Blocks while data sources are fetched.
      * @throws NoSuchElementException when the screen no longer exists
      * @throws ScreenParameterException, DataSourceException, UnsupportedClientVersionException as [ScreenRegistry.render]
      */
-    fun next(): LiveFrame? {
+    public fun next(): LiveFrame? {
         val registry = registry() ?: throw NoSuchElementException("Screen '$id' not found")
         val screen = registry.render(id, context) ?: throw NoSuchElementException("Screen '$id' not found")
         val previous = last
@@ -52,10 +52,10 @@ class LiveFrames(
 }
 
 /** Inspecting Remote Compose documents without RC types (debug endpoints, tests). */
-object Documents {
+public object Documents {
     /** The decoded operation tree, as `/screens/{id}/debug` shows it. */
-    fun describe(document: ByteArray): String = RemoteComposeRenderer.describe(document)
+    public fun describe(document: ByteArray): String = RemoteComposeRenderer.describe(document)
 
     /** What a data update cannot change; equal for a full document and its data updates (ADR 0029). */
-    fun structure(document: ByteArray): String = RemoteComposeRenderer.structure(document)
+    public fun structure(document: ByteArray): String = RemoteComposeRenderer.structure(document)
 }

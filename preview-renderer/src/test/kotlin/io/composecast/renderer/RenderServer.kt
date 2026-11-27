@@ -70,7 +70,7 @@ class RenderServer {
                 } catch (e: java.util.concurrent.ExecutionException) {
                     val status = if (e.cause is IllegalArgumentException) 400 else 500
                     exchange.respond(status, "text/plain", (e.cause?.message ?: "render failed").toByteArray())
-                } catch (e: java.util.concurrent.TimeoutException) {
+                } catch (_: java.util.concurrent.TimeoutException) {
                     exchange.respond(503, "text/plain", "render timed out".toByteArray())
                 }
             }

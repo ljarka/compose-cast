@@ -1,6 +1,6 @@
 # T-056 — Live screen fan-out and refactoring of largest files
 
-Status: queued (after T-055) · Roadmap: quality · Depends on: — · Module: server-app, server-admin, app-shell
+Status: ready · Roadmap: quality · Depends on: — · Module: server-app, server-admin, app-shell
 
 ## Goal
 

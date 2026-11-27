@@ -20,7 +20,7 @@ import kotlinx.serialization.json.JsonPrimitive
 
 /** A screen parameter (query parameter of `/screens/{id}`); no [default] = required. */
 @Serializable
-data class ParamSpec(val default: String? = null)
+public data class ParamSpec(val default: String? = null)
 
 /**
  * An HTTP GET returning JSON, fetched on every render (cached for [cacheSeconds]).
@@ -28,7 +28,7 @@ data class ParamSpec(val default: String? = null)
  * A failing source shows the screen's `error` components (or HTTP 502) unless [optional].
  */
 @Serializable
-data class DataSource(
+public data class DataSource(
     val url: String,
     val headers: Map<String, String> = emptyMap(),
     val timeoutMs: Int = 5000,
@@ -42,13 +42,13 @@ data class DataSource(
  * JSON: a string or an object of strings.
  */
 @Serializable(with = RepeatItemsSerializer::class)
-sealed interface RepeatItems {
-    data class Path(val path: String) : RepeatItems
+public sealed interface RepeatItems {
+    public data class Path(val path: String) : RepeatItems
 
-    data class Zip(val arrays: Map<String, String>) : RepeatItems
+    public data class Zip(val arrays: Map<String, String>) : RepeatItems
 
     /** Every path with its JSON-like location suffix (`""` or `.name`). */
-    fun paths(): List<Pair<String, String>> = when (this) {
+    public fun paths(): List<Pair<String, String>> = when (this) {
         is Path -> listOf("" to path)
         is Zip -> arrays.map { (name, path) -> ".$name" to path }
     }
@@ -79,10 +79,10 @@ internal object RepeatItemsSerializer : KSerializer<RepeatItems> {
 }
 
 /** One step of a binding path after its root: `.key` or `[index]`. */
-sealed interface PathStep {
-    data class Key(val name: String) : PathStep
+public sealed interface PathStep {
+    public data class Key(val name: String) : PathStep
 
-    data class Index(val index: Int) : PathStep
+    public data class Index(val index: Int) : PathStep
 }
 
 /**
@@ -90,15 +90,15 @@ sealed interface PathStep {
  * An unquoted argument with `.` or `[` (`append:h.is_day`) is a path in the expression's scope:
  * [paths] holds it at the same index (null for literals), resolved per render (T-041).
  */
-data class FilterCall(
+public data class FilterCall(
     val name: String,
     val args: List<String>,
     val paths: List<Template.Expression?> = List(args.size) { null },
 )
 
 /** The filters templates may use, with their allowed argument counts. Implemented in sdk-server `Binder`. */
-object Filters {
-    val ARITY: Map<String, IntRange> = linkedMapOf(
+public object Filters {
+    public val ARITY: Map<String, IntRange> = linkedMapOf(
         "round" to 0..1,
         "date" to 1..1,
         "lookup" to 1..1,
@@ -111,27 +111,31 @@ object Filters {
     )
 
     /** Filters whose argument may be a path (T-041); the others take literals only. */
-    val PATH_ARGUMENTS: Set<String> = setOf("append", "default")
+    public val PATH_ARGUMENTS: Set<String> = setOf("append", "default")
 }
 
 /** A string with `{{ … }}` expressions, e.g. `"{{w.temp | round}}°C"`. */
-class Template private constructor(val parts: List<Part>) {
-    sealed interface Part
+public class Template private constructor(public val parts: List<Part>) {
+    public sealed interface Part
 
-    data class Literal(val text: String) : Part
+    public data class Literal(val text: String) : Part
 
     /** `root(.key|[n])* (| filter(:arg)*)*`; [text] is the source between the braces. */
-    data class Expression(val root: String, val path: List<PathStep>, val filters: List<FilterCall>, val text: String) :
-        Part
+    public data class Expression(
+        val root: String,
+        val path: List<PathStep>,
+        val filters: List<FilterCall>,
+        val text: String,
+    ) : Part
 
-    val expressions: List<Expression> get() = parts.filterIsInstance<Expression>()
+    public val expressions: List<Expression> get() = parts.filterIsInstance<Expression>()
 
-    companion object {
+    public companion object {
         /** Whether [text] contains a binding (then it must parse). `{{` cannot be escaped. */
-        fun hasBindings(text: String): Boolean = "{{" in text
+        public fun hasBindings(text: String): Boolean = "{{" in text
 
         /** @throws IllegalArgumentException describing the syntax error */
-        fun parse(text: String): Template {
+        public fun parse(text: String): Template {
             val parts = mutableListOf<Part>()
             var i = 0
             while (i < text.length) {
@@ -150,7 +154,7 @@ class Template private constructor(val parts: List<Part>) {
         }
 
         /** A bare path without braces or filters, e.g. repeat items `weather.daily.time`. */
-        fun parsePath(text: String): Expression {
+        public fun parsePath(text: String): Expression {
             val expression = parseExpression(text.trim())
             require(expression.filters.isEmpty()) { "filters are not allowed in a path: \"$text\"" }
             return expression
@@ -237,10 +241,10 @@ class Template private constructor(val parts: List<Part>) {
 internal val BINDING_NAME = Regex("[A-Za-z_][A-Za-z0-9_-]*")
 
 /** Roots that are not data-source names. */
-object Roots {
-    const val PARAMS = "params"
-    const val SECRET = "secret"
-    const val VALUES = "values"
-    const val INDEX = "\$index"
-    val RESERVED = setOf(PARAMS, SECRET, VALUES, INDEX)
+public object Roots {
+    public const val PARAMS: String = "params"
+    public const val SECRET: String = "secret"
+    public const val VALUES: String = "values"
+    public const val INDEX: String = "\$index"
+    public val RESERVED: Set<String> = setOf(PARAMS, SECRET, VALUES, INDEX)
 }

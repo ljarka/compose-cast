@@ -84,7 +84,8 @@ fun main() {
             requireNotNull(dataDir) { "COMPOSECAST_MODE=admin needs COMPOSECAST_DATA_DIR (the database lives there)" }
             require(Files.isWritable(dataDir)) {
                 "COMPOSECAST_MODE=admin writes ${AdminScreens.DATABASE_FILE} into COMPOSECAST_DATA_DIR ($dataDir), " +
-                    "which is not writable: in Docker drop ':ro' from the volume and run 'sudo chown -R 1000:1000 <data dir>'"
+                    "which is not writable: in Docker drop ':ro' from the volume and run " +
+                    "'sudo chown -R 1000:1000 <data dir>'"
             }
             val database = AdminScreens.openDatabase(dataDir)
             healthCheck = database::ping

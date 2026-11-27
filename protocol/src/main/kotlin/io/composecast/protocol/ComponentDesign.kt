@@ -21,7 +21,7 @@ import kotlin.math.sin
  * owner designs on; on other widths each element follows its [DesignElement.anchor].
  */
 @Serializable
-data class ComponentDesign(
+public data class ComponentDesign(
     val width: Float = DEFAULT_WIDTH,
     val height: Float = DEFAULT_HEIGHT,
     /** Fraction of the parent width (`0.1..1.0`): `1.0` = full width, `0.5` = half width. */
@@ -32,7 +32,7 @@ data class ComponentDesign(
     val elements: List<DesignElement> = emptyList(),
 ) {
     /** Problems with the design itself; paths start with `design.`. */
-    fun problems(): List<String> = buildList {
+    public fun problems(): List<String> = buildList {
         if (width !in 40f..2000f) add("design.width: expected 40..2000 dp, was $width")
         if (height !in 8f..2000f) add("design.height: expected 8..2000 dp, was $height")
         if (fillWidth !in 0.1f..1f) add("design.fillWidth: expected 0.1..1.0, was $fillWidth")
@@ -65,7 +65,7 @@ data class ComponentDesign(
     }
 
     /** The RC JSON body: a box of [height] dp with the elements as stacked layers (see class docs). */
-    fun toBody(): JsonObject = buildJsonObject {
+    public fun toBody(): JsonObject = buildJsonObject {
         put("type", "box")
         putJsonArray("modifiers") {
             add(obj("fillMaxWidth", if (fillWidth == 1f) JsonPrimitive(1) else JsonPrimitive(fillWidth)))
@@ -163,7 +163,8 @@ data class ComponentDesign(
         }
     }
 
-    /** From [from] to [to] across the element's box at [DesignElement.gradientAngle] (0 = left to right, 90 = top to bottom). */
+    /** From [from] to [to] across the element's box at [DesignElement.gradientAngle]
+     * (0 = left to right, 90 = top to bottom). */
     private fun gradient(e: DesignElement, from: String, to: String): JsonObject {
         // A scaled path paints in its own box (pathWidth × pathHeight).
         val w = e.pathWidth?.takeIf { e.type == DesignElementType.Path } ?: e.w
@@ -340,10 +341,10 @@ data class ComponentDesign(
         DesignAnchor.Center -> "center"
     }
 
-    companion object {
-        const val DEFAULT_WIDTH = 360f
-        const val DEFAULT_HEIGHT = 160f
-        const val MAX_ELEMENTS = 200
+    public companion object {
+        public const val DEFAULT_WIDTH: Float = 360f
+        public const val DEFAULT_HEIGHT: Float = 160f
+        public const val MAX_ELEMENTS: Int = 200
 
         private fun isPlaceholder(value: String) = ComponentDefinition.wholePlaceholder(value) != null
 
@@ -368,7 +369,7 @@ data class ComponentDesign(
 }
 
 @Serializable
-data class DesignElement(
+public data class DesignElement(
     val id: String,
     val type: DesignElementType,
     /** Top left corner and size on the artboard, in dp. */
@@ -418,7 +419,7 @@ data class DesignElement(
 )
 
 @Serializable
-enum class DesignElementType {
+public enum class DesignElementType {
     @SerialName("rect")
     Rect,
 
@@ -441,7 +442,7 @@ enum class DesignElementType {
 
 /** How an element follows the component's width when it differs from the artboard's. */
 @Serializable
-enum class DesignAnchor {
+public enum class DesignAnchor {
     /** Keeps its distance from the left edge. */
     @SerialName("left")
     Left,
@@ -460,7 +461,7 @@ enum class DesignAnchor {
 }
 
 @Serializable
-enum class DesignTextAlign(val json: String) {
+public enum class DesignTextAlign(public val json: String) {
     @SerialName("start")
     Start("start"),
 

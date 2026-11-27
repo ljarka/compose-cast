@@ -4,6 +4,9 @@ plugins {
     `maven-publish`
 }
 
+// Published libraries (T-055): explicit public API.
+kotlin { explicitApi() }
+
 java { withSourcesJar() }
 
 publishing {

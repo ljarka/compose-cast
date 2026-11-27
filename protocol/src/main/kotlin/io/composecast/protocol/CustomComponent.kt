@@ -17,7 +17,7 @@ import kotlinx.serialization.json.contentOrNull
  * Stored as `components/<id>.json` (files mode) or in the admin database.
  */
 @Serializable
-data class ComponentDefinition(
+public data class ComponentDefinition(
     val id: String,
     val title: String = id,
     val description: String = "",
@@ -37,7 +37,7 @@ data class ComponentDefinition(
     val design: ComponentDesign? = null,
 ) {
     /** Problems with this definition itself (not the RC grammar — the renderer checks that). */
-    fun problems(): List<String> = buildList {
+    public fun problems(): List<String> = buildList {
         if (!ID.matches(id)) add("id: expected letters, digits, '-' or '_', was '$id'")
         if (version < 1) add("version: must be >= 1, was $version")
         if (rcVersion.isBlank()) add("rcVersion: must not be blank")
@@ -61,7 +61,7 @@ data class ComponentDefinition(
      * Problems with the arguments of one use ([at] is its path). Bound arguments (`{{…}}`) are
      * checked after binding, when [bound] is true.
      */
-    fun argProblems(args: Map<String, String>, at: String, bound: Boolean = false): List<String> = buildList {
+    public fun argProblems(args: Map<String, String>, at: String, bound: Boolean = false): List<String> = buildList {
         (args.keys - params.keys).sorted().forEach { add("$at.args.$it: component '$id' has no such param") }
         params.forEach { (name, param) ->
             val value = args[name]
@@ -74,16 +74,16 @@ data class ComponentDefinition(
     }
 
     /** The values substituted for `{{params.x}}`: [args] over the defaults. */
-    fun resolveArgs(args: Map<String, String>): Map<String, String> =
+    public fun resolveArgs(args: Map<String, String>): Map<String, String> =
         params.mapNotNull { (name, param) -> (args[name] ?: param.default)?.let { name to it } }.toMap()
 
-    companion object {
-        const val DEFAULT_MIN_API_LEVEL = 8
+    public companion object {
+        public const val DEFAULT_MIN_API_LEVEL: Int = 8
         private val ID = Regex("[A-Za-z0-9_-]+")
         private val PARAM_NAME = Regex("[A-Za-z_][A-Za-z0-9_]*")
 
         /** `{{brand.<field>}}` in a body: the screen's brand colors (T-040 defaults apply). */
-        val BRAND_FIELDS = setOf(
+        public val BRAND_FIELDS: Set<String> = setOf(
             "primaryColor",
             "secondaryColor",
             "backgroundColor",
@@ -95,15 +95,15 @@ data class ComponentDefinition(
         /** `{{<root>.<name>}}` placeholders in [body]. */
         private val PLACEHOLDER = Regex("""\{\{\s*([A-Za-z]+)\.([A-Za-z_][A-Za-z0-9_]*)\s*}}""")
 
-        fun placeholders(text: String): Sequence<Pair<String, String>> =
+        public fun placeholders(text: String): Sequence<Pair<String, String>> =
             PLACEHOLDER.findAll(text).map { it.groupValues[1] to it.groupValues[2] }
 
         /** Replaces every placeholder in [text] with [value] of (root, name); unknown ones stay. */
-        fun substitute(text: String, value: (String, String) -> String?): String =
+        public fun substitute(text: String, value: (String, String) -> String?): String =
             PLACEHOLDER.replace(text) { m -> value(m.groupValues[1], m.groupValues[2]) ?: m.value }
 
         /** The single placeholder [text] consists of, if it is exactly one (typed substitution). */
-        fun wholePlaceholder(text: String): Pair<String, String>? =
+        public fun wholePlaceholder(text: String): Pair<String, String>? =
             PLACEHOLDER.matchEntire(text.trim())?.let { it.groupValues[1] to it.groupValues[2] }
 
         private fun references(element: JsonElement, root: String): Set<String> = buildSet {
@@ -126,7 +126,7 @@ data class ComponentDefinition(
 
 /** A parameter of a [ComponentDefinition]: what a screen passes in `args`. */
 @Serializable
-data class ComponentParam(
+public data class ComponentParam(
     val type: ComponentParamType = ComponentParamType.Text,
     /** Used when a screen does not pass the argument; without it the argument is required. */
     val default: String? = null,
@@ -134,7 +134,7 @@ data class ComponentParam(
 )
 
 @Serializable
-enum class ComponentParamType {
+public enum class ComponentParamType {
     /** Any string (bindable). */
     @SerialName("text")
     Text,
@@ -153,7 +153,7 @@ enum class ComponentParamType {
     ;
 
     /** Why [value] is not valid for this type, or null. */
-    fun problem(value: String): String? = when (this) {
+    public fun problem(value: String): String? = when (this) {
         Text -> null
         Color -> colorProblem(value)
         Number -> if (value.trim().toFloatOrNull()?.isFinite() == true) null else "expected a number, was '$value'"
@@ -170,29 +170,29 @@ enum class ComponentParamType {
 }
 
 /** The JSON format of [ComponentDefinition] (`components/<id>.json`): strict, defaults omitted. */
-object ComponentJson {
+public object ComponentJson {
     private val json = Json {
         prettyPrint = true
         prettyPrintIndent = "  "
     }
 
     /** A definition with a [ComponentDefinition.design] is stored without its compiled body. */
-    fun encode(definition: ComponentDefinition): String = json.encodeToString(
+    public fun encode(definition: ComponentDefinition): String = json.encodeToString(
         ComponentDefinition.serializer(),
         if (definition.design != null) definition.copy(body = JsonObject(emptyMap())) else definition,
     )
 
     /** Decodes and checks [ComponentDefinition.problems]; errors start with [source]. */
-    fun decode(text: String, source: String): ComponentDefinition {
+    public fun decode(text: String, source: String): ComponentDefinition {
         val checked = check(text)
         require(checked.problems.isEmpty()) { "$source: ${checked.problems.joinToString("; ")}" }
         return checked.definition!!
     }
 
-    data class Checked(val definition: ComponentDefinition?, val problems: List<String>)
+    public data class Checked(val definition: ComponentDefinition?, val problems: List<String>)
 
     /** Like [decode] without throwing (admin editor). */
-    fun check(text: String): Checked {
+    public fun check(text: String): Checked {
         val definition = try {
             json.decodeFromString(ComponentDefinition.serializer(), text)
         } catch (e: SerializationException) {
@@ -204,7 +204,7 @@ object ComponentJson {
     }
 
     /** Compiles a [ComponentDefinition.design] into its body, then checks the definition. */
-    fun check(definition: ComponentDefinition): Checked {
+    public fun check(definition: ComponentDefinition): Checked {
         val compiled = definition.design?.let { definition.copy(body = it.toBody()) } ?: definition
         val problems = compiled.problems()
         return Checked(compiled.takeIf { problems.isEmpty() }, problems)

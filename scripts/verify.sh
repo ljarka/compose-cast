@@ -51,6 +51,12 @@ if ! gradle spotlessCheck; then
   exit 1
 fi
 
+step "Static analysis (detekt, T-055)"
+if ! gradle detekt; then
+  echo; echo "detekt violations: fix the code; raise a threshold in config/detekt/detekt.yml only with a reason."
+  exit 1
+fi
+
 step "JVM modules: build + tests"
 gradle :protocol:build :sdk-server:build :server-scripting:build :server-store:build :app-templates:build :server-admin:build :server-app:build
 

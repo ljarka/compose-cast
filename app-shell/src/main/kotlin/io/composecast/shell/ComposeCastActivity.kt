@@ -81,7 +81,8 @@ class ComposeCastActivity : ComponentActivity() {
     private var serverUrl by mutableStateOf<String?>(null)
     private var lastServerUrl by mutableStateOf<String?>(null)
 
-    /** Preview app (T-045 B2): a linked screen to open on top (a draft preview); [OpenRequest.seq] makes each link count. */
+    /** Preview app (T-045 B2): a linked screen to open on top (a draft preview);
+     * [OpenRequest.seq] makes each link count. */
     private var openRequest by mutableStateOf<OpenRequest?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -133,7 +134,7 @@ class ComposeCastActivity : ComponentActivity() {
                                 try {
                                     startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(link)))
                                     true
-                                } catch (e: ActivityNotFoundException) {
+                                } catch (_: ActivityNotFoundException) {
                                     false
                                 }
                             },

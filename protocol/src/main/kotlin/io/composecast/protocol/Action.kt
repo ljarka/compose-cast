@@ -15,46 +15,46 @@ import java.net.URLEncoder
  * [ActionCodec.decode] returning `null`.
  */
 @Serializable
-sealed interface Action {
+public sealed interface Action {
     /** Open another server-driven screen. [params] are passed to the server (used from T-003). */
     @Serializable
     @SerialName("navigate")
-    data class Navigate(val screen: String, val params: Map<String, String> = emptyMap()) : Action
+    public data class Navigate(val screen: String, val params: Map<String, String> = emptyMap()) : Action
 
     /** Open [url] outside the app (browser or the app registered for it). */
     @Serializable
     @SerialName("open_url")
-    data class OpenUrl(val url: String) : Action
+    public data class OpenUrl(val url: String) : Action
 
     /** Fetch the current screen again. */
     @Serializable
     @SerialName("reload")
-    data object Reload : Action
+    public data object Reload : Action
 
     /** Analytics event; the app decides where to send it. */
     @Serializable
     @SerialName("track")
-    data class Track(val event: String, val params: Map<String, String> = emptyMap()) : Action
+    public data class Track(val event: String, val params: Map<String, String> = emptyMap()) : Action
 
     /** Host-defined behavior; [payload] is passed through unchanged. */
     @Serializable
     @SerialName("custom")
-    data class Custom(val payload: String) : Action
+    public data class Custom(val payload: String) : Action
 
     /** On-device: toggle animated visibility of components with `modifier.visibility.id == target`. */
     @Serializable
     @SerialName("toggle")
-    data class Toggle(val target: String) : Action
+    public data class Toggle(val target: String) : Action
 
     /** On-device: show components with `modifier.visibility.id == target`. */
     @Serializable
     @SerialName("show")
-    data class Show(val target: String) : Action
+    public data class Show(val target: String) : Action
 
     /** On-device: hide components with `modifier.visibility.id == target`. */
     @Serializable
     @SerialName("hide")
-    data class Hide(val target: String) : Action
+    public data class Hide(val target: String) : Action
 }
 
 /**
@@ -70,11 +70,11 @@ sealed interface Action {
  * Parameters keep insertion order, so encoding is deterministic. Remote Compose stores the name as
  * a string of at most [MAX_ENCODED_LENGTH] characters.
  */
-object ActionCodec {
+public object ActionCodec {
     /** Remote Compose `Limits.MAX_STRING_SIZE` for the host-action name (verified alpha23). */
-    const val MAX_ENCODED_LENGTH: Int = 4000
+    public const val MAX_ENCODED_LENGTH: Int = 4000
 
-    fun encode(action: Action): String = when (action) {
+    public fun encode(action: Action): String = when (action) {
         is Action.Navigate -> "${Actions.NAVIGATE}:${enc(action.screen)}${query(action.params)}"
         is Action.OpenUrl -> "${Actions.OPEN_URL}:${action.url}"
         Action.Reload -> "${Actions.RELOAD}:"
@@ -86,7 +86,7 @@ object ActionCodec {
     }
 
     /** Returns `null` for an unknown type or a malformed payload; never throws. */
-    fun decode(raw: String): Action? = try {
+    public fun decode(raw: String): Action? = try {
         val colon = raw.indexOf(':')
         if (colon < 0) {
             null
@@ -104,7 +104,7 @@ object ActionCodec {
                 else -> null
             }
         }
-    } catch (e: IllegalArgumentException) {
+    } catch (_: IllegalArgumentException) {
         null // malformed percent-encoding
     }
 

@@ -5,6 +5,9 @@ plugins {
     `maven-publish`
 }
 
+// Published libraries (T-055): explicit public API.
+kotlin { explicitApi() }
+
 android {
     namespace = "io.composecast.android"
     compileSdk = 37

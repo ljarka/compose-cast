@@ -14,7 +14,7 @@ import kotlinx.serialization.json.Json
  * `{"id":"main","components":[{"type":"text","text":"Hi","style":"h1"}]}`.
  */
 @Serializable
-data class ScreenDefinition(
+public data class ScreenDefinition(
     val id: String,
     val title: String = id,
     /** Query parameters the screen reads as `{{params.x}}` (T-006). */
@@ -45,19 +45,19 @@ data class ScreenDefinition(
      * (`components[2].action: …`); empty when valid. The only validation of screen content —
      * used by the DSL, the JSON loader and (later) the admin panel.
      */
-    fun problems(): List<String> = contentProblems() + bindingProblems()
+    public fun problems(): List<String> = contentProblems() + bindingProblems()
 
     /**
      * Structural problems only (no template checks): for screens whose strings are already bound
      * to data, where a `{{` is just text from an API.
      */
-    fun contentProblems(): List<String> = screenContentProblems()
+    public fun contentProblems(): List<String> = screenContentProblems()
 
     /** Non-fatal accessibility/authoring warnings (surfaced in `/screens/{id}/debug`, T-016). */
-    fun warnings(): List<String> = screenWarnings()
+    public fun warnings(): List<String> = screenWarnings()
 
     /** Throws [IllegalArgumentException] listing [problems], if any. */
-    fun validate() {
+    public fun validate() {
         val problems = problems()
         require(problems.isEmpty()) { "Screen '$id': ${problems.joinToString("; ")}" }
     }
@@ -68,11 +68,11 @@ data class ScreenDefinition(
  * still respect their `cacheSeconds`) and pushes what changed to connected apps.
  */
 @Serializable
-data class Live(val everyMs: Int = DEFAULT_EVERY_MS) {
-    companion object {
-        const val DEFAULT_EVERY_MS = 1000
-        const val MIN_EVERY_MS = 100
-        const val MAX_EVERY_MS = 3_600_000
+public data class Live(val everyMs: Int = DEFAULT_EVERY_MS) {
+    public companion object {
+        public const val DEFAULT_EVERY_MS: Int = 1000
+        public const val MIN_EVERY_MS: Int = 100
+        public const val MAX_EVERY_MS: Int = 3_600_000
     }
 }
 
@@ -82,7 +82,7 @@ data class Live(val everyMs: Int = DEFAULT_EVERY_MS) {
  * gauges, texts and KPIs. [default] is a number or a `{{...}}` server binding resolved at request time.
  */
 @Serializable
-data class ScreenValue(
+public data class ScreenValue(
     val default: String = "0",
     val min: Float = 0f,
     val max: Float = 100f,
@@ -91,20 +91,20 @@ data class ScreenValue(
 
 /** Automatic on-device animation of a [ScreenValue] from `min` to `max` using RC `animationTime()`. */
 @Serializable
-data class ValueAnimation(
+public data class ValueAnimation(
     val durationMs: Int = DEFAULT_DURATION_MS,
     val mode: AnimationMode = AnimationMode.PingPong,
     val easing: AnimationEasing = AnimationEasing.EaseInOut,
 ) {
-    companion object {
-        const val DEFAULT_DURATION_MS = 2000
-        const val MIN_DURATION_MS = 100
-        const val MAX_DURATION_MS = 60_000
+    public companion object {
+        public const val DEFAULT_DURATION_MS: Int = 2000
+        public const val MIN_DURATION_MS: Int = 100
+        public const val MAX_DURATION_MS: Int = 60_000
     }
 }
 
 @Serializable
-enum class AnimationMode {
+public enum class AnimationMode {
     @SerialName("once")
     Once,
 
@@ -116,7 +116,7 @@ enum class AnimationMode {
 }
 
 @Serializable
-enum class AnimationEasing {
+public enum class AnimationEasing {
     @SerialName("linear")
     Linear,
 
@@ -125,19 +125,19 @@ enum class AnimationEasing {
 }
 
 /** The JSON format of [ScreenDefinition]: strict (unknown keys are errors), defaults omitted. */
-object ScreenJson {
+public object ScreenJson {
     private val json = Json {
         prettyPrint = true
         prettyPrintIndent = "  "
     }
 
-    fun encode(screen: ScreenDefinition): String = json.encodeToString(ScreenDefinition.serializer(), screen)
+    public fun encode(screen: ScreenDefinition): String = json.encodeToString(ScreenDefinition.serializer(), screen)
 
     /**
      * Decodes and validates one screen. Any problem throws [IllegalArgumentException] whose message
      * starts with [source] (e.g. the file name) and contains the JSON path.
      */
-    fun decode(text: String, source: String): ScreenDefinition {
+    public fun decode(text: String, source: String): ScreenDefinition {
         val screen = try {
             json.decodeFromString(ScreenDefinition.serializer(), text)
         } catch (e: SerializationException) {
@@ -151,14 +151,14 @@ object ScreenJson {
     }
 
     /** The result of [check]: [screen] when [problems] is empty. */
-    data class Checked(val screen: ScreenDefinition?, val problems: List<String>)
+    public data class Checked(val screen: ScreenDefinition?, val problems: List<String>)
 
     /**
      * Checks [text] like [decode] without throwing (the admin editor, T-007): a JSON syntax or
      * schema error is one problem (kotlinx's message, with the JSON path); otherwise every
      * [ScreenDefinition.problems] entry.
      */
-    fun check(text: String): Checked {
+    public fun check(text: String): Checked {
         val screen = try {
             json.decodeFromString(ScreenDefinition.serializer(), text)
         } catch (e: SerializationException) {

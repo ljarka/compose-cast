@@ -28,7 +28,8 @@ import kotlin.io.path.readText
 
 /**
  * The screens this server serves: from [dataDir] (`screens/<id>.json`, optional `brand.json` with a
- * `BrandConfig`, optional `components/<id>.json` custom components (ADR 0033); ADR 0011 layout) or, when it is null, the built-in [demoScreens].
+ * `BrandConfig`, optional `components/<id>.json` custom components (ADR 0033); ADR 0011 layout) or,
+ * when it is null, the built-in [demoScreens].
  * Renders everything (fetching images), so call it once at startup.
  */
 fun loadScreens(

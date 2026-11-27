@@ -17,24 +17,24 @@ import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.readText
 
 /** A screen rendered to a Remote Compose binary document, ready to be served. */
-class RemoteScreen internal constructor(
+public class RemoteScreen internal constructor(
     /** The source the document was rendered from (DSL or JSON); `ScreenJson.encode` exports it. */
-    val definition: ScreenDefinition,
+    public val definition: ScreenDefinition,
     private val bytes: ByteArray,
 ) {
-    val id: String get() = definition.id
-    val title: String get() = definition.title
+    public val id: String get() = definition.id
+    public val title: String get() = definition.title
 
     /** The Remote Compose document. Returns a copy, so callers cannot mutate the cached one. */
-    val document: ByteArray get() = bytes.copyOf()
+    public val document: ByteArray get() = bytes.copyOf()
 
-    val size: Int get() = bytes.size
+    public val size: Int get() = bytes.size
 
     /**
      * Strong HTTP entity tag (without quotes): a hash of the title and document bytes, so it
      * changes whenever anything that rendering read (title, params, data, brand, images) changes.
      */
-    val etag: String by lazy {
+    public val etag: String by lazy {
         MessageDigest.getInstance("SHA-256").apply {
             update(title.toByteArray(Charsets.UTF_8))
             update(0)
@@ -43,10 +43,10 @@ class RemoteScreen internal constructor(
     }
 
     /** Human-readable dump of the decoded document, for debugging. */
-    fun describe(): String = RemoteComposeRenderer.describe(bytes)
+    public fun describe(): String = RemoteComposeRenderer.describe(bytes)
 
     /** Hash of what a data update cannot change ([RemoteComposeRenderer.structure], ADR 0029). */
-    val structure: String by lazy { RemoteComposeRenderer.structure(bytes) }
+    public val structure: String by lazy { RemoteComposeRenderer.structure(bytes) }
 
     internal fun sameBytes(other: RemoteScreen): Boolean = bytes.contentEquals(other.bytes)
 }
@@ -55,24 +55,24 @@ class RemoteScreen internal constructor(
  * What a render may depend on. Today the request's query parameters; README Etap 12 (targeting)
  * will add client attributes. No cache key needs maintaining: [RemoteScreen.etag] hashes the output.
  */
-data class RenderContext(
-    val params: Map<String, String> = emptyMap(),
-    val rcApiLevel: Int? = null,
-    val rcProfiles: Int? = null,
+public data class RenderContext(
+    public val params: Map<String, String> = emptyMap(),
+    public val rcApiLevel: Int? = null,
+    public val rcProfiles: Int? = null,
 ) {
     /** A required parameter; missing → [ScreenParameterException] (the server answers 400). */
-    fun param(name: String): String = params[name] ?: throw ScreenParameterException("Missing parameter '$name'")
+    public fun param(name: String): String = params[name] ?: throw ScreenParameterException("Missing parameter '$name'")
 
-    companion object {
-        val EMPTY = RenderContext()
+    public companion object {
+        public val EMPTY: RenderContext = RenderContext()
     }
 }
 
 /** The request lacks or has an invalid parameter: a client error (HTTP 400), not a server bug. */
-class ScreenParameterException(message: String) : IllegalArgumentException(message)
+public class ScreenParameterException(message: String) : IllegalArgumentException(message)
 
 /** The client's Remote Compose player is too old for the requested document (HTTP 426). */
-class UnsupportedClientVersionException(val minApiLevel: Int, message: String, cause: Throwable? = null) :
+public class UnsupportedClientVersionException(public val minApiLevel: Int, message: String, cause: Throwable? = null) :
     RuntimeException(message, cause)
 
 /**
@@ -81,8 +81,8 @@ class UnsupportedClientVersionException(val minApiLevel: Int, message: String, c
  * fetched, bound and rendered on every [render]; dynamic screens (`dynamicScreen`) are built,
  * validated and rendered on every [render]. Thread-safe.
  */
-class ScreenRegistry internal constructor(
-    val brand: BrandConfig?,
+public class ScreenRegistry internal constructor(
+    public val brand: BrandConfig?,
     private val ids: List<String>,
     private val static: Map<String, RemoteScreen>,
     private val bound: Map<String, BoundScreen>,
@@ -93,32 +93,32 @@ class ScreenRegistry internal constructor(
     private val brokenComponents: Map<String, String> = emptyMap(),
 ) {
     /** Custom component definitions (ADR 0033), by id. */
-    fun components(): Map<String, ComponentDefinition> = components
+    public fun components(): Map<String, ComponentDefinition> = components
 
     /** Components that failed re-validation after an RC upgrade (id → why); screens skip them. */
-    fun brokenComponents(): Map<String, String> = brokenComponents
+    public fun brokenComponents(): Map<String, String> = brokenComponents
 
     /** The pre-rendered document of a static screen; `null` for unknown or dynamic screens. */
-    fun get(id: String): RemoteScreen? = static[id]
+    public fun get(id: String): RemoteScreen? = static[id]
 
     /** Every screen id, static and dynamic, in definition order. */
-    fun ids(): List<String> = ids
+    public fun ids(): List<String> = ids
 
     /** The pre-rendered static screens. */
-    fun all(): Map<String, RemoteScreen> = static
+    public fun all(): Map<String, RemoteScreen> = static
 
     /**
      * The authored definitions of static and bound screens (not of DSL dynamic screens, which
      * exist only per request), in definition order; `ScreenJson.encode` exports them.
      */
-    fun definitions(): Map<String, ScreenDefinition> = ids.mapNotNull { id ->
+    public fun definitions(): Map<String, ScreenDefinition> = ids.mapNotNull { id ->
         (static[id]?.definition ?: bound[id]?.definition)?.let { id to it }
     }.toMap()
 
-    fun isDynamic(id: String): Boolean = id in dynamic
+    public fun isDynamic(id: String): Boolean = id in dynamic
 
     /** Rendered per request from data sources/params (T-006). */
-    fun isBound(id: String): Boolean = id in bound
+    public fun isBound(id: String): Boolean = id in bound
 
     private val staticByVersion = ConcurrentHashMap<Triple<String, Int, Int>, RemoteScreen>()
 
@@ -129,9 +129,10 @@ class ScreenRegistry internal constructor(
      * `Dispatchers.IO`).
      * @throws ScreenParameterException when a required parameter is missing (HTTP 400)
      * @throws DataSourceException when a data source fails and the screen has no `error` components (HTTP 502)
-     * @throws UnsupportedClientVersionException when the client's RC API level is below minimum or unsupported (HTTP 426)
+     * @throws UnsupportedClientVersionException when the client's RC API level is below minimum
+     * or unsupported (HTTP 426)
      */
-    fun render(id: String, context: RenderContext = RenderContext.EMPTY): RemoteScreen? {
+    public fun render(id: String, context: RenderContext = RenderContext.EMPTY): RemoteScreen? {
         val apiLevel = context.rcApiLevel ?: RemoteComposeRenderer.MAX_API_LEVEL
         val profiles = context.rcProfiles ?: RemoteComposeRenderer.DEFAULT_PROFILES
         if (apiLevel < RemoteComposeRenderer.MIN_API_LEVEL) {
@@ -162,7 +163,7 @@ class ScreenRegistry internal constructor(
      * [screen] (a result of [render] with the same [context]) as a data-update document: the same
      * definition, already bound, so no data is fetched again and the ids match (ADR 0029).
      */
-    fun dataUpdate(screen: RemoteScreen, context: RenderContext = RenderContext.EMPTY): ByteArray {
+    public fun dataUpdate(screen: RemoteScreen, context: RenderContext = RenderContext.EMPTY): ByteArray {
         val apiLevel =
             minOf(context.rcApiLevel ?: RemoteComposeRenderer.MAX_API_LEVEL, RemoteComposeRenderer.MAX_API_LEVEL)
         val profiles = context.rcProfiles ?: RemoteComposeRenderer.DEFAULT_PROFILES
@@ -174,7 +175,10 @@ class ScreenRegistry internal constructor(
 }
 
 @ScreenDslMarker
-class RegistryBuilder internal constructor(private val imageLoader: ImageLoader, private val fetcher: DataFetcher) {
+public class RegistryBuilder internal constructor(
+    private val imageLoader: ImageLoader,
+    private val fetcher: DataFetcher,
+) {
     private val screens = linkedMapOf<String, ScreenDefinition>()
     private val boundScreens = linkedMapOf<String, BoundScreen>()
     private val dynamicScreens = linkedMapOf<String, (RenderContext) -> ScreenDefinition>()
@@ -188,7 +192,7 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader,
     }
 
     /** A screen written with the Kotlin DSL. */
-    fun screen(id: String, block: ScreenBuilder.() -> Unit) {
+    public fun screen(id: String, block: ScreenBuilder.() -> Unit) {
         screen(ScreenBuilder(id).apply(block).build())
     }
 
@@ -196,7 +200,7 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader,
      * A screen from any other source (JSON, admin panel). Validated here; a bound screen also
      * checks its secrets (environment) and date patterns here.
      */
-    fun screen(definition: ScreenDefinition) {
+    public fun screen(definition: ScreenDefinition) {
         definition.validate()
         val bound = if (definition.isBound) BoundScreen(definition, fetcher) else null
         claim(definition.id)
@@ -208,7 +212,7 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader,
      * `dynamicScreen("movie") { ctx -> text("Movie ${ctx.param("id")}") }`. Rendered on every
      * request; its content is validated then (invalid content = HTTP 500, missing param = 400).
      */
-    fun dynamicScreen(id: String, block: ScreenBuilder.(RenderContext) -> Unit) {
+    public fun dynamicScreen(id: String, block: ScreenBuilder.(RenderContext) -> Unit) {
         claim(id)
         dynamicScreens[id] = { context -> ScreenBuilder(id).apply { block(context) }.build() }
     }
@@ -218,7 +222,7 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader,
      * ([ScreenJson] format). Each file must be named `<id>.json` (ADR 0011). Errors name the file
      * and the JSON path. Hidden files (`.x.json`, macOS `._x.json` copied by tar/scp) are skipped.
      */
-    fun screensFrom(directory: Path) {
+    public fun screensFrom(directory: Path) {
         require(directory.isDirectory()) { "Screens directory '$directory' does not exist" }
         directory.listDirectoryEntries("*.json")
             .filterNot { it.fileName.toString().startsWith(".") }
@@ -233,7 +237,7 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader,
     }
 
     /** A custom component (raw RC JSON body, ADR 0033); checked at build, with the brand. */
-    fun component(definition: ComponentDefinition) {
+    public fun component(definition: ComponentDefinition) {
         require(definition.id !in components) { "Duplicate component id '${definition.id}'" }
         components[definition.id] = definition
     }
@@ -242,7 +246,7 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader,
      * Adds every `*.json` file in [directory] as a component ([ComponentJson]); each must be named
      * `<id>.json`. A missing directory adds nothing (components are optional).
      */
-    fun componentsFrom(directory: Path) {
+    public fun componentsFrom(directory: Path) {
         if (!directory.isDirectory()) return
         directory.listDirectoryEntries("*.json")
             .filterNot { it.fileName.toString().startsWith(".") }
@@ -256,7 +260,7 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader,
             }
     }
 
-    fun brand(
+    public fun brand(
         name: String,
         primaryColor: String,
         secondaryColor: String,
@@ -280,7 +284,7 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader,
         )
     }
 
-    fun brand(config: BrandConfig) {
+    public fun brand(config: BrandConfig) {
         brand = config
     }
 
@@ -356,7 +360,7 @@ class RegistryBuilder internal constructor(private val imageLoader: ImageLoader,
  * sources (T-006) are fetched with [dataLoader]; `{{secret.NAME}}` reads `COMPOSECAST_SECRET_NAME`
  * from [env].
  */
-fun composeCast(
+public fun composeCast(
     imageLoader: ImageLoader = HttpImageLoader(),
     dataLoader: DataLoader = HttpDataLoader,
     env: (String) -> String? = System::getenv,

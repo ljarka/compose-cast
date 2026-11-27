@@ -5,13 +5,13 @@ import kotlinx.serialization.Serializable
 
 /** A building block of a screen. New components: docs/playbooks/add-component.md. */
 @Serializable
-sealed interface Component {
+public sealed interface Component {
     /** Layout and decoration (T-012); every component except [Repeat] has one. */
-    val modifier: Modifier get() = Modifier.NONE
+    public val modifier: Modifier get() = Modifier.NONE
 
     @Serializable
     @SerialName("text")
-    data class Text(
+    public data class Text(
         val text: String,
         val style: TextStyle = TextStyle.Body,
         val color: String? = null,
@@ -31,7 +31,7 @@ sealed interface Component {
      */
     @Serializable
     @SerialName("image")
-    data class Image(
+    public data class Image(
         val url: String,
         val alt: String = "",
         val contentScale: ContentScale? = null,
@@ -43,7 +43,7 @@ sealed interface Component {
     /** Small image rendered with `Fit` scaling at [size] dp (default 24). */
     @Serializable
     @SerialName("icon")
-    data class Icon(
+    public data class Icon(
         val url: String,
         val alt: String = "",
         val size: Int = 24,
@@ -53,7 +53,7 @@ sealed interface Component {
     /** Horizontal rule of [thickness] dp (default 1). */
     @Serializable
     @SerialName("divider")
-    data class Divider(
+    public data class Divider(
         val thickness: Int = 1,
         val color: String? = null,
         override val modifier: Modifier = Modifier.NONE,
@@ -62,7 +62,7 @@ sealed interface Component {
     /** Vertical container with card defaults (16 dp padding, 12 dp corner radius, surface background). */
     @Serializable
     @SerialName("card")
-    data class Card(
+    public data class Card(
         val children: List<Component>,
         val spacing: Int = 0,
         override val modifier: Modifier = Modifier.NONE,
@@ -70,7 +70,7 @@ sealed interface Component {
 
     @Serializable
     @SerialName("button")
-    data class Button(
+    public data class Button(
         val label: String,
         val action: Action,
         val variant: ButtonVariant = ButtonVariant.Filled,
@@ -81,12 +81,12 @@ sealed interface Component {
     /** Empty space of [height] dp along the parent's direction (a width inside a row). */
     @Serializable
     @SerialName("spacer")
-    data class Spacer(val height: Int = 8, override val modifier: Modifier = Modifier.NONE) : Component
+    public data class Spacer(val height: Int = 8, override val modifier: Modifier = Modifier.NONE) : Component
 
     /** Children stacked vertically, [spacing] dp apart (T-012). */
     @Serializable
     @SerialName("column")
-    data class Column(
+    public data class Column(
         val children: List<Component>,
         val horizontalAlignment: Alignment = Alignment.Start,
         val verticalArrangement: Arrangement = Arrangement.Start,
@@ -98,7 +98,7 @@ sealed interface Component {
     /** Children side by side, [spacing] dp apart (T-012). */
     @Serializable
     @SerialName("row")
-    data class Row(
+    public data class Row(
         val children: List<Component>,
         val horizontalArrangement: Arrangement = Arrangement.Start,
         val verticalAlignment: Alignment = Alignment.Start,
@@ -110,7 +110,7 @@ sealed interface Component {
     /** Children stacked on top of each other (later ones above), aligned in the box (T-012). */
     @Serializable
     @SerialName("box")
-    data class Box(
+    public data class Box(
         val children: List<Component>,
         val horizontalAlignment: Alignment = Alignment.Start,
         val verticalAlignment: Alignment = Alignment.Start,
@@ -120,7 +120,7 @@ sealed interface Component {
     /** Shows the first child that fits within the available bounds (T-015). */
     @Serializable
     @SerialName("fitBox")
-    data class FitBox(
+    public data class FitBox(
         val children: List<Component>,
         val horizontalAlignment: Alignment = Alignment.Start,
         val verticalAlignment: Alignment = Alignment.Start,
@@ -130,7 +130,7 @@ sealed interface Component {
     /** Children laid out horizontally and wrapped onto new lines (T-014). */
     @Serializable
     @SerialName("flow")
-    data class Flow(
+    public data class Flow(
         val children: List<Component>,
         val horizontalAlignment: Alignment = Alignment.Start,
         val verticalAlignment: Alignment = Alignment.Start,
@@ -142,7 +142,7 @@ sealed interface Component {
     /** Equal-width grid of [columns] columns, [spacing] dp apart (T-014). */
     @Serializable
     @SerialName("grid")
-    data class Grid(
+    public data class Grid(
         val columns: Int,
         val children: List<Component>,
         val spacing: Int = 0,
@@ -156,7 +156,7 @@ sealed interface Component {
      */
     @Serializable
     @SerialName("repeat")
-    data class Repeat(
+    public data class Repeat(
         val items: RepeatItems,
         @SerialName("as") val alias: String = "item",
         val limit: Int? = null,
@@ -170,7 +170,7 @@ sealed interface Component {
      */
     @Serializable
     @SerialName("expandable")
-    data class Expandable(
+    public data class Expandable(
         val title: String,
         val content: List<Component>,
         val expanded: Boolean = false,
@@ -184,7 +184,7 @@ sealed interface Component {
      */
     @Serializable
     @SerialName("gauge")
-    data class Gauge(
+    public data class Gauge(
         val value: String,
         val min: Float = 0f,
         val max: Float = 100f,
@@ -203,7 +203,7 @@ sealed interface Component {
      */
     @Serializable
     @SerialName("sparkline")
-    data class Sparkline(
+    public data class Sparkline(
         val values: String,
         val min: Float? = null,
         val max: Float? = null,
@@ -216,7 +216,7 @@ sealed interface Component {
     /** A key figure: small [label], big [value], optional [caption] below (T-047). All bindable. */
     @Serializable
     @SerialName("kpi")
-    data class Kpi(
+    public data class Kpi(
         val value: String,
         val label: String = "",
         val caption: String = "",
@@ -231,7 +231,7 @@ sealed interface Component {
      */
     @Serializable
     @SerialName("slider")
-    data class Slider(
+    public data class Slider(
         val controls: String,
         val step: Float? = null,
         val color: String? = null,
@@ -245,14 +245,14 @@ sealed interface Component {
      */
     @Serializable
     @SerialName("custom")
-    data class Custom(
+    public data class Custom(
         val component: String,
         val args: Map<String, String> = emptyMap(),
         override val modifier: Modifier = Modifier.NONE,
     ) : Component
 
     /** The bindable string fields of this component (not of nested ones), by field path. */
-    fun strings(): List<Pair<String, String>> = when (this) {
+    public fun strings(): List<Pair<String, String>> = when (this) {
         is Text -> listOf("text" to text)
         is Image -> listOf("url" to url, "alt" to alt)
         is Icon -> listOf("url" to url, "alt" to alt)
@@ -275,7 +275,7 @@ sealed interface Component {
         )
 
     /** Nested component lists by field name (`children`, `content`, `template`, `empty`). */
-    fun childLists(): List<Pair<String, List<Component>>> = when (this) {
+    public fun childLists(): List<Pair<String, List<Component>>> = when (this) {
         is Column -> listOf("children" to children)
         is Row -> listOf("children" to children)
         is Box -> listOf("children" to children)
@@ -291,7 +291,7 @@ sealed interface Component {
     }
 
     /** Whether this component or a nested one contains `{{`, or it is a [Repeat]. */
-    fun hasBindings(): Boolean = this is Repeat || strings().any { Template.hasBindings(it.second) } ||
+    public fun hasBindings(): Boolean = this is Repeat || strings().any { Template.hasBindings(it.second) } ||
         childLists().any { (_, list) -> list.any { it.hasBindings() } }
 }
 
@@ -299,17 +299,17 @@ sealed interface Component {
  * Numbers in a bound string, in order: `"3, 5.5, -2"`, a JSON array `"[3,5.5,-2]"` (what a bound
  * array renders to) or one number. Used by validation and the renderer (gauge, sparkline).
  */
-object NumberList {
+public object NumberList {
     private val NUMBER = Regex("""-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?""")
 
-    fun parse(text: String): List<Float> = NUMBER.findAll(text).mapNotNull { it.value.toFloatOrNull() }.toList()
+    public fun parse(text: String): List<Float> = NUMBER.findAll(text).mapNotNull { it.value.toFloatOrNull() }.toList()
 
     /** The single number in [text], or null when it is not exactly one number. */
-    fun single(text: String): Float? = text.trim().toFloatOrNull()?.takeIf { it.isFinite() }
+    public fun single(text: String): Float? = text.trim().toFloatOrNull()?.takeIf { it.isFinite() }
 }
 
 /** The bindable string fields of an action, by field path. */
-fun Action.strings(): List<Pair<String, String>> = when (this) {
+public fun Action.strings(): List<Pair<String, String>> = when (this) {
     is Action.Navigate -> listOf("screen" to screen) + params.map { (k, v) -> "params.$k" to v }
     is Action.OpenUrl -> listOf("url" to url)
     is Action.Reload -> emptyList()

@@ -43,6 +43,8 @@ Full examples: `examples/demo/screens/`; cases: `ScreenJsonTest`, `LayoutTest`, 
 
 ## Rules
 
+- **Explicit API (T-055):** `kotlin { explicitApi() }` — every non-private declaration states
+  `public` or `internal`. New helpers default to `internal`; `public` is a published-API decision.
 - **No RC types here** — `protocol` must stay pure Kotlin + kotlinx.serialization. No Remote
   Compose imports ever ([ADR 0002](../docs/decisions/0002-confine-restricted-remote-compose-api.md),
   rule R3 in `scripts/check-architecture.sh`).

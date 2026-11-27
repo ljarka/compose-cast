@@ -19,7 +19,7 @@ import kotlinx.serialization.Serializable
  * unknown keys anyway) see the same JSON as before.
  */
 @Serializable
-data class BrandConfig(
+public data class BrandConfig(
     val name: String,
     val primaryColor: String,
     val secondaryColor: String,
@@ -40,7 +40,7 @@ data class BrandConfig(
      * Every problem, each starting with the field name (`primaryColor: expected #RRGGBB …`); empty
      * when valid. Used by the admin panel's settings (T-007 A5).
      */
-    fun problems(): List<String> = buildList {
+    public fun problems(): List<String> = buildList {
         if (name.isBlank()) add("name: must not be blank")
         listOf(
             "primaryColor" to primaryColor,

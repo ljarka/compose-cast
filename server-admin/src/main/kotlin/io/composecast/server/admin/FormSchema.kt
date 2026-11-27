@@ -141,7 +141,8 @@ internal object FormSchema {
         Json.decodeFromJsonElement(DataSource.serializer(), source),
     ) as JsonObject
 
-    /** Fields of one on-device screen value (`values.<name>` tree node): default, min, max, animate (mode/easing dropdowns). */
+    /** Fields of one on-device screen value (`values.<name>` tree node): default, min, max,
+     * animate (mode/easing dropdowns). */
     val valueFields: List<Field> = fields(ScreenValue.serializer().descriptor, "")
 
     /** A screen value's JSON with its defaults written out (keeping `animate` absent when unset). */
@@ -151,7 +152,8 @@ internal object FormSchema {
         return if (decoded.animate == null) JsonObject(encoded - "animate") else encoded
     }
 
-    /** Component-list field names of [descriptor] (`children`, `content`, `template`, `empty`, `components`, `error`). */
+    /** Component-list field names of [descriptor] (`children`, `content`, `template`, `empty`,
+     * `components`, `error`). */
     fun componentLists(descriptor: SerialDescriptor): List<String> =
         (0 until descriptor.elementsCount).filter { isComponentList(descriptor.getElementDescriptor(it)) }
             .map(descriptor::getElementName)

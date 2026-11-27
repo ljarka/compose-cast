@@ -78,6 +78,8 @@ file and the JSON path; a file must be named `<id>.json`.
 
 ## Decisions
 
+- **Explicit API (T-055):** `kotlin { explicitApi() }` — every non-private declaration states
+  `public` or `internal`. New helpers default to `internal`; `public` is a published-API decision.
 - RC creation API is confined to the `render` package ([ADR 0002](../docs/decisions/0002-confine-restricted-remote-compose-api.md)).
 - Buttons are a clickable `Box` with brand `primaryColor` background; click = `hostAction(action)`.
 - Node renderers are `RcScope` extensions taking a `RenderEnv` (brand colors + image cache);

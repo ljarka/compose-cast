@@ -484,3 +484,9 @@ README roadmap's "Etap" numbers.
     `app-template`, and make `io.composecast:sdk-android` a first-class Material 3-free SDK
     dogfooded by `app-shell` and usable directly by external Android apps (Reposilite publishing
     kept per ADR 0019). Added Roadmap H and tasks T-058…T-061.
+97. **Static analysis and explicit API** (2026-11-28, T-055): `detekt` 1.23.8 on every Kotlin
+    module (root `build.gradle.kts`, rules in `config/detekt/detekt.yml` on top of the defaults,
+    a `verify.sh` step, also in `--quick`); `explicitApi()` in `protocol`, `sdk-server` and
+    `sdk-android` with the existing visibility kept (no API removed). Detekt findings fixed (long
+    lines, unused catch variables, an unused `visibilityIds` parameter in validation); the
+    largest files are excluded from `LongMethod`/`CyclomaticComplexMethod` until T-056 splits them.

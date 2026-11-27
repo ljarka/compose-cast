@@ -22,18 +22,18 @@ import io.composecast.protocol.TextStyle
 import io.composecast.protocol.ValueAnimation
 
 @DslMarker
-annotation class ScreenDslMarker
+public annotation class ScreenDslMarker
 
 /**
  * Components of a screen, a `repeat` template or an `error` state. Strings may contain
  * `{{ … }}` bindings (T-006); they are validated when the screen is added to the registry.
  */
 @ScreenDslMarker
-open class ComponentsBuilder internal constructor(private val context: String) {
+public open class ComponentsBuilder internal constructor(private val context: String) {
     internal val components = mutableListOf<Component>()
 
     /** [style]: `h1`, `h2`, `h3`, `body`, `caption` ([TextStyle]). */
-    fun text(
+    public fun text(
         text: String,
         style: String = "body",
         color: String? = null,
@@ -59,7 +59,7 @@ open class ComponentsBuilder internal constructor(private val context: String) {
         )
     }
 
-    fun image(
+    public fun image(
         url: String,
         alt: String = "",
         contentScale: ContentScale? = null,
@@ -71,17 +71,17 @@ open class ComponentsBuilder internal constructor(private val context: String) {
     }
 
     /** Small image rendered with `Fit` scaling at [size] dp (default 24). */
-    fun icon(url: String, alt: String = "", size: Int = 24, modifier: Modifier = Modifier.NONE) {
+    public fun icon(url: String, alt: String = "", size: Int = 24, modifier: Modifier = Modifier.NONE) {
         components += Component.Icon(url, alt, size, modifier)
     }
 
     /** Horizontal rule of [thickness] dp (default 1). */
-    fun divider(thickness: Int = 1, color: String? = null, modifier: Modifier = Modifier.NONE) {
+    public fun divider(thickness: Int = 1, color: String? = null, modifier: Modifier = Modifier.NONE) {
         components += Component.Divider(thickness, color, modifier)
     }
 
     /** Ring filled to [value] (a number or a `{{binding}}`) between [min] and [max] (T-047). */
-    fun gauge(
+    public fun gauge(
         value: String,
         min: Float = 0f,
         max: Float = 100f,
@@ -96,7 +96,7 @@ open class ComponentsBuilder internal constructor(private val context: String) {
     }
 
     /** Line through [values] (`"3, 5, 2"` or a `{{binding}}` to a JSON array of numbers) (T-047). */
-    fun sparkline(
+    public fun sparkline(
         values: String,
         min: Float? = null,
         max: Float? = null,
@@ -109,7 +109,7 @@ open class ComponentsBuilder internal constructor(private val context: String) {
     }
 
     /** Key figure: small [label], big [value], optional [caption] (T-047). */
-    fun kpi(
+    public fun kpi(
         value: String,
         label: String = "",
         caption: String = "",
@@ -120,7 +120,7 @@ open class ComponentsBuilder internal constructor(private val context: String) {
     }
 
     /** Horizontal slider updating screen value [controls] locally on the device (no server round-trip). */
-    fun slider(
+    public fun slider(
         controls: String,
         step: Float? = null,
         color: String? = null,
@@ -131,17 +131,17 @@ open class ComponentsBuilder internal constructor(private val context: String) {
     }
 
     /** A custom component (raw RC JSON, ADR 0033) by [component] id; [args] fill its params (bindable). */
-    fun custom(component: String, args: Map<String, String> = emptyMap(), modifier: Modifier = Modifier.NONE) {
+    public fun custom(component: String, args: Map<String, String> = emptyMap(), modifier: Modifier = Modifier.NONE) {
         components += Component.Custom(component, args, modifier)
     }
 
     /** Vertical container with card defaults (16 dp padding, 12 dp corner radius, surface background). */
-    fun card(modifier: Modifier = Modifier.NONE, spacing: Int = 0, children: ComponentsBuilder.() -> Unit) {
+    public fun card(modifier: Modifier = Modifier.NONE, spacing: Int = 0, children: ComponentsBuilder.() -> Unit) {
         components += Component.Card(nested(children), spacing, modifier)
     }
 
     /** A tappable button; [action] is emitted as a Remote Compose host action ([ActionCodec]). */
-    fun button(
+    public fun button(
         label: String,
         action: Action,
         variant: ButtonVariant = ButtonVariant.Filled,
@@ -155,7 +155,7 @@ open class ComponentsBuilder internal constructor(private val context: String) {
      * Convenience for the wire form, e.g. `navigate:onboarding` or `open_url:https://example.com`
      * (grammar in [ActionCodec]). Unknown or malformed actions fail when the screen is built.
      */
-    fun button(
+    public fun button(
         label: String,
         action: String,
         variant: ButtonVariant = ButtonVariant.Filled,
@@ -170,12 +170,12 @@ open class ComponentsBuilder internal constructor(private val context: String) {
     }
 
     /** Empty space of [height] dp along the parent's direction (a width inside a row). */
-    fun spacer(height: Int = 8, modifier: Modifier = Modifier.NONE) {
+    public fun spacer(height: Int = 8, modifier: Modifier = Modifier.NONE) {
         components += Component.Spacer(height, modifier)
     }
 
     /** A section that expands and collapses locally on the device without a server request (T-008). */
-    fun expandable(
+    public fun expandable(
         title: String,
         expanded: Boolean = false,
         modifier: Modifier = Modifier.NONE,
@@ -185,7 +185,7 @@ open class ComponentsBuilder internal constructor(private val context: String) {
     }
 
     /** Children stacked vertically, [spacing] dp apart (T-012). */
-    fun column(
+    public fun column(
         modifier: Modifier = Modifier.NONE,
         horizontalAlignment: Alignment = Alignment.Start,
         verticalArrangement: Arrangement = Arrangement.Start,
@@ -204,7 +204,7 @@ open class ComponentsBuilder internal constructor(private val context: String) {
     }
 
     /** Children side by side, [spacing] dp apart (T-012). */
-    fun row(
+    public fun row(
         modifier: Modifier = Modifier.NONE,
         horizontalArrangement: Arrangement = Arrangement.Start,
         verticalAlignment: Alignment = Alignment.Start,
@@ -223,7 +223,7 @@ open class ComponentsBuilder internal constructor(private val context: String) {
     }
 
     /** Children stacked on top of each other, aligned in the box (T-012). */
-    fun box(
+    public fun box(
         modifier: Modifier = Modifier.NONE,
         horizontalAlignment: Alignment = Alignment.Start,
         verticalAlignment: Alignment = Alignment.Start,
@@ -233,7 +233,7 @@ open class ComponentsBuilder internal constructor(private val context: String) {
     }
 
     /** Shows the first child that fits within the available bounds (T-015). */
-    fun fitBox(
+    public fun fitBox(
         modifier: Modifier = Modifier.NONE,
         horizontalAlignment: Alignment = Alignment.Start,
         verticalAlignment: Alignment = Alignment.Start,
@@ -243,7 +243,7 @@ open class ComponentsBuilder internal constructor(private val context: String) {
     }
 
     /** Children laid out horizontally and wrapped onto new lines (T-014). */
-    fun flow(
+    public fun flow(
         modifier: Modifier = Modifier.NONE,
         horizontalAlignment: Alignment = Alignment.Start,
         verticalAlignment: Alignment = Alignment.Start,
@@ -262,7 +262,7 @@ open class ComponentsBuilder internal constructor(private val context: String) {
     }
 
     /** Equal-width grid of [columns] columns, [spacing] dp apart (T-014). */
-    fun grid(
+    public fun grid(
         columns: Int,
         modifier: Modifier = Modifier.NONE,
         spacing: Int = 0,
@@ -272,12 +272,12 @@ open class ComponentsBuilder internal constructor(private val context: String) {
     }
 
     /** Horizontally scrolling row (T-014). */
-    fun gallery(
+    public fun gallery(
         modifier: Modifier = Modifier.NONE,
         verticalAlignment: Alignment = Alignment.Start,
         spacing: Int = 8,
         children: ComponentsBuilder.() -> Unit,
-    ) = row(
+    ): Unit = row(
         modifier = modifier.copy(scroll = ScrollDirection.Horizontal),
         verticalAlignment = verticalAlignment,
         spacing = spacing,
@@ -285,22 +285,22 @@ open class ComponentsBuilder internal constructor(private val context: String) {
     )
 
     /** [template] for each element of the array at [path], bound as `{{<alias>}}` and `{{$index}}`. */
-    fun repeat(
+    public fun repeat(
         path: String,
         alias: String = "item",
         limit: Int? = null,
         empty: (ComponentsBuilder.() -> Unit)? = null,
         template: ComponentsBuilder.() -> Unit,
-    ) = repeat(RepeatItems.Path(path), alias, limit, empty, template)
+    ): Unit = repeat(RepeatItems.Path(path), alias, limit, empty, template)
 
     /** [template] for each index of the parallel arrays in [zip] (name → path), bound as `{{<alias>.<name>}}`. */
-    fun repeat(
+    public fun repeat(
         zip: Map<String, String>,
         alias: String = "item",
         limit: Int? = null,
         empty: (ComponentsBuilder.() -> Unit)? = null,
         template: ComponentsBuilder.() -> Unit,
-    ) = repeat(RepeatItems.Zip(zip), alias, limit, empty, template)
+    ): Unit = repeat(RepeatItems.Zip(zip), alias, limit, empty, template)
 
     private fun repeat(
         items: RepeatItems,
@@ -327,8 +327,8 @@ open class ComponentsBuilder internal constructor(private val context: String) {
  * Content is validated by [ScreenDefinition.validate] when the screen is added to the registry.
  */
 @ScreenDslMarker
-class ScreenBuilder internal constructor(val id: String) : ComponentsBuilder("Screen '$id'") {
-    var title: String = id
+public class ScreenBuilder internal constructor(public val id: String) : ComponentsBuilder("Screen '$id'") {
+    public var title: String = id
     private val params = linkedMapOf<String, ParamSpec>()
     private val data = linkedMapOf<String, DataSource>()
     private val lookups = linkedMapOf<String, Map<String, String>>()
@@ -336,29 +336,42 @@ class ScreenBuilder internal constructor(val id: String) : ComponentsBuilder("Sc
     private var error = emptyList<Component>()
     private var live: Live? = null
 
-    /** Declares an on-device numeric value read as `{{values.<name>}}` and written by e.g. `slider(name)` or [animate]. */
-    fun value(name: String, default: Float = 0f, min: Float = 0f, max: Float = 100f, animate: ValueAnimation? = null) {
+    /** Declares an on-device numeric value read as `{{values.<name>}}` and written by
+     * e.g. `slider(name)` or [animate]. */
+    public fun value(
+        name: String,
+        default: Float = 0f,
+        min: Float = 0f,
+        max: Float = 100f,
+        animate: ValueAnimation? = null,
+    ) {
         val text = if (default % 1f == 0f) default.toInt().toString() else default.toString()
         values[name] = ScreenValue(default = text, min = min, max = max, animate = animate)
     }
 
     /** Declares an on-device numeric value whose [default] is a number or a `{{...}}` server binding. */
-    fun value(name: String, default: String, min: Float = 0f, max: Float = 100f, animate: ValueAnimation? = null) {
+    public fun value(
+        name: String,
+        default: String,
+        min: Float = 0f,
+        max: Float = 100f,
+        animate: ValueAnimation? = null,
+    ) {
         values[name] = ScreenValue(default = default, min = min, max = max, animate = animate)
     }
 
     /** Makes this a live screen (T-047, ADR 0029): apps receive its changes every [everyMs] ms. */
-    fun live(everyMs: Int = Live.DEFAULT_EVERY_MS) {
+    public fun live(everyMs: Int = Live.DEFAULT_EVERY_MS) {
         live = Live(everyMs)
     }
 
     /** A query parameter read as `{{params.<name>}}`; no [default] = required (HTTP 400 when missing). */
-    fun param(name: String, default: String? = null) {
+    public fun param(name: String, default: String? = null) {
         params[name] = ParamSpec(default)
     }
 
     /** An HTTP JSON data source bound as `{{<name>.path}}` ([DataSource]). */
-    fun data(
+    public fun data(
         name: String,
         url: String,
         headers: Map<String, String> = emptyMap(),
@@ -370,12 +383,12 @@ class ScreenBuilder internal constructor(val id: String) : ComponentsBuilder("Sc
     }
 
     /** A value table for `{{x | lookup:<name>}}`; key `"*"` is the fallback. */
-    fun lookup(name: String, table: Map<String, String>) {
+    public fun lookup(name: String, table: Map<String, String>) {
         lookups[name] = table
     }
 
     /** Shown instead of the components when a non-optional data source fails (may bind `{{params.x}}`). */
-    fun error(block: ComponentsBuilder.() -> Unit) {
+    public fun error(block: ComponentsBuilder.() -> Unit) {
         error = nested(block)
     }
 

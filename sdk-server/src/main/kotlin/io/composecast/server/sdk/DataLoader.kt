@@ -8,19 +8,23 @@ import java.net.http.HttpResponse
 import java.time.Duration
 
 /** One resolved data-source request (templates already substituted). */
-data class DataRequest(val url: String, val headers: Map<String, String> = emptyMap(), val timeoutMs: Int = 5000)
+public data class DataRequest(
+    public val url: String,
+    public val headers: Map<String, String> = emptyMap(),
+    public val timeoutMs: Int = 5000,
+)
 
 /**
  * Fetches the JSON body of a data source (T-006). Throws on any failure; the message must not
  * contain the URL or headers (they may carry secrets) — the caller adds a masked URL to logs.
  * Inject a fake in tests (no network).
  */
-fun interface DataLoader {
-    fun load(request: DataRequest): String
+public fun interface DataLoader {
+    public fun load(request: DataRequest): String
 }
 
 /** A data source failed and the screen has no `error` components: HTTP 502 (server-app). */
-class DataSourceException(message: String) : RuntimeException(message)
+public class DataSourceException(message: String) : RuntimeException(message)
 
 /**
  * Default [DataLoader]: HTTP(S) GET, `Accept: application/json`, 2xx only, at most [MAX_BYTES].
@@ -29,12 +33,12 @@ class DataSourceException(message: String) : RuntimeException(message)
  * multicast, and IPv6 ULA hosts unless [allowPrivateHosts] is true, and follows redirects manually
  * (up to [MAX_REDIRECTS] hops) so every hop is checked. Error messages omit URLs and headers.
  */
-class HttpDataLoader internal constructor(
+public class HttpDataLoader internal constructor(
     private val allowPrivateHosts: Boolean,
     private val resolve: (String) -> List<InetAddress>,
     private val isAllowed: (InetAddress) -> Boolean,
 ) : DataLoader {
-    constructor(allowPrivateHosts: Boolean = false) :
+    public constructor(allowPrivateHosts: Boolean = false) :
         this(allowPrivateHosts, { host ->
             InetAddress.getAllByName(host).toList()
         }, { !HttpImageLoader.isPrivateAddress(it) })
@@ -75,9 +79,9 @@ class HttpDataLoader internal constructor(
         require(blocked == null) { "private or local data source host is not allowed" }
     }
 
-    companion object : DataLoader by HttpDataLoader() {
-        const val MAX_BYTES: Int = 2 * 1024 * 1024
-        const val MAX_REDIRECTS: Int = 3
+    public companion object : DataLoader by HttpDataLoader() {
+        public const val MAX_BYTES: Int = 2 * 1024 * 1024
+        public const val MAX_REDIRECTS: Int = 3
         private val REDIRECT_CODES = setOf(301, 302, 303, 307, 308)
 
         private val client: HttpClient = HttpClient.newBuilder()

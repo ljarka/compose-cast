@@ -60,9 +60,9 @@ private suspend fun WebSocketServerSession.stream(id: String, frames: LiveFrames
                 return refuse(e.message ?: "screen not found")
             } catch (e: ScreenParameterException) {
                 return refuse(e.message ?: "missing parameter")
-            } catch (e: UnsupportedClientVersionException) {
+            } catch (_: UnsupportedClientVersionException) {
                 return refuse("app update required")
-            } catch (e: DataSourceException) {
+            } catch (_: DataSourceException) {
                 // Already logged by the binder; keep the last frame on the device and try again.
                 if (sent == 0) return refuse("data source failed")
                 null

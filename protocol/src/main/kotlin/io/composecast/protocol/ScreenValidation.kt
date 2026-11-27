@@ -118,7 +118,7 @@ private fun componentProblems(
     list.forEachIndexed { i, component ->
         val at = "$path[$i]"
         if (component !is Component.Repeat) {
-            addAll(modifierProblems(component.modifier, "$at.modifier", parent, visibilityIds))
+            addAll(modifierProblems(component.modifier, "$at.modifier", parent))
         }
         when (component) {
             is Component.Text -> {
@@ -142,7 +142,7 @@ private fun componentProblems(
                 component.color?.let { colorProblem(it)?.let { problem -> add("$at.color: $problem") } }
             }
             is Component.Button -> {
-                actionProblem(component.action, visibilityIds)?.let { add("$at.action: $it") }
+                actionProblem(component.action)?.let { add("$at.action: $it") }
                 if (component.icon != null && component.icon.isBlank()) add("$at.icon: must not be blank")
             }
             is Component.Card -> {
@@ -165,7 +165,8 @@ private fun componentProblems(
                 // The definition (params, types) is checked by the registry, which knows it (ADR 0033).
                 if (!CUSTOM_ID.matches(component.component)) {
                     add(
-                        "$at.component: expected a component id (letters, digits, '-', '_'), was '${component.component}'",
+                        "$at.component: expected a component id (letters, digits, '-', '_'), " +
+                            "was '${component.component}'",
                     )
                 }
             }
@@ -202,7 +203,8 @@ private fun componentProblems(
                     add("$at.controls: unknown value '${component.controls}' (declare it in \"values\")")
                 } else if (spec.animate != null) {
                     add(
-                        "$at.controls: value '${component.controls}' is animated and cannot also be controlled by a slider",
+                        "$at.controls: value '${component.controls}' is animated and cannot also be " +
+                            "controlled by a slider",
                     )
                 } else if (!slidersByValue.add(component.controls)) {
                     add("$at.controls: value '${component.controls}' is already controlled by another slider")
@@ -349,63 +351,62 @@ private fun componentProblems(
     }
 }
 
-private fun modifierProblems(m: Modifier, at: String, parent: Parent, visibilityIds: Set<String>): List<String> =
-    buildList {
-        m.padding?.let { p ->
-            if (listOf(p.start, p.top, p.end, p.bottom).any { it < 0 }) add("$at.padding: must be >= 0, was $p")
-        }
-        listOf("width" to m.width, "height" to m.height).forEach { (field, dimension) ->
-            if (dimension is Dimension.Dp &&
-                dimension.value < 0
-            ) {
-                add("$at.$field: must be >= 0, was ${dimension.value}")
-            }
-        }
-        m.weight?.let { weight ->
-            if (!(weight > 0f) || weight.isInfinite()) add("$at.weight: must be > 0, was $weight")
-            if (parent != Parent.Column && parent != Parent.Row) {
-                add("$at.weight: only allowed for direct children of a row or column")
-            }
-        }
-        m.background?.let { colorProblem(it)?.let { problem -> add("$at.background: $problem") } }
-        m.cornerRadius?.let { if (it < 0) add("$at.cornerRadius: must be >= 0, was $it") }
-        if (m.cornerRadius != null && m.shape != null) add("$at: set either cornerRadius or shape, not both")
-        m.border?.let { border ->
-            if (border.width <= 0) add("$at.border.width: must be > 0, was ${border.width}")
-            colorProblem(border.color)?.let { add("$at.border.color: $it") }
-        }
-        m.action?.let { action -> actionProblem(action, visibilityIds)?.let { add("$at.action: $it") } }
-        m.minWidth?.let { if (it < 0) add("$at.minWidth: must be >= 0, was $it") }
-        m.maxWidth?.let { if (it < 0) add("$at.maxWidth: must be >= 0, was $it") }
-        if (m.minWidth != null && m.maxWidth != null && m.minWidth > m.maxWidth) {
-            add("$at.minWidth: must be <= maxWidth (${m.maxWidth}), was ${m.minWidth}")
-        }
-        m.minHeight?.let { if (it < 0) add("$at.minHeight: must be >= 0, was $it") }
-        m.maxHeight?.let { if (it < 0) add("$at.maxHeight: must be >= 0, was $it") }
-        if (m.minHeight != null && m.maxHeight != null && m.minHeight > m.maxHeight) {
-            add("$at.minHeight: must be <= maxHeight (${m.maxHeight}), was ${m.minHeight}")
-        }
-        m.fillFraction?.let {
-            if (it.isNaN() || it <= 0f || it > 1f) add("$at.fillFraction: must be in (0, 1], was $it")
-        }
-        m.collapsePriority?.let {
-            if (it.isNaN() || it.isInfinite()) add("$at.collapsePriority: must be finite, was $it")
-        }
-        m.visibility?.let { vis ->
-            if (vis.id.isBlank()) add("$at.visibility.id: must not be blank")
-            if (vis.durationMs !in Visibility.MIN_DURATION_MS..Visibility.MAX_DURATION_MS) {
-                add(
-                    "$at.visibility.durationMs: must be " +
-                        "${Visibility.MIN_DURATION_MS}..${Visibility.MAX_DURATION_MS}, was ${vis.durationMs}",
-                )
-            }
+private fun modifierProblems(m: Modifier, at: String, parent: Parent): List<String> = buildList {
+    m.padding?.let { p ->
+        if (listOf(p.start, p.top, p.end, p.bottom).any { it < 0 }) add("$at.padding: must be >= 0, was $p")
+    }
+    listOf("width" to m.width, "height" to m.height).forEach { (field, dimension) ->
+        if (dimension is Dimension.Dp &&
+            dimension.value < 0
+        ) {
+            add("$at.$field: must be >= 0, was ${dimension.value}")
         }
     }
+    m.weight?.let { weight ->
+        if (!(weight > 0f) || weight.isInfinite()) add("$at.weight: must be > 0, was $weight")
+        if (parent != Parent.Column && parent != Parent.Row) {
+            add("$at.weight: only allowed for direct children of a row or column")
+        }
+    }
+    m.background?.let { colorProblem(it)?.let { problem -> add("$at.background: $problem") } }
+    m.cornerRadius?.let { if (it < 0) add("$at.cornerRadius: must be >= 0, was $it") }
+    if (m.cornerRadius != null && m.shape != null) add("$at: set either cornerRadius or shape, not both")
+    m.border?.let { border ->
+        if (border.width <= 0) add("$at.border.width: must be > 0, was ${border.width}")
+        colorProblem(border.color)?.let { add("$at.border.color: $it") }
+    }
+    m.action?.let { action -> actionProblem(action)?.let { add("$at.action: $it") } }
+    m.minWidth?.let { if (it < 0) add("$at.minWidth: must be >= 0, was $it") }
+    m.maxWidth?.let { if (it < 0) add("$at.maxWidth: must be >= 0, was $it") }
+    if (m.minWidth != null && m.maxWidth != null && m.minWidth > m.maxWidth) {
+        add("$at.minWidth: must be <= maxWidth (${m.maxWidth}), was ${m.minWidth}")
+    }
+    m.minHeight?.let { if (it < 0) add("$at.minHeight: must be >= 0, was $it") }
+    m.maxHeight?.let { if (it < 0) add("$at.maxHeight: must be >= 0, was $it") }
+    if (m.minHeight != null && m.maxHeight != null && m.minHeight > m.maxHeight) {
+        add("$at.minHeight: must be <= maxHeight (${m.maxHeight}), was ${m.minHeight}")
+    }
+    m.fillFraction?.let {
+        if (it.isNaN() || it <= 0f || it > 1f) add("$at.fillFraction: must be in (0, 1], was $it")
+    }
+    m.collapsePriority?.let {
+        if (it.isNaN() || it.isInfinite()) add("$at.collapsePriority: must be finite, was $it")
+    }
+    m.visibility?.let { vis ->
+        if (vis.id.isBlank()) add("$at.visibility.id: must not be blank")
+        if (vis.durationMs !in Visibility.MIN_DURATION_MS..Visibility.MAX_DURATION_MS) {
+            add(
+                "$at.visibility.durationMs: must be " +
+                    "${Visibility.MIN_DURATION_MS}..${Visibility.MAX_DURATION_MS}, was ${vis.durationMs}",
+            )
+        }
+    }
+}
 
 internal fun colorProblem(color: String): String? =
     if (COLOR.matches(color)) null else "expected #RRGGBB or #AARRGGBB, was '$color'"
 
-private fun actionProblem(action: Action, visibilityIds: Set<String>): String? {
+private fun actionProblem(action: Action): String? {
     val target = when (action) {
         is Action.Toggle -> action.target
         is Action.Show -> action.target

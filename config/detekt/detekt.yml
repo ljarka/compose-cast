@@ -1,0 +1,86 @@
+# detekt configuration for compose-cast (T-055). Loaded on top of detekt's built-in default
+# config (buildUponDefaultConfig = true in the root build); only the rules we deliberately
+# change are listed here. Raise a threshold here only with a reason; otherwise fix the code.
+
+complexity:
+  # Files with a lot of small, focused helpers (routing tables, form schemas) trip the default
+  # 600-line class limit without being "complex" — the split tasks (T-056) target the worst of
+  # these, not every helper file.
+  LargeClass:
+    threshold: 700
+  # Validation/rendering/routing functions are long by design (switchboards over the model);
+  # the worst files (T-056) are excluded until they are split.
+  LongMethod:
+    threshold: 100
+    excludes: [
+      '**/protocol/**/ScreenValidation.kt',
+      '**/server-admin/**/ScreenPages.kt',
+      '**/server-admin/**/ComponentPages.kt',
+      '**/server-admin/**/VisualPages.kt',
+      '**/app-shell/**/ComposeCastActivity.kt',
+    ]
+  TooManyFunctions:
+    thresholdInFiles: 20
+    thresholdInClasses: 20
+    thresholdInInterfaces: 20
+    # The DSL surface and the form/palette builders are intentionally flat objects/classes
+    # with one entry per component or per field.
+    thresholdInObjects: 25
+    excludes: [
+      '**/test/**',
+      '**/androidTest/**',
+      '**/commonTest/**',
+      '**/jvmTest/**',
+      '**/androidUnitTest/**',
+      '**/androidInstrumentedTest/**',
+      '**/jsTest/**',
+      '**/iosTest/**',
+      '**/sdk-server/**/ScreenDsl.kt',
+    ]
+  # Validation/rendering switchboards are inherently branchy; 50 keeps the rule meaningful for
+  # the rest of the codebase. Files above it are excluded until T-056 splits them.
+  CyclomaticComplexMethod:
+    threshold: 50
+    excludes: [
+      '**/protocol/**/ScreenValidation.kt',
+      '**/server-admin/**/ComponentPages.kt',
+    ]
+  ComplexCondition:
+    threshold: 6
+  # The DSL builders (text/image/column/row/gauge/…) and the renderers are parameter-heavy by
+  # design (a Modifier + a handful of optional overrides per component).
+  LongParameterList:
+    functionThreshold: 12
+    constructorThreshold: 13
+  NestedBlockDepth:
+    threshold: 5
+
+style:
+  # Kotlin default parameters and named arguments are the house style; the default rule flags them.
+  MagicNumber:
+    active: false
+  # Explicit `return` is the idiomatic early-exit style here.
+  ReturnCount:
+    active: false
+  # Tests embed long JSON/HTML literals; the limit applies to main sources.
+  MaxLineLength:
+    excludes: ['**/test/**', '**/androidTest/**']
+  # The renderer throws three typed exceptions deliberately (parameter, unsupported client, …).
+  ThrowsCount:
+    max: 3
+
+naming:
+  # @Composable functions are PascalCase (like ktlint's ignore-annotated).
+  FunctionNaming:
+    functionPattern: '[a-z][a-zA-Z0-9]*|[A-Z][a-zA-Z0-9]*'
+
+performance:
+  # `*HEADER_TAGS` into a vararg is the intended use (a small fixed array, not a copy).
+  SpreadOperator:
+    active: false
+
+exceptions:
+  # Catch-all at system boundaries (network, JSON, files) is deliberate: the exact exception
+  # set is open-ended, so catching Exception and logging/degrading is the honest behavior.
+  TooGenericExceptionCaught:
+    active: false

@@ -12,7 +12,8 @@ interface ScreenPublishing {
     /** Publishes revision [revisionId] of [id] again; a pending draft is kept. */
     fun rollback(id: String, revisionId: Int, by: String)
 
-    /** Makes [brandJson] (`BrandConfig` JSON, already checked with `problems()`) the brand of `/brand` and every screen (A5). */
+    /** Makes [brandJson] (`BrandConfig` JSON, already checked with `problems()`) the brand of
+     * `/brand` and every screen (A5). */
     fun publishBrand(brandJson: String)
 
     /**

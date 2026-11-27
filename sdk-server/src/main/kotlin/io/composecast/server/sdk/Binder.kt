@@ -141,7 +141,7 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
             val (spec, request, future) = value
             val result = try {
                 future.get(spec.timeoutMs.toLong(), TimeUnit.MILLISECONDS)
-            } catch (e: TimeoutException) {
+            } catch (_: TimeoutException) {
                 future.cancel(true)
                 Result.failure(IllegalStateException("timeout after ${spec.timeoutMs} ms"))
             }
@@ -315,7 +315,8 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
         is Action.Hide -> Action.Hide(render(action.target, roots))
     }
 
-    /** [text] with every `{{ }}` replaced; `{{values.*}}` stays for the renderer; [escape] applies to substituted values. */
+    /** [text] with every `{{ }}` replaced; `{{values.*}}` stays for the renderer;
+     * [escape] applies to substituted values. */
     private fun render(text: String, roots: Map<String, JsonElement>, escape: (String) -> String = { it }): String {
         if (!Template.hasBindings(text)) return text
         return template(text).parts.joinToString("") { part ->
@@ -383,7 +384,7 @@ internal class BoundScreen(val definition: ScreenDefinition, private val fetcher
             "date" -> value?.let { temporal(text(it)) }?.let {
                 try {
                     JsonPrimitive(formatter(args.single()).format(it))
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     null // the pattern needs fields the value lacks (HH on a date)
                 }
             }

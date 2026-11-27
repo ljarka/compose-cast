@@ -15,8 +15,8 @@ import java.time.Duration
  * in remote-compose 1.0.0-alpha20 the player rejects URL images by default, checks them against
  * a 1x1 size declared by the creation DSL, and would fetch them synchronously on the main thread.
  */
-fun interface ImageLoader {
-    fun load(url: String): ByteArray
+public fun interface ImageLoader {
+    public fun load(url: String): ByteArray
 }
 
 /**
@@ -36,12 +36,12 @@ fun interface ImageLoader {
  * client when it connects, so a hostile DNS server can answer with a public address first and a
  * private one second. Pinning the checked address would need a custom socket layer.
  */
-class HttpImageLoader internal constructor(
+public class HttpImageLoader internal constructor(
     private val allowPrivateHosts: Boolean,
     private val resolve: (String) -> List<InetAddress>,
     private val isAllowed: (InetAddress) -> Boolean,
 ) : ImageLoader {
-    constructor(allowPrivateHosts: Boolean = false) :
+    public constructor(allowPrivateHosts: Boolean = false) :
         this(allowPrivateHosts, { host -> InetAddress.getAllByName(host).toList() }, { !isPrivateAddress(it) })
 
     override fun load(url: String): ByteArray {
@@ -83,9 +83,9 @@ class HttpImageLoader internal constructor(
         }
     }
 
-    companion object {
-        const val MAX_BYTES: Int = 5 * 1024 * 1024
-        const val MAX_REDIRECTS: Int = 3
+    public companion object {
+        public const val MAX_BYTES: Int = 5 * 1024 * 1024
+        public const val MAX_REDIRECTS: Int = 3
         private val REDIRECT_CODES = setOf(301, 302, 303, 307, 308)
 
         // Shared by all instances; redirects are handled in load() so every hop is checked.
@@ -99,7 +99,7 @@ class HttpImageLoader internal constructor(
          * (10/8, 172.16/12, 192.168/16, fec0::/10), link-local (169.254/16, fe80::/10), multicast,
          * IPv6 ULA (fc00::/7) and IPv4-mapped IPv6 forms of those.
          */
-        fun isPrivateAddress(address: InetAddress): Boolean {
+        public fun isPrivateAddress(address: InetAddress): Boolean {
             if (address.isLoopbackAddress || address.isAnyLocalAddress || address.isSiteLocalAddress ||
                 address.isLinkLocalAddress || address.isMulticastAddress
             ) {
