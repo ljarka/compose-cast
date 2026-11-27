@@ -71,6 +71,7 @@
       <button type="button" data-preset-w="172" data-preset-h="120" data-preset-fill="0.5" title="Half width widget (172×120 dp)">◧ Half width</button>
       <button type="button" data-preset-w="172" data-preset-h="172" data-preset-fill="0.5" title="Square half-width widget (172×172 dp)">▢ Square</button>
       <button type="button" data-preset-w="172" data-preset-h="260" data-preset-fill="0.5" title="Vertical tall widget (172×260 dp)">▮ Vertical</button>
+      <span id="size-readout" class="muted" style="font-size: 12px; margin-left: 4px"></span>
     </div>
     </#if>
     <div class="tools" id="tools">

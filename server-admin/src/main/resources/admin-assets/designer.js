@@ -1687,16 +1687,23 @@
   };
 
   const sizePresetsEl = document.getElementById('size-presets');
+  const sizeReadoutEl = document.getElementById('size-readout');
   function syncSizePresets() {
-    if (!sizePresetsEl || !def.design) return;
+    if (!def.design) return;
     const d = D();
     const fw = d.fillWidth ?? 1;
-    sizePresetsEl.querySelectorAll('button[data-preset-w]').forEach((b) => {
-      const match = Number(b.dataset.presetW) === Number(d.width) &&
-        Number(b.dataset.presetH) === Number(d.height) &&
-        Math.abs(Number(b.dataset.presetFill) - Number(fw)) < 0.01;
-      b.classList.toggle('active', match);
-    });
+    if (sizePresetsEl) {
+      sizePresetsEl.querySelectorAll('button[data-preset-w]').forEach((b) => {
+        const match = Number(b.dataset.presetW) === Number(d.width) &&
+          Number(b.dataset.presetH) === Number(d.height) &&
+          Math.abs(Number(b.dataset.presetFill) - Number(fw)) < 0.01;
+        b.classList.toggle('active', match);
+        b.setAttribute('aria-pressed', match ? 'true' : 'false');
+      });
+    }
+    if (sizeReadoutEl) {
+      sizeReadoutEl.textContent = `${Math.round(d.width)}×${Math.round(d.height)} dp · ${Math.round(fw * 100)}%`;
+    }
   }
   if (sizePresetsEl && canEdit) {
     sizePresetsEl.addEventListener('click', (e) => {
