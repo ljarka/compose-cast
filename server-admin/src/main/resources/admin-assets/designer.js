@@ -1152,46 +1152,54 @@
   function colorField(parent, label, e, key, allowNone) {
     const wrap = document.createElement('div');
     wrap.className = 'color';
-    const picker = document.createElement('input');
-    picker.type = 'color';
-    picker.value = hex6(e[key]);
-    picker.disabled = !canEdit;
     const text = document.createElement('input');
     text.type = 'text';
     text.value = e[key] || '';
     text.placeholder = allowNone ? 'none' : '#FF000000';
     text.disabled = !canEdit;
-    picker.addEventListener('input', () => {
+    const applyHex = (hex) => {
       const old = e[key] || '';
       const alpha = /^#[0-9a-fA-F]{8}$/.test(old) ? old.slice(1, 3) : 'FF';
-      e[key] = `#${alpha}${picker.value.slice(1)}`.toUpperCase();
+      e[key] = `#${alpha}${hex.slice(1)}`.toUpperCase();
       text.value = e[key];
       renderStage();
-    });
-    picker.addEventListener('change', () => {
-      undoStack.push(JSON.stringify(def));
-      scheduleSave();
-    });
+    };
+    let syncPicker = () => {};
+    if (window.composeCastColorPicker) {
+      const picker = window.composeCastColorPicker({
+        value: e[key] || '',
+        disabled: !canEdit,
+        onInput: (hex) => {
+          applyHex(hex);
+        },
+        onChange: (hex) => {
+          applyHex(hex);
+          undoStack.push(JSON.stringify(def));
+          scheduleSave();
+        },
+      });
+      syncPicker = (val) => picker.setColor(val);
+      wrap.append(picker.el, text);
+    } else {
+      const picker = document.createElement('input');
+      picker.type = 'color';
+      picker.value = hex6(e[key]);
+      picker.disabled = !canEdit;
+      picker.addEventListener('input', () => applyHex(picker.value));
+      picker.addEventListener('change', () => {
+        undoStack.push(JSON.stringify(def));
+        scheduleSave();
+      });
+      syncPicker = (val) => { picker.value = hex6(val); };
+      wrap.append(picker, text);
+    }
     text.addEventListener('change', () => {
       pushUndo();
       e[key] = text.value.trim() || null;
-      picker.value = hex6(e[key]);
+      syncPicker(e[key]);
       renderStage();
       scheduleSave();
     });
-    wrap.append(picker, text);
-    if (window.composeCastColorSwatches) {
-      wrap.append(window.composeCastColorSwatches((hex) => {
-        pushUndo();
-        const old = e[key] || '';
-        const alpha = /^#[0-9a-fA-F]{8}$/.test(old) ? old.slice(1, 3) : 'FF';
-        e[key] = `#${alpha}${hex.slice(1)}`.toUpperCase();
-        picker.value = hex.toLowerCase();
-        text.value = e[key];
-        renderStage();
-        scheduleSave();
-      }, !canEdit));
-    }
     field(parent, label, wrap);
   }
 
