@@ -80,6 +80,12 @@ internal object AppKeys {
 
     /** Admin debug mode: `"true"` shows copyable AI reference IDs next to headings. */
     const val DEBUG_MODE = "admin.debugMode"
+
+    /** AI assistant provider config (`""`, `"ollama"`, or `"openai"`). */
+    const val AI_PROVIDER = "ai.provider"
+    const val AI_BASE_URL = "ai.baseUrl"
+    const val AI_MODEL = "ai.model"
+    const val AI_API_KEY = "ai.apiKey"
 }
 
 private const val MAX_LOGO_BYTES = 1024 * 1024
@@ -94,6 +100,11 @@ private data class SettingsForm(
     val serverUrl: String,
     val logo: Logo?,
     val debugMode: Boolean = false,
+    val aiProvider: String = "",
+    val aiBaseUrl: String = "",
+    val aiModel: String = "",
+    /** null = keep existing key, "" = clear key, non-empty = save new key. */
+    val aiApiKeyUpdate: String? = null,
 ) {
     class Logo(val bytes: ByteArray, val type: String)
 
@@ -102,6 +113,10 @@ private data class SettingsForm(
         settings[AppKeys.APPLICATION_ID] = applicationId
         settings[AppKeys.SERVER_URL] = serverUrl
         settings[AppKeys.DEBUG_MODE] = if (debugMode) "true" else ""
+        settings[AppKeys.AI_PROVIDER] = aiProvider
+        settings[AppKeys.AI_BASE_URL] = aiBaseUrl
+        settings[AppKeys.AI_MODEL] = aiModel
+        aiApiKeyUpdate?.let { settings[AppKeys.AI_API_KEY] = it }
         when {
             logo == null -> Unit
             logo.bytes.isEmpty() -> {
@@ -118,6 +133,7 @@ private data class SettingsForm(
     companion object {
         /** Defaults when no brand was imported: the renderer's built-in look. */
         private val DEFAULT_BRAND = BrandConfig(name = "My app", primaryColor = "#6200EE", secondaryColor = "#03DAC6")
+        private val AI_PROVIDERS = setOf("", "ollama", "openai")
 
         fun current(settings: SettingsStore) = SettingsForm(
             brand = settings[SettingsStore.BRAND]?.let { Json.decodeFromString(BrandConfig.serializer(), it) }
@@ -126,6 +142,9 @@ private data class SettingsForm(
             serverUrl = settings[AppKeys.SERVER_URL].orEmpty(),
             logo = null,
             debugMode = settings[AppKeys.DEBUG_MODE] == "true",
+            aiProvider = settings[AppKeys.AI_PROVIDER].orEmpty(),
+            aiBaseUrl = settings[AppKeys.AI_BASE_URL].orEmpty(),
+            aiModel = settings[AppKeys.AI_MODEL].orEmpty(),
         )
 
         /** Reads the multipart form; returns it with every problem, each starting with the field name. */
@@ -171,7 +190,38 @@ private data class SettingsForm(
                 else -> logo(upload!!).also { (_, problem) -> problem?.let { problems += "logo: $it" } }.first
             }
             val debugMode = fields["debugMode"] == "on"
-            return SettingsForm(brand, applicationId, serverUrl, logo, debugMode) to problems
+            val aiProvider = fields["aiProvider"].orEmpty().lowercase()
+            val aiBaseUrl = fields["aiBaseUrl"].orEmpty().trimEnd('/')
+            val aiModel = fields["aiModel"].orEmpty()
+            val aiApiKeyUpdate = when {
+                fields["clearAiApiKey"] == "on" -> ""
+                !fields["aiApiKey"].isNullOrEmpty() -> fields["aiApiKey"]
+                else -> null
+            }
+            if (aiProvider !in AI_PROVIDERS) {
+                problems += "aiProvider: expected none, ollama or openai, was '$aiProvider'"
+            }
+            if (aiProvider.isNotEmpty()) {
+                if (aiBaseUrl.isEmpty()) {
+                    problems += "aiBaseUrl: required when an AI provider is enabled"
+                } else {
+                    serverUrlProblem(aiBaseUrl)?.let { problems += "aiBaseUrl: $it" }
+                }
+                if (aiModel.isBlank()) problems += "aiModel: required when an AI provider is enabled"
+            } else if (aiBaseUrl.isNotEmpty()) {
+                serverUrlProblem(aiBaseUrl)?.let { problems += "aiBaseUrl: $it" }
+            }
+            return SettingsForm(
+                brand,
+                applicationId,
+                serverUrl,
+                logo,
+                debugMode,
+                aiProvider,
+                aiBaseUrl,
+                aiModel,
+                aiApiKeyUpdate,
+            ) to problems
         }
 
         private fun serverUrlProblem(url: String): String? {
@@ -217,6 +267,10 @@ private suspend fun ApplicationCall.settingsPage(
         "serverUrl" to form.serverUrl,
         "hasLogo" to !settings[AppKeys.LOGO].isNullOrEmpty(),
         "debugMode" to form.debugMode,
+        "aiProvider" to form.aiProvider,
+        "aiBaseUrl" to form.aiBaseUrl,
+        "aiModel" to form.aiModel,
+        "hasAiApiKey" to !settings[AppKeys.AI_API_KEY].isNullOrEmpty(),
         "problems" to problems,
         "saved" to saved,
     ),

@@ -1648,8 +1648,24 @@
     return errors.length ? `Imported ${added}; skipped ${errors.length}: ${errors[0]}` : null;
   }
 
-  // For debugging in the browser console: the JSON the designer saves.
-  window.composeCastDesigner = { definition: () => clean(), importSvg: (text) => doImport(text) };
+  // For debugging in the browser console and AI chat apply: the JSON the designer saves.
+  window.composeCastDesigner = {
+    definition: () => clean(),
+    importSvg: (text) => doImport(text),
+    applyJson: (text) => {
+      const parsed = JSON.parse(text);
+      if (!parsed || typeof parsed !== 'object' || !parsed.design) return false;
+      pushUndo();
+      Object.keys(def).forEach((k) => { delete def[k]; });
+      Object.assign(def, parsed);
+      normalize();
+      selected = null;
+      renderComponent();
+      renderAll();
+      scheduleSave();
+      return true;
+    },
+  };
 
   // ---------- start ----------
   if (!def.design) {

@@ -56,6 +56,7 @@ headings in `server-admin`.
 | `admin:component.preview` | `component.ftl` | `ComponentPages.kt` | Component phone preview card |
 | `admin:component.usage` | `component.ftl` | `ComponentPages.kt` | "Use on a screen" JSON snippet card |
 | `admin:component.history` | `component.ftl` | `ComponentPages.kt` | Component revision history table |
+| `admin:component.ai` | `component.ftl` | `ComponentPages.kt`, `component-ai.js` | AI Assistant chat card in the component JSON editor |
 
 ## Component designer (`/admin/components/{id}/design`)
 
@@ -65,6 +66,7 @@ headings in `server-admin`.
 | `admin:designer.layers` | `designer.ftl` | `designer.js` | Layers list and reorder/duplicate/delete buttons |
 | `admin:designer.component` | `designer.ftl` | `designer.js` | Component-level settings & parameters panel |
 | `admin:designer.code` | `designer.ftl` | `designer.js` | Designer Code panel (JSON & compiled Remote Compose tabs) |
+| `admin:designer.ai` | `designer.ftl` | `ComponentPages.kt`, `component-ai.js` | AI Assistant chat card in the component Designer (with inspiration image upload) |
 | `admin:designer.history` | `designer.ftl` | `ComponentPages.kt` | Component history table in the designer (pending Draft + Revert, published revisions, Roll back, Remove) |
 | `admin:designer.properties` | `designer.ftl` | `designer.js` | Selected layer properties panel |
 | `admin:designer.phone` | `designer.ftl` | `ComponentPages.kt`, `designer.js` | "On the phone" live player render card |
@@ -103,4 +105,5 @@ headings in `server-admin`.
 | `admin:settings.brand` | `settings.ftl` | `SettingsPages.kt` | Brand color inputs (primary, secondary, background, surface, text, outline) |
 | `admin:settings.brandDark` | `settings.ftl` | `SettingsPages.kt` | Optional dark-mode brand color overrides |
 | `admin:settings.logo` | `settings.ftl` | `SettingsPages.kt` | App launcher logo upload & removal |
+| `admin:settings.ai` | `settings.ftl` | `SettingsPages.kt` | AI Assistant provider configuration (Ollama or OpenAI-compatible URL, model, optional API key) |
 | `admin:settings.developer` | `settings.ftl` | `SettingsPages.kt` | Debug mode toggle (enables/hides AI reference ID copy buttons) |

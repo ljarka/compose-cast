@@ -38,6 +38,7 @@
       </#if>
     </div>
   </div>
+  <#assign aiMode = "json"><#assign aiUid = "admin:component.ai"><#include "_ai_chat.ftl">
   <h2>History<@layout.uid "admin:component.history"/></h2>
   <div class="card">
     <table>
@@ -77,4 +78,5 @@
     </table>
   </div>
 </main>
+<#if canEdit && (hasAi!false)><script src="/admin/components/component-ai.js"></script></#if>
 </@layout.page>

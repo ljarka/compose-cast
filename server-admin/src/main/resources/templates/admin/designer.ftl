@@ -41,7 +41,7 @@
   .designer-code pre { margin: 0; max-height: 70vh; overflow: auto; font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; }
 </style>
 <div style="max-width: 1500px; margin: 16px auto 0; padding: 0 16px">
-  <p style="margin: 0"><a href="/admin/components">← Components</a> · <a href="#code">Code</a> · <a href="#history">History</a> · <a href="/admin/components/${id?url}">JSON editor</a></p>
+  <p style="margin: 0"><a href="/admin/components">← Components</a> · <a href="#ai">AI</a> · <a href="#code">Code</a> · <a href="#history">History</a> · <a href="/admin/components/${id?url}">JSON editor</a></p>
   <h1 style="margin: 8px 0"><code>${id}</code> <span class="status status-${status}">${status}</span> <span class="muted" style="font-size: 16px">Designer</span><@layout.uid "admin:designer.header"/></h1>
   <#if notice?has_content><p class="ok" role="status">${notice}</p></#if>
 </div>
@@ -83,6 +83,7 @@
     <ul id="problems" aria-live="polite"></ul>
     <p class="muted" style="font-size: 13px">Sizes are dp. The component fills the screen width; on wider or narrower phones each element keeps its <em>anchor</em>. Texts and colors can use <code>{{params.name}}</code> or <code>{{brand.primaryColor}}</code>. Every change is saved as the draft; screens use the component after <strong>Publish</strong>.</p>
     <#if canEdit><form method="post" action="/admin/components/${id?url}/publish" id="publish-form"><input type="hidden" name="from" value="design"><input type="hidden" name="json" id="publish-json"><button type="submit">Publish</button></form></#if>
+<#assign aiMode = "design"><#assign aiUid = "admin:designer.ai"><#include "_ai_chat.ftl">
 <div class="designer-code">
   <h2 id="code">Code<@layout.uid "admin:designer.code"/></h2>
   <div class="card">
@@ -164,4 +165,5 @@
 <script type="application/json" id="definition">${json?no_esc}</script>
 <script type="application/json" id="brand">${brand?no_esc}</script>
 <script src="/admin/components/designer.js"></script>
+<#if canEdit && (hasAi!false)><script src="/admin/components/component-ai.js"></script></#if>
 </@layout.page>

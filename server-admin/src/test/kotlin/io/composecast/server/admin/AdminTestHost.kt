@@ -141,6 +141,7 @@ internal class AdminTestHost {
         allowHttp: Boolean = false,
         phoneRenderer: PhoneRenderer? = null,
         withComponents: Boolean = false,
+        aiClient: ComponentAiClient = ComponentAiClient(),
         extra: Route.() -> Unit = {},
         test: suspend ApplicationTestBuilder.(HttpClient) -> Unit,
     ) = testApplication {
@@ -156,6 +157,7 @@ internal class AdminTestHost {
                     probe = probe,
                     phoneRenderer = phoneRenderer,
                     components = components.takeIf { withComponents },
+                    aiClient = aiClient,
                     extra = extra,
                 )
             }

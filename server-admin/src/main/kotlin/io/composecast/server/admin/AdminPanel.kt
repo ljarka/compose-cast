@@ -100,6 +100,7 @@ internal fun Route.adminRoutes(
     phoneRenderer: PhoneRenderer? = null,
     components: ComponentStore? = null,
     rateLimiter: LoginRateLimiter = LoginRateLimiter(),
+    aiClient: ComponentAiClient = ComponentAiClient(),
     extra: Route.() -> Unit = {},
 ) {
     phoneRenderer?.let { application.attributes.put(PhoneRendererKey, it) } // T-048: editors show the phone frame
@@ -165,7 +166,7 @@ internal fun Route.adminRoutes(
             wizardPages(screens, settings, probe)
             templatesPages(screens, settings, publishing)
             phoneRenderer?.let { phonePreview(screens, publishing, it) }
-            components?.let { componentPages(it, settings, publishing, phoneRenderer) }
+            components?.let { componentPages(it, settings, publishing, phoneRenderer, aiClient) }
             extra()
         }
     }

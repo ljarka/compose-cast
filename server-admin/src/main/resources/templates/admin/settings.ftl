@@ -57,6 +57,34 @@
       <#if hasLogo><label style="font-weight: normal"><input type="checkbox" name="removeLogo" style="width: auto"> Remove the logo</label></#if>
     </#if>
 
+    <h2>AI Assistant<@layout.uid "admin:settings.ai"/></h2>
+    <div class="row">
+      <div style="flex: 0 1 200px">
+        <label for="aiProvider">Provider</label>
+        <select id="aiProvider" name="aiProvider" style="width: 100%"<#if !isAdmin> disabled</#if>>
+          <option value=""<#if aiProvider == ""> selected</#if>>Disabled</option>
+          <option value="ollama"<#if aiProvider == "ollama"> selected</#if>>Ollama</option>
+          <option value="openai"<#if aiProvider == "openai"> selected</#if>>OpenAI-compatible</option>
+        </select>
+      </div>
+      <div>
+        <label for="aiBaseUrl">API Base URL</label>
+        <input id="aiBaseUrl" name="aiBaseUrl" value="${aiBaseUrl}" placeholder="http://host.docker.internal:11434 or https://api.openai.com/v1"<#if !isAdmin> readonly</#if>>
+      </div>
+      <div>
+        <label for="aiModel">Model</label>
+        <input id="aiModel" name="aiModel" value="${aiModel}" placeholder="gemma3, llama3.2-vision, gpt-4o"<#if !isAdmin> readonly</#if>>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label for="aiApiKey">API key <span class="muted">(optional for Ollama)</span></label>
+        <input id="aiApiKey" name="aiApiKey" type="password" value="" autocomplete="new-password" placeholder="<#if hasAiApiKey>•••••••• (saved — leave empty to keep)<#else>sk-… (leave empty if not needed)</#if>"<#if !isAdmin> readonly</#if>>
+      </div>
+    </div>
+    <#if isAdmin && hasAiApiKey><label class="toggle"><input type="checkbox" name="clearAiApiKey"> Clear saved API key</label></#if>
+    <p class="muted">Enables the AI chat on custom component pages (with optional inspiration image for vision-capable models). When running in Docker, use <code>http://host.docker.internal:11434</code> to reach Ollama on the host.</p>
+
     <h2>Developer<@layout.uid "admin:settings.developer"/></h2>
     <label class="toggle"><input type="checkbox" name="debugMode"<#if debugMode!false> checked</#if><#if !isAdmin> disabled</#if>> Debug mode (show AI reference IDs on headings)</label>
     <p class="muted">Adds a copy button next to each heading and section so you can reference exact parts of the admin panel in AI prompts.</p>

@@ -45,6 +45,7 @@ internal fun Route.componentPages(
     settings: SettingsStore,
     publishing: ScreenPublishing,
     phoneRenderer: PhoneRenderer?,
+    aiClient: ComponentAiClient = ComponentAiClient(),
 ) {
     route("/components") {
         get { call.list(components) }
@@ -78,12 +79,26 @@ internal fun Route.componentPages(
             }.readBytes()
             call.respondBytes(js, ContentType.Application.JavaScript)
         }
+        get("/component-ai.js") {
+            val js = checkNotNull(ComponentStore::class.java.getResource("/admin-assets/component-ai.js")) {
+                "missing resource admin-assets/component-ai.js"
+            }.readBytes()
+            call.respondBytes(js, ContentType.Application.JavaScript)
+        }
         route("/{id}") {
             get {
                 val stored = components.get(call.screenId) ?: return@get call.notFound()
                 val notice = NOTICES.entries.firstOrNull { it.key in call.request.queryParameters }?.value
                 val json = stored.draftJson ?: stored.liveJson.orEmpty()
-                call.editor(components, stored, json, check(stored.id, json, settings), notice, phoneRenderer != null)
+                call.editor(
+                    components,
+                    stored,
+                    json,
+                    check(stored.id, json, settings),
+                    notice,
+                    phoneRenderer != null,
+                    hasAi = AiConfig.from(settings) != null,
+                )
             }
             post {
                 val stored = components.get(call.screenId) ?: return@post call.notFound()
@@ -113,8 +128,90 @@ internal fun Route.componentPages(
                         *timeFields("draftUpdatedAt", stored.updatedAt).toTypedArray(),
                         "history" to historyRows(components, stored.id),
                         "phoneImage" to (phoneRenderer != null),
+                        "hasAi" to (AiConfig.from(settings) != null),
                     ),
                 )
+            }
+            post("/ai/chat") {
+                val stored = components.get(call.screenId) ?: return@post call.notFound()
+                val config = AiConfig.from(settings)
+                if (config == null) {
+                    val err = buildJsonObject {
+                        put(
+                            "error",
+                            "AI provider is not configured. Configure Ollama or OpenAI-compatible API in Settings.",
+                        )
+                    }
+                    return@post call.respondText(
+                        err.toString(),
+                        ContentType.Application.Json,
+                        HttpStatusCode.BadRequest,
+                    )
+                }
+                val req = try {
+                    Json { ignoreUnknownKeys = true }.decodeFromString(AiChatRequest.serializer(), call.receiveText())
+                } catch (e: Exception) {
+                    val err = buildJsonObject { put("error", "Invalid chat request: ${e.message}") }
+                    return@post call.respondText(
+                        err.toString(),
+                        ContentType.Application.Json,
+                        HttpStatusCode.BadRequest,
+                    )
+                }
+                if (req.messages.isEmpty()) {
+                    val err = buildJsonObject { put("error", "Message cannot be empty.") }
+                    return@post call.respondText(
+                        err.toString(),
+                        ContentType.Application.Json,
+                        HttpStatusCode.BadRequest,
+                    )
+                }
+                val invalidImage = req.messages.firstOrNull { m ->
+                    !m.imageBase64.isNullOrBlank() && (
+                        m.imageBase64.length > ComponentAiClient.MAX_IMAGE_BASE64_CHARS ||
+                            (m.imageMime != null && m.imageMime !in ComponentAiClient.ALLOWED_IMAGE_MIMES)
+                        )
+                }
+                if (invalidImage != null) {
+                    val err = buildJsonObject { put("error", "Image must be PNG, JPEG, or WebP and at most 5 MB.") }
+                    return@post call.respondText(
+                        err.toString(),
+                        ContentType.Application.Json,
+                        HttpStatusCode.BadRequest,
+                    )
+                }
+                val currentJson = req.currentJson.ifBlank { stored.draftJson ?: stored.liveJson.orEmpty() }
+                val brand = settings[SettingsStore.BRAND]?.let { Json.decodeFromString(BrandConfig.serializer(), it) }
+                val reply = try {
+                    withContext(Dispatchers.IO) {
+                        aiClient.chat(config, stored.id, currentJson, brandColors(brand), req.messages)
+                    }
+                } catch (e: Exception) {
+                    val err = buildJsonObject { put("error", e.message ?: "AI provider request failed.") }
+                    return@post call.respondText(
+                        err.toString(),
+                        ContentType.Application.Json,
+                        HttpStatusCode.BadGateway,
+                    )
+                }
+                val extracted = ComponentAiClient.extractJsonObject(reply)
+                val answer = if (extracted != null) {
+                    val checked = check(stored.id, extracted, settings)
+                    buildJsonObject {
+                        put("reply", reply)
+                        put(
+                            "json",
+                            checked.definition?.let(ComponentJson::encode) ?: extracted,
+                        )
+                        putJsonArray("problems") { checked.problems.forEach { add(JsonPrimitive(it)) } }
+                    }
+                } else {
+                    buildJsonObject {
+                        put("reply", reply)
+                        putJsonArray("problems") {}
+                    }
+                }
+                call.respondText(answer.toString(), ContentType.Application.Json, HttpStatusCode.OK)
             }
             // The designer saves the whole definition as JSON on every change (debounced) and gets
             // the problems back; a valid one becomes the draft.
@@ -433,6 +530,7 @@ private suspend fun ApplicationCall.editor(
     checked: ComponentJson.Checked,
     notice: String?,
     phone: Boolean,
+    hasAi: Boolean = false,
 ) {
     val definition = checked.definition ?: ComponentJson.check(json).definition
     respondTemplate(
@@ -452,6 +550,7 @@ private suspend fun ApplicationCall.editor(
             "usage" to (definition?.let(::usage) ?: ""),
             "designed" to (definition?.design != null || "\"design\"" in json),
             "phoneImage" to phone,
+            "hasAi" to hasAi,
             "rcVersion" to CustomComponents.RC_VERSION,
         ),
     )

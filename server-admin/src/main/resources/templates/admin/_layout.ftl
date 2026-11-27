@@ -192,6 +192,16 @@
     .preview-theme { display: inline-flex; gap: 4px; margin-bottom: 8px; }
     .preview-theme button.chip { font-size: 13px; padding: 3px 9px; }
     .preview-theme button.chip[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .ai-messages { max-height: 360px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+                   padding: 12px; margin-bottom: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+    .ai-msg { padding: 10px 12px; border-radius: 8px; max-width: 92%; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; }
+    .ai-msg-user { align-self: flex-end; background: color-mix(in srgb, var(--accent) 14%, var(--card)); border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); }
+    .ai-msg-assistant { align-self: flex-start; background: var(--card); border: 1px solid var(--line); }
+    .ai-msg-img { display: block; max-width: 180px; max-height: 140px; border-radius: 6px; margin-bottom: 6px; border: 1px solid var(--line); }
+    .ai-image-preview { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 6px 8px;
+                        border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+    .ai-image-preview img { max-height: 56px; max-width: 96px; border-radius: 4px; }
+    .ai-prompt { min-height: 76px; font-family: inherit; }
   </style>
   <#if htmx><script src="https://unpkg.com/htmx.org@2.0.11/dist/htmx.min.js" integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg" crossorigin="anonymous"></script></#if>
 </head>
