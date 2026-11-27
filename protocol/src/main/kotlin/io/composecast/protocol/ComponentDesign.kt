@@ -24,6 +24,8 @@ import kotlin.math.sin
 data class ComponentDesign(
     val width: Float = DEFAULT_WIDTH,
     val height: Float = DEFAULT_HEIGHT,
+    /** Fraction of the parent width (`0.1..1.0`): `1.0` = full width, `0.5` = half width. */
+    val fillWidth: Float = 1f,
     /** Rounded corners of the whole component (dp), clipping everything inside. */
     val cornerRadius: Float = 0f,
     /** Bottom first: later elements draw over earlier ones. */
@@ -33,6 +35,7 @@ data class ComponentDesign(
     fun problems(): List<String> = buildList {
         if (width !in 40f..2000f) add("design.width: expected 40..2000 dp, was $width")
         if (height !in 8f..2000f) add("design.height: expected 8..2000 dp, was $height")
+        if (fillWidth !in 0.1f..1f) add("design.fillWidth: expected 0.1..1.0, was $fillWidth")
         if (cornerRadius < 0f) add("design.cornerRadius: must be >= 0")
         if (elements.size > MAX_ELEMENTS) add("design.elements: at most $MAX_ELEMENTS, was ${elements.size}")
         val ids = mutableSetOf<String>()
@@ -58,7 +61,7 @@ data class ComponentDesign(
     fun toBody(): JsonObject = buildJsonObject {
         put("type", "box")
         putJsonArray("modifiers") {
-            add(obj("fillMaxWidth", JsonPrimitive(1)))
+            add(obj("fillMaxWidth", if (fillWidth == 1f) JsonPrimitive(1) else JsonPrimitive(fillWidth)))
             add(obj("height", JsonPrimitive(height)))
             if (cornerRadius > 0f) add(obj("clip", JsonPrimitive(cornerRadius)))
         }

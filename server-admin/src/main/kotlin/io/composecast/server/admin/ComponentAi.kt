@@ -272,8 +272,9 @@ Your job is to create or modify the JSON definition of custom component "$compon
 ```
 
 ### `design` schema (preferred — compiles automatically to Remote Compose)
-- `width`: number, 40..2000 dp (default 360). Artboard reference width.
+- `width`: number, 40..2000 dp (default 360). Artboard reference width (e.g. 360 for full width, 172 for half width).
 - `height`: number, 8..2000 dp (default 160). Component height on screen.
+- `fillWidth`: number, 0.1..1.0 (default 1.0 = full width; 0.5 = half width widget).
 - `cornerRadius`: number >= 0 dp. Clips the whole component.
 - `elements`: array of up to 200 elements, drawn bottom-to-top (first = background, last = foreground).
 

@@ -41,6 +41,7 @@
     const d = def.design;
     d.width = d.width ?? 360;
     d.height = d.height ?? 160;
+    d.fillWidth = d.fillWidth ?? 1;
     d.cornerRadius = d.cornerRadius ?? 0;
     d.elements = (d.elements || []).map((e) => Object.assign({}, DEFAULTS, e));
   }
@@ -62,6 +63,7 @@
     const copy = JSON.parse(JSON.stringify(def));
     delete copy.body;
     if (copy.design) {
+      if (copy.design.fillWidth === 1 || copy.design.fillWidth === undefined) delete copy.design.fillWidth;
       copy.design.elements = copy.design.elements.map((e) => {
         const out = {};
         Object.keys(e).forEach((k) => {
@@ -1262,7 +1264,12 @@
     c.appendChild(g);
     field(g, 'Height', input('number', D().height, (v) => { D().height = v; }, { min: 8 }));
     field(g, 'Corners', input('number', D().cornerRadius, (v) => { D().cornerRadius = v; }, { min: 0 }));
-    field(c, 'Artboard width', input('number', D().width, (v) => { D().width = v; }, { min: 40 }), 'The width you design on; phones vary (anchors).');
+    field(c, 'Artboard width', input('number', D().width, (v) => { D().width = v; syncSizePresets(); }, { min: 40 }), 'The width you design on; phones vary (anchors).');
+    field(c, 'Width on screen', select(String(D().fillWidth ?? 1), [
+      ['1', 'Full width (100%)'],
+      ['0.5', 'Half width (50%)'],
+    ], (v) => { D().fillWidth = parseFloat(v); syncSizePresets(); }));
+    syncSizePresets();
     const h = document.createElement('h2');
     h.textContent = 'Params';
     h.style.marginTop = '16px';
@@ -1666,6 +1673,32 @@
       return true;
     },
   };
+
+  const sizePresetsEl = document.getElementById('size-presets');
+  function syncSizePresets() {
+    if (!sizePresetsEl || !def.design) return;
+    const d = D();
+    const fw = d.fillWidth ?? 1;
+    sizePresetsEl.querySelectorAll('button[data-preset-w]').forEach((b) => {
+      const match = Number(b.dataset.presetW) === Number(d.width) &&
+        Number(b.dataset.presetH) === Number(d.height) &&
+        Math.abs(Number(b.dataset.presetFill) - Number(fw)) < 0.01;
+      b.classList.toggle('active', match);
+    });
+  }
+  if (sizePresetsEl && canEdit) {
+    sizePresetsEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-preset-w]');
+      if (!btn || !def.design) return;
+      pushUndo();
+      D().width = Number(btn.dataset.presetW);
+      D().height = Number(btn.dataset.presetH);
+      D().fillWidth = Number(btn.dataset.presetFill);
+      renderComponent();
+      renderAll();
+      scheduleSave();
+    });
+  }
 
   // ---------- start ----------
   if (!def.design) {

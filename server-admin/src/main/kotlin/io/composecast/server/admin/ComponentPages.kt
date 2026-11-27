@@ -5,9 +5,6 @@ import io.composecast.protocol.ComponentDefinition
 import io.composecast.protocol.ComponentDesign
 import io.composecast.protocol.ComponentJson
 import io.composecast.protocol.ComponentParam
-import io.composecast.protocol.DesignAnchor
-import io.composecast.protocol.DesignElement
-import io.composecast.protocol.DesignElementType
 import io.composecast.server.sdk.CustomComponents
 import io.composecast.server.store.ComponentStore
 import io.composecast.server.store.SettingsStore
@@ -434,38 +431,15 @@ private fun starter(id: String) = ComponentDefinition(
     ).jsonObject,
 )
 
-/** A first design: a rounded card in the brand color with a title param (T-057). */
+/** A blank artboard ready to draw on or fill with AI (T-057). */
 private fun starterDesign(id: String) = ComponentDefinition(
     id = id,
     rcVersion = CustomComponents.RC_VERSION,
-    params = mapOf("title" to ComponentParam(default = "Hello", description = "the card's title")),
     design = ComponentDesign(
+        width = ComponentDesign.DEFAULT_WIDTH,
         height = 120f,
         cornerRadius = 16f,
-        elements = listOf(
-            DesignElement(
-                id = "bg",
-                name = "Background",
-                type = DesignElementType.Rect,
-                w = ComponentDesign.DEFAULT_WIDTH,
-                h = 120f,
-                anchor = DesignAnchor.Stretch,
-                fill = "{{brand.primaryColor}}",
-            ),
-            DesignElement(
-                id = "title",
-                name = "Title",
-                type = DesignElementType.Text,
-                x = 20f,
-                y = 20f,
-                w = 280f,
-                h = 30f,
-                fill = "#FFFFFFFF",
-                text = "{{params.title}}",
-                fontSize = 22f,
-                bold = true,
-            ),
-        ),
+        elements = emptyList(),
     ),
 )
 

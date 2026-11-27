@@ -63,6 +63,16 @@
     </div>
   </aside>
   <section>
+    <#if canEdit>
+    <div class="tools" id="size-presets" role="group" aria-label="Component size presets" style="margin-bottom: 8px">
+      <span class="muted" style="font-size: 13px; margin-right: 4px">Size:</span>
+      <button type="button" data-preset-w="360" data-preset-h="120" data-preset-fill="1" title="Full width banner (360×120 dp)">▬ Full width</button>
+      <button type="button" data-preset-w="360" data-preset-h="220" data-preset-fill="1" title="Full width large widget (360×220 dp)">▭ Full tall</button>
+      <button type="button" data-preset-w="172" data-preset-h="120" data-preset-fill="0.5" title="Half width widget (172×120 dp)">◧ Half width</button>
+      <button type="button" data-preset-w="172" data-preset-h="172" data-preset-fill="0.5" title="Square half-width widget (172×172 dp)">▢ Square</button>
+      <button type="button" data-preset-w="172" data-preset-h="260" data-preset-fill="0.5" title="Vertical tall widget (172×260 dp)">▮ Vertical</button>
+    </div>
+    </#if>
     <div class="tools" id="tools">
       <button type="button" data-tool="select" title="Select and move (V)">↖ Select</button>
       <button type="button" data-tool="rect" title="Rectangle (R)">▭ Rect</button>

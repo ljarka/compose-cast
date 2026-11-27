@@ -1,7 +1,6 @@
 package io.composecast.server.admin
 
 import io.composecast.protocol.ComponentJson
-import io.composecast.protocol.DesignElementType
 import io.ktor.client.HttpClient
 import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.get
@@ -53,24 +52,25 @@ class DesignerPagesTest {
             assertEquals(HttpStatusCode.SeeOther, created.status)
             assertEquals("/admin/components/card/design", created.headers[HttpHeaders.Location])
 
-            // The draft is the starter design, stored without a compiled body.
+            // The draft is an empty starter artboard, stored without a compiled body.
             val draft = assertNotNull(host.components.get("card")?.draftJson)
             assertFalse("\"body\"" in draft)
             val starter = ComponentJson.decode(draft, "t")
-            assertEquals(DesignElementType.Text, starter.design!!.elements.last().type)
+            assertTrue(starter.design!!.elements.isEmpty(), "new component starts with an empty artboard")
             assertEquals("box", starter.body["type"]!!.jsonPrimitive.content) // compiled on decode
 
             val page = client.page(cookie, "/admin/components/card/design").bodyAsText()
             assertContains(page, "<script type=\"application/json\" id=\"definition\">")
-            assertContains(page, "\"{{params.title}}\"") // raw JSON in the script, not HTML-escaped
+            assertContains(page, "id=\"size-presets\"")
+            assertContains(page, "data-preset-fill=\"0.5\"")
             assertContains(page, "src=\"/admin/components/designer.js\"")
             assertContains(page, "id=\"code-json\"") // the JSON under the artboard
             val script = client.page(cookie, "/admin/components/designer.js")
             assertEquals(ContentType.Application.JavaScript, script.contentType()?.withoutParameters())
             assertContains(script.bodyAsText(), "normalizePath")
 
-            val design = """{"id":"card","rcVersion":"1.0.0-alpha23","design":{"height":80,"elements":[
-            {"id":"bg","type":"rect","w":360,"h":80,"anchor":"stretch","fill":"#FF112233"},
+            val design = """{"id":"card","rcVersion":"1.0.0-alpha23","design":{"width":172,"height":260,"fillWidth":0.5,"elements":[
+            {"id":"bg","type":"rect","w":172,"h":260,"anchor":"stretch","fill":"#FF112233"},
             {"id":"go","type":"tap","x":10,"y":10,"w":60,"h":40,"action":"navigate:main"}]}}"""
             val saved = client.saveDesign(cookie, "card", design)
             assertEquals(HttpStatusCode.OK, saved.status)
@@ -78,7 +78,9 @@ class DesignerPagesTest {
             assertEquals("true", answer["saved"]!!.jsonPrimitive.content)
             // The compiled RC JSON comes back for the designer's "Remote Compose" tab.
             assertEquals("box", answer["body"]!!.jsonObject["type"]!!.jsonPrimitive.content)
-            assertEquals(80f, ComponentJson.decode(host.components.get("card")!!.draftJson!!, "t").design!!.height)
+            val savedDesign = ComponentJson.decode(host.components.get("card")!!.draftJson!!, "t").design!!
+            assertEquals(260f, savedDesign.height)
+            assertEquals(0.5f, savedDesign.fillWidth)
 
             // Problems come back with their path; nothing is saved.
             val bad = design.replace("#FF112233", "blue").replace("navigate:main", "dance")
@@ -88,7 +90,7 @@ class DesignerPagesTest {
                 .map { it.jsonPrimitive.content }
             assertTrue(problems.any { it.startsWith("design.elements[0].fill:") }, "$problems")
             assertTrue(problems.any { it.startsWith("design.elements[1].action:") }, "$problems")
-            assertEquals(80f, ComponentJson.decode(host.components.get("card")!!.draftJson!!, "t").design!!.height)
+            assertEquals(260f, ComponentJson.decode(host.components.get("card")!!.draftJson!!, "t").design!!.height)
 
             // Another component's id cannot be written through this one's URL.
             assertEquals(
