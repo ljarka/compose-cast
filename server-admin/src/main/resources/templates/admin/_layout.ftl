@@ -202,24 +202,45 @@
                         border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
     .ai-image-preview img { max-height: 56px; max-width: 96px; border-radius: 4px; }
     .ai-prompt { min-height: 76px; font-family: inherit; }
-    .cc-color { display: flex; gap: 4px; align-items: center; }
-    .cc-color input[type=color] { width: 36px; height: 34px; flex: 0 0 36px; padding: 2px; border-radius: 6px; cursor: pointer; }
+    .cc-color { display: flex; gap: 6px; align-items: center; }
     .cc-color input[type=text], .cc-color input:not([type]) { flex: 1; min-width: 0; }
-    details.cc-swatches { position: relative; flex: 0 0 auto; }
-    details.cc-swatches > summary { list-style: none; cursor: pointer; width: 32px; height: 34px; display: flex;
-      align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 6px;
-      background: var(--bg); font-size: 15px; user-select: none; }
-    details.cc-swatches > summary::-webkit-details-marker { display: none; }
-    details.cc-swatches > summary:hover { border-color: var(--accent); }
-    details.cc-swatches[open] > .cc-swatch-pop { position: absolute; right: 0; top: calc(100% + 4px); z-index: 40;
-      width: 212px; padding: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 8px;
-      box-shadow: 0 6px 20px rgba(0,0,0,.22); }
+    details.cc-picker { position: relative; flex: 0 0 auto; }
+    details.cc-picker > summary { list-style: none; cursor: pointer; width: 36px; height: 34px; padding: 3px;
+      display: flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 6px;
+      background: var(--bg); user-select: none; box-sizing: border-box; }
+    details.cc-picker > summary::-webkit-details-marker { display: none; }
+    details.cc-picker > summary:hover { border-color: var(--accent); }
+    details.cc-picker[data-disabled="true"] > summary { pointer-events: none; opacity: .5; cursor: default; }
+    .cc-chip { width: 100%; height: 100%; border-radius: 4px; border: 1px solid rgba(128,128,128,.35);
+      background-image: linear-gradient(45deg, rgba(128,128,128,.22) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(128,128,128,.22) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(128,128,128,.22) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(128,128,128,.22) 75%);
+      background-size: 8px 8px; background-position: 0 0, 0 4px, 4px -4px, -4px 0; position: relative; overflow: hidden; }
+    .cc-chip-fill { position: absolute; inset: 0; }
+    details.cc-picker[open] > .cc-picker-pop { position: absolute; left: 0; top: calc(100% + 4px); z-index: 60;
+      width: 232px; padding: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.26); box-sizing: border-box; }
+    details.cc-picker.cc-pop-right[open] > .cc-picker-pop { left: auto; right: 0; }
+    .cc-sv { position: relative; width: 100%; height: 132px; border-radius: 6px; cursor: crosshair; touch-action: none;
+      border: 1px solid rgba(128,128,128,.3); overflow: hidden; user-select: none; }
+    .cc-sv::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, #fff, rgba(255,255,255,0)); }
+    .cc-sv::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, #000, rgba(0,0,0,0)); }
+    .cc-sv-thumb { position: absolute; z-index: 2; width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.55), 0 1px 3px rgba(0,0,0,.4);
+      transform: translate(-50%, -50%); pointer-events: none; }
+    .cc-hue { position: relative; width: 100%; height: 14px; margin: 10px 0 10px; border-radius: 999px; cursor: ew-resize;
+      touch-action: none; border: 1px solid rgba(128,128,128,.3); user-select: none;
+      background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%); }
+    .cc-hue-thumb { position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.55), 0 1px 3px rgba(0,0,0,.4);
+      transform: translate(-50%, -50%); pointer-events: none; }
     .cc-swatch-title { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase;
-      letter-spacing: .04em; margin: 0 0 6px; }
-    .cc-swatch-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
-    button.cc-swatch { margin: 0; padding: 0; width: 26px; height: 26px; border-radius: 6px;
+      letter-spacing: .04em; margin: 0 0 6px; padding-top: 8px; border-top: 1px solid var(--line); }
+    .cc-swatch-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+    button.cc-swatch { margin: 0; padding: 0; width: 28px; height: 24px; border-radius: 5px;
       border: 1px solid rgba(128,128,128,.35); cursor: pointer; }
-    button.cc-swatch:hover { transform: scale(1.12); border-color: var(--fg); }
+    button.cc-swatch:hover { transform: scale(1.1); border-color: var(--fg); }
   </style>
   <#if htmx><script src="https://unpkg.com/htmx.org@2.0.11/dist/htmx.min.js" integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg" crossorigin="anonymous"></script></#if>
 </head>
@@ -330,37 +351,135 @@
       applyGroupTheme(group, btn.dataset.previewMode, true);
     });
 
-    // Unified color picker + Material Design palette swatches across Settings, Visual editor & Designer.
+    // Unified color picker (custom HSV + Material Design palette in one popover) across Settings, Visual editor & Designer.
     const MATERIAL_COLORS = [
       ["Red", "#F44336"], ["Pink", "#E91E63"], ["Purple", "#9C27B0"], ["Deep Purple", "#673AB7"], ["Indigo", "#3F51B5"], ["Blue", "#2196F3"],
       ["Light Blue", "#03A9F4"], ["Cyan", "#00BCD4"], ["Teal", "#009688"], ["Green", "#4CAF50"], ["Light Green", "#8BC34A"], ["Lime", "#CDDC39"],
       ["Yellow", "#FFEB3B"], ["Amber", "#FFC107"], ["Orange", "#FF9800"], ["Deep Orange", "#FF5722"], ["M3 Primary", "#6200EE"], ["M3 Dark Primary", "#D0BCFF"],
       ["White", "#FFFFFF"], ["M3 Surface", "#F3EDF7"], ["Grey 300", "#E0E0E0"], ["Grey 600", "#757575"], ["M3 Dark Surface", "#211F26"], ["M3 Dark Bg", "#141218"],
     ];
-    function toHex6(val) {
+    function parseHex6(val) {
       const s = (val || "").trim();
-      if (/^#[0-9a-fA-F]{6}$/.test(s)) return s.toLowerCase();
-      if (/^#[0-9a-fA-F]{8}$/.test(s)) return "#" + s.slice(3).toLowerCase();
-      return "#000000";
+      if (/^#[0-9a-fA-F]{6}$/.test(s)) return s.toUpperCase();
+      if (/^#[0-9a-fA-F]{8}$/.test(s)) return "#" + s.slice(3).toUpperCase();
+      return null;
     }
-    window.composeCastColorSwatches = function (onPick, disabled) {
-      const details = document.createElement("details");
-      details.className = "cc-swatches";
-      const summary = document.createElement("summary");
-      summary.textContent = "🎨";
-      summary.title = "Material Design colors";
-      summary.setAttribute("aria-label", "Material Design colors");
-      if (disabled) {
-        summary.style.pointerEvents = "none";
-        summary.style.opacity = ".45";
+    function hexToHsv(hex, fallbackHue) {
+      const clean = parseHex6(hex) || "#000000";
+      const r = parseInt(clean.slice(1, 3), 16) / 255;
+      const g = parseInt(clean.slice(3, 5), 16) / 255;
+      const b = parseInt(clean.slice(5, 7), 16) / 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+      let h = fallbackHue || 0;
+      if (d !== 0) {
+        if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) * 60;
+        else if (max === g) h = ((b - r) / d + 2) * 60;
+        else h = ((r - g) / d + 4) * 60;
       }
+      return { h: (h + 360) % 360, s: max === 0 ? 0 : d / max, v: max };
+    }
+    function hsvToHex(h, s, v) {
+      const c = v * s;
+      const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+      const m = v - c;
+      let r = 0, g = 0, b = 0;
+      if (h < 60) { r = c; g = x; }
+      else if (h < 120) { r = x; g = c; }
+      else if (h < 180) { g = c; b = x; }
+      else if (h < 240) { g = x; b = c; }
+      else if (h < 300) { r = x; b = c; }
+      else { r = c; b = x; }
+      const toByte = function (n) { return Math.round((n + m) * 255).toString(16).padStart(2, "0"); };
+      return ("#" + toByte(r) + toByte(g) + toByte(b)).toUpperCase();
+    }
+    window.composeCastColorPicker = function (opts) {
+      const disabled = !!opts.disabled;
+      const onInput = opts.onInput || function () {};
+      const onChange = opts.onChange || function () {};
+      let hsv = hexToHsv(opts.value, 220);
+
+      const details = document.createElement("details");
+      details.className = "cc-picker";
+      if (disabled) details.dataset.disabled = "true";
+
+      const summary = document.createElement("summary");
+      summary.title = "Pick color (custom or Material Design)";
+      summary.setAttribute("aria-label", "Pick color");
+      const chip = document.createElement("span");
+      chip.className = "cc-chip";
+      const chipFill = document.createElement("span");
+      chipFill.className = "cc-chip-fill";
+      chip.appendChild(chipFill);
+      summary.appendChild(chip);
+
       const pop = document.createElement("div");
-      pop.className = "cc-swatch-pop";
+      pop.className = "cc-picker-pop";
+
+      const sv = document.createElement("div");
+      sv.className = "cc-sv";
+      const svThumb = document.createElement("div");
+      svThumb.className = "cc-sv-thumb";
+      sv.appendChild(svThumb);
+
+      const hue = document.createElement("div");
+      hue.className = "cc-hue";
+      const hueThumb = document.createElement("div");
+      hueThumb.className = "cc-hue-thumb";
+      hue.appendChild(hueThumb);
+
       const heading = document.createElement("p");
       heading.className = "cc-swatch-title";
       heading.textContent = "Material Design";
       const grid = document.createElement("div");
       grid.className = "cc-swatch-grid";
+
+      function renderControls(explicitHex) {
+        const hex = explicitHex === null ? null : (explicitHex || hsvToHex(hsv.h, hsv.s, hsv.v));
+        chipFill.style.background = hex || "transparent";
+        sv.style.backgroundColor = "hsl(" + Math.round(hsv.h) + ", 100%, 50%)";
+        svThumb.style.left = (hsv.s * 100) + "%";
+        svThumb.style.top = ((1 - hsv.v) * 100) + "%";
+        svThumb.style.backgroundColor = hsvToHex(hsv.h, hsv.s, hsv.v);
+        hueThumb.style.left = ((hsv.h / 360) * 100) + "%";
+        hueThumb.style.backgroundColor = "hsl(" + Math.round(hsv.h) + ", 100%, 50%)";
+      }
+
+      function bindDrag(el, update) {
+        el.addEventListener("pointerdown", function (ev) {
+          if (disabled) return;
+          ev.preventDefault();
+          el.setPointerCapture(ev.pointerId);
+          update(ev);
+          onInput(hsvToHex(hsv.h, hsv.s, hsv.v));
+          function move(e) {
+            update(e);
+            onInput(hsvToHex(hsv.h, hsv.s, hsv.v));
+          }
+          function up() {
+            el.removeEventListener("pointermove", move);
+            el.removeEventListener("pointerup", up);
+            el.removeEventListener("pointercancel", up);
+            onChange(hsvToHex(hsv.h, hsv.s, hsv.v));
+          }
+          el.addEventListener("pointermove", move);
+          el.addEventListener("pointerup", up);
+          el.addEventListener("pointercancel", up);
+        });
+      }
+
+      bindDrag(sv, function (ev) {
+        const r = sv.getBoundingClientRect();
+        hsv.s = Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width));
+        hsv.v = Math.max(0, Math.min(1, 1 - (ev.clientY - r.top) / r.height));
+        renderControls();
+      });
+
+      bindDrag(hue, function (ev) {
+        const r = hue.getBoundingClientRect();
+        hsv.h = Math.max(0, Math.min(359.99, ((ev.clientX - r.left) / r.width) * 360));
+        renderControls();
+      });
+
       MATERIAL_COLORS.forEach(function (entry) {
         const b = document.createElement("button");
         b.type = "button";
@@ -369,14 +488,41 @@
         b.title = entry[0] + " (" + entry[1] + ")";
         b.setAttribute("aria-label", entry[0] + " " + entry[1]);
         b.addEventListener("click", function () {
-          onPick(entry[1]);
+          if (disabled) return;
+          hsv = hexToHsv(entry[1], hsv.h);
+          renderControls(entry[1]);
+          onInput(entry[1]);
+          onChange(entry[1]);
           details.open = false;
         });
         grid.appendChild(b);
       });
-      pop.append(heading, grid);
+
+      details.addEventListener("toggle", function () {
+        if (!details.open) return;
+        document.querySelectorAll("details.cc-picker[open]").forEach(function (other) {
+          if (other !== details) other.open = false;
+        });
+        const rect = summary.getBoundingClientRect();
+        details.classList.toggle("cc-pop-right", rect.left + 240 > window.innerWidth);
+      });
+
+      pop.append(sv, hue, heading, grid);
       details.append(summary, pop);
-      return details;
+      renderControls(parseHex6(opts.value));
+
+      return {
+        el: details,
+        setColor: function (val) {
+          const parsed = parseHex6(val);
+          if (parsed) {
+            hsv = hexToHsv(parsed, hsv.h);
+            renderControls(parsed);
+          } else {
+            renderControls(null);
+          }
+        },
+      };
     };
     function enhanceColorInputs(root) {
       (root || document).querySelectorAll("input[data-color-picker='true']:not([data-color-ready])").forEach(function (input) {
@@ -385,39 +531,36 @@
         const wrap = document.createElement("div");
         wrap.className = "cc-color";
         input.parentNode.insertBefore(wrap, input);
-        const native = document.createElement("input");
-        native.type = "color";
-        native.value = toHex6(input.value);
-        native.disabled = disabled;
-        native.setAttribute("aria-label", "Color picker");
-        native.addEventListener("input", function () {
+        function applyHex(hex, commit) {
           const old = input.value.trim();
           const alpha = /^#[0-9a-fA-F]{8}$/.test(old) ? old.slice(1, 3) : "";
-          input.value = "#" + alpha + native.value.slice(1).toUpperCase();
+          input.value = "#" + alpha + hex.slice(1).toUpperCase();
           input.dispatchEvent(new Event("input", { bubbles: true }));
-        });
-        native.addEventListener("change", function () {
-          input.dispatchEvent(new Event("change", { bubbles: true }));
+          if (commit) input.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+        const picker = window.composeCastColorPicker({
+          value: input.value,
+          disabled: disabled,
+          onInput: function (hex) { applyHex(hex, false); },
+          onChange: function (hex) { applyHex(hex, true); },
         });
         input.addEventListener("input", function () {
-          const v = input.value.trim();
-          if (/^#[0-9a-fA-F]{6}$/.test(v) || /^#[0-9a-fA-F]{8}$/.test(v)) native.value = toHex6(v);
+          picker.setColor(input.value);
         });
-        const swatches = window.composeCastColorSwatches(function (hex) {
-          native.value = hex.toLowerCase();
-          input.value = hex;
-          input.dispatchEvent(new Event("input", { bubbles: true }));
-          input.dispatchEvent(new Event("change", { bubbles: true }));
-        }, disabled);
-        wrap.append(native, input, swatches);
+        wrap.append(picker.el, input);
       });
     }
     enhanceColorInputs(document);
     <#if htmx>document.addEventListener("htmx:afterSwap", function (e) { enhanceColorInputs(e.target); });</#if>
     document.addEventListener("click", function (e) {
-      document.querySelectorAll("details.cc-swatches[open]").forEach(function (d) {
+      document.querySelectorAll("details.cc-picker[open]").forEach(function (d) {
         if (!d.contains(e.target)) d.open = false;
       });
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        document.querySelectorAll("details.cc-picker[open]").forEach(function (d) { d.open = false; });
+      }
     });
   })();
 </script>

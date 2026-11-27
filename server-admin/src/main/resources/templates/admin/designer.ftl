@@ -26,8 +26,9 @@
     background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
   .props textarea { min-height: 70px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
   .props .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 8px; }
-  .props .color { display: flex; gap: 4px; }
+  .props .color { display: flex; gap: 6px; align-items: center; }
   .props .color input[type=color] { width: 36px; flex: 0 0 36px; padding: 0; height: 30px; }
+  .props .color details.cc-picker > summary { height: 30px; }
   .props .check { display: flex; gap: 6px; align-items: center; margin-top: 8px; font-size: 14px; }
   .props .check input { width: auto; }
   .props .hint { font-size: 12px; color: var(--muted); margin: 2px 0 0; }
