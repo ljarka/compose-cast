@@ -29,7 +29,7 @@ ComposeCastFlow(client, navigator, Modifier.fillMaxSize(), onAction = { action -
 // one screen inside a native screen: ComposeCastView(client, "promo", params = mapOf("id" to "42"))
 ```
 
-## Usage Pattern (low level, app-shell until T-060)
+## Usage Pattern (low level: full control)
 
 ```kotlin
 val client = ComposeCastClient(ComposeCastConfig(serverUrl = "http://10.0.2.2:8080"))

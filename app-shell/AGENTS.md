@@ -10,7 +10,7 @@ contain no Kotlin. For SDK details read `sdk-android/AGENTS.md`.
 
 | File | Purpose |
 |---|---|
-| `ComposeCastActivity.kt` | Launcher activity; reads config from resources; `ComposeCastApp` composable (back stack, states, action routing, live screens: `client.liveScreen` passed to `ComposeCastScreen` when the document is live **and** its id matches the back-stack entry — for one frame after Back the previous document is still shown), title "Preview · …" for draft previews (`PreviewIds`), no refresh button on live screens (they update themselves), frame color scheme, status bar style |
+| `ComposeCastActivity.kt` | Launcher activity; reads config from resources; `ComposeCastApp` composable: Material 3 frame around the SDK's `ComposeCastFlow` + `rememberComposeCastNavigator` (T-060) — home screen from `/brand`, draft preview links, title (+ "Preview · …" for `PreviewIds`), no refresh button on live screens, Material loading/error slots, snackbars; frame color scheme, status bar style |
 | `PreviewConnection.kt` | Preview app (T-045): `PreviewLink.parse` (`composecast://connect?url=…[&screen=…]`), `PreviewLink.normalize` (typed address; no scheme = https), `PreviewServerStore` (SharedPreferences) |
 | `ConnectScreen.kt` | Preview app without a server: how to connect + address field |
 | `AndroidManifest.xml` | `INTERNET`, application label/icon/theme/`networkSecurityConfig`, the launcher activity (`singleTop`), the `ConnectLink` alias (`composecast://connect`, enabled only by `@bool/composecast_preview`) — merged into every app |
@@ -31,19 +31,25 @@ version).
 
 ```
 ComposeCastActivity (config: getString/getColor of the resources above)
- └── ComposeCastApp (Composable)
-      ├── backStack: List<Action.Navigate> (rememberSaveable, BackStackSaver) + BackHandler; entry = last
-      ├── produceState(entry, reloadKey) → ComposeCastClient.getScreen(entry.screen, entry.params)
-      ├── loading  → CircularProgressIndicator
-      ├── error    → ComposeCastHttpException: "Server error <status>"; else "Cannot reach <url>"; Retry (reloadKey++)
-      └── success  → ComposeCastScreen(screen, onAction)   (Remote Compose player)
+ └── ComposeCastApp (Composable): Scaffold + TopAppBar + SnackbarHost (Material 3)
+      └── ComposeCastFlow(client, navigator)            ← sdk-android public API (T-060, ADR 0035)
+           ├── navigator = rememberComposeCastNavigator(startScreen = null); replaceRoot(brand home)
+           ├── loading  → CircularProgressIndicator
+           ├── error    → Http: "Server error <status> for screen '<id>'"; UpgradeRequired; Network:
+           │              "Cannot reach <url>"; Retry = reload()
+           └── ready    → the SDK plays the screen (live screens, Back, saved back stack)
 ```
 
-- Back stack: `Action.Navigate(screen, params)` is pushed as is (params → query of
-  `GET /screens/{screen}`); system back pops; saved as `ActionCodec` wire strings → survives rotation.
-- Action routing: exhaustive `when` over `Action` — `Navigate` push, `OpenUrl` `ACTION_VIEW` (no app
-  → snackbar), `Reload` `reloadKey++`, `Track` no-op (analytics hook), `Custom` snackbar. Unknown
-  actions never arrive (`sdk-android` drops them).
+- **Dogfooding (T-060):** the shell has no fetching, back stack, live-screen or player code of its
+  own — only what an external app would add around `ComposeCastFlow`. A gap found here is fixed in
+  `sdk-android`, not worked around.
+- Back stack: the SDK's navigator (`Action.Navigate` entries, saved as `ActionCodec` strings →
+  survives rotation; system Back pops).
+- Action routing: `onAction` handles `Reload` (`reload()`: at the home screen re-reads `/brand` first,
+  so a new home published in the admin replaces it), `Track` (no-op, analytics hook), `Custom`
+  (snackbar); `Navigate` and `OpenUrl` use the flow's defaults (`onOpenUrl`: `ACTION_VIEW`, no app →
+  snackbar). Unknown actions never arrive (`sdk-android` drops them).
+- Refresh and Retry call the same `reload()`.
 - Top app bar title: the screen's `title` from the document, or `app_name` while loading/on error (never the raw screen id). T-043.
 - Frame colors: top app bar = primary (title black/white by luminance), loading/error background =
   background; status bar icons light/dark by the primary's luminance (`enableEdgeToEdge`). Content

@@ -1,6 +1,6 @@
 # T-061 — Android SDK external consumer sample, CI verification & developer guide
 
-Status: queued (after T-060) · Roadmap: H4 · Depends on: T-060 · Module: sdk-android, docs
+Status: ready · Roadmap: H4 · Depends on: T-060 · Module: sdk-android, docs
 
 ## Goal
 

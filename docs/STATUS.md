@@ -5,7 +5,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Next
 
-- **[T-060 Dogfood `sdk-android` in `app-shell`](tasks/T-060-dogfood-sdk-in-app-shell.md)** (Roadmap H3) — the `ready` task.
+- **[T-061 Android SDK consumer sample, CI verification & developer guide](tasks/T-061-sdk-consumer-sample-and-docs.md)** (Roadmap H4) — the `ready` task.
 
 ## Task queue (priority order)
 
@@ -46,8 +46,8 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-057 Component designer (draw on an artboard)](tasks/T-057-component-designer.md) | Roadmap G6 | in progress — model + compiler, admin routes, designer with SVG import done (ADR 0034); next: owner tries it, then multi-select, Bézier pen, images |
 | [T-058 Android SDK core hardening (`explicitApi()`, errors, headers, R8)](tasks/T-058-sdk-android-core-hardening.md) | Roadmap H1 | done (`615bfdb`) |
 | [T-059 High-level Android SDK Composables (`ComposeCastView`, `ComposeCastFlow`)](tasks/T-059-sdk-android-high-level-composables.md) | Roadmap H2 | done (`53459c9`) |
-| [T-060 Dogfood `sdk-android` in `app-shell`](tasks/T-060-dogfood-sdk-in-app-shell.md) | Roadmap H3 | ready |
-| [T-061 Android SDK consumer sample, CI verification & developer guide](tasks/T-061-sdk-consumer-sample-and-docs.md) | Roadmap H4 | queued (after T-060) |
+| [T-060 Dogfood `sdk-android` in `app-shell`](tasks/T-060-dogfood-sdk-in-app-shell.md) | Roadmap H3 | done |
+| [T-061 Android SDK consumer sample, CI verification & developer guide](tasks/T-061-sdk-consumer-sample-and-docs.md) | Roadmap H4 | ready |
 | [T-010 Settings export (properties + icon)](tasks/T-010-app-export.md) | Etap 9 | in progress — Design rewritten; next: AppExportService + route |
 | [T-027 Images loaded by the SDK (lists)](tasks/T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-010); roadmap F1 |
 | [T-021 Native components via RC `Custom` (text input)](tasks/T-021-native-components.md) | Etap 10 | queued (after T-027); roadmap F2; spike first |
@@ -84,7 +84,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | Etap 4 — Data sources (APIs) — ADR 0008 | 4/4 |
 | Etap 5 — Components for real apps | 15/19 |
 | Etap 6 — Milestone 1: Example weather app (external project) | 5/7 |
-| Etap 7 — App shells & SDKs | 5/9 |
+| Etap 7 — App shells & SDKs | 6/10 |
 | Etap 8 — Admin panel MVP | 8/12 |
 | Etap 9 — White-label app export + TV shows milestone | 1/6 |
 | Etap 10 — Interactivity (DivKit core) | 1/8 |
@@ -96,9 +96,9 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 
 ## Recent work (docs/history.md)
 
+- `app-shell` dogfoods the SDK
 - Android SDK high-level composables
 - Android SDK core hardening
 - Static analysis and explicit API
 - Three-tier Android architecture & public SDK plan
 - Screens as a card grid, readable dates
-- Designer: Bézier pen and point editing

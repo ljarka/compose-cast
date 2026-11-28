@@ -502,3 +502,8 @@ README roadmap's "Etap" numbers.
     saved as `ActionCodec` strings), `ComposeCastFlow` (Back, default Navigate/Reload/OpenUrl, `onAction`
     interception), `ComposeCastDefaults` slots without Material (new rule R13). `ComposeCastFlowTest`
     drives them against a real server under Robolectric; golden `sdk-error-slot.png`.
+100. **`app-shell` dogfoods the SDK** (2026-11-28, T-060, [ADR 0035](decisions/0035-android-sdk-public-api.md)):
+    `ComposeCastApp` is a Material 3 frame around `ComposeCastFlow` + `rememberComposeCastNavigator`;
+    its private back stack saver, fetch state machine, live wiring and player call are gone. No SDK
+    change was needed. Verified on the emulator: `smoke`, `live`, `layouts`, Preview `connect`, plus
+    rotation, error + Retry (server stopped and restarted) and Refresh hidden on a live screen.

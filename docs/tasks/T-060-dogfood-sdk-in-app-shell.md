@@ -1,6 +1,6 @@
 # T-060 — Dogfood `sdk-android` in `app-shell`
 
-Status: ready · Roadmap: H3 · Depends on: T-059 · Module: app-shell, sdk-android
+Status: done · Roadmap: H3 · Depends on: T-059 · Module: app-shell, sdk-android
 
 ## Goal
 

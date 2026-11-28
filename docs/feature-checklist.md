@@ -87,6 +87,7 @@ Android only ([ADR 0022](decisions/0022-android-only.md), owner 2026-11-16).
   `ComposeCastError`, `Closeable` + `rememberComposeCastClient`, R8 consumer rules — T-058
 - [x] Android SDK high-level composables without Material: `ComposeCastView` (one screen, loading/error
   slots, live), `ComposeCastFlow` + `ComposeCastNavigator` (saved back stack, Back, action routing) — T-059
+- [x] `app-shell` dogfoods the SDK: the zero-code apps run on `ComposeCastFlow` (no private copies) — T-060
 - [x] `app-template` configured by one `compose-cast.properties` (name, `applicationId`, server URL,
   frame colors, icon; release = https only) — T-011
 - [ ] Navigation/tabs from the server, deep links

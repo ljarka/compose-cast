@@ -12,7 +12,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -38,10 +37,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -54,12 +51,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.composecast.android.ComposeCastClient
 import io.composecast.android.ComposeCastConfig
-import io.composecast.android.ComposeCastHttpException
-import io.composecast.android.ComposeCastScreen
-import io.composecast.android.ComposeCastUpgradeRequiredException
-import io.composecast.android.ScreenDocument
+import io.composecast.android.ComposeCastError
+import io.composecast.android.ComposeCastFlow
+import io.composecast.android.ComposeCastUiState
+import io.composecast.android.rememberComposeCastNavigator
 import io.composecast.protocol.Action
-import io.composecast.protocol.ActionCodec
 import io.composecast.protocol.PreviewIds
 import kotlinx.coroutines.launch
 
@@ -205,21 +201,40 @@ private fun ComposeCastApp(
     openRequest: OpenRequest?,
     onOpenUrl: (String) -> Boolean,
 ) {
+    // The back stack, its saving, system Back, fetching, live screens and action defaults live in
+    // sdk-android's public API (T-060, ADR 0035); the shell adds the frame around it.
+    val navigator = rememberComposeCastNavigator(startScreen = null)
     var homeScreen by rememberSaveable { mutableStateOf<String?>(null) }
-    // Back stack of (screen, params) entries; survives rotation. System back pops it.
-    var backStack by rememberSaveable(stateSaver = BackStackSaver) {
-        mutableStateOf(emptyList())
-    }
+    val scope = rememberCoroutineScope()
+    suspend fun brandHome() =
+        runCatching { client.getBrand().homeScreen }.getOrNull()?.takeIf { it.isNotBlank() } ?: "main"
     LaunchedEffect(Unit) {
-        if (backStack.isEmpty()) {
-            val start = runCatching { client.getBrand().homeScreen }.getOrNull()?.takeIf { it.isNotBlank() } ?: "main"
+        if (navigator.current == null) {
+            val start = brandHome()
             homeScreen = start
-            backStack = listOf(Action.Navigate(start))
+            navigator.replaceRoot(start)
         }
     }
-    val entry = backStack.lastOrNull()
-    val screenId = entry?.screen ?: homeScreen ?: "main"
-    BackHandler(enabled = backStack.size > 1) { backStack = backStack.dropLast(1) }
+
+    // Refresh, Retry and `reload:`: at the home screen the server may have a new home (admin
+    // publish), so it is looked up again first.
+    fun reload() {
+        val current = navigator.current
+        if (navigator.backStack.size == 1 && current != null && current.screen == homeScreen) {
+            scope.launch {
+                val latest = brandHome()
+                if (latest != current.screen) {
+                    homeScreen = latest
+                    navigator.replaceRoot(latest)
+                } else {
+                    navigator.reload()
+                }
+            }
+        } else {
+            navigator.reload()
+        }
+    }
+
     // A linked screen (draft preview) opens on top; rememberSaveable: not again after a rotation.
     var handledRequest by rememberSaveable { mutableIntStateOf(-1) }
     LaunchedEffect(openRequest, homeScreen) {
@@ -227,12 +242,10 @@ private fun ComposeCastApp(
         val request = openRequest ?: return@LaunchedEffect
         if (request.seq == handledRequest) return@LaunchedEffect
         handledRequest = request.seq
-        backStack = backStack + Action.Navigate(request.screen)
+        navigator.navigate(request.screen)
     }
     val snackbar = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
-    var reloadKey by remember { mutableIntStateOf(0) }
     var showSettings by rememberSaveable { mutableStateOf(false) }
     if (showSettings && onChangeServer != null) {
         PreviewSettingsScreen(
@@ -242,26 +255,10 @@ private fun ComposeCastApp(
         )
         return
     }
-    val screenState by produceState<Result<ScreenDocument>?>(initialValue = null, key1 = entry, key2 = reloadKey) {
-        val current = entry ?: return@produceState
-        value = null
-        val target = if (reloadKey > 0 && backStack.size == 1 && current.screen == homeScreen) {
-            val latest = runCatching { client.getBrand().homeScreen }.getOrNull()?.takeIf { it.isNotBlank() } ?: "main"
-            if (latest != current.screen) {
-                homeScreen = latest
-                backStack = listOf(Action.Navigate(latest))
-                return@produceState
-            }
-            current
-        } else {
-            current
-        }
-        value = runCatching { client.getScreen(target.screen, target.params) }
-    }
+    var state by remember { mutableStateOf<ComposeCastUiState>(ComposeCastUiState.Loading) }
+    val ready = (state as? ComposeCastUiState.Ready)?.screen
     var lastTitle by rememberSaveable { mutableStateOf("") }
-    LaunchedEffect(screenState) {
-        screenState?.getOrNull()?.title?.let { lastTitle = it }
-    }
+    LaunchedEffect(ready) { ready?.title?.let { lastTitle = it } }
 
     Scaffold(
         topBar = {
@@ -272,14 +269,14 @@ private fun ComposeCastApp(
                     actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
                 title = {
-                    val title = screenState?.getOrNull()?.title
-                        ?: if (screenState?.isFailure == true) {
+                    val title = ready?.title
+                        ?: if (state is ComposeCastUiState.Error) {
                             lastTitle.ifEmpty { stringResource(R.string.app_name) }
                         } else {
                             lastTitle
                         }
                     // A draft preview (ADR 0030) must not be mistaken for the published screen.
-                    val isPreview = entry?.screen?.let(PreviewIds::isPreview) == true
+                    val isPreview = navigator.current?.screen?.let(PreviewIds::isPreview) == true
                     Text(
                         if (isPreview) {
                             listOf("Preview", title).filter {
@@ -292,8 +289,8 @@ private fun ComposeCastApp(
                 },
                 actions = {
                     // Live screens update themselves (T-047): no refresh button.
-                    if (screenState?.getOrNull()?.liveEveryMs == null) {
-                        IconButton(onClick = { reloadKey++ }) {
+                    if (ready?.liveEveryMs == null) {
+                        IconButton(onClick = ::reload) {
                             Icon(painterResource(R.drawable.ic_refresh), contentDescription = "Refresh")
                         }
                     }
@@ -308,72 +305,50 @@ private fun ComposeCastApp(
         snackbarHost = { SnackbarHost(snackbar) },
         containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
-        Box(
+        ComposeCastFlow(
+            client = client,
+            navigator = navigator,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            contentAlignment = Alignment.Center,
-        ) {
-            when {
-                screenState == null -> CircularProgressIndicator()
-
-                screenState!!.isFailure -> Column(
+            onAction = { action ->
+                when (action) {
+                    Action.Reload -> reload().let { true }
+                    is Action.Track -> true // analytics hook
+                    is Action.Custom -> true.also {
+                        scope.launch { snackbar.showSnackbar("Custom: ${action.payload}") }
+                    }
+                    else -> false // Navigate, OpenUrl: the flow's defaults; Toggle/Show/Hide run on the device
+                }
+            },
+            onOpenUrl = { url ->
+                if (!onOpenUrl(url)) scope.launch { snackbar.showSnackbar("No app can open $url") }
+            },
+            onStateChanged = { state = it },
+            loading = { CircularProgressIndicator() },
+            error = { error, _ ->
+                Column(
                     modifier = Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    val error = screenState!!.exceptionOrNull()
                     Text(
                         text = when (error) {
-                            is ComposeCastUpgradeRequiredException ->
-                                "Please update the app to continue."
-                            is ComposeCastHttpException ->
-                                // The server answered (e.g. 404 unknown screen): not a connectivity problem.
-                                "Server error ${error.status} for screen '$screenId'."
-                            else ->
-                                "Cannot reach $serverUrl.\n$unreachableHint\n\n${error?.message}"
+                            is ComposeCastError.UpgradeRequired -> "Please update the app to continue."
+                            // The server answered (e.g. 404 unknown screen): not a connectivity problem.
+                            is ComposeCastError.Http ->
+                                "Server error ${error.statusCode} for screen '${navigator.current?.screen}'."
+                            is ComposeCastError.Network ->
+                                "Cannot reach $serverUrl.\n$unreachableHint\n\n${error.message}"
                         },
                         textAlign = TextAlign.Center,
                     )
-                    Button(onClick = { reloadKey++ }) { Text("Retry") }
+                    Button(onClick = ::reload) { Text("Retry") }
                 }
-
-                else -> {
-                    val screen = screenState!!.getOrThrow()
-                    // Live screens (T-047, ADR 0029): updates over a WebSocket, no refresh needed.
-                    // While navigating, `screen` can still be the previous entry's document for a frame.
-                    val live = remember(screen, entry) {
-                        entry?.takeIf { screen.liveEveryMs != null && it.screen == screen.id }
-                            ?.let { client.liveScreen(it.screen, it.params) }
-                    }
-                    ComposeCastScreen(
-                        screen = screen,
-                        modifier = Modifier.fillMaxSize(),
-                        live = live,
-                        onAction = { action ->
-                            when (action) {
-                                is Action.Navigate -> backStack = backStack + action
-                                is Action.OpenUrl -> if (!onOpenUrl(action.url)) {
-                                    scope.launch { snackbar.showSnackbar("No app can open ${action.url}") }
-                                }
-                                Action.Reload -> reloadKey++
-                                is Action.Track -> { /* analytics hook */ }
-                                is Action.Custom -> scope.launch { snackbar.showSnackbar("Custom: ${action.payload}") }
-                                is Action.Toggle, is Action.Show, is Action.Hide -> { /* handled on-device by RC */ }
-                            }
-                        },
-                    )
-                }
-            }
-        }
+            },
+        )
     }
 }
-
-/** Saves back stack entries as their action wire form ([ActionCodec]): Bundle-friendly strings. */
-private val BackStackSaver = listSaver<List<Action.Navigate>, String>(
-    save = { stack -> stack.map(ActionCodec::encode) },
-    restore = { saved -> saved.mapNotNull { ActionCodec.decode(it) as? Action.Navigate } },
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
