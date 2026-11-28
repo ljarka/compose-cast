@@ -13,6 +13,8 @@ android {
     compileSdk = 37
     defaultConfig {
         minSdk = 26 // required by remote-player-*
+        // R8 rules for apps that minify (T-058): packaged into the AAR as proguard.txt.
+        consumerProguardFiles("consumer-rules.pro")
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -59,4 +61,7 @@ dependencies {
     testImplementation(libs.kotlin.test)
     testImplementation(libs.junit)
     testImplementation(libs.ktor.client.mock)
+    // liveScreen over a real WebSocket (MockEngine has no WebSocket support).
+    testImplementation(libs.ktor.server.netty)
+    testImplementation(libs.ktor.server.websockets)
 }

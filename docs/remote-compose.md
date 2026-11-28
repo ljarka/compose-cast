@@ -460,6 +460,11 @@ and running animations stay.
   follow the looper clock: a capture right after `setDocument` shows the first frame;
   `ShadowLooper.idleFor(3 s)` before capturing shows the end state, identical every time
   (alpha23, Robolectric 4.17, 2026-11-24; T-048 `Renderer`).
+- **R8 / minify (verified alpha23, 2026-11-28, T-058):** `remote-core`, `remote-player-core` and
+  `remote-player-view` ship **no** consumer R8 rules and need none: none of their 831 classes
+  references `java/lang/reflect`, `Class.forName` or `ServiceLoader` (scanned the jars/AARs). An
+  `app-template` build with `isMinifyEnabled = true` played the demo screens and a live screen on
+  the emulator. Re-scan on every RC upgrade.
 
 ---
 

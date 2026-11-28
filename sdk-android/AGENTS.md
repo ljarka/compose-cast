@@ -7,8 +7,10 @@ AndroidX Remote Compose player (`remote-player-view`).
 
 | Class | Purpose |
 |---|---|
-| `ComposeCastConfig` | Server URL, player version, logging flag |
-| `ComposeCastClient` | Ktor client: `getScreen(id, params)` (→ `ScreenDocument`, ETag revalidation, throws `ComposeCastHttpException`), `listScreens`, `getBrand`; `liveScreen(id, params)`: `Flow<ScreenDocument>` of a live screen's pushes over a WebSocket (T-047) |
+| `ComposeCastConfig` | Server URL, player version, logging flag, timeouts, `headers` (suspend provider, e.g. `Authorization`; called per request, reserved protocol names ignored), `cacheSize` (ETag LRU, `>= 0`) (T-058) |
+| `ComposeCastClient` | `Closeable` Ktor client: `getScreen(id, params)` (→ `ScreenDocument`, ETag revalidation), `listScreens`, `getBrand` (all throw `ComposeCastHttpException` / `ComposeCastUpgradeRequiredException` for non-2xx, T-058); `liveScreen(id, params)`: `Flow<ScreenDocument>` of a live screen's pushes over a WebSocket (T-047) |
+| `rememberComposeCastClient(config)` | Composable: a client per composition, closed on dispose / config change (T-058). Several screens or DI: one client per server instead |
+| `ComposeCastError` + `Throwable.toComposeCastError()` | `UpgradeRequired(minApiLevel)`, `Http(statusCode)`, `Network(cause)` — classify failures without exception types (T-058) |
 | `ScreenDocument` | Decoded RC document + `id`, `title` (from `X-Composecast-Screen-Title`), `sizeBytes`, `liveEveryMs` (from `X-Composecast-Live`; null = not live) |
 | `ComposeCastScreen` | Composable: `AndroidView` hosting `RemoteComposePlayer`; `live: Flow<ScreenDocument>?` (applies data updates in place, full documents replace the screen; collected only while the app is started); `onAction(Action)` |
 
@@ -49,6 +51,15 @@ installs an `android.util.Log` logger.
 
 - **Explicit API (T-055):** `kotlin { explicitApi() }` — every non-private declaration states
   `public` or `internal`. New helpers default to `internal`; `public` is a published-API decision.
+  Audited in T-058: every public declaration here is SDK surface, documented with KDoc.
+- **Custom headers (T-058):** `ComposeCastConfig.headers` is a `suspend` provider evaluated per
+  request (per WebSocket connection for `liveScreen`), so a refreshed token applies to the next
+  request/reconnect. `X-Composecast-Player-Version`, `-Rc-Api-Level`, `-Rc-Profiles` and
+  `If-None-Match` are set by the SDK; entries with those names (any case) are dropped, never sent twice.
+- **R8 (T-058):** `consumer-rules.pro` (packaged as the AAR's `proguard.txt`) keeps the `protocol`
+  serializers that Ktor's `body<T>()` looks up by reflection. RC alpha23 needs no rules (no
+  reflection, see `docs/remote-compose.md`). Verified: `app-template` built with `isMinifyEnabled`
+  passed `smoke.yaml` and `live.yaml` on the emulator.
 - **Live screens (T-047, [ADR 0029](../docs/decisions/0029-live-screens-websocket-data-updates.md)):**
   `ComposeCastClient` uses a single Ktor client on the **OkHttp** engine (T-052) for both REST
   (with configurable connect/request/socket timeouts) and WebSockets (`liveScreen`); same version
@@ -84,5 +95,8 @@ public API is used by published apps: a breaking change needs a new compose-cast
 ## Tests (T-050)
 
 `ComposeCastClientTest` runs on the JVM with `ktor-client-mock` (via internal constructor) and covers
-200/304 ETag caching, LRU eviction, 426 Upgrade Required, HTTP errors, `listScreens`, and `getBrand`.
+200/304 ETag caching, LRU eviction, `cacheSize` 0 / negative, 426 Upgrade Required, HTTP errors,
+`listScreens`, `getBrand`, custom headers vs. reserved ones, `Closeable` and the `ComposeCastError`
+mapping. `liveScreen` headers are tested against a real Ktor Netty server on a random port with the
+real OkHttp engine (`MockEngine` has no WebSocket support).
 Run via `./gradlew :sdk-android:testDebugUnitTest` (included in `./scripts/verify.sh`).

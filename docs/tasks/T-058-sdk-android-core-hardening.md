@@ -1,6 +1,6 @@
 # T-058 — Android SDK core hardening (`explicitApi()`, `ComposeCastError`, custom headers, R8 rules)
 
-Status: ready · Roadmap: H1 · Depends on: — · Module: protocol, sdk-android
+Status: done · Roadmap: H1 · Depends on: — · Module: protocol, sdk-android
 
 ## Goal
 

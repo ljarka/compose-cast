@@ -98,7 +98,7 @@ public data class FilterCall(
 
 /** The filters templates may use, with their allowed argument counts. Implemented in sdk-server `Binder`. */
 public object Filters {
-    public val ARITY: Map<String, IntRange> = linkedMapOf(
+    internal val ARITY: Map<String, IntRange> = linkedMapOf(
         "round" to 0..1,
         "date" to 1..1,
         "lookup" to 1..1,
@@ -111,7 +111,7 @@ public object Filters {
     )
 
     /** Filters whose argument may be a path (T-041); the others take literals only. */
-    public val PATH_ARGUMENTS: Set<String> = setOf("append", "default")
+    internal val PATH_ARGUMENTS: Set<String> = setOf("append", "default")
 }
 
 /** A string with `{{ … }}` expressions, e.g. `"{{w.temp | round}}°C"`. */
@@ -246,5 +246,5 @@ public object Roots {
     public const val SECRET: String = "secret"
     public const val VALUES: String = "values"
     public const val INDEX: String = "\$index"
-    public val RESERVED: Set<String> = setOf(PARAMS, SECRET, VALUES, INDEX)
+    internal val RESERVED: Set<String> = setOf(PARAMS, SECRET, VALUES, INDEX)
 }

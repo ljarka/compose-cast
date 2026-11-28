@@ -1,6 +1,6 @@
 # T-059 — High-level Android SDK Composables (`ComposeCastView`, `ComposeCastNavigator`, `ComposeCastFlow`)
 
-Status: queued (after T-058) · Roadmap: H2 · Depends on: T-058 · Module: sdk-android
+Status: ready · Roadmap: H2 · Depends on: T-058 · Module: sdk-android
 
 ## Goal
 

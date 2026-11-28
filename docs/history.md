@@ -490,3 +490,10 @@ README roadmap's "Etap" numbers.
     `sdk-android` with the existing visibility kept (no API removed). Detekt findings fixed (long
     lines, unused catch variables, an unused `visibilityIds` parameter in validation); the
     largest files are excluded from `LongMethod`/`CyclomaticComplexMethod` until T-056 splits them.
+98. **Android SDK core hardening** (2026-11-28, T-058, [ADR 0035](decisions/0035-android-sdk-public-api.md)):
+    `ComposeCastConfig.headers` (suspend provider, REST + WebSocket, protocol headers win) and
+    `cacheSize`; `ComposeCastClient` is `Closeable`, `rememberComposeCastClient`;
+    `ComposeCastError` + `toComposeCastError()`; `listScreens`/`getBrand` throw
+    `ComposeCastHttpException` instead of Ktor types; `consumer-rules.pro` in the AAR, checked with a
+    minified `app-template` on the emulator (RC needs no rules); visibility audit (4 `protocol`
+    helpers now `internal`), KDoc on the whole SDK.

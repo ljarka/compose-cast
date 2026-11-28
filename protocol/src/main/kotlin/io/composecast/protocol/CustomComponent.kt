@@ -83,7 +83,7 @@ public data class ComponentDefinition(
         private val PARAM_NAME = Regex("[A-Za-z_][A-Za-z0-9_]*")
 
         /** `{{brand.<field>}}` in a body: the screen's brand colors (T-040 defaults apply). */
-        public val BRAND_FIELDS: Set<String> = setOf(
+        internal val BRAND_FIELDS: Set<String> = setOf(
             "primaryColor",
             "secondaryColor",
             "backgroundColor",

@@ -30,6 +30,12 @@ import kotlinx.coroutines.flow.Flow
  * [ScreenDocument.liveEveryMs] is set. It is collected only while the app is at least started (the
  * socket closes in the background and reopens on return); data updates replace values in place
  * (state, scroll and animations stay), full documents replace the screen.
+ *
+ * @param screen the document to show (from [ComposeCastClient.getScreen] or [ScreenDocument.fromBytes])
+ * @param modifier size and placement; the document lays itself out inside it (usually `fillMaxSize`)
+ * @param live updates of a live screen, or null
+ * @param darkTheme which colors of themed documents to use (Light/Dark); follows the system by default
+ * @param onAction called on the main thread for every host action, e.g. [Action.Navigate] or [Action.OpenUrl]
  */
 @Composable
 public fun ComposeCastScreen(
