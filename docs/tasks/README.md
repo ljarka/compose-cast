@@ -40,7 +40,7 @@ is exactly `ready` (there is at most one), read its file and do exactly that.** 
 | [T-049 Custom components written in RC JSON](T-049-custom-components-rc-json.md) | Roadmap G5 | done (`12697bc`) — custom components in raw RC JSON, admin Components page, palette, ADR 0033 |
 | [T-057 Component designer (draw on an artboard)](T-057-component-designer.md) | Roadmap G6 | in progress — model + compiler, admin routes, designer with SVG import done (ADR 0034); next: owner tries it, then multi-select, Bézier pen, images |
 | [T-058 Android SDK core hardening (`explicitApi()`, errors, headers, R8)](T-058-sdk-android-core-hardening.md) | Roadmap H1 | done (`615bfdb`) |
-| [T-059 High-level Android SDK Composables (`ComposeCastView`, `ComposeCastFlow`)](T-059-sdk-android-high-level-composables.md) | Roadmap H2 | done |
+| [T-059 High-level Android SDK Composables (`ComposeCastView`, `ComposeCastFlow`)](T-059-sdk-android-high-level-composables.md) | Roadmap H2 | done (`53459c9`) |
 | [T-060 Dogfood `sdk-android` in `app-shell`](T-060-dogfood-sdk-in-app-shell.md) | Roadmap H3 | ready |
 | [T-061 Android SDK consumer sample, CI verification & developer guide](T-061-sdk-consumer-sample-and-docs.md) | Roadmap H4 | queued (after T-060) |
 | [T-010 Settings export (properties + icon)](T-010-app-export.md) | Etap 9 | in progress — Design rewritten; next: AppExportService + route |
