@@ -46,7 +46,7 @@ history — do not edit by hand (`check-docs.sh` fails when it is stale). Detail
 | [T-057 Component designer (draw on an artboard)](tasks/T-057-component-designer.md) | Roadmap G6 | in progress — model + compiler, admin routes, designer with SVG import done (ADR 0034); next: owner tries it, then multi-select, Bézier pen, images |
 | [T-058 Android SDK core hardening (`explicitApi()`, errors, headers, R8)](tasks/T-058-sdk-android-core-hardening.md) | Roadmap H1 | done (`615bfdb`) |
 | [T-059 High-level Android SDK Composables (`ComposeCastView`, `ComposeCastFlow`)](tasks/T-059-sdk-android-high-level-composables.md) | Roadmap H2 | done (`53459c9`) |
-| [T-060 Dogfood `sdk-android` in `app-shell`](tasks/T-060-dogfood-sdk-in-app-shell.md) | Roadmap H3 | done |
+| [T-060 Dogfood `sdk-android` in `app-shell`](tasks/T-060-dogfood-sdk-in-app-shell.md) | Roadmap H3 | done (`95dba97`) |
 | [T-061 Android SDK consumer sample, CI verification & developer guide](tasks/T-061-sdk-consumer-sample-and-docs.md) | Roadmap H4 | ready |
 | [T-010 Settings export (properties + icon)](tasks/T-010-app-export.md) | Etap 9 | in progress — Design rewritten; next: AppExportService + route |
 | [T-027 Images loaded by the SDK (lists)](tasks/T-027-sdk-loaded-images.md) | Etap 5 | queued (after T-010); roadmap F1 |
