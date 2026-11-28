@@ -497,3 +497,8 @@ README roadmap's "Etap" numbers.
     `ComposeCastHttpException` instead of Ktor types; `consumer-rules.pro` in the AAR, checked with a
     minified `app-template` on the emulator (RC needs no rules); visibility audit (4 `protocol`
     helpers now `internal`), KDoc on the whole SDK.
+99. **Android SDK high-level composables** (2026-11-28, T-059, [ADR 0035](decisions/0035-android-sdk-public-api.md)):
+    `ComposeCastView` + `ComposeCastUiState`, `ComposeCastNavigator` (back stack of `Action.Navigate`,
+    saved as `ActionCodec` strings), `ComposeCastFlow` (Back, default Navigate/Reload/OpenUrl, `onAction`
+    interception), `ComposeCastDefaults` slots without Material (new rule R13). `ComposeCastFlowTest`
+    drives them against a real server under Robolectric; golden `sdk-error-slot.png`.

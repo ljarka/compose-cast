@@ -139,10 +139,20 @@ for f in gradle:
              "uses Robolectric or puts sdk-android and sdk-server on one classpath",
              "only compat-tests (goldens) and preview-renderer (the service) may")
 
+# R13 — sdk-android stays Material-free (ADR 0035): host apps bring their own design system.
+sdk_build = root / "sdk-android/build.gradle.kts"
+if re.search(r"libs\.[\w.]*material|androidx\.compose\.material", sdk_build.read_text()):
+    fail("R13", "docs/decisions/0035-android-sdk-public-api.md", rel(sdk_build),
+         "depends on a Material library", "use compose.foundation/ui; Material chrome belongs in app-shell")
+for f in (root / "sdk-android/src/main").rglob("*.kt"):
+    if re.search(r"^import androidx\.compose\.material", f.read_text(), re.M):
+        fail("R13", "docs/decisions/0035-android-sdk-public-api.md", rel(f),
+             "imports androidx.compose.material*", "use compose.foundation/ui; Material chrome belongs in app-shell")
+
 if errors:
     print(f"Architecture check failed ({len(errors)}):")
     for e in errors:
         print(" -", e)
     sys.exit(1)
-print(f"Architecture OK: 12 rules, {len(kotlin)} Kotlin files, {len(gradle)} build files")
+print(f"Architecture OK: 13 rules, {len(kotlin)} Kotlin files, {len(gradle)} build files")
 PY

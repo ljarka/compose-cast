@@ -17,6 +17,8 @@ This module only. Touches both `sdk-server` and `sdk-android` at test time — t
 | `src/test/screenshots/onboarding.png` | Golden for the `onboarding` screen (README image) |
 | `src/test/screenshots/actions.png` | Golden for the `actions` screen: one button per action type (README image) |
 | `src/test/screenshots/brand-colors.png` | Golden for a DSL screen with brand surface/text/outline colors (T-040) |
+| `ComposeCastFlowTest.kt` | T-059: the SDK's `ComposeCastFlow` against a **real** server (`server-app` `module()` on Netty, random port) and the real `ComposeCastClient`: tap → navigate with params, `onAction` interception, system Back, live screen socket open/close/reopen, error slot + Retry. Pumps the paused main looper while waiting (network answers resume there) |
+| `src/test/screenshots/sdk-error-slot.png` | Golden for the SDK's default error slot (`ComposeCastDefaults.Error`, T-059) |
 | `src/test/screenshots/echo.png` | Golden for the dynamic `echo` screen rendered with `word=zażółć gęślą jaźń` (README image) |
 
 ## Rules (ADR 0006)
@@ -47,7 +49,8 @@ This module only. Touches both `sdk-server` and `sdk-android` at test time — t
 
 - `:server-app` (testImplementation) — `demoScreens()`, so README shows exactly what the server serves
 - `:sdk-server` (testImplementation) — `ImageLoader`
-- `:sdk-android` (testImplementation) — `ComposeCastScreen`, `ScreenDocument`
+- `:sdk-android` (testImplementation) — `ComposeCastScreen`, `ScreenDocument`, `ComposeCastFlow`
+- `ktor-server-netty`, `activity-compose` (testImplementation) — the real server and Back for `ComposeCastFlowTest`
 - Roborazzi, Robolectric, Compose Test
 
 ## Decisions

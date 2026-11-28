@@ -12,9 +12,24 @@ AndroidX Remote Compose player (`remote-player-view`).
 | `rememberComposeCastClient(config)` | Composable: a client per composition, closed on dispose / config change (T-058). Several screens or DI: one client per server instead |
 | `ComposeCastError` + `Throwable.toComposeCastError()` | `UpgradeRequired(minApiLevel)`, `Http(statusCode)`, `Network(cause)` — classify failures without exception types (T-058) |
 | `ScreenDocument` | Decoded RC document + `id`, `title` (from `X-Composecast-Screen-Title`), `sizeBytes`, `liveEveryMs` (from `X-Composecast-Live`; null = not live) |
+| `ComposeCastView` + `ComposeCastUiState` | Composable: one screen by id + params, fetched and played; `loading` / `error(ComposeCastError, retry)` slots, `reloadKey`, `onStateChanged` (`Loading` / `Ready(screen)` / `Error`), live screens connected automatically (T-059) |
+| `ComposeCastNavigator` + `rememberComposeCastNavigator` | Back stack of `Action.Navigate` entries (Compose state): `navigate`, `replaceRoot`, `pop`, `reload`; saved via `ActionCodec` strings (rotation, process death) (T-059) |
+| `ComposeCastFlow` | Composable: the navigator's current screen in a `ComposeCastView`; `onAction` sees every action first (`true` = handled), default `Navigate` → push, `Reload` → reload, `OpenUrl` → `onOpenUrl` (default `ACTION_VIEW`); system Back pops (T-059) |
+| `ComposeCastDefaults` | Default `Loading` (spinning arc) and `Error` (message + Retry) slots and `errorMessage()`, foundation only (T-059) |
 | `ComposeCastScreen` | Composable: `AndroidView` hosting `RemoteComposePlayer`; `live: Flow<ScreenDocument>?` (applies data updates in place, full documents replace the screen; collected only while the app is started); `onAction(Action)` |
 
-## Usage Pattern (app-shell)
+## Usage (T-059, the recommended level)
+
+```kotlin
+val client = rememberComposeCastClient(remember { ComposeCastConfig(serverUrl = "https://cast.example.com") })
+val navigator = rememberComposeCastNavigator(startScreen = "main")
+ComposeCastFlow(client, navigator, Modifier.fillMaxSize(), onAction = { action ->
+    action is Action.Custom && openNativeScreen(action.payload) // true = handled here
+})
+// one screen inside a native screen: ComposeCastView(client, "promo", params = mapOf("id" to "42"))
+```
+
+## Usage Pattern (low level, app-shell until T-060)
 
 ```kotlin
 val client = ComposeCastClient(ComposeCastConfig(serverUrl = "http://10.0.2.2:8080"))
@@ -52,6 +67,14 @@ installs an `android.util.Log` logger.
 - **Explicit API (T-055):** `kotlin { explicitApi() }` — every non-private declaration states
   `public` or `internal`. New helpers default to `internal`; `public` is a published-API decision.
   Audited in T-058: every public declaration here is SDK surface, documented with KDoc.
+- **High-level composables (T-059, [ADR 0035](../docs/decisions/0035-android-sdk-public-api.md)):**
+  the back stack entry **is** `Action.Navigate` (no separate entry type): a button's action is pushed
+  as is and saved via `ActionCodec`. `ComposeCastFlow` keys each back stack position, so pushing the
+  same screen again starts fresh. `ComposeCastView` connects `liveScreen` only when the shown
+  document's id equals the requested one (right after navigating, the previous document is still
+  shown for a frame). Cancellation (another screen requested) is never reported as an error.
+  `BackHandler` comes from `activity-compose`. **No Material** (rule R13 in
+  `scripts/check-architecture.sh`): defaults use foundation/ui only.
 - **Custom headers (T-058):** `ComposeCastConfig.headers` is a `suspend` provider evaluated per
   request (per WebSocket connection for `liveScreen`), so a refreshed token applies to the next
   request/reconnect. `X-Composecast-Player-Version`, `-Rc-Api-Level`, `-Rc-Profiles` and
@@ -99,4 +122,6 @@ public API is used by published apps: a breaking change needs a new compose-cast
 `listScreens`, `getBrand`, custom headers vs. reserved ones, `Closeable` and the `ComposeCastError`
 mapping. `liveScreen` headers are tested against a real Ktor Netty server on a random port with the
 real OkHttp engine (`MockEngine` has no WebSocket support).
+`ComposeCastNavigatorTest` covers push/pop/replaceRoot/reload and the saver round trip. The
+composables are tested end to end in `compat-tests` (`ComposeCastFlowTest`: real server, RC player).
 Run via `./gradlew :sdk-android:testDebugUnitTest` (included in `./scripts/verify.sh`).

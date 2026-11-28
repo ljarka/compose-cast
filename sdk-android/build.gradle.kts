@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.compose.runtime)
     implementation(libs.compose.foundation)
     implementation(libs.compose.ui)
+    implementation(libs.activity.compose) // BackHandler in ComposeCastFlow (T-059); no Material
     testImplementation(libs.kotlin.test)
     testImplementation(libs.junit)
     testImplementation(libs.ktor.client.mock)

@@ -34,6 +34,8 @@ dependencies {
     testImplementation(project(":sdk-server"))
     testImplementation(project(":server-app")) // demoScreens()
     testImplementation(project(":app-templates")) // template home screens (T-030)
+    testImplementation(libs.ktor.server.netty) // a real server for ComposeCastFlowTest (T-059)
+    testImplementation(libs.activity.compose)
     testImplementation(platform(libs.compose.bom))
     testImplementation(libs.compose.material3)
     testImplementation(libs.compose.ui.test.junit4)
